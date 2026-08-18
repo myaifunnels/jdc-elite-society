@@ -32,14 +32,14 @@ export default async function ContactPage({ searchParams }: ContactPageProps) {
             <p className="text-xs uppercase tracking-[0.3em] text-[var(--brand-dark)]">
               {siteContent.inquiry.eyebrow}
             </p>
-            <h1 className="display-title mt-3 text-5xl md:text-6xl">{siteContent.inquiry.heading}</h1>
+            <h1 className="mt-3 text-5xl font-semibold tracking-tight">{siteContent.inquiry.heading}</h1>
             <p className="mt-4 text-lg text-[var(--muted)]">{siteContent.inquiry.body}</p>
           </div>
 
           <InquiryForm defaultProgram={selectedProgram} showIntro={false} />
 
           <div className="mt-8 grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
-            <div className="card-surface p-8">
+            <div className="card-surface rounded-[2rem] p-8">
               <p className="text-sm font-semibold">{siteContent.inquiry.nextHeading}</p>
               <ul className="mt-5 grid gap-3 text-sm text-[var(--muted)]">
                 {siteContent.inquiry.nextSteps.map((item) => (

@@ -7,7 +7,7 @@ import { SiteHeader } from "@/components/layout/site-header";
 import { HeroBillboard } from "@/components/sections/hero-billboard";
 import { ProgramCard } from "@/components/sections/program-card";
 import { programs } from "@/data/programs";
-import { heroStats, siteContent } from "@/data/site-content";
+import { siteContent } from "@/data/site-content";
 
 export default async function Home() {
   return (
@@ -17,39 +17,27 @@ export default async function Home() {
       <main>
         <HeroBillboard />
 
-        <section className="section-space band-dark">
-          <div className="container-shell">
-            <div className="mb-10 max-w-3xl">
-              <p className="eyebrow text-xs">{siteContent.pillarsEyebrow}</p>
-              <h2 className="display-title mt-3 text-4xl md:text-5xl">{siteContent.pillarsHeading}</h2>
-            </div>
-            <div className="pillar-grid">
-              {siteContent.pillars.map((item) => (
-                <article key={item.title} className="pillar-card">
-                  <strong>{item.title}</strong>
-                  <span>{item.body}</span>
-                </article>
-              ))}
-            </div>
-          </div>
-        </section>
-
         <section className="section-space">
           <div className="container-shell">
             <div className="mb-10 max-w-3xl">
               <p className="eyebrow text-xs">{siteContent.problemEyebrow}</p>
-              <h2 className="display-title mt-2 text-4xl md:text-5xl">{siteContent.problemHeading}</h2>
-              <p className="mt-4 text-lg leading-8 text-[var(--muted)]">{siteContent.problemIntro}</p>
+              <h2 className="mt-2 text-3xl font-semibold tracking-[-0.03em] md:text-4xl">
+                {siteContent.problemHeading}
+              </h2>
+              <p className="mt-4 text-[var(--muted)]">{siteContent.problemIntro}</p>
             </div>
 
-            <div className="grid gap-6 lg:grid-cols-3">
+            <div className="grid gap-8 lg:grid-cols-3">
               {siteContent.problemPoints.map((item, index) => (
-                <article key={item.title} className="card-surface interactive-card fade-up overflow-hidden">
+                <article
+                  key={item.title}
+                  className="glass-panel interactive-card fade-up overflow-hidden rounded-[2rem]"
+                >
                   <div className="visual-mark" aria-hidden="true">
                     {String(index + 1).padStart(2, "0")}
                   </div>
                   <div className="p-6 sm:p-8">
-                    <h3 className="display-title text-2xl">{item.title}</h3>
+                    <h3 className="text-xl font-semibold tracking-[-0.02em]">{item.title}</h3>
                     <p className="mt-3 text-sm leading-7 text-[var(--muted)]">{item.body}</p>
                   </div>
                 </article>
@@ -63,17 +51,16 @@ export default async function Home() {
             <div className="mb-10 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
               <div>
                 <p className="eyebrow text-xs">{siteContent.programsEyebrow}</p>
-                <h2 className="display-title mt-2 text-4xl md:text-5xl">{siteContent.programsHeading}</h2>
+                <h2 className="mt-2 text-3xl font-semibold tracking-[-0.03em]">
+                  {siteContent.programsHeading}
+                </h2>
               </div>
-              <Link
-                href="/programs"
-                className="pressable text-xs font-semibold uppercase tracking-[0.16em] text-[var(--brand-dark)]"
-              >
+              <Link href="/programs" className="pressable text-sm font-semibold text-[var(--brand-dark)]">
                 {siteContent.programsLink}
               </Link>
             </div>
 
-            <div className="grid gap-6 lg:grid-cols-2">
+            <div className="grid gap-8 lg:grid-cols-2">
               {programs.map((program) => (
                 <ProgramCard key={program.slug} program={program} />
               ))}
@@ -81,7 +68,7 @@ export default async function Home() {
           </div>
         </section>
 
-        <section className="section-space bg-[color:var(--surface)]">
+        <section className="section-space bg-[color:var(--surface)]/60">
           <div className="container-shell grid items-stretch gap-8 lg:grid-cols-[0.92fr_1.08fr]">
             <div className="visual-portrait fade-up">
               <Image
@@ -93,14 +80,34 @@ export default async function Home() {
               />
             </div>
 
-            <div className="fade-up fade-up-delay-1 self-center py-4">
+            <div className="glass-panel interactive-card fade-up fade-up-delay-1 rounded-[2rem] p-8">
               <p className="eyebrow text-xs">{siteContent.mentorEyebrow}</p>
-              <h2 className="display-title mt-3 text-4xl md:text-5xl">{siteContent.mentorHeading}</h2>
-              <p className="mt-4 text-lg leading-8 text-[var(--muted)]">{siteContent.mentorBody}</p>
+              <h2 className="mt-3 text-3xl font-semibold tracking-[-0.03em]">{siteContent.mentorHeading}</h2>
+              <p className="mt-4 text-[var(--muted)]">{siteContent.mentorBody}</p>
 
               <ul className="mt-6 grid gap-3 text-sm text-[var(--muted)]">
                 {siteContent.mentorPoints.map((item) => (
-                  <li key={item} className="border-t border-[var(--line)] pt-4">
+                  <li
+                    key={item}
+                    className="rounded-[1.5rem] border border-[var(--line)] bg-[color:var(--surface-elevated)]/70 px-5 py-4"
+                  >
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          <div className="container-shell mt-8">
+            <div className="glass-panel interactive-card fade-up rounded-[2rem] p-8">
+              <p className="eyebrow text-xs">{siteContent.deliveryEyebrow}</p>
+              <h2 className="mt-3 text-3xl font-semibold tracking-[-0.03em]">{siteContent.deliveryHeading}</h2>
+              <ul className="mt-6 grid gap-4 text-sm text-[var(--muted)] md:grid-cols-2">
+                {siteContent.communityBullets.map((item) => (
+                  <li
+                    key={item}
+                    className="rounded-[1.5rem] border border-[var(--line)] bg-[color:var(--surface-elevated)]/70 px-5 py-4"
+                  >
                     {item}
                   </li>
                 ))}
@@ -111,72 +118,48 @@ export default async function Home() {
 
         <section className="section-space">
           <div className="container-shell">
-            <p className="eyebrow text-xs">{siteContent.proofEyebrow}</p>
-            <h2 className="display-title mt-3 max-w-3xl text-4xl md:text-5xl">{siteContent.proofHeading}</h2>
-            <div className="proof-grid mt-10">
-              {heroStats.map((item) => (
-                <article key={item.value} className="proof-item">
-                  <strong>{item.value}</strong>
-                  <p className="mt-2 text-sm leading-6 text-[var(--muted)]">{item.label}</p>
-                </article>
-              ))}
+            <div className="glass-panel fade-up rounded-[2rem] p-8 sm:p-10">
+              <p className="eyebrow text-xs">The standard</p>
+              <h2 className="mt-3 text-3xl font-semibold tracking-[-0.03em]">
+                {siteContent.frameworkHeading}
+              </h2>
+              <p className="mt-4 max-w-3xl text-[var(--muted)]">{siteContent.frameworkBody}</p>
+              <ol className="mt-8 grid gap-4 md:grid-cols-2">
+                {siteContent.frameworkItems.map((item, index) => (
+                  <li
+                    key={item}
+                    className="flex gap-4 rounded-[1.5rem] border border-[var(--line)] bg-[color:var(--surface-elevated)]/70 px-5 py-4"
+                  >
+                    <span className="font-semibold text-[var(--brand-dark)]">
+                      {String(index + 1).padStart(2, "0")}
+                    </span>
+                    <span className="text-sm leading-6">{item}</span>
+                  </li>
+                ))}
+              </ol>
             </div>
-          </div>
-        </section>
-
-        <section className="section-space band-dark">
-          <div className="container-shell">
-            <p className="eyebrow text-xs">The standard</p>
-            <h2 className="display-title mt-3 text-4xl md:text-5xl">{siteContent.frameworkHeading}</h2>
-            <p className="mt-4 max-w-3xl text-lg leading-8">{siteContent.frameworkBody}</p>
-            <ol className="mt-10 grid gap-4 md:grid-cols-2">
-              {siteContent.frameworkItems.map((item, index) => (
-                <li key={item} className="flex gap-4 border-t border-white/10 pt-5">
-                  <span className="font-semibold text-[var(--brand)]">
-                    {String(index + 1).padStart(2, "0")}
-                  </span>
-                  <span className="text-base leading-7">{item}</span>
-                </li>
-              ))}
-            </ol>
           </div>
         </section>
 
         <section id="faq" className="section-space scroll-mt-24">
           <div className="container-shell">
-            <div className="mb-10 max-w-3xl">
+            <div className="mb-10">
               <p className="eyebrow text-xs">{siteContent.faqEyebrow}</p>
-              <h2 className="display-title mt-2 text-4xl md:text-5xl">{siteContent.faqHeading}</h2>
+              <h2 className="mt-2 text-3xl font-semibold tracking-[-0.03em]">{siteContent.faqHeading}</h2>
             </div>
 
-            <div className="grid gap-0">
+            <div className="grid gap-5">
               {siteContent.faq.map((item) => (
-                <div key={item.question} className="fade-up border-t border-[var(--line)] py-6">
-                  <h3 className="text-xl font-semibold">{item.question}</h3>
-                  <p className="mt-3 max-w-3xl text-sm leading-7 text-[var(--muted)]">{item.answer}</p>
+                <div key={item.question} className="glass-panel interactive-card fade-up rounded-[1.75rem] p-6">
+                  <h3 className="text-lg font-semibold">{item.question}</h3>
+                  <p className="mt-3 text-sm leading-7 text-[var(--muted)]">{item.answer}</p>
                 </div>
               ))}
             </div>
           </div>
         </section>
 
-        <section className="cta-band section-space">
-          <div className="container-shell">
-            <p className="eyebrow text-xs text-[var(--brand)]">{siteContent.closingEyebrow}</p>
-            <h2 className="display-title mx-auto mt-3 max-w-3xl text-4xl md:text-6xl">
-              {siteContent.closingHeading}
-            </h2>
-            <p className="mx-auto mt-4 max-w-2xl text-lg leading-8 text-white/75">{siteContent.closingBody}</p>
-            <Link
-              href="/contact"
-              className="button-primary pressable mt-8 inline-flex rounded-sm px-6 py-3 text-xs font-semibold uppercase tracking-[0.16em]"
-            >
-              {siteContent.primaryCta.label}
-            </Link>
-          </div>
-        </section>
-
-        <section className="section-space">
+        <section className="section-space bg-[color:var(--surface)]/60">
           <div className="container-shell">
             <InquiryForm />
           </div>
