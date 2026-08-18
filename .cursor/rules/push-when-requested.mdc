@@ -1,12 +1,13 @@
 ---
-description: Push live when explicitly requested
+description: Always commit and push production changes to origin main
 alwaysApply: true
 ---
 
-# Live Push Workflow
+# Always Push Live
 
-- Treat requests like "push it live", "ship this", or "publish this" as a prompt to prepare a production push.
-- Before pushing, verify the repo has a commit, a target remote, and the intended branch.
-- Push only when the user explicitly asks for it in the current conversation.
+- After finishing work in this repo, commit the relevant files and push `main` to `origin`. Treat that as the production publish step.
+- The user has opted in permanently: do not wait for another "push it live" prompt in later turns.
+- Before pushing, verify there is a commit, remote `origin`, and the intended branch is `main`.
 - If a commit is still needed, create it first with a concise message that matches the current work.
+- Do not commit secrets (`.env`, credentials, keys).
 - If anything blocks the push, explain the blocker clearly and continue with the next safe step.
