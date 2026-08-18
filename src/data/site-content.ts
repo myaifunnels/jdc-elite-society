@@ -73,6 +73,21 @@ export const siteContent = {
     "You get the sessions, frameworks, and a community of people doing the same work.",
     "You execute. I ask what you did. That's the relationship.",
   ],
+  pillarsEyebrow: "Master the work in front of you",
+  pillarsHeading: "The rooms I coach from",
+  pillars: [
+    { title: "Mindset", body: "The beliefs that keep delaying you." },
+    { title: "Business", body: "An offer, a plan, and weekly execution." },
+    { title: "Leadership", body: "Character before the title." },
+    { title: "Homecoming", body: "A life after the contract." },
+    { title: "Mastermind", body: "A room that will not let you hide." },
+  ],
+  proofEyebrow: "Who this is for",
+  proofHeading: "If you are already working hard, start here.",
+  closingEyebrow: "Now is the time",
+  closingHeading: "Ready to stop repeating the same year?",
+  closingBody:
+    "Send me a message. Tell me where you are. I'll tell you what I see, and whether we should work together.",
   faqEyebrow: "Straight answers",
   faqHeading: "Questions I get before someone is ready to start.",
   faq: [

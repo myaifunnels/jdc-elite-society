@@ -5,7 +5,7 @@ import { Program } from "@/lib/types";
 
 export function ProgramCard({ program }: { program: Program }) {
   return (
-    <article className="card-surface interactive-card fade-up overflow-hidden rounded-[2rem]">
+    <article className="card-surface interactive-card fade-up overflow-hidden">
       <div className="visual-frame">
         <Image
           src={program.image}
@@ -30,13 +30,13 @@ export function ProgramCard({ program }: { program: Program }) {
         <div className="mt-6 flex flex-wrap gap-3">
           <Link
             href={`/programs/${program.slug}`}
-            className="button-primary pressable rounded-full px-4 py-2 font-semibold"
+            className="button-primary pressable rounded-sm px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em]"
           >
             View this track
           </Link>
           <Link
             href={`/contact?program=${encodeURIComponent(program.title)}`}
-            className="button-secondary pressable rounded-full px-4 py-2 font-medium"
+            className="button-secondary pressable rounded-sm px-4 py-2 text-xs font-medium uppercase tracking-[0.14em]"
           >
             {program.ctaLabel}
           </Link>

@@ -17,7 +17,7 @@ export default async function ProgramsPage() {
       <main className="section-space">
         <div className="container-shell">
           <p className="text-xs uppercase tracking-[0.3em] text-[var(--brand-dark)]">Programs</p>
-          <h1 className="mt-3 max-w-3xl text-5xl font-semibold tracking-tight">
+          <h1 className="display-title mt-3 max-w-3xl text-5xl md:text-6xl">
             Five tracks. One standard: you do the work.
           </h1>
           <p className="mt-4 max-w-2xl text-lg text-[var(--muted)]">

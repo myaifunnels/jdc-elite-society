@@ -69,7 +69,7 @@ export function InquiryForm({ className, defaultProgram, showIntro = true }: Inq
     <div className={cn("grid gap-6 lg:grid-cols-[1.25fr_0.75fr]", className)}>
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className="glass-panel fade-up rounded-[2rem] p-6 sm:p-8"
+        className="card-surface fade-up p-6 sm:p-8"
       >
         {showIntro ? (
           <div className="mb-6 space-y-2">
@@ -161,7 +161,7 @@ export function InquiryForm({ className, defaultProgram, showIntro = true }: Inq
               href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="button-secondary pressable mt-4 inline-flex rounded-full px-4 py-2 font-medium"
+              className="button-secondary pressable mt-4 inline-flex rounded-sm px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em]"
             >
               Open in Google Maps
             </a>

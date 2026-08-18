@@ -16,11 +16,11 @@ export default async function AboutPage() {
       <SiteHeader />
       <main className="section-space">
         <div className="container-shell grid gap-6 lg:grid-cols-[1fr_0.9fr]">
-          <section className="card-surface rounded-[2rem] p-8">
+          <section className="card-surface p-8">
             <p className="text-xs uppercase tracking-[0.3em] text-[var(--brand-dark)]">
               {siteContent.mentorEyebrow}
             </p>
-            <h1 className="mt-3 text-4xl font-semibold">{siteContent.mentorHeading}</h1>
+            <h1 className="display-title mt-3 text-4xl md:text-5xl">{siteContent.mentorHeading}</h1>
             <p className="mt-4 text-lg leading-8 text-[var(--muted)]">{siteContent.mentorBody}</p>
 
             <div className="mt-8 grid gap-4">
@@ -35,7 +35,7 @@ export default async function AboutPage() {
             </div>
           </section>
 
-          <section className="card-surface rounded-[2rem] p-8">
+          <section className="card-surface p-8">
             <p className="text-sm font-semibold">{siteContent.frameworkHeading}</p>
             <p className="mt-4 text-[var(--muted)]">{siteContent.frameworkBody}</p>
 

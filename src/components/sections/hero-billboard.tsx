@@ -88,24 +88,6 @@ export function HeroBillboard() {
         </video>
       </div>
 
-      <button
-        type="button"
-        className={showPlayIcon ? "hero-play pressable is-waiting" : "hero-play pressable"}
-        onClick={onPlayClick}
-        aria-label={showPlayIcon ? "Play video" : "Pause video"}
-      >
-        {showPlayIcon ? (
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M8 5.8v12.4c0 .7.8 1.1 1.4.7l9.2-6.2c.6-.4.6-1.2 0-1.6L9.4 5.1C8.8 4.7 8 5.1 8 5.8Z" />
-          </svg>
-        ) : (
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <rect x="6" y="5" width="4.5" height="14" rx="1" />
-            <rect x="13.5" y="5" width="4.5" height="14" rx="1" />
-          </svg>
-        )}
-      </button>
-
       <div className="hero-copy container-shell">
         <p className="fade-up hero-kicker">{siteContent.eyebrow}</p>
         <h1 className="fade-up fade-up-delay-1 hero-title">{siteContent.headline}</h1>
@@ -115,6 +97,24 @@ export function HeroBillboard() {
           ))}
         </p>
         <p className="fade-up fade-up-delay-2 hero-synopsis">{siteContent.subheadline}</p>
+
+        <button
+          type="button"
+          className={showPlayIcon ? "hero-play pressable is-waiting" : "hero-play pressable"}
+          onClick={onPlayClick}
+          aria-label={showPlayIcon ? "Play video" : "Pause video"}
+        >
+          {showPlayIcon ? (
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M8 5.8v12.4c0 .7.8 1.1 1.4.7l9.2-6.2c.6-.4.6-1.2 0-1.6L9.4 5.1C8.8 4.7 8 5.1 8 5.8Z" />
+            </svg>
+          ) : (
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <rect x="6" y="5" width="4.5" height="14" rx="1" />
+              <rect x="13.5" y="5" width="4.5" height="14" rx="1" />
+            </svg>
+          )}
+        </button>
 
         <div className="fade-up fade-up-delay-3 hero-actions">
           <Link href={siteContent.primaryCta.href} className="button-primary pressable hero-cta">
@@ -126,28 +126,30 @@ export function HeroBillboard() {
         </div>
       </div>
 
-      <div className="hero-row container-shell">
-        <div className="hero-row-head">
-          <h2>Featured programs</h2>
-          <Link href="/programs">See all programs</Link>
-        </div>
-        <div className="hero-row-track">
-          {programs.slice(0, 4).map((program) => (
-            <Link key={program.slug} href={`/programs/${program.slug}`} className="hero-title-card">
-              <Image
-                src={program.image}
-                alt={program.imageAlt}
-                fill
-                sizes="(max-width: 900px) 50vw, 25vw"
-                className="hero-title-card-image"
-              />
-              <div className="hero-title-card-copy">
-                <p>Program</p>
-                <strong>{program.title}</strong>
-                <span>{program.shortDescription}</span>
-              </div>
-            </Link>
-          ))}
+      <div className="hero-row">
+        <div className="container-shell">
+          <div className="hero-row-head">
+            <h2>Tracks that move you</h2>
+            <Link href="/programs">See all programs</Link>
+          </div>
+          <div className="hero-row-track">
+            {programs.slice(0, 4).map((program) => (
+              <Link key={program.slug} href={`/programs/${program.slug}`} className="hero-title-card">
+                <Image
+                  src={program.image}
+                  alt={program.imageAlt}
+                  fill
+                  sizes="(max-width: 900px) 50vw, 25vw"
+                  className="hero-title-card-image"
+                />
+                <div className="hero-title-card-copy">
+                  <p>Program</p>
+                  <strong>{program.title}</strong>
+                  <span>{program.shortDescription}</span>
+                </div>
+              </Link>
+            ))}
+          </div>
         </div>
       </div>
     </section>
