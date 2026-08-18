@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { DesignSystemPanel } from "@/components/dashboard/design-system-panel";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { isR2Configured } from "@/lib/r2";
@@ -51,6 +53,12 @@ export default async function SettingsPage() {
             <p className="mt-3 text-sm text-[var(--muted)]">
               This page is designed as the operational handoff point before launching and wiring production integrations.
             </p>
+            <Link
+              href="/dashboard/integrations"
+              className="button-secondary pressable mt-6 inline-flex rounded-full px-4 py-2 text-sm font-semibold"
+            >
+              Open Integrations workspace
+            </Link>
           </section>
         </div>
       </div>

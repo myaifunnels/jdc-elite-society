@@ -9,6 +9,7 @@ const navByRole: Record<DashboardRole, { href: string; label: string }[]> = {
     { href: "/dashboard", label: "Overview" },
     { href: "/dashboard/leads", label: "Leads" },
     { href: "/dashboard/maps", label: "Maps" },
+    { href: "/dashboard/integrations", label: "Integrations" },
     { href: "/dashboard/partners", label: "Partners" },
     { href: "/dashboard/settings", label: "Settings" },
   ],

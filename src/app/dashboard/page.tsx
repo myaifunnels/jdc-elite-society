@@ -49,21 +49,41 @@ export default async function DashboardPage() {
         </section>
 
         {user.role === "admin" ? (
-          <section className="glass-panel rounded-[2rem] p-8">
-            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-              <div>
-                <p className="text-sm font-semibold">Google Maps operations</p>
-                <p className="mt-2 text-sm text-[var(--muted)]">
-                  Open the dedicated maps workspace to review lead locations, partner routing, and address context inside the admin dashboard.
-                </p>
-              </div>
+          <section className="grid gap-6 lg:grid-cols-2">
+            <div className="glass-panel rounded-[2rem] p-8">
+              <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                <div>
+                  <p className="text-sm font-semibold">Google Maps operations</p>
+                  <p className="mt-2 text-sm text-[var(--muted)]">
+                    Open the dedicated maps workspace to review lead locations, partner routing, and address context inside the admin dashboard.
+                  </p>
+                </div>
 
-              <Link
-                href="/dashboard/maps"
-                className="button-secondary pressable rounded-full px-4 py-2 text-sm font-semibold"
-              >
-                Open Maps workspace
-              </Link>
+                <Link
+                  href="/dashboard/maps"
+                  className="button-secondary pressable rounded-full px-4 py-2 text-sm font-semibold"
+                >
+                  Open Maps workspace
+                </Link>
+              </div>
+            </div>
+
+            <div className="glass-panel rounded-[2rem] p-8">
+              <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                <div>
+                  <p className="text-sm font-semibold">Integration control center</p>
+                  <p className="mt-2 text-sm text-[var(--muted)]">
+                    Review Google Maps and Cloudflare R2 configuration from a single admin workspace.
+                  </p>
+                </div>
+
+                <Link
+                  href="/dashboard/integrations"
+                  className="button-secondary pressable rounded-full px-4 py-2 text-sm font-semibold"
+                >
+                  Open Integrations
+                </Link>
+              </div>
             </div>
           </section>
         ) : null}
