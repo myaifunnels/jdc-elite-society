@@ -1,0 +1,12 @@
+---
+description: Push live when explicitly requested
+alwaysApply: true
+---
+
+# Live Push Workflow
+
+- Treat requests like "push it live", "ship this", or "publish this" as a prompt to prepare a production push.
+- Before pushing, verify the repo has a commit, a target remote, and the intended branch.
+- Push only when the user explicitly asks for it in the current conversation.
+- If a commit is still needed, create it first with a concise message that matches the current work.
+- If anything blocks the push, explain the blocker clearly and continue with the next safe step.
