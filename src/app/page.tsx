@@ -16,9 +16,9 @@ export default async function Home() {
       <main>
         <HeroBillboard />
 
-        <section className="section-space pt-0">
+        <section className="section-space">
           <div className="container-shell">
-            <div className="mb-8 max-w-3xl">
+            <div className="mb-10 max-w-3xl">
               <p className="eyebrow text-xs">{siteContent.problemEyebrow}</p>
               <h2 className="mt-2 text-3xl font-semibold tracking-[-0.03em] md:text-4xl">
                 {siteContent.problemHeading}
@@ -26,7 +26,7 @@ export default async function Home() {
               <p className="mt-4 text-[var(--muted)]">{siteContent.problemIntro}</p>
             </div>
 
-            <div className="grid gap-6 lg:grid-cols-3">
+            <div className="grid gap-8 lg:grid-cols-3">
               {siteContent.problemPoints.map((item) => (
                 <article
                   key={item.title}
@@ -40,9 +40,9 @@ export default async function Home() {
           </div>
         </section>
 
-        <section className="section-space pt-0">
+        <section className="section-space">
           <div className="container-shell">
-            <div className="mb-8 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+            <div className="mb-10 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
               <div>
                 <p className="eyebrow text-xs">{siteContent.programsEyebrow}</p>
                 <h2 className="mt-2 text-3xl font-semibold tracking-[-0.03em]">
@@ -54,7 +54,7 @@ export default async function Home() {
               </Link>
             </div>
 
-            <div className="grid gap-6 lg:grid-cols-2">
+            <div className="grid gap-8 lg:grid-cols-2">
               {programs.map((program) => (
                 <ProgramCard key={program.slug} program={program} />
               ))}
@@ -63,7 +63,7 @@ export default async function Home() {
         </section>
 
         <section className="section-space bg-[color:var(--surface)]/60">
-          <div className="container-shell grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
+          <div className="container-shell grid gap-8 lg:grid-cols-[0.95fr_1.05fr]">
             <div className="glass-panel interactive-card fade-up rounded-[2rem] p-8">
               <p className="eyebrow text-xs">{siteContent.mentorEyebrow}</p>
               <h2 className="mt-3 text-3xl font-semibold tracking-[-0.03em]">{siteContent.mentorHeading}</h2>
@@ -123,14 +123,14 @@ export default async function Home() {
           </div>
         </section>
 
-        <section id="faq" className="section-space pt-0">
+        <section id="faq" className="section-space scroll-mt-24">
           <div className="container-shell">
-            <div className="mb-8">
+            <div className="mb-10">
               <p className="eyebrow text-xs">{siteContent.faqEyebrow}</p>
               <h2 className="mt-2 text-3xl font-semibold tracking-[-0.03em]">{siteContent.faqHeading}</h2>
             </div>
 
-            <div className="grid gap-4">
+            <div className="grid gap-5">
               {siteContent.faq.map((item) => (
                 <div key={item.question} className="glass-panel interactive-card fade-up rounded-[1.75rem] p-6">
                   <h3 className="text-lg font-semibold">{item.question}</h3>

@@ -4,7 +4,7 @@ import { Program } from "@/lib/types";
 
 export function ProgramCard({ program }: { program: Program }) {
   return (
-    <article className="card-surface interactive-card fade-up rounded-[2rem] p-6">
+    <article className="card-surface interactive-card fade-up rounded-[2rem] p-7 sm:p-8">
       <p className="eyebrow text-xs">
         Featured program
       </p>
