@@ -30,6 +30,10 @@ export const registerSchema = z.object({
   password: z.string().min(8, "Use at least 8 characters."),
   role: z.enum(["member", "partner"], { message: "Choose how you are joining." }),
   bestDescribesYou: z.enum(audienceOptions, { message: "Tell me what best describes you." }),
+  dateOfBirth: z.string().min(1, "Date of birth is required."),
+  address: z.string().min(5, "Address is required."),
+  facebookProfileUrl: z.string().optional().default(""),
+  facebookPhotoUrl: z.string().optional().default(""),
 });
 
 export const loginSchema = z.object({

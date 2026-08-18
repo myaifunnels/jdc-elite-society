@@ -5,6 +5,8 @@ export type IntegrationSettings = {
   r2SecretAccessKey: string;
   r2Bucket: string;
   r2PublicUrl: string;
+  ghlApiKey: string;
+  ghlLocationId: string;
 };
 
 export const emptyIntegrationSettings: IntegrationSettings = {
@@ -14,6 +16,8 @@ export const emptyIntegrationSettings: IntegrationSettings = {
   r2SecretAccessKey: "",
   r2Bucket: "",
   r2PublicUrl: "",
+  ghlApiKey: "",
+  ghlLocationId: "",
 };
 
 export function envIntegrationSettings(): IntegrationSettings {
@@ -24,6 +28,8 @@ export function envIntegrationSettings(): IntegrationSettings {
     r2SecretAccessKey: process.env.R2_SECRET_ACCESS_KEY ?? "",
     r2Bucket: process.env.R2_BUCKET ?? "",
     r2PublicUrl: process.env.R2_PUBLIC_URL ?? "",
+    ghlApiKey: process.env.GHL_API_KEY ?? "",
+    ghlLocationId: process.env.GHL_LOCATION_ID ?? "",
   };
 }
 
@@ -38,6 +44,8 @@ export function mergeIntegrationSettings(
     r2SecretAccessKey: saved?.r2SecretAccessKey || env.r2SecretAccessKey,
     r2Bucket: saved?.r2Bucket || env.r2Bucket,
     r2PublicUrl: saved?.r2PublicUrl || env.r2PublicUrl,
+    ghlApiKey: saved?.ghlApiKey || env.ghlApiKey,
+    ghlLocationId: saved?.ghlLocationId || env.ghlLocationId,
   };
 }
 
@@ -53,6 +61,10 @@ export function isR2Ready(settings: IntegrationSettings) {
       settings.r2Bucket &&
       settings.r2PublicUrl,
   );
+}
+
+export function isGhlReady(settings: IntegrationSettings) {
+  return Boolean(settings.ghlApiKey && settings.ghlLocationId);
 }
 
 export function maskSecret(value: string) {

@@ -1,12 +1,13 @@
 import Link from "next/link";
 
 import {
+  GhlIntegrationForm,
   GoogleMapsIntegrationForm,
   R2IntegrationForm,
 } from "@/components/dashboard/integration-forms";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { AddressMap } from "@/components/maps/address-map";
-import { isMapsReady, isR2Ready, maskSecret } from "@/lib/integrations";
+import { isGhlReady, isMapsReady, isR2Ready, maskSecret } from "@/lib/integrations";
 import { getResolvedIntegrationSettings } from "@/lib/integrations-store";
 import { requireRoles } from "@/lib/session";
 
@@ -16,6 +17,7 @@ export default async function IntegrationsPage() {
   const settings = await getResolvedIntegrationSettings();
   const mapsReady = isMapsReady(settings);
   const r2Ready = isR2Ready(settings);
+  const ghlReady = isGhlReady(settings);
 
   return (
     <DashboardShell
@@ -98,6 +100,29 @@ export default async function IntegrationsPage() {
             />
           </section>
         </div>
+
+        <section className="glass-panel rounded-[2rem] p-8">
+          <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+            <div>
+              <p className="text-sm font-semibold">GoHighLevel — JDC Elite Society</p>
+              <p className="mt-2 text-sm text-[var(--muted)]">
+                Registrations and inquiry leads sync into the JDC Elite Society subaccount. Use a Private Integration
+                token with Contacts write access and that location&apos;s ID.
+              </p>
+            </div>
+            <span
+              className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                ghlReady ? "bg-emerald-500/14 text-emerald-300" : "bg-amber-500/14 text-amber-200"
+              }`}
+            >
+              {ghlReady ? "Connected" : "Pending token"}
+            </span>
+          </div>
+          <div className="mt-6 text-sm text-[var(--muted)]">
+            Location: <code>{settings.ghlLocationId || "not set"}</code>
+          </div>
+          <GhlIntegrationForm configured={ghlReady} locationId={settings.ghlLocationId} />
+        </section>
 
         <AddressMap address="Makati City, Metro Manila" embedKey={settings.googleMapsEmbedKey} />
       </div>

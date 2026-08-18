@@ -120,6 +120,7 @@ export function InquiryForm({ className, defaultProgram, showIntro = true }: Inq
               className={inputClass}
               {...register("address")}
               placeholder="Street, city, province or country"
+              autoComplete="street-address"
             />
           </Field>
         </div>

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useActionState } from "react";
 
 import { AuthFormState, registerAccount } from "@/app/login/actions";
+import { AddressAutocomplete } from "@/components/forms/address-autocomplete";
 import { audienceOptions } from "@/lib/validations";
 
 const initialState: AuthFormState = {};
@@ -46,6 +47,14 @@ export function RegisterForm({
           <input name="password" type="password" autoComplete="new-password" className={inputClass} />
         </label>
         <label className="grid gap-2 text-sm">
+          <span className="font-medium">Date of birth</span>
+          <input name="dateOfBirth" type="date" autoComplete="bday" className={inputClass} required />
+        </label>
+        <label className="grid gap-2 text-sm">
+          <span className="font-medium">Address</span>
+          <AddressAutocomplete name="address" className={inputClass} />
+        </label>
+        <label className="grid gap-2 text-sm">
           <span className="font-medium">What best describes you?</span>
           <select name="bestDescribesYou" className={inputClass} defaultValue="" required>
             <option value="" disabled>
@@ -57,6 +66,24 @@ export function RegisterForm({
               </option>
             ))}
           </select>
+        </label>
+        <label className="grid gap-2 text-sm">
+          <span className="font-medium">Facebook profile URL</span>
+          <input
+            name="facebookProfileUrl"
+            type="url"
+            className={inputClass}
+            placeholder="https://facebook.com/your.profile"
+          />
+        </label>
+        <label className="grid gap-2 text-sm">
+          <span className="font-medium">Facebook profile picture URL</span>
+          <input
+            name="facebookPhotoUrl"
+            type="url"
+            className={inputClass}
+            placeholder="https://... your Facebook photo"
+          />
         </label>
         <fieldset className="grid gap-3">
           <legend className="text-sm font-medium">What best describes your role here?</legend>

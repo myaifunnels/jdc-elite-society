@@ -1,12 +1,13 @@
 "use client";
 
-import { Lock, Mail, UserRound } from "lucide-react";
+import { Calendar, Image as ImageIcon, Lock, Mail, MapPin, UserRound } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useActionState, useState } from "react";
 
 import { AuthFormState, loginAccount, registerAccount } from "@/app/login/actions";
 import { SiteLogo } from "@/components/branding/site-logo";
+import { AddressAutocomplete } from "@/components/forms/address-autocomplete";
 import { BrandingSettings } from "@/lib/branding";
 import { audienceOptions } from "@/lib/validations";
 
@@ -39,10 +40,11 @@ export function AuthSplitCard({
       <section className="auth-split-hero">
         <SiteLogo branding={branding} href="/" inverted compact={Boolean(branding.logoUrl)} />
         <div className="auth-split-hero-copy">
-          <h1>Hello, welcome!</h1>
+          <h1>{mode === "login" ? "Welcome back." : "Join the room."}</h1>
           <p>
-            Sign in to enter the room that matches your role. Members get a coaching path. Partners get assigned
-            leads. Admins keep the full command center.
+            {mode === "login"
+              ? "Sign in to open the dashboard that matches your role."
+              : "Register as a member or partner. Your details sync into the JDC Elite Society account."}
           </p>
           <Link href="/programs" className="auth-view-more">
             View more
@@ -51,6 +53,15 @@ export function AuthSplitCard({
       </section>
 
       <section className="auth-split-form">
+        <div className="auth-mode-toggle" role="tablist" aria-label="Account">
+          <button type="button" className={mode === "login" ? "is-active" : ""} onClick={showLogin}>
+            Sign in
+          </button>
+          <button type="button" className={mode === "register" ? "is-active" : ""} onClick={showRegister}>
+            Register
+          </button>
+        </div>
+
         {mode === "login" ? (
           <form action={loginAction} className="auth-form">
             <label className="auth-field">
@@ -81,13 +92,13 @@ export function AuthSplitCard({
 
             {loginState.error ? <p className="auth-error">{loginState.error}</p> : null}
 
-            <button type="submit" className="auth-btn-login" disabled={loginPending}>
-              {loginPending ? "Signing in..." : "Login"}
+            <button type="submit" className="auth-btn-login auth-btn-active" disabled={loginPending}>
+              {loginPending ? "Signing in..." : "Sign in"}
             </button>
 
             <p className="auth-switch-copy">Not a member yet?</p>
-            <button type="button" className="auth-btn-signup" onClick={showRegister}>
-              Sign up
+            <button type="button" className="auth-btn-signup auth-btn-idle" onClick={showRegister}>
+              Register
             </button>
           </form>
         ) : (
@@ -117,6 +128,22 @@ export function AuthSplitCard({
             </label>
 
             <label className="auth-field">
+              <span>Date of birth</span>
+              <span className="auth-input-wrap">
+                <Calendar size={16} aria-hidden />
+                <input name="dateOfBirth" type="date" autoComplete="bday" required />
+              </span>
+            </label>
+
+            <label className="auth-field">
+              <span>Address</span>
+              <span className="auth-input-wrap">
+                <MapPin size={16} aria-hidden />
+                <AddressAutocomplete name="address" />
+              </span>
+            </label>
+
+            <label className="auth-field">
               <span>What best describes you?</span>
               <span className="auth-input-wrap">
                 <select name="bestDescribesYou" defaultValue="" required>
@@ -129,6 +156,31 @@ export function AuthSplitCard({
                     </option>
                   ))}
                 </select>
+              </span>
+            </label>
+
+            <label className="auth-field">
+              <span>Facebook profile URL</span>
+              <span className="auth-input-wrap">
+                <UserRound size={16} aria-hidden />
+                <input
+                  name="facebookProfileUrl"
+                  type="url"
+                  autoComplete="url"
+                  placeholder="https://facebook.com/your.profile"
+                />
+              </span>
+            </label>
+
+            <label className="auth-field">
+              <span>Facebook profile picture URL</span>
+              <span className="auth-input-wrap">
+                <ImageIcon size={16} aria-hidden />
+                <input
+                  name="facebookPhotoUrl"
+                  type="url"
+                  placeholder="https://... your Facebook photo"
+                />
               </span>
             </label>
 
@@ -146,13 +198,13 @@ export function AuthSplitCard({
 
             {registerState.error ? <p className="auth-error">{registerState.error}</p> : null}
 
-            <button type="submit" className="auth-btn-signup" disabled={registerPending}>
-              {registerPending ? "Creating account..." : "Sign up"}
+            <button type="submit" className="auth-btn-signup auth-btn-active" disabled={registerPending}>
+              {registerPending ? "Creating account..." : "Register"}
             </button>
 
             <p className="auth-switch-copy">Already a member?</p>
-            <button type="button" className="auth-btn-login" onClick={showLogin}>
-              Login
+            <button type="button" className="auth-btn-login auth-btn-idle" onClick={showLogin}>
+              Sign in
             </button>
           </form>
         )}

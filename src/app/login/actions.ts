@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { authenticateUser, createUser, ensureSeedUsers } from "@/lib/auth-store";
+import { syncContactToGhl } from "@/lib/ghl";
 import { sessionCookieName } from "@/lib/session";
 import { loginSchema, registerSchema } from "@/lib/validations";
 
@@ -32,6 +33,10 @@ export async function registerAccount(
     password: String(formData.get("password") ?? ""),
     role: String(formData.get("role") ?? ""),
     bestDescribesYou: String(formData.get("bestDescribesYou") ?? ""),
+    dateOfBirth: String(formData.get("dateOfBirth") ?? "").trim(),
+    address: String(formData.get("address") ?? "").trim(),
+    facebookProfileUrl: String(formData.get("facebookProfileUrl") ?? "").trim(),
+    facebookPhotoUrl: String(formData.get("facebookPhotoUrl") ?? "").trim(),
   });
 
   if (!parsed.success) {
@@ -43,6 +48,17 @@ export async function registerAccount(
     await ensureSeedUsers();
     const user = await createUser(parsed.data);
     await setSessionCookie(user.id, true);
+    await syncContactToGhl({
+      name: parsed.data.name,
+      email: parsed.data.email,
+      dateOfBirth: parsed.data.dateOfBirth,
+      address: parsed.data.address,
+      bestDescribesYou: parsed.data.bestDescribesYou,
+      facebookProfileUrl: parsed.data.facebookProfileUrl,
+      facebookPhotoUrl: parsed.data.facebookPhotoUrl,
+      source: "Website registration",
+      tags: ["Registration", parsed.data.role],
+    });
   } catch (error) {
     return {
       error: error instanceof Error ? error.message : "I couldn't create this account just now.",

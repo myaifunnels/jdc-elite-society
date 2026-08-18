@@ -48,6 +48,14 @@ async function ensureTable(client: Pool) {
       updated_at TIMESTAMPTZ DEFAULT NOW()
     )
   `);
+  await client.query(`
+    ALTER TABLE integration_settings
+    ADD COLUMN IF NOT EXISTS ghl_api_key TEXT
+  `);
+  await client.query(`
+    ALTER TABLE integration_settings
+    ADD COLUMN IF NOT EXISTS ghl_location_id TEXT
+  `);
   tableReady = true;
 }
 
@@ -63,6 +71,8 @@ function mapRow(row: Record<string, unknown> | undefined): IntegrationSettings |
     r2SecretAccessKey: String(row.r2_secret_access_key ?? ""),
     r2Bucket: String(row.r2_bucket ?? ""),
     r2PublicUrl: String(row.r2_public_url ?? ""),
+    ghlApiKey: String(row.ghl_api_key ?? ""),
+    ghlLocationId: String(row.ghl_location_id ?? ""),
   };
 }
 
@@ -101,6 +111,8 @@ export async function saveIntegrationSettings(
     r2SecretAccessKey: incoming.r2SecretAccessKey || current.r2SecretAccessKey,
     r2Bucket: incoming.r2Bucket || current.r2Bucket,
     r2PublicUrl: incoming.r2PublicUrl || current.r2PublicUrl,
+    ghlApiKey: incoming.ghlApiKey || current.ghlApiKey,
+    ghlLocationId: incoming.ghlLocationId || current.ghlLocationId,
   };
 
   memoryStore.current = next;
@@ -119,9 +131,11 @@ export async function saveIntegrationSettings(
           r2_secret_access_key,
           r2_bucket,
           r2_public_url,
+          ghl_api_key,
+          ghl_location_id,
           updated_at
         )
-        VALUES (1, $1, $2, $3, $4, $5, $6, NOW())
+        VALUES (1, $1, $2, $3, $4, $5, $6, $7, $8, NOW())
         ON CONFLICT (id) DO UPDATE SET
           google_maps_embed_key = EXCLUDED.google_maps_embed_key,
           r2_account_id = EXCLUDED.r2_account_id,
@@ -129,6 +143,8 @@ export async function saveIntegrationSettings(
           r2_secret_access_key = EXCLUDED.r2_secret_access_key,
           r2_bucket = EXCLUDED.r2_bucket,
           r2_public_url = EXCLUDED.r2_public_url,
+          ghl_api_key = EXCLUDED.ghl_api_key,
+          ghl_location_id = EXCLUDED.ghl_location_id,
           updated_at = NOW()
         `,
         [
@@ -138,6 +154,8 @@ export async function saveIntegrationSettings(
           next.r2SecretAccessKey,
           next.r2Bucket,
           next.r2PublicUrl,
+          next.ghlApiKey,
+          next.ghlLocationId,
         ],
       );
     } catch (error) {

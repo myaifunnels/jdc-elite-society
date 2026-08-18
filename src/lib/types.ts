@@ -30,6 +30,10 @@ export type AuthUser = {
   email: string;
   role: DashboardRole;
   bestDescribesYou?: string;
+  dateOfBirth?: string;
+  address?: string;
+  facebookProfileUrl?: string;
+  facebookPhotoUrl?: string;
   createdAt: string;
 };
 

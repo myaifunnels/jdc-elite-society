@@ -22,7 +22,7 @@ export default async function RegisterPage() {
 
   return (
     <div className="auth-screen">
-      <SiteHeader overlay />
+      <SiteHeader />
       <main className="auth-screen-main">
         <AuthSplitCard branding={branding} initialMode="register" />
       </main>

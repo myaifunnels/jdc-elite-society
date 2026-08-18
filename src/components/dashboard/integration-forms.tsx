@@ -4,6 +4,7 @@ import { useActionState } from "react";
 
 import {
   IntegrationFormState,
+  saveGhlIntegration,
   saveGoogleMapsIntegration,
   saveR2Integration,
 } from "@/app/dashboard/integrations/actions";
@@ -118,6 +119,52 @@ export function R2IntegrationForm({
         className="button-primary pressable w-fit rounded-full px-4 py-2 text-sm font-semibold disabled:opacity-70"
       >
         {pending ? "Saving..." : "Save Cloudflare R2"}
+      </button>
+    </form>
+  );
+}
+
+export function GhlIntegrationForm({
+  configured,
+  locationId,
+}: {
+  configured: boolean;
+  locationId: string;
+}) {
+  const [state, formAction, pending] = useActionState(saveGhlIntegration, initialState);
+
+  return (
+    <form action={formAction} className="mt-6 grid gap-4">
+      <label className="grid gap-2 text-sm">
+        <span className="font-medium">Private Integration token</span>
+        <input
+          name="ghlApiKey"
+          type="password"
+          autoComplete="off"
+          placeholder={configured ? maskSecret("set") : "pit-..."}
+          className={inputClass}
+        />
+      </label>
+      <label className="grid gap-2 text-sm">
+        <span className="font-medium">JDC Elite Society location ID</span>
+        <input
+          name="ghlLocationId"
+          autoComplete="off"
+          defaultValue={locationId}
+          placeholder="GoHighLevel subaccount location ID"
+          className={inputClass}
+        />
+      </label>
+
+      {state.error ? <p className="text-sm text-red-500">{state.error}</p> : null}
+      {state.success ? <p className="text-sm text-emerald-400">{state.success}</p> : null}
+
+      <button
+        type="submit"
+        disabled={pending}
+        className="button-primary pressable w-fit rounded-full px-4 py-2 text-sm font-semibold disabled:opacity-70"
+      >
+        {pending ? "Saving..." : "Save GoHighLevel"}
       </button>
     </form>
   );

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { createLead } from "@/lib/crm-store";
+import { syncContactToGhl } from "@/lib/ghl";
 import { leadSchema } from "@/lib/validations";
 
 export async function POST(request: Request) {
@@ -27,6 +28,18 @@ export async function POST(request: Request) {
       ),
     ),
     source: "Website inquiry",
+  });
+
+  await syncContactToGhl({
+    name: parsed.data.name,
+    email: parsed.data.email,
+    phone: parsed.data.phone,
+    dateOfBirth: parsed.data.dateOfBirth,
+    address: parsed.data.address,
+    city: parsed.data.city,
+    bestDescribesYou: audience,
+    source: "Website inquiry",
+    tags: [parsed.data.programInterest, "Inquiry"],
   });
 
   return NextResponse.json({ lead });

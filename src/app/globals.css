@@ -540,7 +540,7 @@ a,
   width: 100%;
   object-fit: cover;
   object-position: 68% center;
-  filter: brightness(0.72);
+  filter: brightness(0.58);
   -webkit-transform: translateZ(0);
 }
 
@@ -571,8 +571,8 @@ a,
 .hero-netflix::before {
   inset: 0;
   background:
-    linear-gradient(to right, rgba(5, 7, 13, 0.78) 0%, rgba(5, 7, 13, 0.42) 28%, rgba(5, 7, 13, 0.12) 52%, transparent 74%),
-    linear-gradient(180deg, rgba(5, 7, 13, 0.22) 0%, transparent 32%, rgba(5, 7, 13, 0.18) 64%, rgba(5, 7, 13, 0.88) 100%);
+    linear-gradient(to right, rgba(5, 7, 13, 0.92) 0%, rgba(5, 7, 13, 0.7) 18%, rgba(5, 7, 13, 0.38) 42%, rgba(5, 7, 13, 0.1) 68%, transparent 100%),
+    linear-gradient(180deg, rgba(5, 7, 13, 0.28) 0%, transparent 30%, rgba(5, 7, 13, 0.2) 68%, rgba(5, 7, 13, 0.86) 100%);
 }
 
 .hero-netflix::after {
@@ -989,7 +989,8 @@ a,
 
   .hero-netflix::before {
     background:
-      linear-gradient(180deg, rgba(5, 7, 13, 0.62) 0%, rgba(5, 7, 13, 0.18) 28%, rgba(5, 7, 13, 0.86) 100%);
+      linear-gradient(to right, rgba(5, 7, 13, 0.9) 0%, rgba(5, 7, 13, 0.58) 34%, rgba(5, 7, 13, 0.16) 64%, transparent 100%),
+      linear-gradient(180deg, rgba(5, 7, 13, 0.5) 0%, rgba(5, 7, 13, 0.12) 28%, rgba(5, 7, 13, 0.78) 100%);
   }
 
   .hero-video {
@@ -1609,21 +1610,21 @@ a,
   min-height: 100dvh;
   min-height: -webkit-fill-available;
   background:
-    radial-gradient(circle at 12% 18%, color-mix(in srgb, var(--brand) 42%, transparent), transparent 32%),
-    linear-gradient(160deg, #071428 0%, #0b1f4a 48%, #12357a 100%);
+    radial-gradient(circle at 12% 18%, color-mix(in srgb, var(--brand) 22%, transparent), transparent 32%),
+    var(--background);
 }
 
 .auth-screen .site-header,
 .auth-screen .site-header-overlay {
   position: sticky;
-  background: transparent;
-  border-bottom-color: rgba(255, 255, 255, 0.08);
-  color: white;
+  background: color-mix(in srgb, var(--background) 78%, transparent);
+  border-bottom-color: var(--line);
+  color: var(--foreground);
 }
 
 .auth-screen .site-nav-desktop a,
 .auth-screen .site-header {
-  color: rgba(255, 255, 255, 0.86);
+  color: var(--foreground);
 }
 
 .auth-screen-main {
@@ -1634,18 +1635,19 @@ a,
 
 .auth-split {
   display: grid;
-  width: min(920px, 100%);
+  width: min(980px, 100%);
   overflow: hidden;
   border-radius: 1.25rem;
-  background: white;
-  box-shadow: 0 30px 80px rgba(4, 12, 36, 0.35);
+  background: var(--surface-elevated);
+  color: var(--foreground);
+  box-shadow: var(--shadow-xl);
 }
 
 .auth-split-hero {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  min-height: 22rem;
+  min-height: 16rem;
   padding: 1.6rem 1.7rem 2rem;
   color: white;
   background:
@@ -1655,7 +1657,7 @@ a,
       transparent 0 18px,
       rgba(255, 255, 255, 0.07) 18px 20px
     ),
-    linear-gradient(160deg, #1d6bff 0%, #2962ff 42%, #0d36d9 100%);
+    linear-gradient(160deg, var(--brand) 0%, var(--brand-dark) 100%);
 }
 
 .auth-split-hero-copy h1 {
@@ -1686,9 +1688,38 @@ a,
 }
 
 .auth-split-form {
-  background: white;
-  color: #111827;
+  background: var(--surface-elevated);
+  color: var(--foreground);
   padding: 1.8rem 1.6rem 2rem;
+  max-height: min(78dvh, 46rem);
+  overflow-y: auto;
+}
+
+.auth-mode-toggle {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.4rem;
+  margin-bottom: 0.35rem;
+  padding: 0.3rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  border: 1px solid var(--line);
+}
+
+.auth-mode-toggle button {
+  min-height: 2.55rem;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.auth-mode-toggle button.is-active {
+  background: linear-gradient(90deg, var(--brand-dark) 0%, var(--brand) 100%);
+  color: white;
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--brand) 28%, transparent);
 }
 
 .auth-form {
@@ -1708,20 +1739,21 @@ a,
   align-items: center;
   gap: 0.65rem;
   min-height: 3rem;
-  border: 1px solid #d7dce5;
+  border: 1px solid var(--line);
   border-radius: 0.85rem;
-  background: #f7f9fc;
+  background: color-mix(in srgb, var(--surface) 86%, transparent);
   padding: 0 0.95rem;
-  color: #64748b;
+  color: var(--muted);
 }
 
-.auth-input-wrap input {
+.auth-input-wrap input,
+.auth-input-wrap select {
   width: 100%;
   min-height: 2.75rem;
   border: 0;
   background: transparent;
   outline: none;
-  color: #111827;
+  color: var(--foreground);
   font: inherit;
   font-size: 1rem;
   font-weight: 500;
@@ -1739,12 +1771,12 @@ a,
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
-  color: #334155;
+  color: var(--muted);
   font-weight: 500;
 }
 
 .auth-forgot {
-  color: #2962ff;
+  color: var(--brand);
   font-weight: 600;
 }
 
@@ -1768,20 +1800,22 @@ a,
   cursor: pointer;
 }
 
-.auth-btn-login {
-  background: white;
-  color: #111827;
-  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.12);
+.auth-btn-idle {
+  background: color-mix(in srgb, var(--surface) 90%, transparent);
+  color: var(--foreground);
+  border: 1px solid var(--line);
+  box-shadow: none;
 }
 
-.auth-btn-signup {
-  background: linear-gradient(90deg, #0d36d9 0%, #2f7bff 52%, #4ecbff 100%);
+.auth-btn-active {
+  background: linear-gradient(90deg, var(--brand-dark) 0%, var(--brand) 52%, #4ecbff 100%);
   color: white;
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--brand) 28%, transparent);
 }
 
 .auth-switch-copy {
   margin: 0.35rem 0 0;
-  color: #2962ff;
+  color: var(--muted);
   font-size: 0.92rem;
   font-weight: 600;
   text-align: center;

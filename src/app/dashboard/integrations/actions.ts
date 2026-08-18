@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 
-import { isMapsReady, isR2Ready } from "@/lib/integrations";
+import { isGhlReady, isMapsReady, isR2Ready } from "@/lib/integrations";
 import { getResolvedIntegrationSettings, saveIntegrationSettings } from "@/lib/integrations-store";
 import { requireSessionUser } from "@/lib/session";
 
@@ -75,4 +75,35 @@ export async function saveR2Integration(
   revalidatePath("/dashboard/settings");
 
   return { success: "Cloudflare R2 credentials saved." };
+}
+
+export async function saveGhlIntegration(
+  _prevState: IntegrationFormState,
+  formData: FormData,
+): Promise<IntegrationFormState> {
+  const user = await requireSessionUser();
+
+  if (user.role !== "admin") {
+    return { error: "Only admins can update integrations." };
+  }
+
+  const incoming = {
+    ghlApiKey: String(formData.get("ghlApiKey") ?? "").trim(),
+    ghlLocationId: String(formData.get("ghlLocationId") ?? "").trim(),
+  };
+  const current = await getResolvedIntegrationSettings();
+  const preview = {
+    ...current,
+    ghlApiKey: incoming.ghlApiKey || current.ghlApiKey,
+    ghlLocationId: incoming.ghlLocationId || current.ghlLocationId,
+  };
+
+  if (!isGhlReady(preview)) {
+    return { error: "Paste the GHL Private Integration token and the JDC Elite Society location ID." };
+  }
+
+  await saveIntegrationSettings(incoming);
+  revalidatePath("/dashboard/integrations");
+
+  return { success: "GoHighLevel JDC Elite Society subaccount saved." };
 }

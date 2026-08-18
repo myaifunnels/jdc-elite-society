@@ -39,6 +39,10 @@ function publicUser(user: AuthUserRecord): AuthUser {
     email: user.email,
     role: user.role,
     bestDescribesYou: user.bestDescribesYou,
+    dateOfBirth: user.dateOfBirth,
+    address: user.address,
+    facebookProfileUrl: user.facebookProfileUrl,
+    facebookPhotoUrl: user.facebookPhotoUrl,
     createdAt: user.createdAt,
   };
 }
@@ -50,6 +54,10 @@ function mapRow(row: Record<string, unknown>): AuthUserRecord {
     email: String(row.email ?? "").toLowerCase(),
     role: row.role === "admin" || row.role === "partner" || row.role === "member" ? row.role : "member",
     bestDescribesYou: String(row.best_describes_you ?? ""),
+    dateOfBirth: String(row.date_of_birth ?? ""),
+    address: String(row.address ?? ""),
+    facebookProfileUrl: String(row.facebook_profile_url ?? ""),
+    facebookPhotoUrl: String(row.facebook_photo_url ?? ""),
     passwordHash: String(row.password_hash ?? ""),
     createdAt: String(row.created_at ?? new Date().toISOString()),
   };
@@ -73,6 +81,22 @@ async function ensureTable(client: Pool) {
   await client.query(`
     ALTER TABLE site_users
     ADD COLUMN IF NOT EXISTS best_describes_you TEXT NOT NULL DEFAULT ''
+  `);
+  await client.query(`
+    ALTER TABLE site_users
+    ADD COLUMN IF NOT EXISTS date_of_birth TEXT NOT NULL DEFAULT ''
+  `);
+  await client.query(`
+    ALTER TABLE site_users
+    ADD COLUMN IF NOT EXISTS address TEXT NOT NULL DEFAULT ''
+  `);
+  await client.query(`
+    ALTER TABLE site_users
+    ADD COLUMN IF NOT EXISTS facebook_profile_url TEXT NOT NULL DEFAULT ''
+  `);
+  await client.query(`
+    ALTER TABLE site_users
+    ADD COLUMN IF NOT EXISTS facebook_photo_url TEXT NOT NULL DEFAULT ''
   `);
   tableReady = true;
 }
@@ -139,6 +163,10 @@ export async function createUser(input: {
   password: string;
   role: Exclude<DashboardRole, "admin"> | "admin";
   bestDescribesYou?: string;
+  dateOfBirth?: string;
+  address?: string;
+  facebookProfileUrl?: string;
+  facebookPhotoUrl?: string;
 }) {
   const email = input.email.trim().toLowerCase();
   const existing = await findUserByEmail(email);
@@ -153,6 +181,10 @@ export async function createUser(input: {
     email,
     role: input.role,
     bestDescribesYou: input.bestDescribesYou ?? "",
+    dateOfBirth: input.dateOfBirth ?? "",
+    address: input.address ?? "",
+    facebookProfileUrl: input.facebookProfileUrl ?? "",
+    facebookPhotoUrl: input.facebookPhotoUrl ?? "",
     passwordHash: await hashPassword(input.password),
     createdAt: new Date().toISOString(),
   };
@@ -165,10 +197,25 @@ export async function createUser(input: {
       await ensureTable(client);
       await client.query(
         `
-        INSERT INTO site_users (id, name, email, role, password_hash, created_at, best_describes_you)
-        VALUES ($1, $2, $3, $4, $5, $6, $7)
+        INSERT INTO site_users (
+          id, name, email, role, password_hash, created_at, best_describes_you,
+          date_of_birth, address, facebook_profile_url, facebook_photo_url
+        )
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
         `,
-        [user.id, user.name, user.email, user.role, user.passwordHash, user.createdAt, user.bestDescribesYou],
+        [
+          user.id,
+          user.name,
+          user.email,
+          user.role,
+          user.passwordHash,
+          user.createdAt,
+          user.bestDescribesYou,
+          user.dateOfBirth,
+          user.address,
+          user.facebookProfileUrl,
+          user.facebookPhotoUrl,
+        ],
       );
     } catch (error) {
       console.error("Failed to persist user", error);
