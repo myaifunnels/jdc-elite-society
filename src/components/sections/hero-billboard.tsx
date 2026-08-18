@@ -12,6 +12,8 @@ const HERO_VIDEO_SRC =
 
 export function HeroBillboard() {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const soundOnRef = useRef(false);
   const [muted, setMuted] = useState(true);
   const [playing, setPlaying] = useState(false);
 
@@ -19,24 +21,86 @@ export function HeroBillboard() {
     const video = videoRef.current;
     if (!video) return;
 
+    video.setAttribute("playsinline", "true");
+    video.setAttribute("webkit-playsinline", "true");
+    video.playsInline = true;
+    video.defaultMuted = true;
+    video.muted = !soundOnRef.current;
+
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (prefersReducedMotion) {
       video.pause();
       return;
     }
 
-    video.muted = true;
-    video.volume = 1;
-    video
-      .play()
-      .then(() => setPlaying(true))
-      .catch(() => setPlaying(false));
+    const tryPlayMuted = () => {
+      const node = videoRef.current;
+      if (!node) return;
+
+      if (!soundOnRef.current) {
+        node.defaultMuted = true;
+        node.muted = true;
+      }
+
+      const playPromise = node.play();
+      if (playPromise) {
+        playPromise
+          .then(() => setPlaying(true))
+          .catch(() => setPlaying(false));
+      }
+    };
+
+    const onPlaying = () => setPlaying(true);
+    const onPause = () => {
+      if (!video.ended) setPlaying(false);
+    };
+
+    tryPlayMuted();
+    video.addEventListener("loadeddata", tryPlayMuted);
+    video.addEventListener("canplay", tryPlayMuted);
+    video.addEventListener("playing", onPlaying);
+    video.addEventListener("pause", onPause);
+
+    const onVisibility = () => {
+      if (document.visibilityState === "visible") tryPlayMuted();
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+
+    const onFirstGesture = () => tryPlayMuted();
+    window.addEventListener("touchstart", onFirstGesture, { passive: true, once: true });
+    window.addEventListener("pointerdown", onFirstGesture, { passive: true, once: true });
+
+    let observer: IntersectionObserver | undefined;
+    const wrap = wrapRef.current;
+    if (wrap && "IntersectionObserver" in window) {
+      observer = new IntersectionObserver(
+        ([entry]) => {
+          if (!entry) return;
+          if (entry.isIntersecting) tryPlayMuted();
+          else video.pause();
+        },
+        { threshold: 0.2 },
+      );
+      observer.observe(wrap);
+    }
+
+    return () => {
+      video.removeEventListener("loadeddata", tryPlayMuted);
+      video.removeEventListener("canplay", tryPlayMuted);
+      video.removeEventListener("playing", onPlaying);
+      video.removeEventListener("pause", onPause);
+      document.removeEventListener("visibilitychange", onVisibility);
+      window.removeEventListener("touchstart", onFirstGesture);
+      window.removeEventListener("pointerdown", onFirstGesture);
+      observer?.disconnect();
+    };
   }, []);
 
   async function playWithSound() {
     const video = videoRef.current;
     if (!video) return;
 
+    soundOnRef.current = true;
     video.defaultMuted = false;
     video.muted = false;
     video.removeAttribute("muted");
@@ -73,7 +137,7 @@ export function HeroBillboard() {
   const showPlayIcon = !playing || muted;
 
   return (
-    <section className="hero-netflix">
+    <section className="hero-netflix" ref={wrapRef}>
       <div className="hero-video-wrap">
         <video
           ref={videoRef}
@@ -83,6 +147,9 @@ export function HeroBillboard() {
           loop
           playsInline
           preload="auto"
+          disablePictureInPicture
+          controlsList="nodownload nofullscreen noremoteplayback"
+          aria-label="Coach JDC video sales letter"
         >
           <source src={HERO_VIDEO_SRC} type="video/mp4" />
         </video>
@@ -92,7 +159,7 @@ export function HeroBillboard() {
         type="button"
         className={showPlayIcon ? "hero-play pressable is-waiting" : "hero-play pressable"}
         onClick={onPlayClick}
-        aria-label={showPlayIcon ? "Play video" : "Pause video"}
+        aria-label={showPlayIcon ? "Play with sound" : "Pause video"}
       >
         {showPlayIcon ? (
           <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -104,6 +171,7 @@ export function HeroBillboard() {
             <rect x="13.5" y="5" width="4.5" height="14" rx="1" />
           </svg>
         )}
+        {showPlayIcon ? <span className="hero-sound-hint">Tap for sound</span> : null}
       </button>
 
       <div className="hero-copy container-shell">

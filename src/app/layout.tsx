@@ -23,6 +23,11 @@ export const viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,
+  viewportFit: "cover" as const,
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f4efe8" },
+    { media: "(prefers-color-scheme: dark)", color: "#05070d" },
+  ],
 };
 
 export const metadata: Metadata = {
@@ -33,6 +38,14 @@ export const metadata: Metadata = {
   },
   description:
     "Coach Jayson Dela Cruz works with OFWs, employees, and first-time entrepreneurs who need a real plan — mindset, business, and the discipline to follow through.",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Coach JDC",
+  },
+  formatDetection: {
+    telephone: false,
+  },
   alternates: {
     canonical: "/",
   },

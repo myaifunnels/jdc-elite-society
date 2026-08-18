@@ -31,6 +31,10 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.72);
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
 }
 
 .dark {
@@ -61,7 +65,7 @@
   --color-foreground: var(--foreground);
   --color-card: var(--card);
   --color-muted: var(--muted);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
@@ -70,19 +74,27 @@
 }
 
 html {
+  height: -webkit-fill-available;
   scroll-behavior: smooth;
   overflow-x: clip;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
 }
 
 body {
   margin: 0;
+  min-height: 100dvh;
+  min-height: -webkit-fill-available;
   overflow-x: clip;
   background:
     radial-gradient(circle at top, color-mix(in srgb, var(--brand) 16%, transparent), transparent 24%),
     radial-gradient(circle at 80% 10%, var(--glow), transparent 28%),
     var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", var(--font-geist-sans), sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   transition:
     background-color 180ms var(--ease-out),
     color 180ms var(--ease-out);
@@ -117,6 +129,13 @@ input,
 select,
 textarea {
   font: inherit;
+  font-size: 1rem;
+}
+
+button,
+a,
+.pressable {
+  touch-action: manipulation;
 }
 
 ::selection {
@@ -127,6 +146,9 @@ textarea {
   position: sticky;
   top: 0;
   z-index: 30;
+  padding-top: var(--safe-top);
+  padding-left: var(--safe-left);
+  padding-right: var(--safe-right);
   border-bottom: 1px solid var(--line);
   background: color-mix(in srgb, var(--background) 72%, transparent);
   backdrop-filter: blur(24px) saturate(180%);
@@ -157,7 +179,8 @@ textarea {
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
-  padding-block: 0.85rem;
+  min-height: 2.75rem;
+  padding-block: 0.7rem;
 }
 
 .site-header-brand {
@@ -226,10 +249,11 @@ textarea {
   z-index: 40;
   display: grid;
   gap: 0.35rem;
-  padding: 0.75rem 1rem 1.1rem;
+  padding: 0.75rem 1rem max(1.25rem, var(--safe-bottom));
   border-bottom: 1px solid var(--line);
   background: color-mix(in srgb, var(--background) 94%, transparent);
-  backdrop-filter: blur(24px) saturate(180%);
+  backdrop-filter: blur(28px) saturate(190%);
+  -webkit-backdrop-filter: blur(28px) saturate(190%);
 }
 
 .site-header-overlay .site-nav-drawer {
@@ -261,7 +285,7 @@ textarea {
 }
 
 .container-shell {
-  width: min(1200px, calc(100% - 2rem));
+  width: min(1200px, calc(100% - 2rem - var(--safe-left) - var(--safe-right)));
   margin: 0 auto;
 }
 
@@ -414,6 +438,7 @@ textarea {
 .program-tab {
   flex: 0 0 auto;
   scroll-snap-align: start;
+  min-height: 2.75rem;
   border: 1px solid var(--line);
   border-radius: 999px;
   background: color-mix(in srgb, var(--surface-elevated) 78%, transparent);
@@ -456,7 +481,8 @@ textarea {
   position: relative;
   isolation: isolate;
   display: grid;
-  min-height: 92svh;
+  min-height: 100dvh;
+  min-height: -webkit-fill-available;
   overflow: hidden;
   color: white;
   background: #05070d;
@@ -467,6 +493,8 @@ textarea {
   position: absolute;
   inset: 0;
   z-index: 0;
+  overflow: hidden;
+  background: #05070d;
 }
 
 .hero-video {
@@ -475,6 +503,7 @@ textarea {
   object-fit: cover;
   object-position: 68% center;
   filter: brightness(0.72);
+  -webkit-transform: translateZ(0);
 }
 
 .hero-netflix::before,
@@ -507,7 +536,7 @@ textarea {
   width: min(1200px, calc(100% - 2rem));
   max-width: none;
   min-height: 68svh;
-  padding-top: 7rem;
+  padding-top: calc(6.5rem + var(--safe-top));
   padding-bottom: 2.75rem;
 }
 
@@ -569,6 +598,7 @@ textarea {
   align-items: center;
   justify-content: center;
   min-width: 8.5rem;
+  min-height: 2.75rem;
   border: 0;
   border-radius: 999px;
   padding: 0.9rem 1.7rem;
@@ -586,20 +616,39 @@ textarea {
 .hero-play {
   position: absolute;
   top: 46%;
-  right: max(1.5rem, calc((100% - 1200px) / 2));
+  right: max(1.5rem, calc((100% - 1200px) / 2 + var(--safe-right)));
   z-index: 3;
   display: grid;
   place-items: center;
   overflow: visible;
   width: 5.5rem;
   height: 5.5rem;
+  min-width: 44px;
+  min-height: 44px;
   border: 2px solid #fff;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.14);
   color: #fff;
   box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.45);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+}
+
+.hero-sound-hint {
+  position: absolute;
+  top: calc(100% + 0.55rem);
+  right: 0;
+  white-space: nowrap;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.46);
+  color: #fff;
+  padding: 0.35rem 0.7rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  pointer-events: none;
 }
 
 .hero-play::before,
@@ -772,7 +821,7 @@ textarea {
 
   .hero-netflix {
     min-height: auto;
-    padding-bottom: 1.75rem;
+    padding-bottom: calc(1.75rem + var(--safe-bottom));
   }
 
   .hero-netflix::before {
@@ -786,7 +835,7 @@ textarea {
 
   .hero-copy {
     min-height: auto;
-    padding-top: 6.25rem;
+    padding-top: calc(5.6rem + var(--safe-top));
     padding-bottom: 1.4rem;
   }
 
@@ -811,11 +860,16 @@ textarea {
   }
 
   .hero-play {
-    top: 5.6rem;
-    right: 1rem;
+    top: calc(4.85rem + var(--safe-top));
+    right: max(0.85rem, var(--safe-right));
     bottom: auto;
-    width: 3.5rem;
-    height: 3.5rem;
+    width: 2.85rem;
+    height: 2.85rem;
+  }
+
+  .hero-sound-hint {
+    font-size: 0.68rem;
+    padding: 0.28rem 0.55rem;
   }
 
   .hero-play svg {
@@ -834,7 +888,7 @@ textarea {
 
 @media (max-width: 640px) {
   .container-shell {
-    width: min(1200px, calc(100% - 1.25rem));
+    width: min(1200px, calc(100% - 1.25rem - var(--safe-left) - var(--safe-right)));
   }
 
   .site-header-cta {
@@ -883,8 +937,39 @@ textarea {
   }
 
   .hero-play {
+    top: max(46%, calc(5.2rem + var(--safe-top)));
     width: 4rem;
     height: 4rem;
+  }
+}
+
+@media (max-height: 520px) and (orientation: landscape) {
+  .hero-netflix {
+    min-height: auto;
+  }
+
+  .hero-copy {
+    min-height: auto;
+    padding-top: calc(4.4rem + var(--safe-top));
+    padding-bottom: 1rem;
+  }
+
+  .hero-title {
+    font-size: clamp(1.55rem, 7vh, 2.4rem);
+  }
+
+  .hero-synopsis {
+    display: none;
+  }
+
+  .hero-play {
+    top: calc(3.4rem + var(--safe-top));
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+
+  .hero-sound-hint {
+    display: none;
   }
 }
 
@@ -1059,7 +1144,7 @@ textarea {
 .site-footer {
   background: #0a1628;
   color: #94a3b8;
-  padding: 4rem 0 1.5rem;
+  padding: 4rem 0 calc(1.5rem + var(--safe-bottom));
 }
 
 .site-footer-grid {
@@ -1204,7 +1289,8 @@ textarea {
 }
 
 .auth-screen {
-  min-height: 100svh;
+  min-height: 100dvh;
+  min-height: -webkit-fill-available;
   background:
     radial-gradient(circle at 12% 18%, color-mix(in srgb, var(--brand) 42%, transparent), transparent 32%),
     linear-gradient(160deg, #071428 0%, #0b1f4a 48%, #12357a 100%);
@@ -1226,14 +1312,14 @@ textarea {
 .auth-screen-main {
   display: grid;
   place-items: center;
-  padding: 1.25rem 1rem 3rem;
+  padding: 1.25rem max(1rem, var(--safe-left)) calc(2rem + var(--safe-bottom)) max(1rem, var(--safe-right));
 }
 
 .auth-split {
   display: grid;
   width: min(920px, 100%);
   overflow: hidden;
-  border-radius: 1.6rem;
+  border-radius: 1.25rem;
   background: white;
   box-shadow: 0 30px 80px rgba(4, 12, 36, 0.35);
 }
@@ -1314,11 +1400,13 @@ textarea {
 
 .auth-input-wrap input {
   width: 100%;
+  min-height: 2.75rem;
   border: 0;
   background: transparent;
   outline: none;
   color: #111827;
   font: inherit;
+  font-size: 1rem;
   font-weight: 500;
 }
 
