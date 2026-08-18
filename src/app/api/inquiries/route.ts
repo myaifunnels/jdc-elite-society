@@ -16,10 +16,14 @@ export async function POST(request: Request) {
 
   const lead = createLead({
     ...parsed.data,
-    tags: parsed.data.tags
-      .split(",")
-      .map((tag) => tag.trim())
-      .filter(Boolean),
+    tags: Array.from(
+      new Set(
+        [
+          ...parsed.data.tags.split(",").map((tag) => tag.trim()),
+          parsed.data.bestDescribesYou,
+        ].filter(Boolean),
+      ),
+    ),
     source: "Website inquiry",
   });
 

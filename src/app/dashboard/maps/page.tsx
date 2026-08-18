@@ -37,7 +37,7 @@ export default async function MapsPage() {
                     <p className="font-semibold">{lead.name}</p>
                     <p className="mt-1 text-sm text-[var(--muted)]">{lead.address}</p>
                     <p className="mt-2 text-sm text-[var(--muted)]">
-                      {lead.programInterest} • {lead.city}
+                      {lead.bestDescribesYou} • {lead.programInterest} • {lead.city}
                     </p>
                   </div>
                   <div className="flex flex-wrap gap-2">
@@ -69,6 +69,7 @@ export default async function MapsPage() {
                 <div className="mt-6 grid gap-3 text-sm text-[var(--muted)]">
                   <p>Assigned partner: {featuredLead.assignedPartner ?? "Unassigned"}</p>
                   <p>Lead status: {featuredLead.status}</p>
+                  <p>What best describes them: {featuredLead.bestDescribesYou}</p>
                   <p>Program interest: {featuredLead.programInterest}</p>
                 </div>
               </section>

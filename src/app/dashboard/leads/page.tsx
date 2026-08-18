@@ -22,6 +22,7 @@ export default async function LeadsPage() {
               <thead className="border-b border-black/8 text-[var(--muted)]">
                 <tr>
                   <th className="py-3 pr-4 font-medium">Lead</th>
+                  <th className="py-3 pr-4 font-medium">Describes</th>
                   <th className="py-3 pr-4 font-medium">Program</th>
                   <th className="py-3 pr-4 font-medium">Tags</th>
                   <th className="py-3 pr-4 font-medium">Status</th>
@@ -35,6 +36,7 @@ export default async function LeadsPage() {
                       <p className="text-[var(--muted)]">{lead.email}</p>
                       <p className="text-[var(--muted)]">{lead.phone}</p>
                     </td>
+                    <td className="py-4 pr-4">{lead.bestDescribesYou}</td>
                     <td className="py-4 pr-4">{lead.programInterest}</td>
                     <td className="py-4 pr-4">
                       <div className="flex flex-wrap gap-2">
@@ -64,7 +66,8 @@ export default async function LeadsPage() {
                 <p className="mt-4 text-xl font-semibold">{featuredLead.name}</p>
                 <p className="mt-2 text-sm text-[var(--muted)]">{featuredLead.address}</p>
                 <div className="mt-6 grid gap-3 text-sm text-[var(--muted)]">
-                  <p>Date of birth: {featuredLead.dateOfBirth}</p>
+                  <p>What best describes them: {featuredLead.bestDescribesYou}</p>
+                  <p>Program interest: {featuredLead.programInterest}</p>
                   <p>Source: {featuredLead.source}</p>
                   <p>Assigned partner: {featuredLead.assignedPartner ?? "Unassigned"}</p>
                 </div>

@@ -33,6 +33,7 @@ export type LeadRecord = {
   address: string;
   city: string;
   tags: string[];
+  bestDescribesYou: string;
   programInterest: string;
   status: "new" | "qualified" | "follow-up" | "won";
   source: string;
