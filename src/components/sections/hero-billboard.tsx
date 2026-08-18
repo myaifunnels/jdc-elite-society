@@ -7,7 +7,7 @@ import { programs } from "@/data/programs";
 import { siteContent } from "@/data/site-content";
 
 const HERO_VIDEO_SRC =
-  "https://assets.cdn.filesafe.space/Col3j2B7jRDX5y8J5bgN/media/6a7741165a64f2b56797f059.mov";
+  "https://assets.cdn.filesafe.space/Col3j2B7jRDX5y8J5bgN/media/6a8425979f720b54ef08fd2f.mp4";
 
 export function HeroBillboard() {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -83,9 +83,7 @@ export function HeroBillboard() {
           playsInline
           preload="auto"
         >
-          <source src={HERO_VIDEO_SRC} type='video/mp4; codecs="hvc1"' />
           <source src={HERO_VIDEO_SRC} type="video/mp4" />
-          <source src={HERO_VIDEO_SRC} type="video/quicktime" />
         </video>
       </div>
 
