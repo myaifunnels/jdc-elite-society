@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { ThemeProvider } from "@/components/theme/theme-provider";
+import { siteUrl } from "@/lib/site";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -14,12 +15,21 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
   title: {
-    default: "Coach JDC Platform",
-    template: "%s | Coach JDC Platform",
+    default: "Coach JDC | Coach Jayson Dela Cruz",
+    template: "%s | Coach JDC",
   },
   description:
     "A coaching, CRM, and dashboard platform for Coach Jayson Dela Cruz with public program pages, lead capture, and partner visibility.",
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    type: "website",
+    url: "/",
+    siteName: "Coach JDC",
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

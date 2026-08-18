@@ -11,10 +11,12 @@ export async function SiteHeader() {
     <header className="sticky top-0 z-30 border-b border-[var(--line)] bg-[color:var(--background)]/72 backdrop-blur-2xl">
       <div className="container-shell flex items-center justify-between py-4">
         <div className="fade-up">
-          <p className="eyebrow text-xs">
-            Coach JDC
-          </p>
-          <p className="text-sm font-semibold tracking-[-0.01em]">Breakthrough platform</p>
+          <Link href="/" className="block">
+            <p className="eyebrow text-xs">
+              coachjdc.org
+            </p>
+            <p className="text-sm font-semibold tracking-[-0.01em]">Coach Jayson Dela Cruz</p>
+          </Link>
         </div>
 
         <nav className="hidden gap-6 text-sm text-[var(--muted)] md:flex">
