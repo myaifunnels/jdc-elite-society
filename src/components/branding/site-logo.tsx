@@ -3,6 +3,16 @@ import Link from "next/link";
 import { BrandingSettings, resolveLogoHref } from "@/lib/branding";
 import { cn } from "@/lib/utils";
 
+function JdcWordmark({ compact = false }: { compact?: boolean }) {
+  return (
+    <span className={cn("jdc-wordmark", compact && "is-compact")} aria-hidden="true">
+      <span className="jdc-letter">j</span>
+      <span className="jdc-letter">D</span>
+      <span className="jdc-letter">C</span>
+    </span>
+  );
+}
+
 export function SiteLogo({
   branding,
   href,
@@ -20,6 +30,7 @@ export function SiteLogo({
     "site-logo pressable inline-flex min-h-11 min-w-0 items-center gap-3 rounded-2xl pr-2 text-left",
     inverted && "text-white",
   );
+  const label = branding.logoAlt || "Coach JDC";
 
   const content = (
     <>
@@ -32,21 +43,14 @@ export function SiteLogo({
           className="site-logo-image h-9 w-auto object-contain"
         />
       ) : (
-        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-[var(--brand)] text-[0.68rem] font-bold tracking-[0.08em] text-white">
-          JDC
-        </span>
+        <JdcWordmark compact={compact} />
       )}
-      {!branding.logoUrl || !compact ? (
+      {!compact ? (
         <span className="min-w-0">
-          <span
-            className={cn(
-              "block text-[0.68rem] font-semibold uppercase tracking-[0.28em]",
-              inverted ? "text-[#e8d5b0]" : "text-[var(--brand-dark)]",
-            )}
-          >
+          <span className="block text-[0.68rem] font-semibold uppercase tracking-[0.28em] text-[var(--chrome)]">
             coachjdc.org
           </span>
-          <span className="block truncate text-sm font-semibold tracking-[-0.01em]">
+          <span className="block truncate text-sm font-semibold tracking-[-0.01em] text-[var(--heading)]">
             Coach Jayson Dela Cruz
           </span>
         </span>
@@ -61,6 +65,7 @@ export function SiteLogo({
         target="_blank"
         rel="noopener noreferrer"
         className={className}
+        aria-label={label}
       >
         {content}
       </a>
@@ -68,7 +73,7 @@ export function SiteLogo({
   }
 
   return (
-    <Link href={safeHref} className={className}>
+    <Link href={safeHref} className={className} aria-label={label}>
       {content}
     </Link>
   );
