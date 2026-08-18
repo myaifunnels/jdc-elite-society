@@ -103,7 +103,7 @@ export function HeroBillboard() {
 
         <button
           type="button"
-          className="hero-play pressable"
+          className={showPlayIcon ? "hero-play pressable is-waiting" : "hero-play pressable"}
           onClick={onPlayClick}
           aria-label={showPlayIcon ? "Play hero video with sound" : "Pause hero video"}
         >

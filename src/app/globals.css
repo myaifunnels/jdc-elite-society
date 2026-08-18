@@ -91,6 +91,21 @@ a {
   text-decoration: none;
 }
 
+.skip-link {
+  position: absolute;
+  left: 1rem;
+  top: -4rem;
+  z-index: 80;
+  border-radius: 999px;
+  background: var(--brand);
+  color: white;
+  padding: 0.7rem 1rem;
+}
+
+.skip-link:focus {
+  top: 1rem;
+}
+
 button,
 input,
 select,
@@ -130,14 +145,8 @@ textarea {
 }
 
 .container-shell {
-  width: min(1560px, calc(100% - 3rem));
+  width: min(1200px, calc(100% - 2rem));
   margin: 0 auto;
-}
-
-@media (min-width: 1700px) {
-  .container-shell {
-    width: min(1720px, calc(100% - 4.5rem));
-  }
 }
 
 .section-space {
@@ -308,7 +317,8 @@ textarea {
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
-  max-width: min(72rem, 100%);
+  width: min(1200px, calc(100% - 2rem));
+  max-width: none;
   min-height: 68svh;
   padding-top: 7rem;
   padding-bottom: 1.5rem;
@@ -326,11 +336,11 @@ textarea {
 
 .hero-title {
   margin: 0;
-  max-width: 18ch;
+  max-width: 20ch;
   font-family: var(--font-display), Georgia, serif;
-  font-size: clamp(2.8rem, 5.6vw, 5.4rem);
+  font-size: clamp(2.6rem, 5vw, 4.8rem);
   font-weight: 500;
-  line-height: 1.02;
+  line-height: 1.05;
   letter-spacing: -0.035em;
   text-wrap: balance;
   text-shadow: 0 18px 40px rgba(0, 0, 0, 0.45);
@@ -352,7 +362,7 @@ textarea {
 }
 
 .hero-synopsis {
-  max-width: 46rem;
+  max-width: 40rem;
   margin: 1rem 0 0;
   color: rgba(255, 255, 255, 0.86);
   font-size: 1.12rem;
@@ -388,10 +398,11 @@ textarea {
 .hero-play {
   position: absolute;
   top: 46%;
-  right: max(6vw, calc((100% - 1440px) / 2 + 4rem));
+  right: max(1.5rem, calc((100% - 1200px) / 2));
   z-index: 3;
   display: grid;
   place-items: center;
+  overflow: visible;
   width: 5.5rem;
   height: 5.5rem;
   border: 1px solid rgba(232, 213, 176, 0.7);
@@ -399,6 +410,31 @@ textarea {
   background: rgba(5, 7, 13, 0.42);
   color: #f7efdf;
   box-shadow: 0 18px 40px rgba(0, 0, 0, 0.28);
+}
+
+.hero-play::before,
+.hero-play::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  border: 1px solid rgba(232, 213, 176, 0.42);
+  pointer-events: none;
+  opacity: 0;
+}
+
+.hero-play.is-waiting {
+  animation: heroPlayPulse 2.6s var(--ease-in-out) infinite;
+}
+
+.hero-play.is-waiting::before,
+.hero-play.is-waiting::after {
+  animation: heroPlayRipple 2.6s var(--ease-out) infinite;
+}
+
+.hero-play.is-waiting::after {
+  animation-delay: 1.3s;
 }
 
 .hero-play svg {
@@ -513,6 +549,7 @@ textarea {
 
   .hero-play:hover {
     background: rgba(0, 0, 0, 0.62);
+    animation-play-state: paused;
     transform: scale(1.05);
   }
 
@@ -544,6 +581,31 @@ textarea {
 
 .float-slower {
   animation: floatSlow 14s ease-in-out infinite reverse;
+}
+
+@keyframes heroPlayPulse {
+  0%,
+  100% {
+    transform: scale(1);
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.28);
+  }
+
+  50% {
+    transform: scale(1.045);
+    box-shadow: 0 22px 48px rgba(0, 0, 0, 0.34);
+  }
+}
+
+@keyframes heroPlayRipple {
+  0% {
+    transform: scale(1);
+    opacity: 0.55;
+  }
+
+  100% {
+    transform: scale(1.7);
+    opacity: 0;
+  }
 }
 
 @keyframes fadeUp {
@@ -612,7 +674,10 @@ textarea {
   .fade-up-delay-2,
   .fade-up-delay-3,
   .float-slow,
-  .float-slower {
+  .float-slower,
+  .hero-play.is-waiting,
+  .hero-play.is-waiting::before,
+  .hero-play.is-waiting::after {
     animation: none !important;
   }
 
