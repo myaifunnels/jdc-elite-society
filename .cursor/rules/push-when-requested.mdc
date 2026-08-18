@@ -1,13 +1,15 @@
 ---
-description: Always commit and push production changes to origin main
+description: Always commit and push every completed change to origin main
 alwaysApply: true
 ---
 
 # Always Push Live
 
-- After finishing work in this repo, commit the relevant files and push `main` to `origin`. Treat that as the production publish step.
-- The user has opted in permanently: do not wait for another "push it live" prompt in later turns.
-- Before pushing, verify there is a commit, remote `origin`, and the intended branch is `main`.
-- If a commit is still needed, create it first with a concise message that matches the current work.
-- Do not commit secrets (`.env`, credentials, keys).
-- If anything blocks the push, explain the blocker clearly and continue with the next safe step.
+This is a standing instruction for every turn in this repo.
+
+- After any completed code, copy, style, or config change, immediately `git add`, commit, and `git push -u origin main`.
+- Do not wait for a later "push it live" message. Shipping to GitHub is part of finishing the work.
+- If `origin` is missing, add `https://github.com/myaifunnels/jdc-elite-society.git` and push `main`.
+- Use a concise commit message that matches the change just made.
+- Never commit secrets (`.env`, credentials, keys, tokens).
+- If the push fails, report the error and keep going with the next safe recovery step.
