@@ -1712,48 +1712,37 @@ a,
 }
 
 .auth-screen {
+  display: flex;
+  flex-direction: column;
   min-height: 100dvh;
+  min-height: 100svh;
   min-height: -webkit-fill-available;
-  background:
-    radial-gradient(circle at 12% 18%, color-mix(in srgb, var(--brand) 22%, transparent), transparent 32%),
-    var(--background);
-}
-
-.auth-screen .site-header,
-.auth-screen .site-header-overlay {
-  position: sticky;
-  background: color-mix(in srgb, var(--background) 78%, transparent);
-  border-bottom-color: var(--line);
-  color: var(--foreground);
-}
-
-.auth-screen .site-nav-desktop a,
-.auth-screen .site-header {
-  color: var(--foreground);
+  background: var(--background);
 }
 
 .auth-screen-main {
-  display: grid;
-  place-items: center;
-  padding: 1.25rem max(1rem, var(--safe-left)) calc(2rem + var(--safe-bottom)) max(1rem, var(--safe-right));
+  display: flex;
+  flex: 1;
+  min-height: 100dvh;
+  min-height: 100svh;
 }
 
 .auth-split {
   display: grid;
-  width: min(980px, 100%);
+  flex: 1;
+  width: 100%;
+  min-height: 100%;
   overflow: hidden;
-  border-radius: 1.25rem;
   background: var(--surface-elevated);
   color: var(--foreground);
-  box-shadow: var(--shadow-xl);
 }
 
 .auth-split-hero {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  min-height: 16rem;
-  padding: 1.6rem 1.7rem 2rem;
+  min-height: 18rem;
+  padding: calc(1.6rem + var(--safe-top)) max(1.7rem, var(--safe-right)) 2rem max(1.7rem, var(--safe-left));
   color: white;
   background:
     linear-gradient(135deg, rgba(232, 238, 247, 0.22) 0%, transparent 28%),
@@ -1796,8 +1785,7 @@ a,
 .auth-split-form {
   background: var(--surface-elevated);
   color: var(--foreground);
-  padding: 1.8rem 1.6rem 2rem;
-  max-height: min(78dvh, 46rem);
+  padding: 1.8rem max(1.6rem, var(--safe-right)) calc(2rem + var(--safe-bottom)) max(1.6rem, var(--safe-left));
   overflow-y: auto;
 }
 
@@ -1952,17 +1940,26 @@ a,
 @media (min-width: 860px) {
   .auth-split {
     grid-template-columns: 1fr 1fr;
-    min-height: 34rem;
   }
 
   .auth-split-hero,
   .auth-split-form {
-    min-height: 34rem;
+    min-height: 100%;
   }
 
-  .auth-split-form {
-    display: grid;
-    align-content: center;
-    padding: 2.2rem 2.1rem;
+  .auth-split-hero {
+    padding: calc(2.2rem + var(--safe-top)) 3rem calc(2.4rem + var(--safe-bottom)) max(2.4rem, var(--safe-left));
   }
+
+.auth-split-form {
+  display: grid;
+  align-content: center;
+  justify-items: stretch;
+  padding: 2.4rem max(3rem, var(--safe-right)) calc(2.4rem + var(--safe-bottom)) 2.4rem;
+}
+
+.auth-split-form > * {
+  width: min(28rem, 100%);
+  justify-self: center;
+}
 }
