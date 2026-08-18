@@ -5,6 +5,7 @@ import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
 import { AddressMap } from "@/components/maps/address-map";
 import { programs } from "@/data/programs";
+import { getGoogleMapsConfig } from "@/lib/maps";
 
 export const metadata: Metadata = {
   title: "Contact",
@@ -18,6 +19,7 @@ type ContactPageProps = {
 export default async function ContactPage({ searchParams }: ContactPageProps) {
   const { program } = await searchParams;
   const selectedProgram = programs.find((item) => item.title === program)?.title;
+  const mapsConfig = await getGoogleMapsConfig();
 
   return (
     <div className="min-h-screen">
@@ -51,7 +53,10 @@ export default async function ContactPage({ searchParams }: ContactPageProps) {
               </ul>
             </div>
 
-            <AddressMap address={selectedProgram ? `${selectedProgram}, Philippines` : "Makati City, Metro Manila"} />
+            <AddressMap
+              address={selectedProgram ? `${selectedProgram}, Philippines` : "Makati City, Metro Manila"}
+              embedKey={mapsConfig.embedKey}
+            />
           </div>
         </div>
       </main>

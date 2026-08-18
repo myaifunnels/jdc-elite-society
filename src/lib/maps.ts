@@ -1,9 +1,11 @@
-export function isGoogleMapsConfigured() {
-  return Boolean(process.env.NEXT_PUBLIC_GOOGLE_MAPS_EMBED_KEY);
+import { getResolvedIntegrationSettings } from "@/lib/integrations-store";
+import { isMapsReady } from "@/lib/integrations";
+
+export async function getGoogleMapsConfig() {
+  const settings = await getResolvedIntegrationSettings();
+  return { embedKey: settings.googleMapsEmbedKey };
 }
 
-export function getGoogleMapsConfig() {
-  return {
-    embedKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_EMBED_KEY ?? "",
-  };
+export async function isGoogleMapsConfigured() {
+  return isMapsReady(await getResolvedIntegrationSettings());
 }

@@ -7,6 +7,7 @@ import { requireSessionUser } from "@/lib/session";
 
 export default async function SettingsPage() {
   const user = await requireSessionUser();
+  const r2Configured = await isR2Configured();
 
   if (user.role !== "admin") {
     return (
@@ -35,10 +36,9 @@ export default async function SettingsPage() {
           <section className="glass-panel rounded-[2rem] p-8">
             <p className="text-sm font-semibold">Environment checklist</p>
             <ul className="mt-5 grid gap-3 text-sm text-[var(--muted)]">
-              <li>• `DATABASE_URL` for the CRM data layer</li>
-              <li>• `NEXT_PUBLIC_GOOGLE_MAPS_EMBED_KEY` for the admin maps workspace</li>
-              <li>• `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`</li>
-              <li>• `R2_BUCKET` and `R2_PUBLIC_URL` for durable media</li>
+              <li>• `DATABASE_URL` so saved Google Maps and R2 credentials persist across deploys</li>
+              <li>• Optional env fallbacks: `NEXT_PUBLIC_GOOGLE_MAPS_EMBED_KEY` and R2 secrets</li>
+              <li>• Preferred: paste Maps and R2 credentials in Admin Integrations</li>
             </ul>
           </section>
 
@@ -46,8 +46,8 @@ export default async function SettingsPage() {
             <p className="text-sm font-semibold">Status</p>
             <p className="mt-4 text-lg">
               R2 configuration:{" "}
-              <span className={isR2Configured() ? "text-green-700" : "text-amber-700"}>
-                {isR2Configured() ? "connected" : "awaiting environment variables"}
+              <span className={r2Configured ? "text-emerald-400" : "text-amber-300"}>
+                {r2Configured ? "connected" : "awaiting Admin Integrations"}
               </span>
             </p>
             <p className="mt-3 text-sm text-[var(--muted)]">

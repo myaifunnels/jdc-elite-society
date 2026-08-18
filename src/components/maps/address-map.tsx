@@ -1,9 +1,11 @@
 type AddressMapProps = {
   address: string;
+  embedKey?: string;
 };
 
-export function AddressMap({ address }: AddressMapProps) {
+export function AddressMap({ address, embedKey }: AddressMapProps) {
   const trimmed = address.trim();
+  const resolvedKey = embedKey || process.env.NEXT_PUBLIC_GOOGLE_MAPS_EMBED_KEY || "";
 
   if (!trimmed) {
     return (
@@ -15,13 +17,12 @@ export function AddressMap({ address }: AddressMapProps) {
 
   const query = encodeURIComponent(trimmed);
   const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${query}`;
-  const embedKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_EMBED_KEY;
-  const embedUrl = embedKey
-    ? `https://www.google.com/maps/embed/v1/place?key=${embedKey}&q=${query}`
+  const embedUrl = resolvedKey
+    ? `https://www.google.com/maps/embed/v1/place?key=${resolvedKey}&q=${query}`
     : null;
 
   return (
-    <div className="overflow-hidden rounded-3xl border border-black/10 bg-white">
+    <div className="overflow-hidden rounded-3xl border border-[var(--line)] bg-[color:var(--surface-elevated)]">
       {embedUrl ? (
         <iframe
           title="Lead address map"
@@ -31,8 +32,8 @@ export function AddressMap({ address }: AddressMapProps) {
           referrerPolicy="no-referrer-when-downgrade"
         />
       ) : (
-        <div className="flex h-64 items-center justify-center bg-[linear-gradient(135deg,#f4e8d6,#fffdf8)] p-6 text-center text-sm text-[var(--muted)]">
-          Set `NEXT_PUBLIC_GOOGLE_MAPS_EMBED_KEY` to show an embedded map preview.
+        <div className="flex h-64 items-center justify-center bg-[linear-gradient(135deg,rgba(41,98,255,0.16),rgba(15,23,48,0.72))] p-6 text-center text-sm text-[var(--muted)]">
+          Save a Google Maps Embed API key in Admin Integrations to show the live map preview.
         </div>
       )}
 
@@ -46,7 +47,7 @@ export function AddressMap({ address }: AddressMapProps) {
           href={mapsUrl}
           target="_blank"
           rel="noreferrer"
-          className="rounded-full border border-black/10 px-4 py-2 font-medium transition hover:border-black/30"
+          className="button-secondary pressable rounded-full px-4 py-2 font-medium"
         >
           Open Maps
         </a>

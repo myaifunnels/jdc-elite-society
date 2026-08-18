@@ -1,12 +1,14 @@
 import { AddressMap } from "@/components/maps/address-map";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { listLeads } from "@/lib/crm-store";
+import { getGoogleMapsConfig } from "@/lib/maps";
 import { requireSessionUser } from "@/lib/session";
 
 export default async function LeadsPage() {
   const user = await requireSessionUser();
   const leads = listLeads(user.role);
   const featuredLead = leads[0];
+  const mapsConfig = await getGoogleMapsConfig();
 
   return (
     <DashboardShell
@@ -69,7 +71,7 @@ export default async function LeadsPage() {
                 </div>
               </div>
 
-              <AddressMap address={featuredLead.address} />
+              <AddressMap address={featuredLead.address} embedKey={mapsConfig.embedKey} />
             </>
           ) : null}
         </aside>
