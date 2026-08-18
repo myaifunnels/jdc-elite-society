@@ -36,7 +36,7 @@ export default async function Home() {
 
             <div className="fade-up fade-up-delay-3 hero-actions">
               <Link href={siteContent.primaryCta.href} className="button-primary pressable hero-cta">
-                Play
+                {siteContent.primaryCta.label}
               </Link>
               <Link href={siteContent.secondaryCta.href} className="button-secondary pressable hero-cta hero-cta-more">
                 More Info

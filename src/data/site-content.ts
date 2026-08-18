@@ -16,8 +16,8 @@ export const heroStats: SiteStat[] = [
 
 export const siteContent = {
   title: "Coach Jayson Dela Cruz",
-  eyebrow: "Your Breakthrough Starts Today",
-  headline: "Transform your mindset. Transform your habits. Transform your business.",
+  eyebrow: "JDC Original",
+  headline: "Start your breakthrough today.",
   subheadline:
     "A modern coaching platform for growth, accountability, and real-world progress for OFWs, employees, and first-time entrepreneurs.",
   primaryCta: { href: "/contact", label: "Book an Inquiry" },
