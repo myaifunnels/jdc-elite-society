@@ -74,7 +74,7 @@ export default async function Home() {
           </div>
         </section>
 
-        <section className="section-space">
+        <section id="faq" className="section-space">
           <div className="container-shell">
             <div className="mb-8">
               <p className="eyebrow text-xs">FAQ</p>
