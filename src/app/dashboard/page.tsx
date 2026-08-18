@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { dashboardMetrics, partnerSummary } from "@/data/crm";
 import { requireSessionUser } from "@/lib/session";
@@ -45,6 +47,26 @@ export default async function DashboardPage() {
             ))}
           </div>
         </section>
+
+        {user.role === "admin" ? (
+          <section className="glass-panel rounded-[2rem] p-8">
+            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+              <div>
+                <p className="text-sm font-semibold">Google Maps operations</p>
+                <p className="mt-2 text-sm text-[var(--muted)]">
+                  Open the dedicated maps workspace to review lead locations, partner routing, and address context inside the admin dashboard.
+                </p>
+              </div>
+
+              <Link
+                href="/dashboard/maps"
+                className="button-secondary pressable rounded-full px-4 py-2 text-sm font-semibold"
+              >
+                Open Maps workspace
+              </Link>
+            </div>
+          </section>
+        ) : null}
       </div>
     </DashboardShell>
   );

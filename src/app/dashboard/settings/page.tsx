@@ -24,7 +24,7 @@ export default async function SettingsPage() {
     <DashboardShell
       role={user.role}
       title="Settings, design system, and deployment readiness"
-      description="Tune the live palette, then confirm the platform is ready for Render, R2, and Google Maps."
+      description="Tune the live palette, then confirm the platform is ready for deployment and admin-side integrations."
     >
       <div className="grid gap-6">
         <DesignSystemPanel />
@@ -34,7 +34,7 @@ export default async function SettingsPage() {
             <p className="text-sm font-semibold">Environment checklist</p>
             <ul className="mt-5 grid gap-3 text-sm text-[var(--muted)]">
               <li>• `DATABASE_URL` for the CRM data layer</li>
-              <li>• `NEXT_PUBLIC_GOOGLE_MAPS_EMBED_KEY` for embedded maps</li>
+              <li>• `NEXT_PUBLIC_GOOGLE_MAPS_EMBED_KEY` for the admin maps workspace</li>
               <li>• `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`</li>
               <li>• `R2_BUCKET` and `R2_PUBLIC_URL` for durable media</li>
             </ul>
@@ -49,7 +49,7 @@ export default async function SettingsPage() {
               </span>
             </p>
             <p className="mt-3 text-sm text-[var(--muted)]">
-              This page is designed as the operational handoff point before launching on Render.
+              This page is designed as the operational handoff point before launching and wiring production integrations.
             </p>
           </section>
         </div>
