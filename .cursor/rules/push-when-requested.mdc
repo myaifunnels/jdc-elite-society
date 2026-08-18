@@ -1,9 +1,9 @@
 ---
-description: Always commit and push every completed change to origin main
+description: Always commit, push, and verify coachjdc.org is live
 alwaysApply: true
 ---
 
-# Always Push Live
+# Always Push Live And Verify
 
 This is a standing instruction for every turn in this repo.
 
@@ -12,4 +12,8 @@ This is a standing instruction for every turn in this repo.
 - If `origin` is missing, add `https://github.com/myaifunnels/jdc-elite-society.git` and push `main`.
 - Use a concise commit message that matches the change just made.
 - Never commit secrets (`.env`, credentials, keys, tokens).
-- If the push fails, report the error and keep going with the next safe recovery step.
+- After every push, verify production at https://coachjdc.org/:
+  - Confirm the latest Render deploy is live.
+  - Open or fetch the homepage and check that the expected hero copy, video, and CTAs are actually on the public site.
+  - If the site is stale, failing, or still deploying, say so clearly and keep watching until it is live or the blocker is known.
+- If the push or live check fails, report the error and continue with the next safe recovery step.
