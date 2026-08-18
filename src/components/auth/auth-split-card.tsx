@@ -8,6 +8,7 @@ import { useActionState, useState } from "react";
 import { AuthFormState, loginAccount, registerAccount } from "@/app/login/actions";
 import { SiteLogo } from "@/components/branding/site-logo";
 import { AddressAutocomplete } from "@/components/forms/address-autocomplete";
+import { FloatField } from "@/components/forms/float-field";
 import { BrandingSettings } from "@/lib/branding";
 import { audienceOptions } from "@/lib/validations";
 
@@ -64,21 +65,13 @@ export function AuthSplitCard({
 
         {mode === "login" ? (
           <form action={loginAction} className="auth-form">
-            <label className="auth-field">
-              <span>Email address</span>
-              <span className="auth-input-wrap">
-                <Mail size={16} aria-hidden />
-                <input name="email" type="email" autoComplete="email" placeholder="name@mail.com" />
-              </span>
-            </label>
+            <FloatField label="Enter your email address" icon={<Mail size={16} aria-hidden />}>
+              <input name="email" type="email" autoComplete="email" placeholder=" " />
+            </FloatField>
 
-            <label className="auth-field">
-              <span>Password</span>
-              <span className="auth-input-wrap">
-                <Lock size={16} aria-hidden />
-                <input name="password" type="password" autoComplete="current-password" placeholder="••••••••" />
-              </span>
-            </label>
+            <FloatField label="Enter your password" icon={<Lock size={16} aria-hidden />}>
+              <input name="password" type="password" autoComplete="current-password" placeholder=" " />
+            </FloatField>
 
             <div className="auth-row">
               <label className="auth-check">
@@ -103,86 +96,44 @@ export function AuthSplitCard({
           </form>
         ) : (
           <form action={registerAction} className="auth-form">
-            <label className="auth-field">
-              <span>Full name</span>
-              <span className="auth-input-wrap">
-                <UserRound size={16} aria-hidden />
-                <input name="name" autoComplete="name" placeholder="Juan Dela Cruz" />
-              </span>
-            </label>
+            <FloatField label="Enter your full name" icon={<UserRound size={16} aria-hidden />}>
+              <input name="name" autoComplete="name" placeholder=" " />
+            </FloatField>
 
-            <label className="auth-field">
-              <span>Email address</span>
-              <span className="auth-input-wrap">
-                <Mail size={16} aria-hidden />
-                <input name="email" type="email" autoComplete="email" placeholder="name@mail.com" />
-              </span>
-            </label>
+            <FloatField label="Enter your email address" icon={<Mail size={16} aria-hidden />}>
+              <input name="email" type="email" autoComplete="email" placeholder=" " />
+            </FloatField>
 
-            <label className="auth-field">
-              <span>Password</span>
-              <span className="auth-input-wrap">
-                <Lock size={16} aria-hidden />
-                <input name="password" type="password" autoComplete="new-password" placeholder="At least 8 characters" />
-              </span>
-            </label>
+            <FloatField label="Create a password" icon={<Lock size={16} aria-hidden />}>
+              <input name="password" type="password" autoComplete="new-password" placeholder=" " />
+            </FloatField>
 
-            <label className="auth-field">
-              <span>Date of birth</span>
-              <span className="auth-input-wrap">
-                <Calendar size={16} aria-hidden />
-                <input name="dateOfBirth" type="date" autoComplete="bday" required />
-              </span>
-            </label>
+            <FloatField label="Enter your date of birth" icon={<Calendar size={16} aria-hidden />}>
+              <input name="dateOfBirth" type="date" autoComplete="bday" required />
+            </FloatField>
 
-            <label className="auth-field">
-              <span>Address</span>
-              <span className="auth-input-wrap">
-                <MapPin size={16} aria-hidden />
-                <AddressAutocomplete name="address" />
-              </span>
-            </label>
+            <FloatField label="Enter your address" icon={<MapPin size={16} aria-hidden />}>
+              <AddressAutocomplete name="address" placeholder=" " />
+            </FloatField>
 
-            <label className="auth-field">
-              <span>What best describes you?</span>
-              <span className="auth-input-wrap">
-                <select name="bestDescribesYou" defaultValue="" required>
-                  <option value="" disabled>
-                    Select one
+            <FloatField label="What best describes you?">
+              <select name="bestDescribesYou" defaultValue="" required>
+                <option value="" disabled hidden />
+                {audienceOptions.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
                   </option>
-                  {audienceOptions.map((option) => (
-                    <option key={option} value={option}>
-                      {option}
-                    </option>
-                  ))}
-                </select>
-              </span>
-            </label>
+                ))}
+              </select>
+            </FloatField>
 
-            <label className="auth-field">
-              <span>Facebook profile URL</span>
-              <span className="auth-input-wrap">
-                <UserRound size={16} aria-hidden />
-                <input
-                  name="facebookProfileUrl"
-                  type="url"
-                  autoComplete="url"
-                  placeholder="https://facebook.com/your.profile"
-                />
-              </span>
-            </label>
+            <FloatField label="Enter your Facebook profile URL" icon={<UserRound size={16} aria-hidden />}>
+              <input name="facebookProfileUrl" type="url" autoComplete="url" placeholder=" " />
+            </FloatField>
 
-            <label className="auth-field">
-              <span>Facebook profile picture URL</span>
-              <span className="auth-input-wrap">
-                <ImageIcon size={16} aria-hidden />
-                <input
-                  name="facebookPhotoUrl"
-                  type="url"
-                  placeholder="https://... your Facebook photo"
-                />
-              </span>
-            </label>
+            <FloatField label="Enter your Facebook photo URL" icon={<ImageIcon size={16} aria-hidden />}>
+              <input name="facebookPhotoUrl" type="url" placeholder=" " />
+            </FloatField>
 
             <fieldset className="auth-roles">
               <legend>What best describes your role here?</legend>

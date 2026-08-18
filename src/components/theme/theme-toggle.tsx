@@ -18,7 +18,7 @@ export function ThemeToggle() {
       type="button"
       aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
       onClick={() => setTheme(isDark ? "light" : "dark")}
-      className="pressable flex h-11 w-11 items-center justify-center rounded-full border border-[var(--line-strong)] bg-[color:var(--surface-elevated)]/80 text-[var(--chrome-bright)] shadow-[0_0_24px_color-mix(in_srgb,var(--brand)_18%,transparent)] backdrop-blur-xl transition hover:border-[var(--brand)]"
+      className="glass-icon-btn pressable flex h-11 w-11 items-center justify-center rounded-full text-[var(--chrome-bright)] transition hover:border-[var(--brand)]"
     >
       {!mounted ? <Sparkles size={18} /> : isDark ? <SunMedium size={18} /> : <Moon size={18} />}
     </button>

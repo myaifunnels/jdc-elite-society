@@ -63,6 +63,7 @@ export function AddressAutocomplete({
         const place = autocomplete.getPlace();
         if (place.formatted_address) {
           input.value = place.formatted_address;
+          input.dispatchEvent(new Event("input", { bubbles: true }));
         }
       });
     }

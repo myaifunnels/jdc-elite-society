@@ -3,12 +3,10 @@
 import { useActionState } from "react";
 
 import { BrandingFormState, saveLogoSettings } from "@/app/dashboard/settings/actions";
+import { FloatField } from "@/components/forms/float-field";
 import { BrandingSettings } from "@/lib/branding";
 
 const initialState: BrandingFormState = {};
-
-const inputClass =
-  "w-full rounded-2xl border border-[var(--line)] bg-[color:var(--surface-elevated)]/86 px-4 py-3 outline-none transition focus:border-[var(--brand)] focus:ring-2 focus:ring-[rgba(41,98,255,0.18)]";
 
 export function LogoSettingsForm({ branding }: { branding: BrandingSettings }) {
   const [state, formAction, pending] = useActionState(saveLogoSettings, initialState);
@@ -36,34 +34,25 @@ export function LogoSettingsForm({ branding }: { branding: BrandingSettings }) {
       </div>
 
       <form action={formAction} className="mt-6 grid gap-4">
-        <label className="grid gap-2 text-sm">
-          <span className="font-medium">Logo image URL</span>
+        <FloatField label="Enter your logo image URL">
           <input
             name="logoUrl"
             type="text"
             inputMode="url"
             autoComplete="off"
             defaultValue={branding.logoUrl}
-            placeholder="https://media.yourdomain.com/logo.png"
-            className={inputClass}
+            placeholder=" "
           />
-          <span className="text-[var(--muted)]">
-            Paste an R2 or CDN URL. Leave this blank to use the Coach JDC text mark.
-          </span>
-        </label>
+        </FloatField>
+        <p className="text-sm text-[var(--muted)]">
+          Paste an R2 or CDN URL. Leave this blank to use the Coach JDC text mark.
+        </p>
 
         <input type="hidden" name="logoHref" value="/" />
 
-        <label className="grid gap-2 text-sm">
-          <span className="font-medium">Alt text</span>
-          <input
-            name="logoAlt"
-            autoComplete="off"
-            defaultValue={branding.logoAlt}
-            placeholder="Coach Jayson Dela Cruz"
-            className={inputClass}
-          />
-        </label>
+        <FloatField label="Enter logo alt text">
+          <input name="logoAlt" autoComplete="off" defaultValue={branding.logoAlt} placeholder=" " />
+        </FloatField>
 
         {state.error ? <p className="text-sm text-red-500">{state.error}</p> : null}
         {state.success ? <p className="text-sm text-emerald-400">{state.success}</p> : null}

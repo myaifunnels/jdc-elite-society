@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
+import { FloatField } from "@/components/forms/float-field";
 import { programs } from "@/data/programs";
 import { siteContent } from "@/data/site-content";
 import { cn } from "@/lib/utils";
@@ -80,49 +81,44 @@ export function InquiryForm({ className, defaultProgram, showIntro = true }: Inq
         ) : null}
 
         <div className="grid gap-4 md:grid-cols-2">
-          <Field label="Full name" error={errors.name?.message}>
-            <input className={inputClass} {...register("name")} placeholder="Juan Dela Cruz" />
-          </Field>
+          <FloatField label="Enter your full name" error={errors.name?.message}>
+            <input {...register("name")} placeholder=" " />
+          </FloatField>
 
-          <Field label="Email" error={errors.email?.message}>
-            <input className={inputClass} {...register("email")} placeholder="juan@example.com" />
-          </Field>
+          <FloatField label="Enter your email address" error={errors.email?.message}>
+            <input {...register("email")} placeholder=" " />
+          </FloatField>
 
-          <Field label="Phone" error={errors.phone?.message}>
-            <input className={inputClass} {...register("phone")} placeholder="+63 917 000 0000" />
-          </Field>
+          <FloatField label="Enter your phone number" error={errors.phone?.message}>
+            <input {...register("phone")} placeholder=" " />
+          </FloatField>
 
-          <Field label="Date of birth" error={errors.dateOfBirth?.message}>
-            <input className={inputClass} type="date" {...register("dateOfBirth")} />
-          </Field>
+          <FloatField label="Enter your date of birth" error={errors.dateOfBirth?.message}>
+            <input type="date" {...register("dateOfBirth")} />
+          </FloatField>
         </div>
 
         <div className="mt-4 grid gap-4 md:grid-cols-2">
-          <Field label="Which program are you considering?" error={errors.programInterest?.message}>
-            <select className={inputClass} {...register("programInterest")}>
+          <FloatField label="Which program are you considering?" error={errors.programInterest?.message}>
+            <select {...register("programInterest")}>
               {programs.map((program) => (
                 <option key={program.slug} value={program.title}>
                   {program.title}
                 </option>
               ))}
             </select>
-          </Field>
+          </FloatField>
 
-          <Field label="City / region" error={errors.city?.message}>
-            <input className={inputClass} {...register("city")} placeholder="Makati" />
-          </Field>
+          <FloatField label="Enter your city or region" error={errors.city?.message}>
+            <input {...register("city")} placeholder=" " />
+          </FloatField>
         </div>
 
         <div className="mt-4 grid gap-4">
           <input type="hidden" {...register("tags")} />
-          <Field label="Where are you based?" error={errors.address?.message}>
-            <input
-              className={inputClass}
-              {...register("address")}
-              placeholder="Street, city, province or country"
-              autoComplete="street-address"
-            />
-          </Field>
+          <FloatField label="Enter your address" error={errors.address?.message}>
+            <input {...register("address")} placeholder=" " autoComplete="street-address" />
+          </FloatField>
         </div>
 
         <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -172,24 +168,3 @@ export function InquiryForm({ className, defaultProgram, showIntro = true }: Inq
     </div>
   );
 }
-
-function Field({
-  label,
-  error,
-  children,
-}: {
-  label: string;
-  error?: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <label className="grid gap-2 text-sm">
-      <span className="font-medium">{label}</span>
-      {children}
-      {error ? <span className="text-xs text-red-700">{error}</span> : null}
-    </label>
-  );
-}
-
-const inputClass =
-  "w-full min-h-11 rounded-2xl border border-[var(--line)] bg-[color:var(--surface-elevated)]/86 px-4 py-3 text-base outline-none transition focus:border-[var(--brand)] focus:ring-2 focus:ring-[color-mix(in_srgb,var(--brand)_22%,transparent)]";

@@ -67,7 +67,7 @@ function SidebarPanel({
         {showClose ? (
           <button
             type="button"
-            className="pressable inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border border-[var(--line)]"
+            className="glass-icon-btn pressable inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full"
             onClick={onNavigate}
           >
             <X size={18} />
@@ -191,7 +191,7 @@ export function DashboardSidebar({
           <ThemeToggle />
           <button
             type="button"
-            className="pressable inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border border-[var(--line)] bg-[color:var(--surface-elevated)]/80"
+            className="glass-icon-btn pressable inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full"
             aria-expanded={open}
             aria-controls="dashboard-sidebar-mobile"
             onClick={() => setOpen(true)}

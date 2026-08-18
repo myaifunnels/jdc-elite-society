@@ -295,15 +295,22 @@ a,
   place-items: center;
   width: 2.75rem;
   height: 2.75rem;
-  border: 1px solid var(--line);
+  border: 1px solid color-mix(in srgb, #fff 22%, var(--line));
   border-radius: 999px;
-  background: color-mix(in srgb, var(--surface-elevated) 80%, transparent);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0.04) 100%),
+    color-mix(in srgb, var(--surface-elevated) 48%, transparent);
   color: var(--foreground);
+  backdrop-filter: blur(16px) saturate(170%);
+  -webkit-backdrop-filter: blur(16px) saturate(170%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.24);
 }
 
 .site-nav-toggle.overlay {
-  border-color: rgba(255, 255, 255, 0.2);
-  background: rgba(5, 7, 13, 0.42);
+  border-color: rgba(255, 255, 255, 0.28);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.04) 100%),
+    rgba(5, 7, 13, 0.28);
   color: white;
 }
 
@@ -453,34 +460,29 @@ a,
 .button-primary,
 .button-secondary {
   background-repeat: no-repeat;
+  border: 1px solid transparent;
+  backdrop-filter: blur(18px) saturate(180%);
+  -webkit-backdrop-filter: blur(18px) saturate(180%);
 }
 
 .button-primary {
-  background-color: var(--brand);
-  background-image: linear-gradient(
-    180deg,
-    color-mix(in srgb, #7ec4ff 42%, var(--brand)) 0%,
-    var(--brand) 52%,
-    var(--brand-dark) 100%
-  );
+  background-color: color-mix(in srgb, var(--brand) 58%, transparent);
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.34) 0%, rgba(255, 255, 255, 0.04) 48%);
+  border-color: rgba(255, 255, 255, 0.38);
   color: white;
   box-shadow:
-    0 12px 28px color-mix(in srgb, var(--brand) 28%, transparent),
-    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+    inset 0 1px 0 rgba(255, 255, 255, 0.42),
+    0 12px 28px color-mix(in srgb, var(--brand) 26%, transparent);
 }
 
 .button-secondary {
-  background-color: color-mix(in srgb, var(--surface-elevated) 92%, #000);
-  background-image: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--chrome-bright) 12%, var(--surface-elevated)) 0%,
-    var(--surface) 100%
-  );
-  border: 1px solid var(--line-strong);
-  color: var(--chrome-bright);
+  background-color: color-mix(in srgb, var(--surface-elevated) 42%, transparent);
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.03) 100%);
+  border-color: color-mix(in srgb, #fff 28%, var(--line-strong));
+  color: var(--foreground);
   box-shadow:
-    inset 0 1px 0 rgba(232, 238, 247, 0.12),
-    0 8px 20px rgba(0, 0, 0, 0.24);
+    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    0 8px 20px rgba(0, 0, 0, 0.16);
 }
 
 .eyebrow {
@@ -503,23 +505,30 @@ a,
   flex: 0 0 auto;
   scroll-snap-align: start;
   min-height: 2.75rem;
-  border: 1px solid var(--line);
+  border: 1px solid color-mix(in srgb, #fff 22%, var(--line));
   border-radius: 999px;
-  background: color-mix(in srgb, var(--surface-elevated) 78%, transparent);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0.04) 100%),
+    color-mix(in srgb, var(--surface-elevated) 48%, transparent);
   color: var(--foreground);
   padding: 0.7rem 1.05rem;
   font-size: 0.88rem;
   font-weight: 700;
   white-space: nowrap;
+  backdrop-filter: blur(16px) saturate(170%);
+  -webkit-backdrop-filter: blur(16px) saturate(170%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22);
 }
 
 .program-tab.is-active {
-  border-color: color-mix(in srgb, var(--chrome-bright) 35%, transparent);
+  border-color: rgba(255, 255, 255, 0.38);
   background:
-    linear-gradient(135deg, rgba(232, 238, 247, 0.22), transparent 42%),
-    linear-gradient(180deg, color-mix(in srgb, var(--brand) 18%, #4da3ff), var(--brand-dark));
+    linear-gradient(180deg, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0.04) 52%),
+    color-mix(in srgb, var(--brand) 62%, transparent);
   color: white;
-  box-shadow: 0 10px 24px color-mix(in srgb, var(--brand) 32%, transparent);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.4),
+    0 10px 24px color-mix(in srgb, var(--brand) 28%, transparent);
 }
 
 .hero-orb {
@@ -1325,12 +1334,12 @@ a,
   }
 
   .hero-cta-more:hover {
-    background-color: #e8eef4;
-    background-image: linear-gradient(180deg, #f7f9fc 0%, #e2e8f0 100%);
-    color: #05070c;
+    background-color: color-mix(in srgb, #fff 18%, transparent);
+    background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.28) 0%, rgba(255, 255, 255, 0.06) 100%);
+    color: #fff;
     box-shadow:
-      0 10px 22px rgba(0, 0, 0, 0.28),
-      inset 0 1px 0 rgba(255, 255, 255, 0.7);
+      inset 0 1px 0 rgba(255, 255, 255, 0.4),
+      0 10px 22px rgba(0, 0, 0, 0.22);
   }
 }
 
@@ -1431,38 +1440,38 @@ a,
   .button-primary:hover {
     transform: none;
     filter: none;
-    background-color: #1a86ff;
-    background-image: linear-gradient(180deg, #3d9bff 0%, #0077f5 58%, #003dcc 100%);
+    background-color: color-mix(in srgb, var(--brand) 72%, transparent);
+    background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.42) 0%, rgba(255, 255, 255, 0.06) 52%);
     box-shadow:
-      0 10px 24px color-mix(in srgb, var(--brand) 26%, transparent),
-      inset 0 1px 0 rgba(255, 255, 255, 0.22);
+      inset 0 1px 0 rgba(255, 255, 255, 0.5),
+      0 10px 24px color-mix(in srgb, var(--brand) 30%, transparent);
   }
 
   .button-secondary:hover {
     transform: none;
     filter: none;
-    border-color: color-mix(in srgb, var(--chrome-bright) 32%, transparent);
-    background-color: color-mix(in srgb, var(--surface-elevated) 96%, #1a86ff 4%);
-    background-image: linear-gradient(
-      180deg,
-      color-mix(in srgb, var(--chrome-bright) 16%, var(--surface-elevated)) 0%,
-      var(--surface-elevated) 100%
-    );
+    border-color: color-mix(in srgb, #fff 42%, var(--line-strong));
+    background-color: color-mix(in srgb, var(--surface-elevated) 58%, transparent);
+    background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.28) 0%, rgba(255, 255, 255, 0.05) 100%);
     color: #fff;
     box-shadow:
-      inset 0 1px 0 rgba(232, 238, 247, 0.16),
-      0 8px 20px rgba(0, 0, 0, 0.22);
+      inset 0 1px 0 rgba(255, 255, 255, 0.34),
+      0 8px 20px rgba(0, 0, 0, 0.18);
   }
 
   .auth-btn-active:hover {
-    background-color: #1a86ff;
-    background-image: linear-gradient(180deg, #3d9bff 0%, var(--brand) 55%, var(--brand-dark) 100%);
-    box-shadow: 0 8px 20px color-mix(in srgb, var(--brand) 24%, transparent);
+    background-color: color-mix(in srgb, var(--brand) 74%, transparent);
+    background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0.06) 55%);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.48),
+      0 8px 20px color-mix(in srgb, var(--brand) 28%, transparent);
   }
 
   .auth-btn-idle:hover {
-    background: color-mix(in srgb, var(--surface-elevated) 94%, var(--brand) 6%);
-    border-color: var(--line-strong);
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.24) 0%, rgba(255, 255, 255, 0.05) 100%),
+      color-mix(in srgb, var(--surface-elevated) 62%, transparent);
+    border-color: color-mix(in srgb, #fff 36%, var(--line-strong));
     color: #fff;
   }
 }
@@ -1628,12 +1637,16 @@ a,
   place-items: center;
   width: 2.75rem;
   height: 2.75rem;
-  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 0.55rem;
-  background: linear-gradient(180deg, color-mix(in srgb, var(--chrome) 16%, #0b1018), #070b12);
-  border: 1px solid var(--line);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.03) 100%),
+    color-mix(in srgb, #0b1018 62%, transparent);
+  border: 1px solid rgba(255, 255, 255, 0.18);
   color: white;
   cursor: pointer;
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 .site-footer-bottom p {
@@ -1786,12 +1799,17 @@ a,
   justify-content: center;
   min-height: 2.4rem;
   border-radius: 999px;
-  background: linear-gradient(180deg, #f4f7fb 0%, #c8cdd6 55%, #9aa3b2 100%);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.34) 0%, rgba(255, 255, 255, 0.08) 100%),
+    rgba(255, 255, 255, 0.12);
   color: #05070c;
   padding: 0.45rem 1.15rem;
   font-size: 0.88rem;
   font-weight: 700;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.42);
+  backdrop-filter: blur(16px) saturate(170%);
+  -webkit-backdrop-filter: blur(16px) saturate(170%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55);
 }
 
 .auth-split-form {
@@ -1808,8 +1826,10 @@ a,
   margin-bottom: 0.35rem;
   padding: 0.3rem;
   border-radius: 999px;
-  background: color-mix(in srgb, var(--surface) 88%, transparent);
-  border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--surface) 55%, transparent);
+  border: 1px solid color-mix(in srgb, #fff 18%, var(--line));
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
 }
 
 .auth-mode-toggle button {
@@ -1823,9 +1843,16 @@ a,
 }
 
 .auth-mode-toggle button.is-active {
-  background: linear-gradient(90deg, var(--brand-dark) 0%, var(--brand) 100%);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0.05) 100%),
+    color-mix(in srgb, var(--brand) 62%, transparent);
   color: white;
-  box-shadow: 0 10px 24px color-mix(in srgb, var(--brand) 28%, transparent);
+  border: 1px solid rgba(255, 255, 255, 0.32);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.38),
+    0 10px 24px color-mix(in srgb, var(--brand) 24%, transparent);
+  backdrop-filter: blur(14px) saturate(170%);
+  -webkit-backdrop-filter: blur(14px) saturate(170%);
 }
 
 .auth-form {
@@ -1833,29 +1860,57 @@ a,
   gap: 0.95rem;
 }
 
-.auth-field {
+.glass-icon-btn {
+  border: 1px solid color-mix(in srgb, #fff 22%, var(--line));
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0.04) 100%),
+    color-mix(in srgb, var(--surface-elevated) 48%, transparent);
+  backdrop-filter: blur(16px) saturate(170%);
+  -webkit-backdrop-filter: blur(16px) saturate(170%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.24);
+}
+
+.float-field-stack {
   display: grid;
-  gap: 0.4rem;
-  font-size: 0.88rem;
-  font-weight: 600;
+  gap: 0.35rem;
 }
 
-.auth-input-wrap {
-  display: flex;
-  align-items: center;
-  gap: 0.65rem;
-  min-height: 3rem;
+.float-field {
+  position: relative;
+  display: block;
+  min-height: 3.35rem;
   border: 1px solid var(--line);
-  border-radius: 0.85rem;
-  background: color-mix(in srgb, var(--surface) 86%, transparent);
-  padding: 0 0.95rem;
+  border-radius: 0.95rem;
+  background: color-mix(in srgb, var(--surface) 62%, transparent);
   color: var(--muted);
+  backdrop-filter: blur(14px) saturate(150%);
+  -webkit-backdrop-filter: blur(14px) saturate(150%);
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease;
 }
 
-.auth-input-wrap input,
-.auth-input-wrap select {
+.float-field:focus-within {
+  border-color: color-mix(in srgb, var(--brand) 55%, var(--line));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 16%, transparent);
+}
+
+.float-field-icon {
+  position: absolute;
+  left: 0.95rem;
+  top: 50%;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.float-field input,
+.float-field select {
+  display: block;
   width: 100%;
-  min-height: 2.75rem;
+  min-height: 3.35rem;
   border: 0;
   background: transparent;
   outline: none;
@@ -1863,6 +1918,57 @@ a,
   font: inherit;
   font-size: 1rem;
   font-weight: 500;
+  padding: 1.15rem 1rem 0.45rem;
+}
+
+.float-field.has-icon input,
+.float-field.has-icon select {
+  padding-left: 2.55rem;
+}
+
+.float-field-label {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  z-index: 1;
+  max-width: calc(100% - 2rem);
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 0.95rem;
+  font-weight: 500;
+  line-height: 1.2;
+  pointer-events: none;
+  transform: translateY(-50%);
+  transition:
+    top 160ms ease,
+    transform 160ms ease,
+    font-size 160ms ease,
+    color 160ms ease;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.float-field.has-icon .float-field-label {
+  left: 2.55rem;
+  max-width: calc(100% - 3.4rem);
+}
+
+.float-field:focus-within .float-field-label,
+.float-field:has(input:not(:placeholder-shown)) .float-field-label,
+.float-field:has(input[type="date"]) .float-field-label,
+.float-field:has(select:valid) .float-field-label {
+  top: 0.42rem;
+  transform: none;
+  color: var(--brand);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.float-field-error {
+  margin: 0;
+  color: #dc2626;
+  font-size: 0.78rem;
 }
 
 .auth-row {
@@ -1912,17 +2018,26 @@ a,
 }
 
 .auth-btn-idle {
-  background: color-mix(in srgb, var(--surface) 90%, transparent);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.03) 100%),
+    color-mix(in srgb, var(--surface) 48%, transparent);
   color: var(--foreground);
-  border: 1px solid var(--line);
-  box-shadow: none;
+  border: 1px solid color-mix(in srgb, #fff 22%, var(--line));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22);
+  backdrop-filter: blur(16px) saturate(170%);
+  -webkit-backdrop-filter: blur(16px) saturate(170%);
 }
 
 .auth-btn-active {
-  background-color: var(--brand);
-  background-image: linear-gradient(180deg, #3d9bff 0%, var(--brand) 52%, var(--brand-dark) 100%);
+  background-color: color-mix(in srgb, var(--brand) 58%, transparent);
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.34) 0%, rgba(255, 255, 255, 0.04) 52%);
   color: white;
-  box-shadow: 0 8px 20px color-mix(in srgb, var(--brand) 26%, transparent);
+  border: 1px solid rgba(255, 255, 255, 0.36);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.42),
+    0 8px 20px color-mix(in srgb, var(--brand) 26%, transparent);
+  backdrop-filter: blur(18px) saturate(180%);
+  -webkit-backdrop-filter: blur(18px) saturate(180%);
 }
 
 .auth-switch-copy {

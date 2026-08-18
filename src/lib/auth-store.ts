@@ -101,6 +101,8 @@ async function ensureTable(client: Pool) {
   tableReady = true;
 }
 
+const LEGACY_ADMIN_EMAILS = ["admin@coachjdc.org"];
+
 export async function ensureSeedUsers() {
   if (seedReady) {
     return;
@@ -108,9 +110,24 @@ export async function ensureSeedUsers() {
 
   seedReady = true;
 
-  const adminEmail = (process.env.ADMIN_EMAIL ?? "admin@coachjdc.org").toLowerCase();
+  const adminEmail = (process.env.ADMIN_EMAIL ?? "admin@gmail.com").toLowerCase();
   const adminPassword = process.env.ADMIN_PASSWORD ?? "admin";
-  const existing = await findUserByEmail(adminEmail);
+  const passwordHash = await hashPassword(adminPassword);
+
+  let existing = await findUserByEmail(adminEmail);
+
+  if (!existing) {
+    for (const legacyEmail of LEGACY_ADMIN_EMAILS) {
+      existing = await findUserByEmail(legacyEmail);
+      if (existing) {
+        break;
+      }
+    }
+  }
+
+  if (!existing) {
+    existing = await findAdminUser();
+  }
 
   if (!existing) {
     await createUser({
@@ -119,6 +136,65 @@ export async function ensureSeedUsers() {
       password: adminPassword,
       role: "admin",
     });
+    return;
+  }
+
+  await updateUserRecord(existing.id, {
+    name: existing.name || "Coach Admin",
+    email: adminEmail,
+    role: "admin",
+    passwordHash,
+  });
+}
+
+async function findAdminUser() {
+  const client = getPool();
+
+  if (!client) {
+    return memoryUsers.find((user) => user.role === "admin") ?? null;
+  }
+
+  try {
+    await ensureTable(client);
+    const result = await client.query(
+      "SELECT * FROM site_users WHERE role = 'admin' ORDER BY created_at ASC LIMIT 1",
+    );
+    return result.rows[0] ? mapRow(result.rows[0]) : null;
+  } catch (error) {
+    console.error("Failed to load admin user", error);
+    return memoryUsers.find((user) => user.role === "admin") ?? null;
+  }
+}
+
+async function updateUserRecord(
+  id: string,
+  input: { name: string; email: string; role: DashboardRole; passwordHash: string },
+) {
+  const memoryIndex = memoryUsers.findIndex((user) => user.id === id);
+  if (memoryIndex >= 0) {
+    memoryUsers[memoryIndex] = {
+      ...memoryUsers[memoryIndex],
+      ...input,
+    };
+  }
+
+  const client = getPool();
+  if (!client) {
+    return;
+  }
+
+  try {
+    await ensureTable(client);
+    await client.query(
+      `
+      UPDATE site_users
+      SET name = $2, email = $3, role = $4, password_hash = $5
+      WHERE id = $1
+      `,
+      [id, input.name, input.email, input.role, input.passwordHash],
+    );
+  } catch (error) {
+    console.error("Failed to update admin user", error);
   }
 }
 

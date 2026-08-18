@@ -4,11 +4,9 @@ import Link from "next/link";
 import { useActionState } from "react";
 
 import { AuthFormState, loginAccount } from "@/app/login/actions";
+import { FloatField } from "@/components/forms/float-field";
 
 const initialState: AuthFormState = {};
-
-const inputClass =
-  "w-full rounded-2xl border border-[var(--line)] bg-[color:var(--surface-elevated)]/86 px-4 py-3 outline-none transition focus:border-[var(--brand)] focus:ring-2 focus:ring-[color-mix(in_srgb,var(--brand)_22%,transparent)]";
 
 export function LoginForm({ showRegisterLink = true }: { showRegisterLink?: boolean }) {
   const [state, formAction, pending] = useActionState(loginAccount, initialState);
@@ -22,14 +20,12 @@ export function LoginForm({ showRegisterLink = true }: { showRegisterLink?: bool
       </p>
 
       <div className="mt-6 grid gap-4">
-        <label className="grid gap-2 text-sm">
-          <span className="font-medium">Email</span>
-          <input name="email" type="email" autoComplete="email" className={inputClass} placeholder="you@email.com" />
-        </label>
-        <label className="grid gap-2 text-sm">
-          <span className="font-medium">Password</span>
-          <input name="password" type="password" autoComplete="current-password" className={inputClass} />
-        </label>
+        <FloatField label="Enter your email address">
+          <input name="email" type="email" autoComplete="email" placeholder=" " />
+        </FloatField>
+        <FloatField label="Enter your password">
+          <input name="password" type="password" autoComplete="current-password" placeholder=" " />
+        </FloatField>
       </div>
 
       {state.error ? <p className="mt-4 text-sm text-red-600">{state.error}</p> : null}

@@ -5,12 +5,10 @@ import { useActionState } from "react";
 
 import { AuthFormState, registerAccount } from "@/app/login/actions";
 import { AddressAutocomplete } from "@/components/forms/address-autocomplete";
+import { FloatField } from "@/components/forms/float-field";
 import { audienceOptions } from "@/lib/validations";
 
 const initialState: AuthFormState = {};
-
-const inputClass =
-  "w-full rounded-2xl border border-[var(--line)] bg-[color:var(--surface-elevated)]/86 px-4 py-3 outline-none transition focus:border-[var(--brand)] focus:ring-2 focus:ring-[color-mix(in_srgb,var(--brand)_22%,transparent)]";
 
 export function RegisterForm({
   compact = false,
@@ -34,57 +32,37 @@ export function RegisterForm({
       )}
 
       <div className="grid gap-4">
-        <label className="grid gap-2 text-sm">
-          <span className="font-medium">Full name</span>
-          <input name="name" autoComplete="name" className={inputClass} placeholder="Juan Dela Cruz" />
-        </label>
-        <label className="grid gap-2 text-sm">
-          <span className="font-medium">Email</span>
-          <input name="email" type="email" autoComplete="email" className={inputClass} placeholder="you@email.com" />
-        </label>
-        <label className="grid gap-2 text-sm">
-          <span className="font-medium">Password</span>
-          <input name="password" type="password" autoComplete="new-password" className={inputClass} />
-        </label>
-        <label className="grid gap-2 text-sm">
-          <span className="font-medium">Date of birth</span>
-          <input name="dateOfBirth" type="date" autoComplete="bday" className={inputClass} required />
-        </label>
-        <label className="grid gap-2 text-sm">
-          <span className="font-medium">Address</span>
-          <AddressAutocomplete name="address" className={inputClass} />
-        </label>
-        <label className="grid gap-2 text-sm">
-          <span className="font-medium">What best describes you?</span>
-          <select name="bestDescribesYou" className={inputClass} defaultValue="" required>
-            <option value="" disabled>
-              Select one
-            </option>
+        <FloatField label="Enter your full name">
+          <input name="name" autoComplete="name" placeholder=" " />
+        </FloatField>
+        <FloatField label="Enter your email address">
+          <input name="email" type="email" autoComplete="email" placeholder=" " />
+        </FloatField>
+        <FloatField label="Create a password">
+          <input name="password" type="password" autoComplete="new-password" placeholder=" " />
+        </FloatField>
+        <FloatField label="Enter your date of birth">
+          <input name="dateOfBirth" type="date" autoComplete="bday" required />
+        </FloatField>
+        <FloatField label="Enter your address">
+          <AddressAutocomplete name="address" placeholder=" " />
+        </FloatField>
+        <FloatField label="What best describes you?">
+          <select name="bestDescribesYou" defaultValue="" required>
+            <option value="" disabled hidden />
             {audienceOptions.map((option) => (
               <option key={option} value={option}>
                 {option}
               </option>
             ))}
           </select>
-        </label>
-        <label className="grid gap-2 text-sm">
-          <span className="font-medium">Facebook profile URL</span>
-          <input
-            name="facebookProfileUrl"
-            type="url"
-            className={inputClass}
-            placeholder="https://facebook.com/your.profile"
-          />
-        </label>
-        <label className="grid gap-2 text-sm">
-          <span className="font-medium">Facebook profile picture URL</span>
-          <input
-            name="facebookPhotoUrl"
-            type="url"
-            className={inputClass}
-            placeholder="https://... your Facebook photo"
-          />
-        </label>
+        </FloatField>
+        <FloatField label="Enter your Facebook profile URL">
+          <input name="facebookProfileUrl" type="url" placeholder=" " />
+        </FloatField>
+        <FloatField label="Enter your Facebook photo URL">
+          <input name="facebookPhotoUrl" type="url" placeholder=" " />
+        </FloatField>
         <fieldset className="grid gap-3">
           <legend className="text-sm font-medium">What best describes your role here?</legend>
           <label className="flex cursor-pointer items-start gap-3 rounded-2xl border border-[var(--line)] px-4 py-3">
