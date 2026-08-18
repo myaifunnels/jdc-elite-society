@@ -25,7 +25,7 @@ export const siteContent = {
   secondaryCta: { href: "/programs", label: "See the programs" },
   headerCta: "Talk to me",
   programsEyebrow: "Where we start",
-  programsHeading: "Four tracks. One standard: you do the work.",
+  programsHeading: "Five tracks. One standard: you do the work.",
   programsLink: "See all programs",
   problemEyebrow: "Let me talk to you",
   problemHeading: "If this is your life right now, we should talk.",
@@ -69,7 +69,7 @@ export const siteContent = {
   deliveryHeading: "Simple on purpose. Heavy on follow-through.",
   communityBullets: [
     "We name the real problem, not the story you tell other people.",
-    "You enter the program track that matches your season — mindset, business, leadership, or the OFW transition.",
+    "You enter the program track that matches your season — mindset, business, leadership, the OFW transition, or the Mastermind.",
     "You get the sessions, frameworks, and a community of people doing the same work.",
     "You execute. I ask what you did. That's the relationship.",
   ],

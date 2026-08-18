@@ -133,6 +133,41 @@ export const programs: Program[] = [
     image: "/media/program-ofw.jpg",
     imageAlt: "An airport window at night with a departing plane",
   },
+  {
+    slug: "jdc-mastermind",
+    title: "JDC Mastermind",
+    shortDescription:
+      "This is not a seminar you sit through. It's a room of people already in motion — and I will not let you hide in the back.",
+    audience:
+      "Business owners, OFWs with a plan, and professionals who need a higher room, not another beginner course.",
+    transformation:
+      "You stop working in isolation. You get a room that tells you the truth, a standard you can't negotiate with, and people who will notice if you disappear.",
+    benefits: [
+      "A room of people who are already executing, not collecting notes",
+      "Direct access to me and the conversations that happen when nobody is performing",
+      "Accountability that follows you after the session, not applause that dies in the parking lot",
+    ],
+    modules: [
+      "The room: who is in it and what we expect",
+      "Live working sessions, not lectures",
+      "Follow-through between meetings",
+    ],
+    faqs: [
+      {
+        question: "Is this for beginners?",
+        answer:
+          "If you still need the first track — mindset, offer, or a plan for home — start there. The Mastermind is for people who already started and need a higher standard around them.",
+      },
+      {
+        question: "What do I actually get?",
+        answer:
+          "A seat in the room. Sessions. Direct coaching. People who will ask what you did, not what you planned. That's the point.",
+      },
+    ],
+    ctaLabel: "Ask about the Mastermind",
+    image: "/media/coach-room.jpg",
+    imageAlt: "A coaching room set for a mastermind session",
+  },
 ];
 
 export function getProgram(slug: string) {

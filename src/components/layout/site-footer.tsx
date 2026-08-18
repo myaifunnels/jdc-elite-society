@@ -9,7 +9,7 @@ const quickLinks = [
   { href: "/programs", label: "JDC Partnership Program" },
   { href: "/programs", label: "JDC Elite Society" },
   { href: "/programs", label: "1-on-1 Coaching" },
-  { href: "/programs", label: "JDC Mastermind Event" },
+  { href: "/programs/jdc-mastermind", label: "JDC Mastermind" },
   { href: "/about", label: "About Coach JDC" },
   { href: "/about", label: "Success Stories" },
   { href: "/#faq", label: "FAQ" },
