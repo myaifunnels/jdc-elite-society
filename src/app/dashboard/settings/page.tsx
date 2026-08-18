@@ -4,12 +4,13 @@ import { DesignSystemPanel } from "@/components/dashboard/design-system-panel";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { LogoSettingsForm } from "@/components/dashboard/logo-settings-form";
 import { getResolvedBrandingSettings } from "@/lib/branding-store";
+import { isGhlReady } from "@/lib/integrations";
+import { getResolvedIntegrationSettings } from "@/lib/integrations-store";
 import { isR2Configured } from "@/lib/r2";
 import { requireSessionUser } from "@/lib/session";
 
 export default async function SettingsPage() {
   const user = await requireSessionUser();
-  const r2Configured = await isR2Configured();
 
   if (user.role !== "admin") {
     return (
@@ -25,6 +26,9 @@ export default async function SettingsPage() {
   }
 
   const branding = await getResolvedBrandingSettings();
+  const r2Configured = await isR2Configured();
+  const settings = await getResolvedIntegrationSettings();
+  const ghlConfigured = isGhlReady(settings);
 
   return (
     <DashboardShell
@@ -40,15 +44,21 @@ export default async function SettingsPage() {
             <p className="text-sm font-semibold">Environment checklist</p>
             <ul className="mt-5 grid gap-3 text-sm text-[var(--muted)]">
               <li>• Primary domain: `https://coachjdc.org`</li>
-              <li>• `DATABASE_URL` so saved Google Maps and R2 credentials persist across deploys</li>
-              <li>• Optional env fallbacks: `NEXT_PUBLIC_GOOGLE_MAPS_EMBED_KEY` and R2 secrets</li>
-              <li>• Preferred: paste Maps and R2 credentials in Admin Integrations</li>
+              <li>• `DATABASE_URL` so saved GHL, Google Maps, and R2 credentials persist across deploys</li>
+              <li>• Preferred: paste GHL, Maps, and R2 credentials in Admin Integrations</li>
+              <li>• Optional env fallbacks: `GHL_PRIVATE_TOKEN`, `GHL_LOCATION_ID`, Maps, and R2 secrets</li>
             </ul>
           </section>
 
           <section className="glass-panel rounded-[2rem] p-8">
             <p className="text-sm font-semibold">Status</p>
             <p className="mt-4 text-lg">
+              GoHighLevel:{" "}
+              <span className={ghlConfigured ? "text-emerald-400" : "text-amber-300"}>
+                {ghlConfigured ? "connected" : "awaiting Admin Integrations"}
+              </span>
+            </p>
+            <p className="mt-3 text-lg">
               R2 configuration:{" "}
               <span className={r2Configured ? "text-emerald-400" : "text-amber-300"}>
                 {r2Configured ? "connected" : "awaiting Admin Integrations"}

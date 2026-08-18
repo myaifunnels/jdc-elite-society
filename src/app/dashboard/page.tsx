@@ -72,7 +72,7 @@ export default async function DashboardPage() {
                 <div>
                   <p className="text-sm font-semibold">Integration control center</p>
                   <p className="mt-2 text-sm text-[var(--muted)]">
-                    Review Google Maps and Cloudflare R2 configuration from a single admin workspace.
+                    Connect GoHighLevel, Google Maps, and Cloudflare R2 from a single admin workspace.
                   </p>
                 </div>
 

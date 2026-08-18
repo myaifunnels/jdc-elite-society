@@ -13,7 +13,7 @@ export default async function LeadsPage() {
   return (
     <DashboardShell
       title={user.role === "admin" ? "Lead CRM" : "Assigned leads"}
-      description="Review captured contacts, their program interest, and address data ready for map-based workflows."
+      description="Review captured contacts, their program interest, and automatic GoHighLevel sync status."
     >
       <div className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
         <section className="card-surface rounded-[2rem] p-8">
@@ -24,6 +24,7 @@ export default async function LeadsPage() {
                   <th className="py-3 pr-4 font-medium">Lead</th>
                   <th className="py-3 pr-4 font-medium">Program</th>
                   <th className="py-3 pr-4 font-medium">Tags</th>
+                  <th className="py-3 pr-4 font-medium">GHL</th>
                   <th className="py-3 pr-4 font-medium">Status</th>
                 </tr>
               </thead>
@@ -48,6 +49,12 @@ export default async function LeadsPage() {
                         ))}
                       </div>
                     </td>
+                    <td className="py-4 pr-4">
+                      <p className="capitalize">{lead.ghlSyncStatus ?? "—"}</p>
+                      {lead.ghlContactId ? (
+                        <p className="mt-1 text-xs text-[var(--muted)]">{lead.ghlContactId}</p>
+                      ) : null}
+                    </td>
                     <td className="py-4 pr-4 capitalize">{lead.status}</td>
                   </tr>
                 ))}
@@ -67,6 +74,7 @@ export default async function LeadsPage() {
                   <p>Date of birth: {featuredLead.dateOfBirth}</p>
                   <p>Source: {featuredLead.source}</p>
                   <p>Assigned partner: {featuredLead.assignedPartner ?? "Unassigned"}</p>
+                  <p>GHL sync: {featuredLead.ghlSyncStatus ?? "not synced"}</p>
                 </div>
               </div>
 

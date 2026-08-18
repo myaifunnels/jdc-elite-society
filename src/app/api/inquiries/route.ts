@@ -1,7 +1,11 @@
 import { NextResponse } from "next/server";
 
-import { createLead } from "@/lib/crm-store";
+import { createLead, updateLeadGhlSync } from "@/lib/crm-store";
+import { syncLeadToGhl } from "@/lib/ghl";
+import { getResolvedIntegrationSettings } from "@/lib/integrations-store";
 import { leadSchema } from "@/lib/validations";
+
+export const maxDuration = 30;
 
 export async function POST(request: Request) {
   const json = await request.json();
@@ -23,5 +27,13 @@ export async function POST(request: Request) {
     source: "Website inquiry",
   });
 
-  return NextResponse.json({ lead });
+  const settings = await getResolvedIntegrationSettings();
+  const result = await syncLeadToGhl(lead, settings);
+  const syncedLead = updateLeadGhlSync(lead.id, {
+    ghlContactId: result.contactId,
+    ghlSyncStatus: result.status,
+    ghlSyncError: result.error,
+  });
+
+  return NextResponse.json({ lead: syncedLead ?? lead });
 }

@@ -2,7 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 
-import { isMapsReady, isR2Ready } from "@/lib/integrations";
+import { testGhlConnection } from "@/lib/ghl";
+import { isGhlReady, isHttpsUrl, isMapsReady, isR2Ready } from "@/lib/integrations";
 import { getResolvedIntegrationSettings, saveIntegrationSettings } from "@/lib/integrations-store";
 import { requireSessionUser } from "@/lib/session";
 
@@ -75,4 +76,77 @@ export async function saveR2Integration(
   revalidatePath("/dashboard/settings");
 
   return { success: "Cloudflare R2 credentials saved." };
+}
+
+export async function saveGhlIntegration(
+  _prevState: IntegrationFormState,
+  formData: FormData,
+): Promise<IntegrationFormState> {
+  const user = await requireSessionUser();
+
+  if (user.role !== "admin") {
+    return { error: "Only admins can update integrations." };
+  }
+
+  const incomingToken = String(formData.get("ghlPrivateToken") ?? "").trim();
+  const incomingLocationId = String(formData.get("ghlLocationId") ?? "").trim();
+  const incomingWebhookUrl = String(formData.get("ghlWebhookUrl") ?? "").trim();
+  const incomingTags = String(formData.get("ghlTags") ?? "").trim();
+  const autoSync = formData.get("ghlAutoSync") === "on";
+  const current = await getResolvedIntegrationSettings();
+  const nextToken = incomingToken || current.ghlPrivateToken;
+  const nextLocationId = incomingLocationId || current.ghlLocationId;
+
+  if (incomingWebhookUrl && !isHttpsUrl(incomingWebhookUrl)) {
+    return { error: "The optional GHL webhook URL must start with https://." };
+  }
+
+  const preview = {
+    ...current,
+    ghlPrivateToken: nextToken,
+    ghlLocationId: nextLocationId,
+    ghlWebhookUrl: incomingWebhookUrl,
+    ghlAutoSync: autoSync,
+    ghlTags: incomingTags || current.ghlTags,
+  };
+
+  if (!isGhlReady(preview)) {
+    return {
+      error:
+        "Paste the JDC Elite Society Location ID plus a Private Integration token, or an inbound webhook URL.",
+    };
+  }
+
+  let locationName = current.ghlLocationName;
+  const credentialsChanged = Boolean(incomingToken || incomingLocationId) || !locationName;
+
+  if (nextToken && nextLocationId && credentialsChanged) {
+    const test = await testGhlConnection(nextToken, nextLocationId);
+    if (!test.ok) {
+      return {
+        error: test.error || "Could not connect to that GoHighLevel subaccount.",
+      };
+    }
+    locationName = test.locationName || "JDC Elite Society";
+  }
+
+  await saveIntegrationSettings({
+    ghlPrivateToken: nextToken,
+    ghlLocationId: nextLocationId,
+    ghlLocationName: locationName,
+    ghlWebhookUrl: incomingWebhookUrl,
+    ghlAutoSync: autoSync,
+    ghlTags: incomingTags,
+    ghlLastError: "",
+  });
+  revalidatePath("/dashboard/integrations");
+  revalidatePath("/dashboard/leads");
+  revalidatePath("/dashboard/settings");
+
+  const destination = locationName || "the JDC Elite Society subaccount";
+  return {
+    success: autoSync
+      ? `Connected to ${destination}. New website form submissions will sync automatically.`
+      : `Saved ${destination}. Turn automatic sync back on to push new inquiries.`,
+  };
 }

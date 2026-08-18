@@ -21,9 +21,26 @@ export function createLead(
     createdAt: new Date().toISOString().slice(0, 10),
     status: "new",
     source: payload.source ?? "Website form",
+    ghlSyncStatus: "pending",
     ...payload,
   };
 
   records.unshift(lead);
+  return lead;
+}
+
+export function updateLeadGhlSync(
+  leadId: string,
+  update: Pick<LeadRecord, "ghlContactId" | "ghlSyncStatus" | "ghlSyncError">,
+) {
+  const lead = records.find((item) => item.id === leadId);
+
+  if (!lead) {
+    return null;
+  }
+
+  lead.ghlContactId = update.ghlContactId;
+  lead.ghlSyncStatus = update.ghlSyncStatus;
+  lead.ghlSyncError = update.ghlSyncError;
   return lead;
 }

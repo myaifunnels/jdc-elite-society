@@ -29,6 +29,14 @@ services:
         sync: false
       - key: R2_PUBLIC_URL
         sync: false
+      - key: GHL_PRIVATE_TOKEN
+        sync: false
+      - key: GHL_LOCATION_ID
+        sync: false
+      - key: GHL_LOCATION_NAME
+        value: JDC Elite Society
+      - key: GHL_AUTO_SYNC
+        value: "true"
 databases:
   - name: coach-jdc-platform-db
     databaseName: coach_jdc_platform

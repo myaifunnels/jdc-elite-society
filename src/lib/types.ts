@@ -38,6 +38,9 @@ export type LeadRecord = {
   source: string;
   assignedPartner?: string;
   createdAt: string;
+  ghlContactId?: string;
+  ghlSyncStatus?: "synced" | "failed" | "skipped" | "pending";
+  ghlSyncError?: string;
 };
 
 export type DashboardMetric = {
