@@ -20,7 +20,7 @@ export function PublicHeaderActions({
 
   useEffect(() => {
     function onResize() {
-      if (window.innerWidth >= 1024) {
+      if (window.innerWidth >= 1100) {
         setOpen(false);
       }
     }
