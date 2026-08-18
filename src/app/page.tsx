@@ -43,6 +43,18 @@ export default async function Home() {
               <p className="fade-up inline-flex w-fit rounded-full border border-white/12 bg-white/8 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.34em] text-white/78 backdrop-blur-xl">
                 {siteContent.eyebrow}
               </p>
+              <div className="fade-up fade-up-delay-1 flex flex-wrap items-center gap-3 text-sm text-white/72">
+                <span className="rounded-full bg-emerald-500/18 px-3 py-1 font-semibold text-emerald-200">
+                  Featured
+                </span>
+                <span>Coach JDC Original</span>
+                <span className="text-white/36">•</span>
+                <span>Mindset</span>
+                <span className="text-white/36">•</span>
+                <span>Business</span>
+                <span className="text-white/36">•</span>
+                <span>Mentorship</span>
+              </div>
               <h1 className="fade-up fade-up-delay-1 max-w-4xl text-5xl font-semibold tracking-[-0.05em] text-balance sm:text-6xl lg:text-7xl">
                 {siteContent.headline}
               </h1>
@@ -55,13 +67,13 @@ export default async function Home() {
                   href={siteContent.primaryCta.href}
                   className="button-primary pressable rounded-full px-7 py-3.5 font-semibold"
                 >
-                  {siteContent.primaryCta.label}
+                  Start Your Breakthrough
                 </Link>
                 <Link
                   href={siteContent.secondaryCta.href}
                   className="button-secondary pressable rounded-full px-7 py-3.5 font-semibold text-white"
                 >
-                  {siteContent.secondaryCta.label}
+                  Explore the Programs
                 </Link>
               </div>
 
@@ -122,6 +134,42 @@ export default async function Home() {
                     </div>
                   ))}
                 </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="container-shell relative z-10 mt-8">
+            <div className="fade-up fade-up-delay-3 hero-shelf rounded-[1.75rem] p-5">
+              <div className="mb-4 flex items-center justify-between gap-4">
+                <div>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-white/42">
+                    Featured collection
+                  </p>
+                  <h3 className="mt-2 text-xl font-semibold tracking-[-0.03em] text-white">
+                    Continue exploring the Coach JDC universe
+                  </h3>
+                </div>
+                <Link href="/programs" className="hidden text-sm font-semibold text-white/72 md:inline-flex">
+                  Browse all
+                </Link>
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-3">
+                {[
+                  "JDC Elite Society",
+                  "1-on-1 Coaching",
+                  "Partnership Program",
+                ].map((title, index) => (
+                  <div key={title} className="hero-title-card rounded-[1.5rem] p-5 text-white">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-white/42">
+                      Volume 0{index + 1}
+                    </p>
+                    <p className="mt-8 text-2xl font-semibold tracking-[-0.03em]">{title}</p>
+                    <p className="mt-2 text-sm text-white/62">
+                      Designed to move from inspiration into structure, momentum, and real-world action.
+                    </p>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
