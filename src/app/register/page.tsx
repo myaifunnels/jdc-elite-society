@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
-import { RegisterForm } from "@/components/auth/register-form";
-import { SiteFooter } from "@/components/layout/site-footer";
+import { AuthSplitCard } from "@/components/auth/auth-split-card";
 import { SiteHeader } from "@/components/layout/site-header";
+import { getResolvedBrandingSettings } from "@/lib/branding-store";
 import { getSessionUser } from "@/lib/session";
 
 export const metadata: Metadata = {
@@ -18,15 +18,14 @@ export default async function RegisterPage() {
     redirect("/dashboard");
   }
 
+  const branding = await getResolvedBrandingSettings();
+
   return (
-    <div className="min-h-screen">
-      <SiteHeader />
-      <main className="section-space">
-        <div className="container-shell max-w-xl">
-          <RegisterForm />
-        </div>
+    <div className="auth-screen">
+      <SiteHeader overlay />
+      <main className="auth-screen-main">
+        <AuthSplitCard branding={branding} initialMode="register" />
       </main>
-      <SiteFooter />
     </div>
   );
 }

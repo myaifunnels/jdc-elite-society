@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
-import { LoginForm } from "@/components/auth/login-form";
-import { RegisterForm } from "@/components/auth/register-form";
-import { SiteFooter } from "@/components/layout/site-footer";
+import { AuthSplitCard } from "@/components/auth/auth-split-card";
 import { SiteHeader } from "@/components/layout/site-header";
+import { getResolvedBrandingSettings } from "@/lib/branding-store";
 import { getSessionUser } from "@/lib/session";
 
 export const metadata: Metadata = {
@@ -19,28 +18,14 @@ export default async function LoginPage() {
     redirect("/dashboard");
   }
 
-  return (
-    <div className="min-h-screen">
-      <SiteHeader />
-      <main className="section-space">
-        <div className="container-shell">
-          <div className="mb-8 max-w-2xl">
-            <p className="eyebrow text-xs">Account</p>
-            <h1 className="mt-3 text-3xl font-semibold tracking-[-0.04em] sm:text-4xl">
-              Sign in, or register if you don&apos;t have an account yet.
-            </h1>
-            <p className="mt-4 text-lg text-[var(--muted)]">
-              After you enter, we open the dashboard that matches your role — member, partner, or admin.
-            </p>
-          </div>
+  const branding = await getResolvedBrandingSettings();
 
-          <div className="grid gap-6 lg:grid-cols-2 lg:items-start">
-            <LoginForm showRegisterLink={false} />
-            <RegisterForm showSignInLink={false} />
-          </div>
-        </div>
+  return (
+    <div className="auth-screen">
+      <SiteHeader overlay />
+      <main className="auth-screen-main">
+        <AuthSplitCard branding={branding} initialMode="login" />
       </main>
-      <SiteFooter />
     </div>
   );
 }

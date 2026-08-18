@@ -1202,3 +1202,222 @@ textarea {
     color: white;
   }
 }
+
+.auth-screen {
+  min-height: 100svh;
+  background:
+    radial-gradient(circle at 12% 18%, color-mix(in srgb, var(--brand) 42%, transparent), transparent 32%),
+    linear-gradient(160deg, #071428 0%, #0b1f4a 48%, #12357a 100%);
+}
+
+.auth-screen .site-header,
+.auth-screen .site-header-overlay {
+  position: sticky;
+  background: transparent;
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+  color: white;
+}
+
+.auth-screen .site-nav-desktop a,
+.auth-screen .site-header {
+  color: rgba(255, 255, 255, 0.86);
+}
+
+.auth-screen-main {
+  display: grid;
+  place-items: center;
+  padding: 1.25rem 1rem 3rem;
+}
+
+.auth-split {
+  display: grid;
+  width: min(920px, 100%);
+  overflow: hidden;
+  border-radius: 1.6rem;
+  background: white;
+  box-shadow: 0 30px 80px rgba(4, 12, 36, 0.35);
+}
+
+.auth-split-hero {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 22rem;
+  padding: 1.6rem 1.7rem 2rem;
+  color: white;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.16) 0%, transparent 28%),
+    repeating-linear-gradient(
+      -28deg,
+      transparent 0 18px,
+      rgba(255, 255, 255, 0.07) 18px 20px
+    ),
+    linear-gradient(160deg, #1d6bff 0%, #2962ff 42%, #0d36d9 100%);
+}
+
+.auth-split-hero-copy h1 {
+  margin: 2.5rem 0 0;
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+}
+
+.auth-split-hero-copy p {
+  max-width: 28rem;
+  margin: 0.85rem 0 1.4rem;
+  color: rgba(255, 255, 255, 0.88);
+  line-height: 1.7;
+}
+
+.auth-view-more {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.4rem;
+  border-radius: 999px;
+  background: white;
+  color: #111827;
+  padding: 0.45rem 1.15rem;
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.auth-split-form {
+  background: white;
+  color: #111827;
+  padding: 1.8rem 1.6rem 2rem;
+}
+
+.auth-form {
+  display: grid;
+  gap: 0.95rem;
+}
+
+.auth-field {
+  display: grid;
+  gap: 0.4rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.auth-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  min-height: 3rem;
+  border: 1px solid #d7dce5;
+  border-radius: 0.85rem;
+  background: #f7f9fc;
+  padding: 0 0.95rem;
+  color: #64748b;
+}
+
+.auth-input-wrap input {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  outline: none;
+  color: #111827;
+  font: inherit;
+  font-weight: 500;
+}
+
+.auth-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  font-size: 0.86rem;
+}
+
+.auth-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: #334155;
+  font-weight: 500;
+}
+
+.auth-forgot {
+  color: #2962ff;
+  font-weight: 600;
+}
+
+.auth-error {
+  margin: 0;
+  color: #dc2626;
+  font-size: 0.88rem;
+}
+
+.auth-btn-login,
+.auth-btn-signup {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.85rem;
+  width: 100%;
+  border: 0;
+  border-radius: 999px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.auth-btn-login {
+  background: white;
+  color: #111827;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.12);
+}
+
+.auth-btn-signup {
+  background: linear-gradient(90deg, #0d36d9 0%, #2f7bff 52%, #4ecbff 100%);
+  color: white;
+}
+
+.auth-switch-copy {
+  margin: 0.35rem 0 0;
+  color: #2962ff;
+  font-size: 0.92rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.auth-roles {
+  display: grid;
+  gap: 0.55rem;
+  border: 0;
+  margin: 0;
+  padding: 0;
+}
+
+.auth-roles legend {
+  margin-bottom: 0.2rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.auth-roles label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.92rem;
+  font-weight: 500;
+}
+
+@media (min-width: 860px) {
+  .auth-split {
+    grid-template-columns: 1fr 1fr;
+    min-height: 34rem;
+  }
+
+  .auth-split-hero,
+  .auth-split-form {
+    min-height: 34rem;
+  }
+
+  .auth-split-form {
+    display: grid;
+    align-content: center;
+    padding: 2.2rem 2.1rem;
+  }
+}

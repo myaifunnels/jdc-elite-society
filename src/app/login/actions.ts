@@ -11,14 +11,14 @@ export type AuthFormState = {
   error?: string;
 };
 
-async function setSessionCookie(userId: string) {
+async function setSessionCookie(userId: string, remember = true) {
   const cookieStore = await cookies();
   cookieStore.set(sessionCookieName, userId, {
     httpOnly: true,
     sameSite: "lax",
     path: "/",
     secure: process.env.NODE_ENV === "production",
-    maxAge: 60 * 60 * 24 * 30,
+    maxAge: remember ? 60 * 60 * 24 * 30 : undefined,
   });
 }
 
@@ -41,7 +41,7 @@ export async function registerAccount(
   try {
     await ensureSeedUsers();
     const user = await createUser(parsed.data);
-    await setSessionCookie(user.id);
+    await setSessionCookie(user.id, true);
   } catch (error) {
     return {
       error: error instanceof Error ? error.message : "I couldn't create this account just now.",
@@ -71,7 +71,7 @@ export async function loginAccount(
     return { error: "That email and password do not match an account." };
   }
 
-  await setSessionCookie(user.id);
+  await setSessionCookie(user.id, String(formData.get("remember") ?? "") === "on");
   redirect("/dashboard");
 }
 
