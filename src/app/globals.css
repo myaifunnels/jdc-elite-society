@@ -1745,11 +1745,108 @@ a,
   background: var(--background);
 }
 
+.auth-screen-centered {
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 12% 18%, color-mix(in srgb, var(--brand) 22%, transparent), transparent 34%),
+    var(--background);
+}
+
 .auth-screen-main {
   display: flex;
   flex: 1;
   min-height: 100dvh;
   min-height: 100svh;
+}
+
+.auth-screen-main-centered {
+  align-items: center;
+  justify-content: center;
+  padding: max(0.75rem, var(--safe-top)) max(1rem, var(--safe-right)) max(0.75rem, var(--safe-bottom))
+    max(1rem, var(--safe-left));
+}
+
+.auth-card {
+  display: grid;
+  gap: 0.7rem;
+  width: min(46rem, 100%);
+  max-height: calc(100dvh - 1.5rem);
+  overflow: hidden;
+  padding: 1rem 1.15rem 1.1rem;
+  border: 1px solid color-mix(in srgb, #fff 16%, var(--line));
+  border-radius: 1.35rem;
+  background:
+    linear-gradient(145deg, color-mix(in srgb, var(--chrome-bright) 10%, transparent), transparent 32%),
+    color-mix(in srgb, var(--surface-elevated) 88%, transparent);
+  box-shadow: var(--shadow-xl);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+}
+
+.auth-card .site-logo {
+  min-height: 2.4rem;
+  justify-self: start;
+}
+
+.auth-form-register {
+  grid-template-columns: 1fr 1fr;
+  gap: 0.55rem 0.7rem;
+}
+
+.auth-form-register .auth-roles,
+.auth-form-register .auth-error,
+.auth-form-register .auth-btn-signup,
+.auth-form-register .auth-switch-copy {
+  grid-column: 1 / -1;
+}
+
+.auth-card .float-field,
+.auth-card .float-field input,
+.auth-card .float-field select {
+  min-height: 2.65rem;
+}
+
+.auth-card .float-field input,
+.auth-card .float-field select {
+  padding: 0.95rem 0.8rem 0.28rem;
+  font-size: 0.92rem;
+}
+
+.auth-card .float-field.has-icon input,
+.auth-card .float-field.has-icon select {
+  padding-left: 2.35rem;
+}
+
+.auth-card .float-field-icon {
+  left: 0.8rem;
+}
+
+.auth-card .float-field.has-icon .float-field-label {
+  left: 2.35rem;
+}
+
+.auth-card .auth-mode-toggle {
+  margin: 0;
+}
+
+.auth-card .auth-mode-toggle button {
+  min-height: 2.3rem;
+}
+
+.auth-card .auth-btn-signup {
+  min-height: 2.45rem;
+  margin-top: 0.15rem;
+}
+
+.auth-card .auth-switch-copy {
+  margin: 0;
+  font-size: 0.82rem;
+}
+
+.auth-roles-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
 }
 
 .auth-split {
@@ -2068,6 +2165,15 @@ a,
   gap: 0.5rem;
   font-size: 0.92rem;
   font-weight: 500;
+}
+
+.auth-card .auth-roles {
+  gap: 0.3rem;
+}
+
+.auth-card .auth-roles legend {
+  margin-bottom: 0.1rem;
+  font-size: 0.78rem;
 }
 
 @media (min-width: 860px) {

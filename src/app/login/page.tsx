@@ -22,7 +22,7 @@ export default async function LoginPage() {
   return (
     <div className="auth-screen">
       <main className="auth-screen-main">
-        <AuthSplitCard branding={branding} initialMode="login" />
+        <AuthSplitCard branding={branding} />
       </main>
     </div>
   );

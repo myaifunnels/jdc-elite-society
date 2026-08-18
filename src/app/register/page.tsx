@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
-import { AuthSplitCard } from "@/components/auth/auth-split-card";
+import { RegisterCard } from "@/components/auth/register-card";
 import { getResolvedBrandingSettings } from "@/lib/branding-store";
 import { getSessionUser } from "@/lib/session";
 
@@ -20,9 +20,9 @@ export default async function RegisterPage() {
   const branding = await getResolvedBrandingSettings();
 
   return (
-    <div className="auth-screen">
-      <main className="auth-screen-main">
-        <AuthSplitCard branding={branding} initialMode="register" />
+    <div className="auth-screen auth-screen-centered">
+      <main className="auth-screen-main auth-screen-main-centered">
+        <RegisterCard branding={branding} />
       </main>
     </div>
   );
