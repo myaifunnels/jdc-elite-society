@@ -9,7 +9,9 @@ services:
       - key: NODE_VERSION
         value: "22"
       - key: DATABASE_URL
-        sync: false
+        fromDatabase:
+          name: coach-jdc-platform-db
+          property: connectionString
       - key: NEXT_PUBLIC_GOOGLE_MAPS_EMBED_KEY
         sync: false
       - key: R2_ACCOUNT_ID
@@ -22,3 +24,8 @@ services:
         sync: false
       - key: R2_PUBLIC_URL
         sync: false
+databases:
+  - name: coach-jdc-platform-db
+    databaseName: coach_jdc_platform
+    user: coach_jdc_platform
+    plan: free
