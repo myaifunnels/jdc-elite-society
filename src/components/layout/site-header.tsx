@@ -16,6 +16,7 @@ export async function SiteHeader({ overlay = false }: { overlay?: boolean }) {
         </div>
         <PublicHeaderActions
           overlay={overlay}
+          signedIn={Boolean(user)}
           ctaHref={user ? "/dashboard" : "/contact"}
           ctaLabel={user ? "My dashboard" : siteContent.headerCta}
         />

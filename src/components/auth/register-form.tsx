@@ -10,7 +10,13 @@ const initialState: AuthFormState = {};
 const inputClass =
   "w-full rounded-2xl border border-[var(--line)] bg-[color:var(--surface-elevated)]/86 px-4 py-3 outline-none transition focus:border-[var(--brand)] focus:ring-2 focus:ring-[color-mix(in_srgb,var(--brand)_22%,transparent)]";
 
-export function RegisterForm({ compact = false }: { compact?: boolean }) {
+export function RegisterForm({
+  compact = false,
+  showSignInLink = true,
+}: {
+  compact?: boolean;
+  showSignInLink?: boolean;
+}) {
   const [state, formAction, pending] = useActionState(registerAccount, initialState);
 
   return (
@@ -67,12 +73,14 @@ export function RegisterForm({ compact = false }: { compact?: boolean }) {
         {pending ? "Creating account..." : "Create account"}
       </button>
 
-      <p className="text-sm text-[var(--muted)]">
-        Already registered?{" "}
-        <Link href="/login" className="font-semibold text-[var(--brand-dark)]">
-          Sign in
-        </Link>
-      </p>
+      {showSignInLink ? (
+        <p className="text-sm text-[var(--muted)]">
+          Already registered?{" "}
+          <Link href="/login" className="font-semibold text-[var(--brand-dark)]">
+            Sign in
+          </Link>
+        </p>
+      ) : null}
     </form>
   );
 }

@@ -11,12 +11,17 @@ export function PublicHeaderActions({
   overlay = false,
   ctaHref,
   ctaLabel,
+  signedIn = false,
 }: {
   overlay?: boolean;
   ctaHref: string;
   ctaLabel: string;
+  signedIn?: boolean;
 }) {
   const [open, setOpen] = useState(false);
+  const items = signedIn
+    ? navItems
+    : [...navItems, { href: "/login", label: "Sign in" }];
 
   useEffect(() => {
     function onResize() {
@@ -37,7 +42,7 @@ export function PublicHeaderActions({
   return (
     <>
       <nav className="site-nav-desktop">
-        {navItems.map((item) => (
+        {items.map((item) => (
           <Link key={item.href} href={item.href} className="pressable">
             {item.label}
           </Link>
@@ -62,7 +67,7 @@ export function PublicHeaderActions({
       </div>
 
       <div id="mobile-site-nav" className={open ? "site-nav-drawer is-open" : "site-nav-drawer"} hidden={!open}>
-        {navItems.map((item) => (
+        {items.map((item) => (
           <Link key={item.href} href={item.href} className="pressable" onClick={() => setOpen(false)}>
             {item.label}
           </Link>

@@ -10,7 +10,7 @@ const initialState: AuthFormState = {};
 const inputClass =
   "w-full rounded-2xl border border-[var(--line)] bg-[color:var(--surface-elevated)]/86 px-4 py-3 outline-none transition focus:border-[var(--brand)] focus:ring-2 focus:ring-[color-mix(in_srgb,var(--brand)_22%,transparent)]";
 
-export function LoginForm() {
+export function LoginForm({ showRegisterLink = true }: { showRegisterLink?: boolean }) {
   const [state, formAction, pending] = useActionState(loginAccount, initialState);
 
   return (
@@ -42,12 +42,14 @@ export function LoginForm() {
         {pending ? "Signing in..." : "Sign in"}
       </button>
 
-      <p className="mt-4 text-sm text-[var(--muted)]">
-        New here?{" "}
-        <Link href="/register" className="font-semibold text-[var(--brand-dark)]">
-          Create an account
-        </Link>
-      </p>
+      {showRegisterLink ? (
+        <p className="mt-4 text-sm text-[var(--muted)]">
+          New here?{" "}
+          <Link href="/register" className="font-semibold text-[var(--brand-dark)]">
+            Register
+          </Link>
+        </p>
+      ) : null}
     </form>
   );
 }
