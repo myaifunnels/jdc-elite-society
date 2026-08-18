@@ -169,6 +169,48 @@ textarea {
   -webkit-backdrop-filter: blur(24px) saturate(180%);
 }
 
+.visual-frame {
+  position: relative;
+  height: 13.5rem;
+  overflow: hidden;
+  background: #0b1220;
+}
+
+.visual-frame::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 45%, rgba(5, 7, 13, 0.28));
+  pointer-events: none;
+}
+
+.visual-portrait {
+  position: relative;
+  min-height: 28rem;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 2rem;
+  background: #0b1220;
+  box-shadow: var(--shadow-xl);
+}
+
+.visual-mark {
+  display: flex;
+  height: 7.5rem;
+  align-items: flex-end;
+  justify-content: flex-end;
+  padding: 1rem 1.25rem;
+  color: rgba(255, 255, 255, 0.88);
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 3.4rem;
+  font-weight: 600;
+  letter-spacing: -0.06em;
+  line-height: 0.85;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--brand) 72%, #05070d), #0b1220 62%),
+    radial-gradient(circle at 86% 18%, rgba(255, 255, 255, 0.22), transparent 34%);
+}
+
 .interactive-card {
   transition:
     transform 220ms var(--ease-out),
@@ -489,18 +531,36 @@ textarea {
 }
 
 .hero-title-card {
+  position: relative;
   display: flex;
-  min-height: 10.5rem;
+  min-height: 13.5rem;
   flex-direction: column;
   justify-content: flex-end;
+  overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 1rem;
-  background:
-    linear-gradient(180deg, transparent 20%, rgba(5, 7, 13, 0.86)),
-    linear-gradient(135deg, rgba(41, 98, 255, 0.22), rgba(5, 7, 13, 0.55));
+  background: #070b14;
   padding: 1.2rem 1.25rem;
   color: white;
   transition: transform 220ms var(--ease-out);
+}
+
+.hero-title-card-image {
+  object-fit: cover;
+}
+
+.hero-title-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(180deg, rgba(5, 7, 13, 0.12) 10%, rgba(5, 7, 13, 0.88));
+  pointer-events: none;
+}
+
+.hero-title-card-copy {
+  position: relative;
+  z-index: 2;
 }
 
 .hero-title-card p {

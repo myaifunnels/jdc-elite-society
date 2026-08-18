@@ -31,6 +31,8 @@ export const programs: Program[] = [
       },
     ],
     ctaLabel: "Start with Mindset Reset",
+    image: "/media/program-mindset.jpg",
+    imageAlt: "A journal on a table in morning light",
   },
   {
     slug: "business-kickstart",
@@ -62,6 +64,8 @@ export const programs: Program[] = [
       },
     ],
     ctaLabel: "Start with Business Kickstart",
+    image: "/media/program-business.jpg",
+    imageAlt: "A small shop counter at dusk",
   },
   {
     slug: "life-leadership-mentoring",
@@ -93,6 +97,8 @@ export const programs: Program[] = [
       },
     ],
     ctaLabel: "Start with Leadership Mentoring",
+    image: "/media/program-leadership.jpg",
+    imageAlt: "An empty stage under a single spotlight",
   },
   {
     slug: "ofw-retirement-blueprint",
@@ -124,6 +130,8 @@ export const programs: Program[] = [
       },
     ],
     ctaLabel: "Start with the OFW Blueprint",
+    image: "/media/program-ofw.jpg",
+    imageAlt: "An airport window at night with a departing plane",
   },
 ];
 

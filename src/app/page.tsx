@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 import { InquiryForm } from "@/components/forms/inquiry-form";
@@ -27,13 +28,18 @@ export default async function Home() {
             </div>
 
             <div className="grid gap-8 lg:grid-cols-3">
-              {siteContent.problemPoints.map((item) => (
+              {siteContent.problemPoints.map((item, index) => (
                 <article
                   key={item.title}
-                  className="glass-panel interactive-card fade-up rounded-[2rem] p-6 sm:p-8"
+                  className="glass-panel interactive-card fade-up overflow-hidden rounded-[2rem]"
                 >
-                  <h3 className="text-xl font-semibold tracking-[-0.02em]">{item.title}</h3>
-                  <p className="mt-3 text-sm leading-7 text-[var(--muted)]">{item.body}</p>
+                  <div className="visual-mark" aria-hidden="true">
+                    {String(index + 1).padStart(2, "0")}
+                  </div>
+                  <div className="p-6 sm:p-8">
+                    <h3 className="text-xl font-semibold tracking-[-0.02em]">{item.title}</h3>
+                    <p className="mt-3 text-sm leading-7 text-[var(--muted)]">{item.body}</p>
+                  </div>
                 </article>
               ))}
             </div>
@@ -63,8 +69,18 @@ export default async function Home() {
         </section>
 
         <section className="section-space bg-[color:var(--surface)]/60">
-          <div className="container-shell grid gap-8 lg:grid-cols-[0.95fr_1.05fr]">
-            <div className="glass-panel interactive-card fade-up rounded-[2rem] p-8">
+          <div className="container-shell grid items-stretch gap-8 lg:grid-cols-[0.92fr_1.08fr]">
+            <div className="visual-portrait fade-up">
+              <Image
+                src="/media/coach-room.jpg"
+                alt="A quiet coaching room with two chairs"
+                fill
+                sizes="(max-width: 1024px) 100vw, 46vw"
+                className="object-cover"
+              />
+            </div>
+
+            <div className="glass-panel interactive-card fade-up fade-up-delay-1 rounded-[2rem] p-8">
               <p className="eyebrow text-xs">{siteContent.mentorEyebrow}</p>
               <h2 className="mt-3 text-3xl font-semibold tracking-[-0.03em]">{siteContent.mentorHeading}</h2>
               <p className="mt-4 text-[var(--muted)]">{siteContent.mentorBody}</p>
@@ -80,11 +96,13 @@ export default async function Home() {
                 ))}
               </ul>
             </div>
+          </div>
 
-            <div className="glass-panel interactive-card fade-up fade-up-delay-1 rounded-[2rem] p-8">
+          <div className="container-shell mt-8">
+            <div className="glass-panel interactive-card fade-up rounded-[2rem] p-8">
               <p className="eyebrow text-xs">{siteContent.deliveryEyebrow}</p>
               <h2 className="mt-3 text-3xl font-semibold tracking-[-0.03em]">{siteContent.deliveryHeading}</h2>
-              <ul className="mt-6 grid gap-4 text-sm text-[var(--muted)]">
+              <ul className="mt-6 grid gap-4 text-sm text-[var(--muted)] md:grid-cols-2">
                 {siteContent.communityBullets.map((item) => (
                   <li
                     key={item}

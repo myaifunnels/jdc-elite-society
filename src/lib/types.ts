@@ -8,6 +8,8 @@ export type Program = {
   modules: string[];
   faqs: { question: string; answer: string }[];
   ctaLabel: string;
+  image: string;
+  imageAlt: string;
 };
 
 export type NavItem = {

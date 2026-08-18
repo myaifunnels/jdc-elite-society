@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
@@ -133,9 +134,18 @@ export function HeroBillboard() {
         <div className="hero-row-track">
           {programs.slice(0, 4).map((program) => (
             <Link key={program.slug} href={`/programs/${program.slug}`} className="hero-title-card">
-              <p>Program</p>
-              <strong>{program.title}</strong>
-              <span>{program.shortDescription}</span>
+              <Image
+                src={program.image}
+                alt={program.imageAlt}
+                fill
+                sizes="(max-width: 900px) 50vw, 25vw"
+                className="hero-title-card-image"
+              />
+              <div className="hero-title-card-copy">
+                <p>Program</p>
+                <strong>{program.title}</strong>
+                <span>{program.shortDescription}</span>
+              </div>
             </Link>
           ))}
         </div>

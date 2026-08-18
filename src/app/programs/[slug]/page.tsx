@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -43,24 +44,36 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
       <SiteHeader />
       <main className="section-space">
         <div className="container-shell">
-          <div className="card-surface rounded-[2rem] p-8 sm:p-10">
-            <p className="text-xs uppercase tracking-[0.3em] text-[var(--brand-dark)]">A program from Coach JDC</p>
-            <h1 className="mt-3 max-w-3xl text-5xl font-semibold tracking-tight">{program.title}</h1>
-            <p className="mt-4 max-w-2xl text-lg text-[var(--muted)]">{program.shortDescription}</p>
+          <div className="card-surface overflow-hidden rounded-[2rem]">
+            <div className="relative min-h-[18rem] sm:min-h-[22rem]">
+              <Image
+                src={program.image}
+                alt={program.imageAlt}
+                fill
+                priority
+                sizes="(max-width: 1024px) 100vw, 1200px"
+                className="object-cover"
+              />
+            </div>
+            <div className="p-8 sm:p-10">
+              <p className="text-xs uppercase tracking-[0.3em] text-[var(--brand-dark)]">A program from Coach JDC</p>
+              <h1 className="mt-3 max-w-3xl text-5xl font-semibold tracking-tight">{program.title}</h1>
+              <p className="mt-4 max-w-2xl text-lg text-[var(--muted)]">{program.shortDescription}</p>
 
-            <div className="mt-8 flex flex-wrap gap-4">
-              <Link
-                href={`/contact?program=${encodeURIComponent(program.title)}`}
-                className="rounded-full bg-[var(--brand)] px-6 py-3 font-semibold text-white transition hover:bg-[var(--brand-dark)]"
-              >
-                {program.ctaLabel}
-              </Link>
-              <Link
-                href="/programs"
-                className="rounded-full border border-black/10 px-6 py-3 font-semibold transition hover:border-black/30"
-              >
-                See the other tracks
-              </Link>
+              <div className="mt-8 flex flex-wrap gap-4">
+                <Link
+                  href={`/contact?program=${encodeURIComponent(program.title)}`}
+                  className="rounded-full bg-[var(--brand)] px-6 py-3 font-semibold text-white transition hover:bg-[var(--brand-dark)]"
+                >
+                  {program.ctaLabel}
+                </Link>
+                <Link
+                  href="/programs"
+                  className="rounded-full border border-black/10 px-6 py-3 font-semibold transition hover:border-black/30"
+                >
+                  See the other tracks
+                </Link>
+              </div>
             </div>
           </div>
 
