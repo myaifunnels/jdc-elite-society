@@ -36,8 +36,9 @@ export function HeroBillboard() {
     const video = videoRef.current;
     if (!video) return;
 
-    video.muted = false;
     video.defaultMuted = false;
+    video.muted = false;
+    video.removeAttribute("muted");
     video.volume = 1;
     setMuted(false);
 
@@ -60,25 +61,12 @@ export function HeroBillboard() {
     const video = videoRef.current;
     if (!video) return;
 
-    if (video.paused || muted) {
+    if (video.paused || muted || video.muted) {
       await playWithSound();
       return;
     }
 
     await pauseVideo();
-  }
-
-  async function toggleMute() {
-    const video = videoRef.current;
-    if (!video) return;
-
-    if (muted) {
-      await playWithSound();
-      return;
-    }
-
-    video.muted = true;
-    setMuted(true);
   }
 
   const showPlayIcon = !playing || muted;
@@ -90,7 +78,7 @@ export function HeroBillboard() {
           ref={videoRef}
           className="hero-video"
           autoPlay
-          muted={muted}
+          muted
           loop
           playsInline
           preload="auto"
@@ -99,25 +87,25 @@ export function HeroBillboard() {
           <source src={HERO_VIDEO_SRC} type="video/mp4" />
           <source src={HERO_VIDEO_SRC} type="video/quicktime" />
         </video>
-
-        <button
-          type="button"
-          className={showPlayIcon ? "hero-play pressable is-waiting" : "hero-play pressable"}
-          onClick={onPlayClick}
-          aria-label={showPlayIcon ? "Play hero video with sound" : "Pause hero video"}
-        >
-          {showPlayIcon ? (
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M8 5.8v12.4c0 .7.8 1.1 1.4.7l9.2-6.2c.6-.4.6-1.2 0-1.6L9.4 5.1C8.8 4.7 8 5.1 8 5.8Z" />
-            </svg>
-          ) : (
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <rect x="6" y="5" width="4.5" height="14" rx="1" />
-              <rect x="13.5" y="5" width="4.5" height="14" rx="1" />
-            </svg>
-          )}
-        </button>
       </div>
+
+      <button
+        type="button"
+        className={showPlayIcon ? "hero-play pressable is-waiting" : "hero-play pressable"}
+        onClick={onPlayClick}
+        aria-label={showPlayIcon ? "Play video" : "Pause video"}
+      >
+        {showPlayIcon ? (
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M8 5.8v12.4c0 .7.8 1.1 1.4.7l9.2-6.2c.6-.4.6-1.2 0-1.6L9.4 5.1C8.8 4.7 8 5.1 8 5.8Z" />
+          </svg>
+        ) : (
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="6" y="5" width="4.5" height="14" rx="1" />
+            <rect x="13.5" y="5" width="4.5" height="14" rx="1" />
+          </svg>
+        )}
+      </button>
 
       <div className="hero-copy container-shell">
         <p className="fade-up hero-kicker">{siteContent.eyebrow}</p>
@@ -130,15 +118,12 @@ export function HeroBillboard() {
         <p className="fade-up fade-up-delay-2 hero-synopsis">{siteContent.subheadline}</p>
 
         <div className="fade-up fade-up-delay-3 hero-actions">
-          <button type="button" className="button-primary pressable hero-cta" onClick={onPlayClick}>
-            {showPlayIcon ? "Play with sound" : "Pause video"}
-          </button>
-          <Link href={siteContent.primaryCta.href} className="button-secondary pressable hero-cta hero-cta-more">
+          <Link href={siteContent.primaryCta.href} className="button-primary pressable hero-cta">
             {siteContent.primaryCta.label}
           </Link>
-          <button type="button" className="hero-mute pressable" onClick={toggleMute}>
-            {muted ? "Sound off" : "Sound on"}
-          </button>
+          <Link href={siteContent.secondaryCta.href} className="button-secondary pressable hero-cta hero-cta-more">
+            {siteContent.secondaryCta.label}
+          </Link>
         </div>
       </div>
 
