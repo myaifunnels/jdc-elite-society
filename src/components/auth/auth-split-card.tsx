@@ -8,6 +8,7 @@ import { useActionState, useState } from "react";
 import { AuthFormState, loginAccount, registerAccount } from "@/app/login/actions";
 import { SiteLogo } from "@/components/branding/site-logo";
 import { BrandingSettings } from "@/lib/branding";
+import { audienceOptions } from "@/lib/validations";
 
 const initialState: AuthFormState = {};
 
@@ -112,6 +113,22 @@ export function AuthSplitCard({
               <span className="auth-input-wrap">
                 <Lock size={16} aria-hidden />
                 <input name="password" type="password" autoComplete="new-password" placeholder="At least 8 characters" />
+              </span>
+            </label>
+
+            <label className="auth-field">
+              <span>What best describes you?</span>
+              <span className="auth-input-wrap">
+                <select name="bestDescribesYou" defaultValue="" required>
+                  <option value="" disabled>
+                    Select one
+                  </option>
+                  {audienceOptions.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
               </span>
             </label>
 

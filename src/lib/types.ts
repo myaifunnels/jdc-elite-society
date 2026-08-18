@@ -29,6 +29,7 @@ export type AuthUser = {
   name: string;
   email: string;
   role: DashboardRole;
+  bestDescribesYou?: string;
   createdAt: string;
 };
 

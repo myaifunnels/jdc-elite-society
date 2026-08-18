@@ -14,13 +14,15 @@ export async function POST(request: Request) {
     );
   }
 
+  const audience = parsed.data.bestDescribesYou?.trim() || "Not specified";
   const lead = createLead({
     ...parsed.data,
+    bestDescribesYou: audience,
     tags: Array.from(
       new Set(
         [
           ...parsed.data.tags.split(",").map((tag) => tag.trim()),
-          parsed.data.bestDescribesYou,
+          audience !== "Not specified" ? audience : "",
         ].filter(Boolean),
       ),
     ),

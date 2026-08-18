@@ -17,6 +17,7 @@ export function HeroBillboard() {
   const soundOnRef = useRef(false);
   const pipDismissedRef = useRef(false);
   const pipRef = useRef(false);
+  const playLockRef = useRef(0);
   const [muted, setMuted] = useState(true);
   const [playing, setPlaying] = useState(false);
   const [pip, setPip] = useState(false);
@@ -46,8 +47,8 @@ export function HeroBillboard() {
       const playPromise = video.play();
       if (playPromise) {
         playPromise
-          .then(() => setPlaying(true))
-          .catch(() => setPlaying(false));
+          .then(() => setPlaying(!video.paused))
+          .catch(() => setPlaying(!video.paused));
       }
     };
 
@@ -85,7 +86,7 @@ export function HeroBillboard() {
       wrap.style.height = `${rect.height}px`;
       wrap.style.right = "auto";
       wrap.style.bottom = "auto";
-      wrap.style.zIndex = "1";
+      wrap.style.zIndex = "5";
     };
 
     const updatePipFromSlot = () => {
@@ -128,7 +129,6 @@ export function HeroBillboard() {
     video.addEventListener("playing", onPlaying);
     video.addEventListener("pause", onPause);
     document.addEventListener("visibilitychange", onVisibility);
-    window.addEventListener("touchstart", tryPlayMuted, { passive: true, once: true });
     window.addEventListener("scroll", updatePipFromSlot, { passive: true });
     window.addEventListener("resize", updatePipFromSlot);
 
@@ -170,7 +170,15 @@ export function HeroBillboard() {
       await video.play();
       setPlaying(true);
     } catch {
-      setPlaying(false);
+      try {
+        video.muted = true;
+        await video.play();
+        video.muted = false;
+        await video.play();
+        setPlaying(true);
+      } catch {
+        setPlaying(!video.paused);
+      }
     }
   }
 
@@ -181,7 +189,14 @@ export function HeroBillboard() {
     setPlaying(false);
   }
 
-  async function onPlayClick() {
+  async function onPlayClick(event?: React.SyntheticEvent) {
+    event?.preventDefault();
+    event?.stopPropagation();
+
+    const now = Date.now();
+    if (now - playLockRef.current < 350) return;
+    playLockRef.current = now;
+
     const video = videoRef.current;
     if (!video) return;
 
@@ -233,8 +248,9 @@ export function HeroBillboard() {
           <button
             type="button"
             className={showPlayIcon ? "hero-play pressable is-waiting" : "hero-play pressable"}
+            onPointerUp={onPlayClick}
             onClick={onPlayClick}
-            aria-label={showPlayIcon ? "Play with sound" : "Pause video"}
+            aria-label={showPlayIcon ? "Play video" : "Pause video"}
           >
             {showPlayIcon ? (
               <svg viewBox="0 0 24 24" aria-hidden="true">

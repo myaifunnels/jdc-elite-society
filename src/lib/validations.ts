@@ -17,7 +17,7 @@ export const leadSchema = z.object({
   address: z.string().min(5, "Address is required."),
   city: z.string().min(2, "City is required."),
   tags: z.string().min(2, "Add at least one tag."),
-  bestDescribesYou: z.string().min(2, "Tell me what best describes you."),
+  bestDescribesYou: z.string().optional(),
   programInterest: z.string().min(2, "Select a program."),
   assignedPartner: z.string().optional(),
 });
@@ -29,6 +29,7 @@ export const registerSchema = z.object({
   email: z.email("Enter a valid email."),
   password: z.string().min(8, "Use at least 8 characters."),
   role: z.enum(["member", "partner"], { message: "Choose how you are joining." }),
+  bestDescribesYou: z.enum(audienceOptions, { message: "Tell me what best describes you." }),
 });
 
 export const loginSchema = z.object({

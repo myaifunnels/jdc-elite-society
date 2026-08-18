@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useActionState } from "react";
 
 import { AuthFormState, registerAccount } from "@/app/login/actions";
+import { audienceOptions } from "@/lib/validations";
 
 const initialState: AuthFormState = {};
 
@@ -43,6 +44,19 @@ export function RegisterForm({
         <label className="grid gap-2 text-sm">
           <span className="font-medium">Password</span>
           <input name="password" type="password" autoComplete="new-password" className={inputClass} />
+        </label>
+        <label className="grid gap-2 text-sm">
+          <span className="font-medium">What best describes you?</span>
+          <select name="bestDescribesYou" className={inputClass} defaultValue="" required>
+            <option value="" disabled>
+              Select one
+            </option>
+            {audienceOptions.map((option) => (
+              <option key={option} value={option}>
+                {option}
+              </option>
+            ))}
+          </select>
         </label>
         <fieldset className="grid gap-3">
           <legend className="text-sm font-medium">What best describes your role here?</legend>

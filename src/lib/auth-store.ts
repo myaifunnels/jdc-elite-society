@@ -38,6 +38,7 @@ function publicUser(user: AuthUserRecord): AuthUser {
     name: user.name,
     email: user.email,
     role: user.role,
+    bestDescribesYou: user.bestDescribesYou,
     createdAt: user.createdAt,
   };
 }
@@ -48,6 +49,7 @@ function mapRow(row: Record<string, unknown>): AuthUserRecord {
     name: String(row.name ?? ""),
     email: String(row.email ?? "").toLowerCase(),
     role: row.role === "admin" || row.role === "partner" || row.role === "member" ? row.role : "member",
+    bestDescribesYou: String(row.best_describes_you ?? ""),
     passwordHash: String(row.password_hash ?? ""),
     createdAt: String(row.created_at ?? new Date().toISOString()),
   };
@@ -67,6 +69,10 @@ async function ensureTable(client: Pool) {
       password_hash TEXT NOT NULL,
       created_at TIMESTAMPTZ DEFAULT NOW()
     )
+  `);
+  await client.query(`
+    ALTER TABLE site_users
+    ADD COLUMN IF NOT EXISTS best_describes_you TEXT NOT NULL DEFAULT ''
   `);
   tableReady = true;
 }
@@ -132,6 +138,7 @@ export async function createUser(input: {
   email: string;
   password: string;
   role: Exclude<DashboardRole, "admin"> | "admin";
+  bestDescribesYou?: string;
 }) {
   const email = input.email.trim().toLowerCase();
   const existing = await findUserByEmail(email);
@@ -145,6 +152,7 @@ export async function createUser(input: {
     name: input.name.trim(),
     email,
     role: input.role,
+    bestDescribesYou: input.bestDescribesYou ?? "",
     passwordHash: await hashPassword(input.password),
     createdAt: new Date().toISOString(),
   };
@@ -157,10 +165,10 @@ export async function createUser(input: {
       await ensureTable(client);
       await client.query(
         `
-        INSERT INTO site_users (id, name, email, role, password_hash, created_at)
-        VALUES ($1, $2, $3, $4, $5, $6)
+        INSERT INTO site_users (id, name, email, role, password_hash, created_at, best_describes_you)
+        VALUES ($1, $2, $3, $4, $5, $6, $7)
         `,
-        [user.id, user.name, user.email, user.role, user.passwordHash, user.createdAt],
+        [user.id, user.name, user.email, user.role, user.passwordHash, user.createdAt, user.bestDescribesYou],
       );
     } catch (error) {
       console.error("Failed to persist user", error);

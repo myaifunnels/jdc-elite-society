@@ -31,6 +31,7 @@ export async function registerAccount(
     email: String(formData.get("email") ?? "").trim(),
     password: String(formData.get("password") ?? ""),
     role: String(formData.get("role") ?? ""),
+    bestDescribesYou: String(formData.get("bestDescribesYou") ?? ""),
   });
 
   if (!parsed.success) {

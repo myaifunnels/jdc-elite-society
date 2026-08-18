@@ -591,6 +591,12 @@ a,
   min-height: 68svh;
   padding-top: calc(6.75rem + var(--safe-top));
   padding-bottom: 2.75rem;
+  pointer-events: none;
+}
+
+.hero-copy a,
+.hero-copy button {
+  pointer-events: auto;
 }
 
 .hero-kicker {

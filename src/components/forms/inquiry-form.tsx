@@ -7,7 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { programs } from "@/data/programs";
 import { siteContent } from "@/data/site-content";
 import { cn } from "@/lib/utils";
-import { audienceOptions, LeadInput, leadSchema } from "@/lib/validations";
+import { LeadInput, leadSchema } from "@/lib/validations";
 
 type InquiryFormProps = {
   className?: string;
@@ -28,7 +28,6 @@ export function InquiryForm({ className, defaultProgram, showIntro = true }: Inq
       address: "",
       city: "",
       tags: defaultProgram ? `${defaultProgram}, Website` : "Website, Warm lead",
-      bestDescribesYou: "",
       programInterest: defaultProgram ?? programs[0].title,
       assignedPartner: "",
     }),
@@ -99,17 +98,6 @@ export function InquiryForm({ className, defaultProgram, showIntro = true }: Inq
         </div>
 
         <div className="mt-4 grid gap-4 md:grid-cols-2">
-          <Field label="What best describes you?" error={errors.bestDescribesYou?.message}>
-            <select className={inputClass} {...register("bestDescribesYou")}>
-              <option value="">Select one</option>
-              {audienceOptions.map((option) => (
-                <option key={option} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
-          </Field>
-
           <Field label="Which program are you considering?" error={errors.programInterest?.message}>
             <select className={inputClass} {...register("programInterest")}>
               {programs.map((program) => (
