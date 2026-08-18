@@ -16,10 +16,10 @@ export const heroStats: SiteStat[] = [
 
 export const siteContent = {
   title: "Coach Jayson Dela Cruz",
-  eyebrow: "JDC Original",
+  eyebrow: "Coach Jayson Dela Cruz",
   headline: "Start your breakthrough today.",
   subheadline:
-    "A modern coaching platform for growth, accountability, and real-world progress for OFWs, employees, and first-time entrepreneurs.",
+    "Mentorship, mindset, and practical systems for OFWs, employees, and first-time entrepreneurs who are ready to rise.",
   primaryCta: { href: "/contact", label: "Book an Inquiry" },
   secondaryCta: { href: "/programs", label: "Explore Programs" },
   mentorHeading: "Coach Jayson Dela Cruz has guided thousands of Filipinos to rise.",

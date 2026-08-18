@@ -3,7 +3,7 @@ import Link from "next/link";
 import { InquiryForm } from "@/components/forms/inquiry-form";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
-import { HeroVideo } from "@/components/sections/hero-video";
+import { HeroBillboard } from "@/components/sections/hero-billboard";
 import { ProgramCard } from "@/components/sections/program-card";
 import { programs } from "@/data/programs";
 import { siteContent } from "@/data/site-content";
@@ -11,55 +11,10 @@ import { siteContent } from "@/data/site-content";
 export default async function Home() {
   return (
     <div className="min-h-screen">
-      <SiteHeader />
+      <SiteHeader overlay />
 
       <main>
-        <section className="hero-netflix">
-          <div className="hero-video-wrap">
-            <HeroVideo />
-          </div>
-
-          <div className="hero-copy container-shell">
-            <p className="fade-up hero-kicker">JDC Original</p>
-            <h1 className="fade-up fade-up-delay-1 hero-title">
-              {siteContent.headline}
-            </h1>
-            <p className="fade-up fade-up-delay-1 hero-meta">
-              <span>Featured</span>
-              <span>Mindset</span>
-              <span>Business</span>
-              <span>Mentorship</span>
-            </p>
-            <p className="fade-up fade-up-delay-2 hero-synopsis">
-              {siteContent.subheadline}
-            </p>
-
-            <div className="fade-up fade-up-delay-3 hero-actions">
-              <Link href={siteContent.primaryCta.href} className="button-primary pressable hero-cta">
-                {siteContent.primaryCta.label}
-              </Link>
-              <Link href={siteContent.secondaryCta.href} className="button-secondary pressable hero-cta hero-cta-more">
-                More Info
-              </Link>
-            </div>
-          </div>
-
-          <div className="hero-row container-shell">
-            <div className="hero-row-head">
-              <h2>Featured programs</h2>
-              <Link href="/programs">Browse all</Link>
-            </div>
-            <div className="hero-row-track">
-              {programs.slice(0, 4).map((program) => (
-                <Link key={program.slug} href={`/programs/${program.slug}`} className="hero-title-card">
-                  <p>Now streaming</p>
-                  <strong>{program.title}</strong>
-                  <span>{program.shortDescription}</span>
-                </Link>
-              ))}
-            </div>
-          </div>
-        </section>
+        <HeroBillboard />
 
         <section className="section-space pt-0">
           <div className="container-shell">

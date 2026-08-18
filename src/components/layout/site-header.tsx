@@ -4,11 +4,11 @@ import { navItems } from "@/data/site-content";
 import { getSessionUser } from "@/lib/session";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 
-export async function SiteHeader() {
+export async function SiteHeader({ overlay = false }: { overlay?: boolean }) {
   const user = await getSessionUser();
 
   return (
-    <header className="sticky top-0 z-30 border-b border-[var(--line)] bg-[color:var(--background)]/72 backdrop-blur-2xl">
+    <header className={overlay ? "site-header site-header-overlay" : "site-header"}>
       <div className="container-shell flex items-center justify-between py-4">
         <div className="fade-up">
           <Link href="/" className="block">
