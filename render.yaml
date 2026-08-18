@@ -3,6 +3,8 @@ services:
     name: coach-jdc-platform
     runtime: node
     plan: starter
+    branch: main
+    autoDeployTrigger: commit
     domains:
       - coachjdc.org
       - www.coachjdc.org

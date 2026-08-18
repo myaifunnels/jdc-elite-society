@@ -14,7 +14,9 @@ This is a standing instruction for every turn in this repo.
 - Use a concise commit message that matches the change just made.
 - Never commit secrets (`.env`, credentials, keys, tokens).
 - After every push, verify production at https://coachjdc.org/:
-  - Confirm the latest Render deploy is live.
+  - Confirm the latest Render deploy is live for the commit just pushed.
   - Open or fetch the homepage and check that the expected hero copy, video, and CTAs are actually on the public site.
+  - If Render has not started a deploy, push a follow-up commit on `main` (including an empty commit if needed) so auto-deploy on `commit` fires.
   - If the site is stale, failing, or still deploying, say so clearly and keep watching until it is live or the blocker is known.
 - If the push or live check fails, report the error and continue with the next safe recovery step.
+- Shipping is not done until https://coachjdc.org/ shows the change, not only when GitHub has the commit.
