@@ -19,8 +19,8 @@ export function LogoSettingsForm({ branding }: { branding: BrandingSettings }) {
         <div>
           <p className="text-sm font-semibold">Logo and logo link</p>
           <p className="mt-2 text-sm text-[var(--muted)]">
-            Add a public logo image and choose where it should go when visitors click it in the site header.
-            The same logo also appears at the top of this admin sidebar.
+            Add a public logo image. Clicking the logo in the site header and footer always goes to the homepage,
+            not the image file. The same logo also appears at the top of this admin sidebar.
           </p>
         </div>
         {branding.logoUrl ? (
@@ -52,19 +52,7 @@ export function LogoSettingsForm({ branding }: { branding: BrandingSettings }) {
           </span>
         </label>
 
-        <label className="grid gap-2 text-sm">
-          <span className="font-medium">Logo link</span>
-          <input
-            name="logoHref"
-            autoComplete="off"
-            defaultValue={branding.logoHref}
-            placeholder="/"
-            className={inputClass}
-          />
-          <span className="text-[var(--muted)]">
-            Use `/` for the homepage, a path like `/programs`, or a full https URL.
-          </span>
-        </label>
+        <input type="hidden" name="logoHref" value="/" />
 
         <label className="grid gap-2 text-sm">
           <span className="font-medium">Alt text</span>
@@ -85,7 +73,7 @@ export function LogoSettingsForm({ branding }: { branding: BrandingSettings }) {
           disabled={pending}
           className="button-primary pressable w-fit rounded-full px-4 py-2 text-sm font-semibold disabled:opacity-70"
         >
-          {pending ? "Saving..." : "Save logo link"}
+          {pending ? "Saving..." : "Save logo"}
         </button>
       </form>
     </section>

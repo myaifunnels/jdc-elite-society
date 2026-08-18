@@ -18,15 +18,49 @@ export function envBrandingSettings(): Partial<BrandingSettings> {
   };
 }
 
+function looksLikeImageAsset(value: string) {
+  const pathname = value.startsWith("/") ? value.split("?")[0] : (() => {
+    try {
+      return new URL(value).pathname;
+    } catch {
+      return value;
+    }
+  })();
+
+  return /\.(avif|gif|ico|jpe?g|png|svg|webp)$/i.test(pathname);
+}
+
+export function resolveLogoHref(href: string | undefined, logoUrl = "") {
+  const destination = href?.trim() || defaultBrandingSettings.logoHref;
+
+  if (!isSafeHref(destination)) {
+    return defaultBrandingSettings.logoHref;
+  }
+
+  if (logoUrl && destination === logoUrl) {
+    return defaultBrandingSettings.logoHref;
+  }
+
+  if (looksLikeImageAsset(destination)) {
+    return defaultBrandingSettings.logoHref;
+  }
+
+  return destination;
+}
+
 export function mergeBrandingSettings(
   saved: Partial<BrandingSettings> | null,
   env = envBrandingSettings(),
 ): BrandingSettings {
-  const logoHref = saved?.logoHref || env.logoHref || defaultBrandingSettings.logoHref;
+  const logoUrl = saved?.logoUrl || env.logoUrl || defaultBrandingSettings.logoUrl;
+  const logoHref = resolveLogoHref(
+    saved?.logoHref || env.logoHref || defaultBrandingSettings.logoHref,
+    logoUrl,
+  );
 
   return {
-    logoUrl: saved?.logoUrl || env.logoUrl || defaultBrandingSettings.logoUrl,
-    logoHref: isSafeHref(logoHref) ? logoHref : defaultBrandingSettings.logoHref,
+    logoUrl,
+    logoHref,
     logoAlt: saved?.logoAlt || env.logoAlt || defaultBrandingSettings.logoAlt,
   };
 }

@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { BrandingSettings, isSafeHref } from "@/lib/branding";
+import { BrandingSettings, resolveLogoHref } from "@/lib/branding";
 import { cn } from "@/lib/utils";
 
 export function SiteLogo({
@@ -14,8 +14,7 @@ export function SiteLogo({
   compact?: boolean;
   inverted?: boolean;
 }) {
-  const destination = href ?? branding.logoHref;
-  const safeHref = isSafeHref(destination) ? destination : "/";
+  const safeHref = resolveLogoHref(href ?? "/", branding.logoUrl);
   const isExternal = safeHref.startsWith("http");
   const className = cn(
     "pressable inline-flex min-h-11 min-w-0 items-center gap-3 rounded-2xl pr-2 text-left",

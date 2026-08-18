@@ -61,7 +61,7 @@ export async function SiteFooter() {
     <footer className="site-footer">
       <div className="container-shell site-footer-grid">
         <div className="site-footer-brand">
-          <SiteLogo branding={branding} inverted compact={Boolean(branding.logoUrl)} />
+          <SiteLogo branding={branding} href="/" inverted compact={Boolean(branding.logoUrl)} />
           <p>{siteContent.footerBlurb}</p>
           <div className="site-footer-socials">
             {socialLinks.map((item) => (
