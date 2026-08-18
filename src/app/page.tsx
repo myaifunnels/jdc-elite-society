@@ -80,7 +80,7 @@ export default async function Home() {
               />
             </div>
 
-            <div className="glass-panel interactive-card fade-up fade-up-delay-1 rounded-[2rem] p-8">
+            <div className="glass-panel interactive-card fade-up fade-up-delay-1 rounded-[2rem] p-6 sm:p-8">
               <p className="eyebrow text-xs">{siteContent.mentorEyebrow}</p>
               <h2 className="mt-3 text-3xl font-semibold tracking-[-0.03em]">{siteContent.mentorHeading}</h2>
               <p className="mt-4 text-[var(--muted)]">{siteContent.mentorBody}</p>
@@ -118,7 +118,7 @@ export default async function Home() {
 
         <section className="section-space">
           <div className="container-shell">
-            <div className="glass-panel fade-up rounded-[2rem] p-8 sm:p-10">
+            <div className="glass-panel fade-up rounded-[2rem] p-6 sm:p-10">
               <p className="eyebrow text-xs">The standard</p>
               <h2 className="mt-3 text-3xl font-semibold tracking-[-0.03em]">
                 {siteContent.frameworkHeading}

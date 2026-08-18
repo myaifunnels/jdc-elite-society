@@ -20,7 +20,7 @@ export default async function AboutPage() {
             <p className="text-xs uppercase tracking-[0.3em] text-[var(--brand-dark)]">
               {siteContent.mentorEyebrow}
             </p>
-            <h1 className="mt-3 text-4xl font-semibold">{siteContent.mentorHeading}</h1>
+            <h1 className="mt-3 text-3xl font-semibold sm:text-4xl">{siteContent.mentorHeading}</h1>
             <p className="mt-4 text-lg leading-8 text-[var(--muted)]">{siteContent.mentorBody}</p>
 
             <div className="mt-8 grid gap-4">

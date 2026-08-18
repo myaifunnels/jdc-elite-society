@@ -18,7 +18,7 @@ export default async function LoginPage() {
         <div className="container-shell max-w-5xl">
           <div className="mb-8 max-w-2xl">
             <p className="eyebrow text-xs">Dashboard access</p>
-            <h1 className="mt-3 text-5xl font-semibold tracking-[-0.04em]">
+            <h1 className="mt-3 text-3xl font-semibold tracking-[-0.04em] sm:text-4xl lg:text-5xl">
               Enter the CRM workspace as an admin or partner.
             </h1>
             <p className="mt-4 text-lg text-[var(--muted)]">

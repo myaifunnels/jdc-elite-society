@@ -138,7 +138,7 @@ export function HeroBillboard() {
                 src={program.image}
                 alt={program.imageAlt}
                 fill
-                sizes="(max-width: 900px) 50vw, 25vw"
+                sizes="(max-width: 640px) 82vw, (max-width: 1100px) 40vw, 25vw"
                 className="hero-title-card-image"
               />
               <div className="hero-title-card-copy">

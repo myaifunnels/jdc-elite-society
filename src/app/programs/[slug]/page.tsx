@@ -57,9 +57,9 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
                   className="object-cover"
                 />
               </div>
-              <div className="p-8 sm:p-10">
+              <div className="p-5 sm:p-10">
                 <p className="text-xs uppercase tracking-[0.3em] text-[var(--brand-dark)]">A program from Coach JDC</p>
-                <h1 className="mt-3 max-w-3xl text-5xl font-semibold tracking-tight">{program.title}</h1>
+                <h1 className="mt-3 max-w-3xl text-3xl font-semibold tracking-tight sm:text-4xl lg:text-5xl">{program.title}</h1>
                 <p className="mt-4 max-w-2xl text-lg text-[var(--muted)]">{program.shortDescription}</p>
 
                 <div className="mt-8 flex flex-wrap gap-4">

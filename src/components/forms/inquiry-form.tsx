@@ -134,7 +134,7 @@ export function InquiryForm({ className, defaultProgram, showIntro = true }: Inq
           <button
             type="submit"
             disabled={isSubmitting}
-            className="button-primary pressable rounded-full px-5 py-3 font-semibold disabled:opacity-70"
+            className="button-primary pressable w-full rounded-full px-5 py-3 font-semibold disabled:opacity-70 sm:w-auto"
           >
             {isSubmitting ? siteContent.inquiry.submitting : siteContent.inquiry.submit}
           </button>
@@ -191,4 +191,4 @@ function Field({
 }
 
 const inputClass =
-  "w-full rounded-2xl border border-[var(--line)] bg-[color:var(--surface-elevated)]/86 px-4 py-3 outline-none transition focus:border-[var(--brand)] focus:ring-2 focus:ring-[rgba(184,134,77,0.18)]";
+  "w-full rounded-2xl border border-[var(--line)] bg-[color:var(--surface-elevated)]/86 px-4 py-3 outline-none transition focus:border-[var(--brand)] focus:ring-2 focus:ring-[color-mix(in_srgb,var(--brand)_22%,transparent)]";

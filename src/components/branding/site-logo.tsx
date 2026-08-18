@@ -17,7 +17,7 @@ export function SiteLogo({
   const safeHref = resolveLogoHref(href ?? "/", branding.logoUrl);
   const isExternal = safeHref.startsWith("http");
   const className = cn(
-    "pressable inline-flex min-h-11 min-w-0 items-center gap-3 rounded-2xl pr-2 text-left",
+    "site-logo pressable inline-flex min-h-11 min-w-0 items-center gap-3 rounded-2xl pr-2 text-left",
     inverted && "text-white",
   );
 
@@ -29,7 +29,7 @@ export function SiteLogo({
         <img
           src={branding.logoUrl}
           alt={branding.logoAlt || "Coach JDC"}
-          className="h-9 w-auto max-w-[10.5rem] object-contain"
+          className="site-logo-image h-9 w-auto object-contain"
         />
       ) : (
         <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-[var(--brand)] text-[0.68rem] font-bold tracking-[0.08em] text-white">

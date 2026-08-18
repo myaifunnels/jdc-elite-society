@@ -15,7 +15,7 @@ export function ProgramCard({ program }: { program: Program }) {
           className="object-cover"
         />
       </div>
-      <div className="p-7 sm:p-8">
+      <div className="p-5 sm:p-8">
         <p className="eyebrow text-xs">Featured program</p>
         <h3 className="mt-3 text-2xl font-semibold tracking-[-0.02em]">{program.title}</h3>
         <p className="mt-3 text-sm text-[var(--muted)]">{program.shortDescription}</p>
