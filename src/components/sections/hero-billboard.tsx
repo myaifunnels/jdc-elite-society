@@ -283,7 +283,9 @@ export function HeroBillboard() {
       <div className="hero-row container-shell">
         <div className="hero-row-head">
           <h2>Featured programs</h2>
-          <Link href="/programs">See all programs</Link>
+          <Link href="/programs" className="pressable hero-row-cta">
+            See all programs
+          </Link>
         </div>
         <div className="hero-row-track">
           {programs.slice(0, 4).map((program) => (
