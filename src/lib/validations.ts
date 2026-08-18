@@ -23,3 +23,18 @@ export const leadSchema = z.object({
 });
 
 export type LeadInput = z.infer<typeof leadSchema>;
+
+export const registerSchema = z.object({
+  name: z.string().min(2, "Name is required."),
+  email: z.email("Enter a valid email."),
+  password: z.string().min(8, "Use at least 8 characters."),
+  role: z.enum(["member", "partner"], { message: "Choose how you are joining." }),
+});
+
+export const loginSchema = z.object({
+  email: z.email("Enter a valid email."),
+  password: z.string().min(1, "Password is required."),
+});
+
+export type RegisterInput = z.infer<typeof registerSchema>;
+export type LoginInput = z.infer<typeof loginSchema>;

@@ -8,23 +8,10 @@ import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { AddressMap } from "@/components/maps/address-map";
 import { isMapsReady, isR2Ready, maskSecret } from "@/lib/integrations";
 import { getResolvedIntegrationSettings } from "@/lib/integrations-store";
-import { requireSessionUser } from "@/lib/session";
+import { requireRoles } from "@/lib/session";
 
 export default async function IntegrationsPage() {
-  const user = await requireSessionUser();
-
-  if (user.role !== "admin") {
-    return (
-      <DashboardShell
-        title="Integrations"
-        description="Only admins can manage platform integrations."
-      >
-        <div className="glass-panel rounded-[2rem] p-8 text-sm text-[var(--muted)]">
-          Partner sessions do not have access to integration management.
-        </div>
-      </DashboardShell>
-    );
-  }
+  await requireRoles(["admin"]);
 
   const settings = await getResolvedIntegrationSettings();
   const mapsReady = isMapsReady(settings);

@@ -4,7 +4,7 @@ import { programs } from "@/data/programs";
 import { siteUrl } from "@/lib/site";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const staticPaths = ["", "/programs", "/about", "/contact"];
+  const staticPaths = ["", "/programs", "/about", "/contact", "/register", "/login"];
 
   return [
     ...staticPaths.map((path) => ({

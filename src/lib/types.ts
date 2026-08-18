@@ -22,7 +22,15 @@ export type SiteStat = {
   value: string;
 };
 
-export type DashboardRole = "admin" | "partner";
+export type DashboardRole = "admin" | "partner" | "member";
+
+export type AuthUser = {
+  id: string;
+  name: string;
+  email: string;
+  role: DashboardRole;
+  createdAt: string;
+};
 
 export type LeadRecord = {
   id: string;

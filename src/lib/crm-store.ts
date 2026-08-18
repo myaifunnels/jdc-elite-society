@@ -3,12 +3,16 @@ import { LeadRecord } from "@/lib/types";
 
 const records = [...leadSeed];
 
-export function listLeads(role: "admin" | "partner") {
+export function listLeads(role: "admin" | "partner" | "member") {
   if (role === "admin") {
     return records;
   }
 
-  return records.filter((lead) => lead.assignedPartner === "Rico Dela Pena");
+  if (role === "partner") {
+    return records.filter((lead) => lead.assignedPartner === "Rico Dela Pena");
+  }
+
+  return [];
 }
 
 export function createLead(

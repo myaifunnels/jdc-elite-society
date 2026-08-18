@@ -1,17 +1,17 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
-import { LoginForm } from "@/components/auth/login-form";
+import { RegisterForm } from "@/components/auth/register-form";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
 import { getSessionUser } from "@/lib/session";
 
 export const metadata: Metadata = {
-  title: "Sign in",
-  description: "Sign in to your Coach JDC dashboard. Your workspace depends on whether you are a member, partner, or admin.",
+  title: "Register",
+  description: "Create a Coach JDC account as a member or partner and open the dashboard that matches your role.",
 };
 
-export default async function LoginPage() {
+export default async function RegisterPage() {
   const user = await getSessionUser();
 
   if (user) {
@@ -23,7 +23,7 @@ export default async function LoginPage() {
       <SiteHeader />
       <main className="section-space">
         <div className="container-shell max-w-xl">
-          <LoginForm />
+          <RegisterForm />
         </div>
       </main>
       <SiteFooter />

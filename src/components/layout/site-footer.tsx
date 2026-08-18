@@ -13,6 +13,8 @@ const quickLinks = [
   { href: "/about", label: "About Coach JDC" },
   { href: "/about", label: "Success Stories" },
   { href: "/#faq", label: "FAQ" },
+  { href: "/#register", label: "Register" },
+  { href: "/login", label: "Sign in" },
 ];
 
 const socialLinks = [

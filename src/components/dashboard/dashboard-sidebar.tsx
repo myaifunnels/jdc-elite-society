@@ -3,17 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useId, useState } from "react";
-import {
-  Handshake,
-  LayoutDashboard,
-  LogOut,
-  Map,
-  Menu,
-  Plug,
-  Settings2,
-  Users,
-  X,
-} from "lucide-react";
+import { BookOpen, Handshake, LayoutDashboard, LogOut, Map, Menu, Plug, Settings2, Users, X } from "lucide-react";
 
 import { logout } from "@/app/login/actions";
 import { SiteLogo } from "@/components/branding/site-logo";
@@ -38,6 +28,10 @@ const navByRole: Record<
     { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
     { href: "/dashboard/leads", label: "My leads", icon: Users },
     { href: "/dashboard/partners", label: "Partner summary", icon: Handshake },
+  ],
+  member: [
+    { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
+    { href: "/dashboard/path", label: "My path", icon: BookOpen },
   ],
 };
 

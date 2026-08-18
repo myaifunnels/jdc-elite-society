@@ -5,7 +5,6 @@ export const navItems: NavItem[] = [
   { href: "/programs", label: "Programs" },
   { href: "/about", label: "About" },
   { href: "/contact", label: "Contact" },
-  { href: "/login", label: "Dashboards" },
 ];
 
 export const heroStats: SiteStat[] = [

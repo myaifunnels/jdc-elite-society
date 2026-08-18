@@ -2,14 +2,17 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { InquiryForm } from "@/components/forms/inquiry-form";
+import { RegisterForm } from "@/components/auth/register-form";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
 import { HeroBillboard } from "@/components/sections/hero-billboard";
 import { ProgramCard } from "@/components/sections/program-card";
 import { programs } from "@/data/programs";
 import { siteContent } from "@/data/site-content";
+import { getSessionUser } from "@/lib/session";
 
 export default async function Home() {
+  const user = await getSessionUser();
   return (
     <div className="min-h-screen">
       <SiteHeader overlay />
@@ -158,6 +161,24 @@ export default async function Home() {
             </div>
           </div>
         </section>
+
+        {!user ? (
+          <section id="register" className="section-space scroll-mt-24">
+            <div className="container-shell grid gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
+              <div>
+                <p className="eyebrow text-xs">Register</p>
+                <h2 className="mt-2 text-3xl font-semibold tracking-[-0.03em] md:text-4xl">
+                  Create an account. We&apos;ll open the dashboard that matches your role.
+                </h2>
+                <p className="mt-4 text-[var(--muted)]">
+                  Members get a coaching workspace. Partners get assigned leads. Admins keep the full command center.
+                  Choose your role when you register — the room you enter depends on that.
+                </p>
+              </div>
+              <RegisterForm />
+            </div>
+          </section>
+        ) : null}
 
         <section className="section-space bg-[color:var(--surface)]/60">
           <div className="container-shell">

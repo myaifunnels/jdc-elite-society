@@ -1,28 +1,22 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
-import { DashboardRole } from "@/lib/types";
+import { getPublicUserById } from "@/lib/auth-store";
+import { AuthUser, DashboardRole } from "@/lib/types";
 
-const SESSION_COOKIE = "coach-jdc-role";
+const SESSION_COOKIE = "coach-jdc-user";
 
-export type SessionUser = {
-  name: string;
-  role: DashboardRole;
-};
+export type SessionUser = AuthUser;
 
 export async function getSessionUser(): Promise<SessionUser | null> {
   const cookieStore = await cookies();
-  const role = cookieStore.get(SESSION_COOKIE)?.value;
+  const userId = cookieStore.get(SESSION_COOKIE)?.value;
 
-  if (role === "admin") {
-    return { name: "Coach Admin", role };
+  if (!userId) {
+    return null;
   }
 
-  if (role === "partner") {
-    return { name: "JDC Partner", role };
-  }
-
-  return null;
+  return getPublicUserById(userId);
 }
 
 export const sessionCookieName = SESSION_COOKIE;
@@ -32,6 +26,16 @@ export async function requireSessionUser() {
 
   if (!user) {
     redirect("/login");
+  }
+
+  return user;
+}
+
+export async function requireRoles(roles: DashboardRole[]) {
+  const user = await requireSessionUser();
+
+  if (!roles.includes(user.role)) {
+    redirect("/dashboard");
   }
 
   return user;

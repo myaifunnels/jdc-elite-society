@@ -1,9 +1,9 @@
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { partnerSummary } from "@/data/crm";
-import { requireSessionUser } from "@/lib/session";
+import { requireRoles } from "@/lib/session";
 
 export default async function PartnersPage() {
-  const user = await requireSessionUser();
+  const user = await requireRoles(["admin", "partner"]);
   const cards = user.role === "admin" ? partnerSummary : partnerSummary.slice(0, 1);
 
   return (

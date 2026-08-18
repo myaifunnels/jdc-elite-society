@@ -3,38 +3,76 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
+import { authenticateUser, createUser, ensureSeedUsers } from "@/lib/auth-store";
 import { sessionCookieName } from "@/lib/session";
-import { DashboardRole } from "@/lib/types";
+import { loginSchema, registerSchema } from "@/lib/validations";
 
-export type AdminLoginState = {
+export type AuthFormState = {
   error?: string;
 };
 
-export async function loginAsRole(role: DashboardRole) {
+async function setSessionCookie(userId: string) {
   const cookieStore = await cookies();
-  cookieStore.set(sessionCookieName, role, {
+  cookieStore.set(sessionCookieName, userId, {
     httpOnly: true,
     sameSite: "lax",
     path: "/",
     secure: process.env.NODE_ENV === "production",
+    maxAge: 60 * 60 * 24 * 30,
   });
+}
+
+export async function registerAccount(
+  _prevState: AuthFormState,
+  formData: FormData,
+): Promise<AuthFormState> {
+  const parsed = registerSchema.safeParse({
+    name: String(formData.get("name") ?? "").trim(),
+    email: String(formData.get("email") ?? "").trim(),
+    password: String(formData.get("password") ?? ""),
+    role: String(formData.get("role") ?? ""),
+  });
+
+  if (!parsed.success) {
+    const firstError = Object.values(parsed.error.flatten().fieldErrors)[0]?.[0];
+    return { error: firstError || "Check the registration details and try again." };
+  }
+
+  try {
+    await ensureSeedUsers();
+    const user = await createUser(parsed.data);
+    await setSessionCookie(user.id);
+  } catch (error) {
+    return {
+      error: error instanceof Error ? error.message : "I couldn't create this account just now.",
+    };
+  }
 
   redirect("/dashboard");
 }
 
-export async function loginAdmin(
-  _prevState: AdminLoginState,
+export async function loginAccount(
+  _prevState: AuthFormState,
   formData: FormData,
-): Promise<AdminLoginState> {
-  const username = String(formData.get("username") ?? "");
-  const password = String(formData.get("password") ?? "");
+): Promise<AuthFormState> {
+  const parsed = loginSchema.safeParse({
+    email: String(formData.get("email") ?? "").trim(),
+    password: String(formData.get("password") ?? ""),
+  });
 
-  if (username !== "admin" || password !== "admin") {
-    return { error: "Use admin / admin for this dashboard login." };
+  if (!parsed.success) {
+    const firstError = Object.values(parsed.error.flatten().fieldErrors)[0]?.[0];
+    return { error: firstError || "Check your email and password." };
   }
 
-  await loginAsRole("admin");
-  return {};
+  const user = await authenticateUser(parsed.data.email, parsed.data.password);
+
+  if (!user) {
+    return { error: "That email and password do not match an account." };
+  }
+
+  await setSessionCookie(user.id);
+  redirect("/dashboard");
 }
 
 export async function logout() {
