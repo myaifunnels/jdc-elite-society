@@ -18,7 +18,7 @@ export const siteContent = {
   eyebrow: "A message from Coach JDC",
   headline: "Work isn't the problem.\nThe plan is.",
   subheadline:
-    "I'm Coach Jayson Dela Cruz. If you're an OFW, an employee, or starting from zero, I'll tell you straight: another year of hard work without a system still leaves you in the same place. I coach mindset, business, and the standards that make you follow through.",
+    "I coach OFWs, employees, and first-time entrepreneurs: mindset, business, and the discipline to follow through.",
   heroTags: ["OFWs", "Employees", "First-time entrepreneurs"],
   primaryCta: { href: "/contact", label: "Talk to me" },
   secondaryCta: { href: "/programs", label: "See the programs" },
