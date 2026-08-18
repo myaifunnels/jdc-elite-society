@@ -2,6 +2,8 @@ import Link from "next/link";
 
 import { DesignSystemPanel } from "@/components/dashboard/design-system-panel";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
+import { LogoSettingsForm } from "@/components/dashboard/logo-settings-form";
+import { getResolvedBrandingSettings } from "@/lib/branding-store";
 import { isR2Configured } from "@/lib/r2";
 import { requireSessionUser } from "@/lib/session";
 
@@ -12,7 +14,6 @@ export default async function SettingsPage() {
   if (user.role !== "admin") {
     return (
       <DashboardShell
-        role={user.role}
         title="Settings"
         description="Only admins can configure platform-level deployment and integration settings."
       >
@@ -23,13 +24,15 @@ export default async function SettingsPage() {
     );
   }
 
+  const branding = await getResolvedBrandingSettings();
+
   return (
     <DashboardShell
-      role={user.role}
       title="Settings, design system, and deployment readiness"
-      description="Tune the live palette, then confirm the platform is ready for deployment and admin-side integrations."
+      description="Tune the live palette, add a site logo link, then confirm the platform is ready for deployment and admin-side integrations."
     >
       <div className="grid gap-6">
+        <LogoSettingsForm branding={branding} />
         <DesignSystemPanel />
 
         <div className="grid gap-6 lg:grid-cols-2">

@@ -9,7 +9,6 @@ export default async function DashboardPage() {
 
   return (
     <DashboardShell
-      role={user.role}
       title="Platform overview"
       description="A role-aware snapshot of lead activity, program momentum, and partner performance."
     >

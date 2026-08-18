@@ -12,7 +12,6 @@ export default async function MapsPage() {
 
   return (
     <DashboardShell
-      role={user.role}
       title="Lead maps"
       description="Use Google Maps inside the admin workspace to inspect lead locations, handoffs, and territory context."
     >

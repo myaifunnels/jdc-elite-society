@@ -8,7 +8,6 @@ export default async function PartnersPage() {
 
   return (
     <DashboardShell
-      role={user.role}
       title="Partner dashboard"
       description="Review partner visibility, lead ownership, and regional performance at a glance."
     >

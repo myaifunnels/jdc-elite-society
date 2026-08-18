@@ -16,7 +16,6 @@ export default async function IntegrationsPage() {
   if (user.role !== "admin") {
     return (
       <DashboardShell
-        role={user.role}
         title="Integrations"
         description="Only admins can manage platform integrations."
       >
@@ -33,7 +32,6 @@ export default async function IntegrationsPage() {
 
   return (
     <DashboardShell
-      role={user.role}
       title="Integrations"
       description="Paste Google Maps and Cloudflare R2 credentials here. The dashboards will use them immediately."
     >

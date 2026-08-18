@@ -12,7 +12,6 @@ export default async function LeadsPage() {
 
   return (
     <DashboardShell
-      role={user.role}
       title={user.role === "admin" ? "Lead CRM" : "Assigned leads"}
       description="Review captured contacts, their program interest, and address data ready for map-based workflows."
     >

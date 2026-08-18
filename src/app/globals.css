@@ -685,6 +685,7 @@ textarea {
   .interactive-card,
   .button-primary,
   .button-secondary,
+  .dashboard-sidebar,
   body {
     transition-duration: 160ms !important;
   }

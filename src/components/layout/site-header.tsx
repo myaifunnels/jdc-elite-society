@@ -1,22 +1,20 @@
 import Link from "next/link";
 
+import { SiteLogo } from "@/components/branding/site-logo";
 import { navItems } from "@/data/site-content";
+import { getResolvedBrandingSettings } from "@/lib/branding-store";
 import { getSessionUser } from "@/lib/session";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 
 export async function SiteHeader({ overlay = false }: { overlay?: boolean }) {
   const user = await getSessionUser();
+  const branding = await getResolvedBrandingSettings();
 
   return (
     <header className={overlay ? "site-header site-header-overlay" : "site-header"}>
       <div className="container-shell flex items-center justify-between py-4">
         <div className="fade-up">
-          <Link href="/" className="block">
-            <p className="eyebrow text-xs">
-              coachjdc.org
-            </p>
-            <p className="text-sm font-semibold tracking-[-0.01em]">Coach Jayson Dela Cruz</p>
-          </Link>
+          <SiteLogo branding={branding} inverted={overlay} compact={Boolean(branding.logoUrl)} />
         </div>
 
         <nav className="hidden gap-6 text-sm text-[var(--muted)] md:flex">
