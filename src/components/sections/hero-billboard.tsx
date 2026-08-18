@@ -12,10 +12,12 @@ const HERO_VIDEO_SRC =
 
 export function HeroBillboard() {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const wrapRef = useRef<HTMLDivElement>(null);
+  const slotRef = useRef<HTMLDivElement>(null);
   const soundOnRef = useRef(false);
+  const pipDismissedRef = useRef(false);
   const [muted, setMuted] = useState(true);
   const [playing, setPlaying] = useState(false);
+  const [pip, setPip] = useState(false);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -24,6 +26,7 @@ export function HeroBillboard() {
     video.setAttribute("playsinline", "true");
     video.setAttribute("webkit-playsinline", "true");
     video.playsInline = true;
+    video.disablePictureInPicture = false;
     video.defaultMuted = true;
     video.muted = !soundOnRef.current;
 
@@ -35,7 +38,7 @@ export function HeroBillboard() {
 
     const tryPlayMuted = () => {
       const node = videoRef.current;
-      if (!node) return;
+      if (!node || pipDismissedRef.current) return;
 
       if (!soundOnRef.current) {
         node.defaultMuted = true;
@@ -71,17 +74,25 @@ export function HeroBillboard() {
     window.addEventListener("pointerdown", onFirstGesture, { passive: true, once: true });
 
     let observer: IntersectionObserver | undefined;
-    const wrap = wrapRef.current;
-    if (wrap && "IntersectionObserver" in window) {
+    const slot = slotRef.current;
+    if (slot && "IntersectionObserver" in window) {
       observer = new IntersectionObserver(
         ([entry]) => {
           if (!entry) return;
-          if (entry.isIntersecting) tryPlayMuted();
-          else video.pause();
+          if (entry.isIntersecting) {
+            pipDismissedRef.current = false;
+            setPip(false);
+            tryPlayMuted();
+            return;
+          }
+          if (!pipDismissedRef.current) {
+            setPip(true);
+            tryPlayMuted();
+          }
         },
-        { threshold: 0.2 },
+        { threshold: 0.18, rootMargin: "-8% 0px 0px 0px" },
       );
-      observer.observe(wrap);
+      observer.observe(slot);
     }
 
     return () => {
@@ -134,11 +145,24 @@ export function HeroBillboard() {
     await pauseVideo();
   }
 
+  function closePip() {
+    pipDismissedRef.current = true;
+    setPip(false);
+    void pauseVideo();
+  }
+
+  function restoreFromPip() {
+    pipDismissedRef.current = false;
+    setPip(false);
+    slotRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
   const showPlayIcon = !playing || muted;
 
   return (
-    <section className="hero-netflix" ref={wrapRef}>
-      <div className="hero-video-wrap">
+    <section className={pip ? "hero-netflix is-pip" : "hero-netflix"}>
+      <div className="hero-video-slot" ref={slotRef} aria-hidden="true" />
+      <div className={pip ? "hero-video-wrap is-pip" : "hero-video-wrap"}>
         <video
           ref={videoRef}
           className="hero-video"
@@ -147,32 +171,44 @@ export function HeroBillboard() {
           loop
           playsInline
           preload="auto"
-          disablePictureInPicture
           controlsList="nodownload nofullscreen noremoteplayback"
           aria-label="Coach JDC video sales letter"
         >
           <source src={HERO_VIDEO_SRC} type="video/mp4" />
         </video>
-      </div>
 
-      <button
-        type="button"
-        className={showPlayIcon ? "hero-play pressable is-waiting" : "hero-play pressable"}
-        onClick={onPlayClick}
-        aria-label={showPlayIcon ? "Play with sound" : "Pause video"}
-      >
-        {showPlayIcon ? (
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M8 5.8v12.4c0 .7.8 1.1 1.4.7l9.2-6.2c.6-.4.6-1.2 0-1.6L9.4 5.1C8.8 4.7 8 5.1 8 5.8Z" />
-          </svg>
-        ) : (
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <rect x="6" y="5" width="4.5" height="14" rx="1" />
-            <rect x="13.5" y="5" width="4.5" height="14" rx="1" />
-          </svg>
-        )}
-        {showPlayIcon ? <span className="hero-sound-hint">Tap for sound</span> : null}
-      </button>
+        <button
+          type="button"
+          className={showPlayIcon ? "hero-play pressable is-waiting" : "hero-play pressable"}
+          onClick={onPlayClick}
+          aria-label={showPlayIcon ? "Play with sound" : "Pause video"}
+        >
+          {showPlayIcon ? (
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M8 5.8v12.4c0 .7.8 1.1 1.4.7l9.2-6.2c.6-.4.6-1.2 0-1.6L9.4 5.1C8.8 4.7 8 5.1 8 5.8Z" />
+            </svg>
+          ) : (
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <rect x="6" y="5" width="4.5" height="14" rx="1" />
+              <rect x="13.5" y="5" width="4.5" height="14" rx="1" />
+            </svg>
+          )}
+          {showPlayIcon && !pip ? <span className="hero-sound-hint">Tap for sound</span> : null}
+        </button>
+
+        {pip ? (
+          <>
+            <button type="button" className="hero-pip-expand" onClick={restoreFromPip} aria-label="Return video to full size">
+              Expand
+            </button>
+            <button type="button" className="hero-pip-close pressable" onClick={closePip} aria-label="Close picture in picture">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M7 7l10 10M17 7 7 17" />
+              </svg>
+            </button>
+          </>
+        ) : null}
+      </div>
 
       <div className="hero-copy container-shell">
         <p className="fade-up hero-kicker">{siteContent.eyebrow}</p>
