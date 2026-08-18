@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { SiteLogo } from "@/components/branding/site-logo";
 import { ScrollTopButton } from "@/components/layout/scroll-top-button";
+import { siteContent } from "@/data/site-content";
 import { getResolvedBrandingSettings } from "@/lib/branding-store";
 
 const quickLinks = [
@@ -61,10 +62,7 @@ export async function SiteFooter() {
       <div className="container-shell site-footer-grid">
         <div className="site-footer-brand">
           <SiteLogo branding={branding} inverted compact={Boolean(branding.logoUrl)} />
-          <p>
-            Coach Jayson Dela Cruz has guided thousands of Filipinos to rise — from OFWs and
-            employees to thriving first-time entrepreneurs.
-          </p>
+          <p>{siteContent.footerBlurb}</p>
           <div className="site-footer-socials">
             {socialLinks.map((item) => (
               <a
@@ -92,7 +90,7 @@ export async function SiteFooter() {
         </div>
 
         <div>
-          <h2>Connect With Us</h2>
+          <h2>Talk to me</h2>
           <ul className="site-footer-contact">
             <li>
               <span aria-hidden="true">

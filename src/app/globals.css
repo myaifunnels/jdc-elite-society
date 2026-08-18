@@ -336,12 +336,13 @@ textarea {
 
 .hero-title {
   margin: 0;
-  max-width: 20ch;
+  max-width: 28ch;
   font-family: var(--font-display), Georgia, serif;
   font-size: clamp(2.6rem, 5vw, 4.8rem);
   font-weight: 500;
   line-height: 1.05;
   letter-spacing: -0.035em;
+  white-space: pre-line;
   text-wrap: balance;
   text-shadow: 0 18px 40px rgba(0, 0, 0, 0.45);
 }

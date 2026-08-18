@@ -4,13 +4,14 @@ export const programs: Program[] = [
   {
     slug: "mindset-reset",
     title: "Mindset Reset",
-    shortDescription: "Break limiting beliefs, rebuild confidence, and start thinking like a winner.",
-    audience: "OFWs, employees, and beginners who want to rebuild clarity and confidence.",
-    transformation: "Move from fear and hesitation into confidence, discipline, and daily action.",
+    shortDescription: "If your thinking is still the bottleneck, nothing else will stick.",
+    audience: "OFWs, employees, and beginners who feel stuck, scattered, or tired of starting over.",
+    transformation:
+      "You stop running on mood. You get a clearer head, a daily standard, and the discipline to take the next step even when you don't feel ready.",
     benefits: [
-      "Stronger self-belief and emotional resilience",
-      "Clear daily routines and accountability",
-      "A practical framework for personal transformation",
+      "An honest look at the beliefs that keep delaying you",
+      "Daily routines you can keep, not a 30-day high",
+      "Tools for pressure, setbacks, and the days you want to quit",
     ],
     modules: [
       "Identity and confidence reset",
@@ -21,26 +22,27 @@ export const programs: Program[] = [
       {
         question: "Who is this for?",
         answer:
-          "It is designed for people who feel stuck, overwhelmed, or disconnected from their goals and want a disciplined reset.",
+          "If you know what you should do and still don't do it, start here. This is for people who feel stuck, overwhelmed, or disconnected from their own goals.",
       },
       {
         question: "What is the main outcome?",
         answer:
-          "The program helps participants regain focus, confidence, and the habits needed to take action consistently.",
+          "You leave with a clearer head, a standard for your days, and habits that make action less optional.",
       },
     ],
-    ctaLabel: "Start Your Reset",
+    ctaLabel: "Start with Mindset Reset",
   },
   {
     slug: "business-kickstart",
     title: "Business Kickstart",
-    shortDescription: "Step-by-step guidance for starting and growing a business with practical coaching.",
-    audience: "Aspiring entrepreneurs and first-time business builders.",
-    transformation: "Turn business ideas into a practical launch plan with guidance and accountability.",
+    shortDescription: "You don't need a perfect idea. You need an offer, a plan, and someone who will make you execute.",
+    audience: "First-time entrepreneurs and people with an idea that has lived in a notes app too long.",
+    transformation:
+      "You turn a vague business idea into a simple offer, a launch plan, and weekly actions you can actually finish.",
     benefits: [
-      "A simple launch roadmap",
-      "Coaching on positioning and execution",
-      "Momentum from idea to action",
+      "A launch roadmap you can follow without guessing",
+      "Help naming the offer, the customer, and the next move",
+      "Accountability so the business leaves the conversation and enters the calendar",
     ],
     modules: [
       "Business idea validation",
@@ -51,26 +53,27 @@ export const programs: Program[] = [
       {
         question: "Do I need prior business experience?",
         answer:
-          "No. The program is built for beginners who need structure, guidance, and practical next steps.",
+          "No. This is built for beginners who need structure, not more theory. We start from where you are.",
       },
       {
         question: "What will I leave with?",
         answer:
-          "You should leave with a clearer business direction, action plan, and stronger confidence to launch.",
+          "A clearer direction, a practical action plan, and less room to keep postponing the first real step.",
       },
     ],
-    ctaLabel: "Build My Business Plan",
+    ctaLabel: "Start with Business Kickstart",
   },
   {
     slug: "life-leadership-mentoring",
     title: "Life & Leadership Mentoring",
-    shortDescription: "Develop discipline, emotional strength, and leadership skills to win in life and work.",
-    audience: "Professionals, leaders, and growth-minded individuals.",
-    transformation: "Grow into a more disciplined, steady, and influential leader in life and business.",
+    shortDescription: "Before you lead a business, a team, or a family, you have to lead yourself.",
+    audience: "Professionals and growth-minded people who want more discipline, not another title.",
+    transformation:
+      "You become harder to shake: clearer decisions, stronger emotional control, and leadership that holds under pressure.",
     benefits: [
-      "Leadership development with values-driven coaching",
-      "Stronger decision-making and discipline",
-      "Personal growth with mentorship and reflection",
+      "Leadership built on character, not performance",
+      "Cleaner decisions when the pressure is on",
+      "Mentorship for the person you have to be at home and at work",
     ],
     modules: [
       "Leadership foundations",
@@ -81,26 +84,27 @@ export const programs: Program[] = [
       {
         question: "Is this only for managers?",
         answer:
-          "No. Anyone who wants to lead themselves better or influence others more effectively can benefit.",
+          "No. If you want to lead yourself better — and influence the people who count on you — this is for you.",
       },
       {
         question: "How is it different from business coaching?",
         answer:
-          "This program emphasizes leadership, character, emotional strength, and sustainable personal growth.",
+          "We work on the person first: discipline, character, emotional strength, and decisions you can stand on.",
       },
     ],
-    ctaLabel: "Grow as a Leader",
+    ctaLabel: "Start with Leadership Mentoring",
   },
   {
     slug: "ofw-retirement-blueprint",
     title: "OFW Retirement Blueprint",
-    shortDescription: "A roadmap for OFWs who want to retire with direction, stability, and business readiness.",
-    audience: "OFWs preparing to transition toward long-term financial and lifestyle freedom.",
-    transformation: "Move from uncertainty about the future into a concrete retirement and transition plan.",
+    shortDescription: "Coming home without a plan is how overseas work turns into another kind of struggle.",
+    audience: "OFWs who want a real transition — not just a ticket home.",
+    transformation:
+      "You leave the 'I'll figure it out when I get back' loop and get a concrete plan for income, identity, and the next chapter.",
     benefits: [
-      "Structured planning for your next chapter",
-      "Coaching around transition, income, and purpose",
-      "Business and mindset support for post-OFW life",
+      "A structured plan for the season after the contract",
+      "Coaching on income, purpose, and who you are when the uniform comes off",
+      "Mindset and business support so home is a build, not a crash",
     ],
     modules: [
       "Transition planning and mindset",
@@ -111,15 +115,15 @@ export const programs: Program[] = [
       {
         question: "Is this only about retirement money?",
         answer:
-          "No. It also focuses on identity, business readiness, and planning for a meaningful transition back home.",
+          "No. Money matters. So does identity, business readiness, and a life that still has direction when the contract ends.",
       },
       {
         question: "Who benefits most?",
         answer:
-          "OFWs who want a clearer strategy for leaving overseas work and building a stable future.",
+          "OFWs who know they cannot keep doing this forever and want a strategy before they land.",
       },
     ],
-    ctaLabel: "Plan My Transition",
+    ctaLabel: "Start with the OFW Blueprint",
   },
 ];
 

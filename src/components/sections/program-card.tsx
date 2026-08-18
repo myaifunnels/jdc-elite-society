@@ -23,7 +23,7 @@ export function ProgramCard({ program }: { program: Program }) {
           href={`/programs/${program.slug}`}
           className="button-primary pressable rounded-full px-4 py-2 font-semibold"
         >
-          View program
+          View this track
         </Link>
         <Link
           href={`/contact?program=${encodeURIComponent(program.title)}`}

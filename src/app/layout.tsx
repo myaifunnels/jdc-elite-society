@@ -26,7 +26,7 @@ export const metadata: Metadata = {
     template: "%s | Coach JDC",
   },
   description:
-    "A coaching, CRM, and dashboard platform for Coach Jayson Dela Cruz with public program pages, lead capture, and partner visibility.",
+    "Coach Jayson Dela Cruz works with OFWs, employees, and first-time entrepreneurs who need a real plan — mindset, business, and the discipline to follow through.",
   alternates: {
     canonical: "/",
   },

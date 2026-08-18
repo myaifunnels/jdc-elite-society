@@ -5,15 +5,17 @@ import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { programs } from "@/data/programs";
+import { siteContent } from "@/data/site-content";
 import { cn } from "@/lib/utils";
 import { LeadInput, leadSchema } from "@/lib/validations";
 
 type InquiryFormProps = {
   className?: string;
   defaultProgram?: string;
+  showIntro?: boolean;
 };
 
-export function InquiryForm({ className, defaultProgram }: InquiryFormProps) {
+export function InquiryForm({ className, defaultProgram, showIntro = true }: InquiryFormProps) {
   const [submitted, setSubmitted] = useState(false);
   const [serverError, setServerError] = useState("");
 
@@ -55,7 +57,7 @@ export function InquiryForm({ className, defaultProgram }: InquiryFormProps) {
     });
 
     if (!response.ok) {
-      setServerError("The inquiry could not be saved right now.");
+      setServerError("I couldn't receive this just now. Try again.");
       return;
     }
 
@@ -69,17 +71,13 @@ export function InquiryForm({ className, defaultProgram }: InquiryFormProps) {
         onSubmit={handleSubmit(onSubmit)}
         className="glass-panel fade-up rounded-[2rem] p-6 sm:p-8"
       >
-        <div className="mb-6 space-y-2">
-          <p className="eyebrow text-xs">
-            CRM capture form
-          </p>
-          <h2 className="text-2xl font-semibold tracking-[-0.02em]">
-            Collect leads directly into the Coach JDC CRM.
-          </h2>
-          <p className="text-sm text-[var(--muted)]">
-            This form captures the core CRM fields for admin and partner follow-up.
-          </p>
-        </div>
+        {showIntro ? (
+          <div className="mb-6 space-y-2">
+            <p className="eyebrow text-xs">{siteContent.inquiry.eyebrow}</p>
+            <h2 className="text-2xl font-semibold tracking-[-0.02em]">{siteContent.inquiry.heading}</h2>
+            <p className="text-sm text-[var(--muted)]">{siteContent.inquiry.body}</p>
+          </div>
+        ) : null}
 
         <div className="grid gap-4 md:grid-cols-2">
           <Field label="Full name" error={errors.name?.message}>
@@ -100,7 +98,7 @@ export function InquiryForm({ className, defaultProgram }: InquiryFormProps) {
         </div>
 
         <div className="mt-4 grid gap-4 md:grid-cols-2">
-          <Field label="Program interest" error={errors.programInterest?.message}>
+          <Field label="Which program are you considering?" error={errors.programInterest?.message}>
             <select className={inputClass} {...register("programInterest")}>
               {programs.map((program) => (
                 <option key={program.slug} value={program.title}>
@@ -110,44 +108,27 @@ export function InquiryForm({ className, defaultProgram }: InquiryFormProps) {
             </select>
           </Field>
 
-          <Field label="Tags" error={errors.tags?.message}>
-            <input
-              className={inputClass}
-              {...register("tags")}
-              placeholder="Warm lead, OFW, Partner"
-            />
+          <Field label="City / region" error={errors.city?.message}>
+            <input className={inputClass} {...register("city")} placeholder="Makati" />
           </Field>
         </div>
 
         <div className="mt-4 grid gap-4">
-          <Field label="Address" error={errors.address?.message}>
+          <input type="hidden" {...register("tags")} />
+          <Field label="Where are you based?" error={errors.address?.message}>
             <input
               className={inputClass}
               {...register("address")}
               placeholder="Street, city, province or country"
             />
           </Field>
-
-          <div className="grid gap-4 md:grid-cols-2">
-            <Field label="City / region" error={errors.city?.message}>
-              <input className={inputClass} {...register("city")} placeholder="Makati" />
-            </Field>
-
-            <Field label="Assigned partner" error={errors.assignedPartner?.message}>
-              <input
-                className={inputClass}
-                {...register("assignedPartner")}
-                placeholder="Optional partner owner"
-              />
-            </Field>
-          </div>
         </div>
 
         <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="text-sm text-[var(--muted)]">
             {submitted
-              ? "Inquiry saved in the demo CRM feed."
-              : "Submit to create a lead record for follow-up."}
+              ? siteContent.inquiry.success
+              : siteContent.inquiry.helper}
           </div>
 
           <button
@@ -155,7 +136,7 @@ export function InquiryForm({ className, defaultProgram }: InquiryFormProps) {
             disabled={isSubmitting}
             className="button-primary pressable rounded-full px-5 py-3 font-semibold disabled:opacity-70"
           >
-            {isSubmitting ? "Saving..." : "Save inquiry"}
+            {isSubmitting ? siteContent.inquiry.submitting : siteContent.inquiry.submit}
           </button>
         </div>
 
@@ -163,21 +144,23 @@ export function InquiryForm({ className, defaultProgram }: InquiryFormProps) {
       </form>
 
       <aside className="glass-panel fade-up-delay-1 fade-up rounded-[2rem] p-6 sm:p-8">
-        <p className="text-sm font-semibold tracking-[-0.01em]">Google Maps-ready address workflow</p>
-        <p className="mt-2 text-sm text-[var(--muted)]">
-          Use the captured address to drive Google Maps lookups, partner territory routing, or future visit planning.
-        </p>
+        <p className="text-sm font-semibold tracking-[-0.01em]">{siteContent.inquiry.nextHeading}</p>
+        <ul className="mt-4 grid gap-3 text-sm text-[var(--muted)]">
+          {siteContent.inquiry.nextSteps.map((item) => (
+            <li key={item}>{item}</li>
+          ))}
+        </ul>
 
         <div className="mt-6 rounded-3xl border border-dashed border-[var(--line)] bg-[color:var(--surface-elevated)]/80 p-4 text-sm">
-          <p className="font-medium">Live lookup preview</p>
+          <p className="font-medium">Where you are tells me the season you&apos;re in.</p>
           <p className="mt-2 text-[var(--muted)]">
-            {address?.trim() || "Enter an address to preview the map-ready location string."}
+            {address?.trim() || "Add where you live or work. OFW or home, it matters."}
           </p>
           {address?.trim() ? (
             <a
               href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`}
               target="_blank"
-              rel="noreferrer"
+              rel="noopener noreferrer"
               className="button-secondary pressable mt-4 inline-flex rounded-full px-4 py-2 font-medium"
             >
               Open in Google Maps

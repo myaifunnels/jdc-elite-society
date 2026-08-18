@@ -109,9 +109,9 @@ export function HeroBillboard() {
         <p className="fade-up hero-kicker">{siteContent.eyebrow}</p>
         <h1 className="fade-up fade-up-delay-1 hero-title">{siteContent.headline}</h1>
         <p className="fade-up fade-up-delay-1 hero-meta">
-          <span>Mentorship</span>
-          <span>Mindset</span>
-          <span>Business</span>
+          {siteContent.heroTags.map((tag) => (
+            <span key={tag}>{tag}</span>
+          ))}
         </p>
         <p className="fade-up fade-up-delay-2 hero-synopsis">{siteContent.subheadline}</p>
 
@@ -128,7 +128,7 @@ export function HeroBillboard() {
       <div className="hero-row container-shell">
         <div className="hero-row-head">
           <h2>Featured programs</h2>
-          <Link href="/programs">View all</Link>
+          <Link href="/programs">See all programs</Link>
         </div>
         <div className="hero-row-track">
           {programs.slice(0, 4).map((program) => (

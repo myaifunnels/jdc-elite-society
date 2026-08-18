@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 import { SiteLogo } from "@/components/branding/site-logo";
-import { navItems } from "@/data/site-content";
+import { navItems, siteContent } from "@/data/site-content";
 import { getResolvedBrandingSettings } from "@/lib/branding-store";
 import { getSessionUser } from "@/lib/session";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
@@ -35,7 +35,7 @@ export async function SiteHeader({ overlay = false }: { overlay?: boolean }) {
             href={user ? "/dashboard" : "/contact"}
             className="button-primary pressable rounded-full px-4 py-2 text-sm font-semibold"
           >
-            {user ? `${user.role} dashboard` : "Inquire now"}
+            {user ? `${user.role} dashboard` : siteContent.headerCta}
           </Link>
         </div>
       </div>
