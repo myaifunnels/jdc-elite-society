@@ -249,7 +249,7 @@ textarea {
   margin-top: 0.35rem;
 }
 
-@media (min-width: 1024px) {
+@media (min-width: 1100px) {
   .site-nav-desktop {
     display: flex;
   }
@@ -399,6 +399,35 @@ textarea {
   letter-spacing: 0.32em;
   text-transform: uppercase;
   color: var(--brand-dark);
+}
+
+.program-tabs {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 0.55rem;
+  overflow-x: auto;
+  padding-bottom: 0.35rem;
+  scroll-snap-type: x proximity;
+  -webkit-overflow-scrolling: touch;
+}
+
+.program-tab {
+  flex: 0 0 auto;
+  scroll-snap-align: start;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface-elevated) 78%, transparent);
+  color: var(--foreground);
+  padding: 0.7rem 1.05rem;
+  font-size: 0.88rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.program-tab.is-active {
+  border-color: transparent;
+  background: var(--brand);
+  color: white;
 }
 
 .hero-orb {
@@ -564,11 +593,13 @@ textarea {
   overflow: visible;
   width: 5.5rem;
   height: 5.5rem;
-  border: 1px solid rgba(232, 213, 176, 0.7);
+  border: 2px solid #fff;
   border-radius: 999px;
-  background: rgba(5, 7, 13, 0.42);
-  color: #f7efdf;
-  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.28);
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+  box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.45);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
 .hero-play::before,
@@ -578,22 +609,29 @@ textarea {
   inset: 0;
   z-index: -1;
   border-radius: inherit;
-  border: 1px solid rgba(232, 213, 176, 0.42);
+  border: 2px solid #fff;
   pointer-events: none;
   opacity: 0;
 }
 
 .hero-play.is-waiting {
-  animation: heroPlayPulse 2.6s var(--ease-in-out) infinite;
+  animation: heroPlayPulse 1.8s var(--ease-in-out) infinite;
 }
 
 .hero-play.is-waiting::before,
 .hero-play.is-waiting::after {
-  animation: heroPlayRipple 2.6s var(--ease-out) infinite;
+  animation: heroPlayRipple 1.8s var(--ease-out) infinite;
 }
 
 .hero-play.is-waiting::after {
-  animation-delay: 1.3s;
+  animation-delay: 0.9s;
+}
+
+.hero-play.is-waiting svg {
+  width: 2.1rem;
+  height: 2.1rem;
+  fill: currentColor;
+  animation: heroPlayIcon 1.8s var(--ease-in-out) infinite;
 }
 
 .hero-play svg {
@@ -856,9 +894,14 @@ textarea {
   }
 
   .hero-play:hover {
-    background: rgba(0, 0, 0, 0.62);
+    background: #fff;
+    color: #05070d;
     animation-play-state: paused;
-    transform: scale(1.05);
+    transform: scale(1.06);
+  }
+
+  .hero-play:hover svg {
+    animation-play-state: paused;
   }
 
   .hero-cta-more:hover {
@@ -895,24 +938,37 @@ textarea {
   0%,
   100% {
     transform: scale(1);
-    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.28);
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.45);
+    background: rgba(255, 255, 255, 0.14);
   }
 
   50% {
-    transform: scale(1.045);
-    box-shadow: 0 22px 48px rgba(0, 0, 0, 0.34);
+    transform: scale(1.08);
+    box-shadow: 0 0 0 14px rgba(255, 255, 255, 0);
+    background: rgba(255, 255, 255, 0.28);
   }
 }
 
 @keyframes heroPlayRipple {
   0% {
     transform: scale(1);
-    opacity: 0.55;
+    opacity: 0.7;
   }
 
   100% {
-    transform: scale(1.7);
+    transform: scale(1.95);
     opacity: 0;
+  }
+}
+
+@keyframes heroPlayIcon {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.12) translateX(1px);
   }
 }
 
@@ -985,7 +1041,8 @@ textarea {
   .float-slower,
   .hero-play.is-waiting,
   .hero-play.is-waiting::before,
-  .hero-play.is-waiting::after {
+  .hero-play.is-waiting::after,
+  .hero-play svg {
     animation: none !important;
   }
 

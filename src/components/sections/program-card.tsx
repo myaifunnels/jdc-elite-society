@@ -35,7 +35,11 @@ export function ProgramCard({ program }: { program: Program }) {
             View this track
           </Link>
           <Link
-            href={`/contact?program=${encodeURIComponent(program.title)}`}
+            href={
+              program.slug === "jdc-mastermind"
+                ? "/programs?program=jdc-mastermind#mastermind-form"
+                : `/contact?program=${encodeURIComponent(program.title)}`
+            }
             className="button-secondary pressable rounded-full px-4 py-2 font-medium"
           >
             {program.ctaLabel}

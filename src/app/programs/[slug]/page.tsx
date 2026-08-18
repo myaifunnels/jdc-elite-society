@@ -3,7 +3,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { InquiryForm } from "@/components/forms/inquiry-form";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
 import { getProgram, programs } from "@/data/programs";
@@ -64,7 +63,7 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
 
                 <div className="mt-8 flex flex-wrap gap-4">
                   <Link
-                    href={`/contact?program=${encodeURIComponent(program.title)}`}
+                    href={program.slug === "jdc-mastermind" ? "/programs?program=jdc-mastermind#mastermind-form" : `/contact?program=${encodeURIComponent(program.title)}`}
                     className="rounded-full bg-[var(--brand)] px-6 py-3 font-semibold text-white transition hover:bg-[var(--brand-dark)]"
                   >
                     {program.ctaLabel}
@@ -124,14 +123,6 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
             </section>
           </div>
         </div>
-
-        {program.slug === "jdc-mastermind" ? (
-          <section className="section-space bg-[color:var(--surface)]/60">
-            <div className="container-shell">
-              <InquiryForm defaultProgram={program.title} />
-            </div>
-          </section>
-        ) : null}
       </main>
       <SiteFooter />
     </div>
