@@ -28,7 +28,6 @@ export function HeroBillboard() {
     const wrap = wrapRef.current;
     if (!video || !slot || !wrap) return;
 
-    document.body.appendChild(wrap);
     video.setAttribute("playsinline", "true");
     video.setAttribute("webkit-playsinline", "true");
     video.playsInline = true;
@@ -58,37 +57,6 @@ export function HeroBillboard() {
       wrap.classList.toggle("is-pip", next);
     };
 
-    const syncDock = () => {
-      if (pipDismissedRef.current) {
-        wrap.style.display = "none";
-        return;
-      }
-
-      wrap.style.display = "";
-
-      if (pipRef.current) {
-        wrap.style.position = "";
-        wrap.style.top = "";
-        wrap.style.left = "";
-        wrap.style.width = "";
-        wrap.style.height = "";
-        wrap.style.right = "";
-        wrap.style.bottom = "";
-        wrap.style.zIndex = "";
-        return;
-      }
-
-      const rect = slot.getBoundingClientRect();
-      wrap.style.position = "fixed";
-      wrap.style.top = `${rect.top}px`;
-      wrap.style.left = `${rect.left}px`;
-      wrap.style.width = `${rect.width}px`;
-      wrap.style.height = `${rect.height}px`;
-      wrap.style.right = "auto";
-      wrap.style.bottom = "auto";
-      wrap.style.zIndex = "5";
-    };
-
     const updatePipFromSlot = () => {
       const rect = slot.getBoundingClientRect();
       const visibleHeight = Math.min(rect.bottom, window.innerHeight) - Math.max(rect.top, 0);
@@ -105,8 +73,6 @@ export function HeroBillboard() {
         if (pipRef.current) applyPip(false);
         tryPlayMuted();
       }
-
-      syncDock();
     };
 
     const onPlaying = () => setPlaying(true);
@@ -151,7 +117,6 @@ export function HeroBillboard() {
       window.removeEventListener("scroll", updatePipFromSlot);
       window.removeEventListener("resize", updatePipFromSlot);
       observer?.disconnect();
-      slot.appendChild(wrap);
     };
   }, []);
 
@@ -213,7 +178,6 @@ export function HeroBillboard() {
     pipRef.current = false;
     setPip(false);
     wrapRef.current?.classList.remove("is-pip");
-    if (wrapRef.current) wrapRef.current.style.display = "none";
     void pauseVideo();
   }
 
@@ -226,6 +190,28 @@ export function HeroBillboard() {
   }
 
   const showPlayIcon = !playing || muted;
+
+  const playButton = (
+    <button
+      type="button"
+      className={showPlayIcon ? "hero-play pressable is-waiting" : "hero-play pressable"}
+      onPointerUp={onPlayClick}
+      onClick={onPlayClick}
+      aria-label={showPlayIcon ? "Play video" : "Pause video"}
+    >
+      {showPlayIcon ? (
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M8 5.8v12.4c0 .7.8 1.1 1.4.7l9.2-6.2c.6-.4.6-1.2 0-1.6L9.4 5.1C8.8 4.7 8 5.1 8 5.8Z" />
+        </svg>
+      ) : (
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <rect x="6" y="5" width="4.5" height="14" rx="1" />
+          <rect x="13.5" y="5" width="4.5" height="14" rx="1" />
+        </svg>
+      )}
+      {showPlayIcon && !pip ? <span className="hero-sound-hint">Tap for sound</span> : null}
+    </button>
+  );
 
   return (
     <section className="hero-netflix">
@@ -244,27 +230,7 @@ export function HeroBillboard() {
           >
             <source src={HERO_VIDEO_SRC} type="video/mp4" />
           </video>
-
-          <button
-            type="button"
-            className={showPlayIcon ? "hero-play pressable is-waiting" : "hero-play pressable"}
-            onPointerUp={onPlayClick}
-            onClick={onPlayClick}
-            aria-label={showPlayIcon ? "Play video" : "Pause video"}
-          >
-            {showPlayIcon ? (
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M8 5.8v12.4c0 .7.8 1.1 1.4.7l9.2-6.2c.6-.4.6-1.2 0-1.6L9.4 5.1C8.8 4.7 8 5.1 8 5.8Z" />
-              </svg>
-            ) : (
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <rect x="6" y="5" width="4.5" height="14" rx="1" />
-                <rect x="13.5" y="5" width="4.5" height="14" rx="1" />
-              </svg>
-            )}
-            {showPlayIcon && !pip ? <span className="hero-sound-hint">Tap for sound</span> : null}
-          </button>
-
+          {pip ? playButton : null}
           <button type="button" className="hero-pip-expand" onClick={restoreFromPip} aria-label="Return video to full size">
             Expand
           </button>
@@ -275,17 +241,21 @@ export function HeroBillboard() {
           </button>
         </div>
 
+        <div className="hero-scrim" aria-hidden="true" />
+
+        {!pip ? playButton : null}
+
         <div className="hero-copy container-shell">
-          <p className="fade-up hero-kicker">{siteContent.eyebrow}</p>
-          <h1 className="fade-up fade-up-delay-1 hero-title">{siteContent.headline}</h1>
-          <p className="fade-up fade-up-delay-1 hero-meta">
+          <p className="hero-kicker">{siteContent.eyebrow}</p>
+          <h1 className="hero-title">{siteContent.headline}</h1>
+          <p className="hero-meta">
             {siteContent.heroTags.map((tag) => (
               <span key={tag}>{tag}</span>
             ))}
           </p>
-          <p className="fade-up fade-up-delay-2 hero-synopsis">{siteContent.subheadline}</p>
+          <p className="hero-synopsis">{siteContent.subheadline}</p>
 
-          <div className="fade-up fade-up-delay-3 hero-actions">
+          <div className="hero-actions">
             <Link href={siteContent.primaryCta.href} className="button-primary pressable hero-cta">
               {siteContent.primaryCta.label}
             </Link>
