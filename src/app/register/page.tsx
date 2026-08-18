@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
-import { RegisterCard } from "@/components/auth/register-card";
+import { AuthPanel } from "@/components/auth/auth-panel";
 import { getResolvedBrandingSettings } from "@/lib/branding-store";
 import { getSessionUser } from "@/lib/session";
 
@@ -22,7 +22,7 @@ export default async function RegisterPage() {
   return (
     <div className="auth-screen auth-screen-centered">
       <main className="auth-screen-main auth-screen-main-centered">
-        <RegisterCard branding={branding} />
+        <AuthPanel branding={branding} mode="register" />
       </main>
     </div>
   );

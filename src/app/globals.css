@@ -1788,41 +1788,58 @@ a,
   justify-self: start;
 }
 
-.auth-form-register {
+.auth-form-grid {
   grid-template-columns: 1fr 1fr;
   gap: 0.55rem 0.7rem;
 }
 
-.auth-form-register .auth-roles,
-.auth-form-register .auth-error,
-.auth-form-register .auth-btn-signup,
-.auth-form-register .auth-switch-copy {
+.auth-form-grid .auth-row,
+.auth-form-grid .auth-roles,
+.auth-form-grid .auth-error,
+.auth-form-grid .auth-btn-login,
+.auth-form-grid .auth-btn-signup,
+.auth-form-grid .auth-switch-copy {
   grid-column: 1 / -1;
 }
 
-.auth-card .float-field,
-.auth-card .float-field input,
-.auth-card .float-field select {
-  min-height: 2.65rem;
+.auth-field {
+  display: grid;
+  gap: 0.28rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--foreground);
 }
 
-.auth-card .float-field input,
-.auth-card .float-field select {
-  padding: 0.95rem 0.8rem 0.28rem;
+.auth-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  min-height: 2.55rem;
+  border: 1px solid var(--line);
+  border-radius: 0.85rem;
+  background: color-mix(in srgb, var(--surface) 62%, transparent);
+  padding: 0 0.85rem;
+  color: var(--muted);
+  backdrop-filter: blur(14px) saturate(150%);
+  -webkit-backdrop-filter: blur(14px) saturate(150%);
+}
+
+.auth-input-wrap:focus-within {
+  border-color: color-mix(in srgb, var(--brand) 55%, var(--line));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 16%, transparent);
+}
+
+.auth-input-wrap input,
+.auth-input-wrap select {
+  width: 100%;
+  min-height: 2.4rem;
+  border: 0;
+  background: transparent;
+  outline: none;
+  color: var(--foreground);
+  font: inherit;
   font-size: 0.92rem;
-}
-
-.auth-card .float-field.has-icon input,
-.auth-card .float-field.has-icon select {
-  padding-left: 2.35rem;
-}
-
-.auth-card .float-field-icon {
-  left: 0.8rem;
-}
-
-.auth-card .float-field.has-icon .float-field-label {
-  left: 2.35rem;
+  font-weight: 500;
 }
 
 .auth-card .auth-mode-toggle {
@@ -1833,6 +1850,7 @@ a,
   min-height: 2.3rem;
 }
 
+.auth-card .auth-btn-login,
 .auth-card .auth-btn-signup {
   min-height: 2.45rem;
   margin-top: 0.15rem;
@@ -1855,7 +1873,7 @@ a,
     padding: 0.75rem 0.9rem 0.85rem;
   }
 
-  .auth-form-register {
+  .auth-form-grid {
     gap: 0.45rem 0.55rem;
   }
 }
@@ -1966,6 +1984,11 @@ a,
 .auth-form {
   display: grid;
   gap: 0.95rem;
+}
+
+.auth-form.auth-form-grid {
+  grid-template-columns: 1fr 1fr;
+  gap: 0.55rem 0.7rem;
 }
 
 .glass-icon-btn {
