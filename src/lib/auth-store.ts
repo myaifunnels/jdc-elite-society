@@ -3,7 +3,6 @@ import { Pool } from "pg";
 import { hashPassword } from "@/lib/password";
 import { parseMemberships, serializeMemberships, type Membership } from "@/lib/membership";
 import { AccountStatus, AuthUser, DashboardRole } from "@/lib/types";
-import { normalizePhone } from "@/lib/countries";
 
 export type AuthUserRecord = AuthUser & {
   passwordHash: string;
@@ -48,21 +47,6 @@ function deriveStatus(input: {
   }
 
   return "pending";
-}
-
-function phonesMatch(input: string, stored: string) {
-  const entered = normalizePhone(input);
-  const saved = normalizePhone(stored);
-
-  if (!entered || !saved) {
-    return false;
-  }
-
-  if (entered === saved) {
-    return true;
-  }
-
-  return entered.length >= 8 && (saved.endsWith(entered) || entered.endsWith(saved));
 }
 
 function publicUser(user: AuthUserRecord): AuthUser {
@@ -451,17 +435,12 @@ export async function authenticateUser(email: string, password: string) {
     return publicUser(user);
   }
 
-  if (!user.passwordSet && phonesMatch(password, user.phone)) {
-    return publicUser(user);
-  }
-
   return null;
 }
 
 export async function completeMemberProfile(
   userId: string,
   input: {
-    password: string;
     memberships: Membership[];
     bestDescribesYou: string;
     dateOfBirth: string;
@@ -475,7 +454,6 @@ export async function completeMemberProfile(
     throw new Error("Account not found.");
   }
 
-  const passwordHash = await hashPassword(input.password);
   const next: AuthUserRecord = {
     ...user,
     memberships: parseMemberships(input.memberships),
@@ -485,8 +463,6 @@ export async function completeMemberProfile(
     facebookProfileUrl: input.facebookProfileUrl ?? "",
     facebookPhotoUrl: input.facebookPhotoUrl ?? "",
     profileComplete: true,
-    passwordSet: true,
-    passwordHash,
     accountStatus: deriveStatus({
       role: user.role,
       profileComplete: true,

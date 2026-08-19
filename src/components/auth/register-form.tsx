@@ -23,11 +23,9 @@ export function RegisterForm({
       {compact ? null : (
         <div className="mb-2">
           <p className="eyebrow text-xs">Create your account</p>
-          <h2 className="mt-3 text-3xl font-semibold tracking-[-0.03em]">Register and enter the dashboard</h2>
+          <h2 className="mt-3 text-3xl font-semibold tracking-[-0.03em]">Create your account</h2>
           <p className="mt-3 text-sm text-[var(--muted)]">
-            Full name, email, mobile number, and company are required. After you register you can
-            open the dashboard. Your account stays pending until you complete your profile and our
-            team verifies your registration and payment.
+            Register to open the dashboard. Your account stays pending until we verify you.
           </p>
         </div>
       )}
@@ -45,6 +43,12 @@ export function RegisterForm({
         </div>
         <FloatField label="Company">
           <input name="company" autoComplete="organization" placeholder=" " required />
+        </FloatField>
+        <FloatField label="Password">
+          <input name="password" type="password" autoComplete="new-password" placeholder=" " required />
+        </FloatField>
+        <FloatField label="Confirm password">
+          <input name="confirmPassword" type="password" autoComplete="new-password" placeholder=" " required />
         </FloatField>
       </div>
 

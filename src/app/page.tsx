@@ -168,11 +168,10 @@ export default async function Home() {
               <div>
                 <p className="eyebrow text-xs">Register</p>
                 <h2 className="mt-2 text-3xl font-semibold tracking-[-0.03em] md:text-4xl">
-                  Register with your name, email, mobile number, and company.
+                  Create your account
                 </h2>
                 <p className="mt-4 text-[var(--muted)]">
-                  You can open the dashboard right after you register. Your account stays pending
-                  until you complete your profile and our team verifies your registration and payment.
+                  Register to open the dashboard. Your account stays pending until we verify you.
                 </p>
               </div>
               <RegisterForm />
