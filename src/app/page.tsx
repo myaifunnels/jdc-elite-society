@@ -168,11 +168,11 @@ export default async function Home() {
               <div>
                 <p className="eyebrow text-xs">Register</p>
                 <h2 className="mt-2 text-3xl font-semibold tracking-[-0.03em] md:text-4xl">
-                  Create an account. We&apos;ll open the dashboard that matches your role.
+                  Register with your name, email, mobile number, and company.
                 </h2>
                 <p className="mt-4 text-[var(--muted)]">
-                  Members get a coaching workspace. Partners get assigned contacts. Admins keep the full command center.
-                  Choose your role when you register — the room you enter depends on that.
+                  You can open the dashboard right after you register. Your account stays pending
+                  until you complete your profile and our team verifies your registration and payment.
                 </p>
               </div>
               <RegisterForm />

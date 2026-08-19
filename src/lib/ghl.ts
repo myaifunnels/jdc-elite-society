@@ -4,6 +4,7 @@ export type GhlContactInput = {
   name: string;
   email: string;
   phone?: string;
+  company?: string;
   dateOfBirth?: string;
   address?: string;
   city?: string;
@@ -57,6 +58,7 @@ export async function syncContactToGhl(input: GhlContactInput) {
     source: input.source || "JDC Elite Society website",
     tags,
     customFields: [
+      input.company ? { key: "company", field_value: input.company } : null,
       input.bestDescribesYou
         ? { key: "best_describes_you", field_value: input.bestDescribesYou }
         : null,

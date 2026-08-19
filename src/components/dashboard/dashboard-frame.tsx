@@ -22,6 +22,7 @@ export function DashboardFrame({
           role={user.role}
           userName={user.name}
           membershipLabel={membershipLabel(user.memberships)}
+          accountStatus={user.accountStatus}
           branding={branding}
         />
         <div className="dashboard-app-main min-w-0">{children}</div>

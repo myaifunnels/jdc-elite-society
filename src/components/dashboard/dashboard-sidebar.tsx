@@ -3,7 +3,18 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useId, useState } from "react";
-import { BookOpen, LayoutDashboard, LogOut, Menu, Plug, Settings2, Users, X } from "lucide-react";
+import {
+  BookOpen,
+  ClipboardList,
+  LayoutDashboard,
+  LogOut,
+  Menu,
+  Plug,
+  Settings2,
+  UserRound,
+  Users,
+  X,
+} from "lucide-react";
 
 import { logout } from "@/app/login/actions";
 import { SiteLogo } from "@/components/branding/site-logo";
@@ -18,6 +29,7 @@ const navByRole: Record<
 > = {
   admin: [
     { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+    { href: "/dashboard/registrations", label: "Registrations", icon: ClipboardList },
     { href: "/dashboard/contacts", label: "Contacts", icon: Users },
     { href: "/dashboard/integrations", label: "Integrations", icon: Plug },
     { href: "/dashboard/settings", label: "Settings", icon: Settings2 },
@@ -28,6 +40,7 @@ const navByRole: Record<
   ],
   member: [
     { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+    { href: "/dashboard/profile", label: "Account profile", icon: UserRound },
     { href: "/dashboard/path", label: "My path", icon: BookOpen },
   ],
 };
@@ -44,6 +57,7 @@ function SidebarPanel({
   role,
   userName,
   membershipLabel,
+  accountStatus,
   branding,
   titleId,
   onNavigate,
@@ -52,6 +66,7 @@ function SidebarPanel({
   role: DashboardRole;
   userName: string;
   membershipLabel: string;
+  accountStatus?: string;
   branding: BrandingSettings;
   titleId: string;
   onNavigate?: () => void;
@@ -109,7 +124,9 @@ function SidebarPanel({
           <div className="min-w-0">
             <p className="truncate text-sm font-semibold">{userName}</p>
             <p className="truncate text-xs text-[var(--muted)]">
-              {role === "member" ? membershipLabel : role}
+              {role === "member"
+                ? `${membershipLabel} · ${accountStatus === "verified" ? "Verified" : "Pending"}`
+                : role}
             </p>
           </div>
           <ThemeToggle />
@@ -134,11 +151,13 @@ export function DashboardSidebar({
   role,
   userName,
   membershipLabel,
+  accountStatus,
   branding,
 }: {
   role: DashboardRole;
   userName: string;
   membershipLabel: string;
+  accountStatus?: string;
   branding: BrandingSettings;
 }) {
   const [open, setOpen] = useState(false);
@@ -219,6 +238,7 @@ export function DashboardSidebar({
           role={role}
           userName={userName}
           membershipLabel={membershipLabel}
+          accountStatus={accountStatus}
           branding={branding}
           titleId={titleId}
           onNavigate={close}
@@ -234,6 +254,7 @@ export function DashboardSidebar({
           role={role}
           userName={userName}
           membershipLabel={membershipLabel}
+          accountStatus={accountStatus}
           branding={branding}
           titleId={`${titleId}-desktop`}
         />

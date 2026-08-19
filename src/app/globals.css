@@ -2045,6 +2045,155 @@ html.dark .auth-screen-centered,
   font-weight: 500;
 }
 
+.phone-field {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  width: 100%;
+  min-width: 0;
+}
+
+.phone-flag {
+  display: grid;
+  place-items: center;
+  width: 1.8rem;
+  height: 1.8rem;
+  flex: none;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.phone-dial {
+  flex: none;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.phone-field input {
+  min-width: 0;
+  flex: 1;
+}
+
+.phone-flag-menu {
+  position: absolute;
+  top: calc(100% + 0.4rem);
+  left: 0;
+  z-index: 40;
+  display: grid;
+  min-width: 16rem;
+  max-height: 16rem;
+  overflow: auto;
+  padding: 0.35rem;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--surface-elevated) 96%, white);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.22);
+}
+
+.phone-flag-menu button {
+  display: grid;
+  grid-template-columns: 1.4rem 1fr auto;
+  align-items: center;
+  gap: 0.55rem;
+  width: 100%;
+  padding: 0.45rem 0.5rem;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--foreground);
+  font: inherit;
+  font-size: 0.82rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.phone-flag-menu button[aria-selected="true"],
+.phone-flag-menu button:hover {
+  background: color-mix(in srgb, var(--brand) 12%, transparent);
+}
+
+.phone-flag-menu em {
+  font-style: normal;
+  color: var(--muted);
+}
+
+.phone-field-card {
+  display: grid;
+  gap: 0.45rem;
+  min-height: 3.35rem;
+  padding: 0.7rem 1rem 0.55rem;
+  border: 1px solid var(--line);
+  border-radius: 0.95rem;
+  background: color-mix(in srgb, var(--surface) 62%, transparent);
+}
+
+.phone-field-label {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.pending-checklist {
+  margin: 0;
+  padding-left: 1.1rem;
+  color: var(--foreground);
+  font-size: 0.9rem;
+}
+
+.pending-checklist .is-done {
+  color: var(--muted);
+  text-decoration: line-through;
+}
+
+.registration-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.85rem;
+  padding: 0.85rem 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.registration-row strong,
+.registration-meta dd {
+  display: block;
+  font-weight: 700;
+}
+
+.registration-row em,
+.registration-row p,
+.registration-meta dt {
+  display: block;
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-style: normal;
+}
+
+.registration-meta {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0;
+}
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2rem;
+  padding: 0 0.8rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--brand) 14%, transparent);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
 .macos-actions .auth-switch-copy {
   margin: 0;
   text-align: left;

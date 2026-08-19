@@ -14,34 +14,86 @@ export default async function DashboardPage() {
   const user = await requireSessionUser();
 
   if (user.role === "member") {
+    const pending = user.accountStatus !== "verified";
+
     return (
       <DashboardShell
         title={`Welcome, ${user.name.split(" ")[0]}`}
-        description="This is your member workspace. Follow a track, stay honest about where you are, and talk to Coach JDC when you're ready."
+        description={
+          pending
+            ? "Your account is pending. Complete your profile, then wait for our team to verify your registration and payment."
+            : "This is your member workspace. Follow a track, stay honest about where you are, and talk to Coach JDC when you're ready."
+        }
       >
         <div className="dashboard-widget-grid">
-          <MacosWindow title="Your role" className="dashboard-span-2">
-            <p className="macos-lead" style={{ textAlign: "left" }}>
-              Signed in as {membershipLabel(user.memberships)}. JES means JDC Elite Society. This
-              workspace is for the person doing the work.
-            </p>
-            <div className="macos-actions">
-              <Link href="/dashboard/path" className="macos-btn macos-btn-primary">
-                See my path
-              </Link>
-              <Link href="/contact" className="macos-btn macos-btn-secondary">
-                Talk to Coach JDC
-              </Link>
-            </div>
+          <MacosWindow title={pending ? "Account pending" : "Your role"} className="dashboard-span-2">
+            {pending ? (
+              <>
+                <p className="macos-lead" style={{ textAlign: "left" }}>
+                  You can use the dashboard, but your membership is not verified yet. Complete your
+                  account profile first. After that, our team will confirm your registration and
+                  payment.
+                </p>
+                <ul className="pending-checklist">
+                  <li className={user.profileComplete ? "is-done" : ""}>
+                    {user.profileComplete ? "Profile complete" : "Complete your account profile"}
+                  </li>
+                  <li className={user.paymentVerified ? "is-done" : ""}>
+                    {user.paymentVerified
+                      ? "Registration and payment verified"
+                      : "Team verifies registration and payment"}
+                  </li>
+                </ul>
+                <div className="macos-actions">
+                  {user.profileComplete ? (
+                    <Link href="/dashboard/profile" className="macos-btn macos-btn-secondary">
+                      View profile
+                    </Link>
+                  ) : (
+                    <Link href="/dashboard/profile" className="macos-btn macos-btn-primary">
+                      Complete profile
+                    </Link>
+                  )}
+                  <Link href="/contact" className="macos-btn macos-btn-secondary">
+                    Talk to Coach JDC
+                  </Link>
+                </div>
+              </>
+            ) : (
+              <>
+                <p className="macos-lead" style={{ textAlign: "left" }}>
+                  Signed in as {membershipLabel(user.memberships)}. JES means JDC Elite Society. This
+                  workspace is for the person doing the work.
+                </p>
+                <div className="macos-actions">
+                  <Link href="/dashboard/path" className="macos-btn macos-btn-primary">
+                    See my path
+                  </Link>
+                  <Link href="/contact" className="macos-btn macos-btn-secondary">
+                    Talk to Coach JDC
+                  </Link>
+                </div>
+              </>
+            )}
           </MacosWindow>
 
-          {programs.slice(0, 3).map((program) => (
-            <Link key={program.slug} href={`/programs/${program.slug}`} className="dashboard-metric-card">
-              <p className="macos-kicker">Track</p>
-              <p className="dashboard-metric-title">{program.title}</p>
-              <p className="dashboard-metric-copy">{program.shortDescription}</p>
-            </Link>
-          ))}
+          {!pending
+            ? programs.slice(0, 3).map((program) => (
+                <Link key={program.slug} href={`/programs/${program.slug}`} className="dashboard-metric-card">
+                  <p className="macos-kicker">Track</p>
+                  <p className="dashboard-metric-title">{program.title}</p>
+                  <p className="dashboard-metric-copy">{program.shortDescription}</p>
+                </Link>
+              ))
+            : (
+              <article className="dashboard-metric-card">
+                <p className="macos-kicker">Company</p>
+                <p className="dashboard-metric-title">{user.company || "Not listed"}</p>
+                <p className="dashboard-metric-copy">
+                  {user.phone} · {user.email}
+                </p>
+              </article>
+            )}
         </div>
       </DashboardShell>
     );
@@ -115,6 +167,19 @@ export default async function DashboardPage() {
             </Link>
           ))}
         </MacosWindow>
+
+        {isAdmin ? (
+          <MacosWindow title="Registrations">
+            <p className="macos-lead" style={{ textAlign: "left" }}>
+              Verify member registration and payment after they complete their account profile.
+            </p>
+            <div className="macos-actions">
+              <Link href="/dashboard/registrations" className="macos-btn macos-btn-primary">
+                Open registrations
+              </Link>
+            </div>
+          </MacosWindow>
+        ) : null}
 
         {isAdmin ? (
           <MacosWindow title="Integrations">

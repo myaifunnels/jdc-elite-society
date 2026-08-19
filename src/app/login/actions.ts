@@ -1,15 +1,25 @@
 "use server";
 
+import { randomUUID } from "crypto";
+import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
-import { authenticateUser, createUser, ensureSeedUsers } from "@/lib/auth-store";
+import {
+  authenticateUser,
+  completeMemberProfile,
+  createUser,
+  ensureSeedUsers,
+  setMemberPaymentVerified,
+} from "@/lib/auth-store";
+import { formatInternationalPhone } from "@/lib/countries";
 import { syncContactToGhl } from "@/lib/ghl";
-import { sessionCookieName } from "@/lib/session";
-import { loginSchema, registerSchema } from "@/lib/validations";
+import { requireRoles, requireSessionUser, sessionCookieName } from "@/lib/session";
+import { completeProfileSchema, loginSchema, registerSchema } from "@/lib/validations";
 
 export type AuthFormState = {
   error?: string;
+  success?: string;
 };
 
 async function setSessionCookie(userId: string, remember = true) {
@@ -30,14 +40,12 @@ export async function registerAccount(
   const parsed = registerSchema.safeParse({
     name: String(formData.get("name") ?? "").trim(),
     email: String(formData.get("email") ?? "").trim(),
-    password: String(formData.get("password") ?? ""),
-    confirmPassword: String(formData.get("confirmPassword") ?? ""),
-    memberships: formData.getAll("memberships").map(String),
-    bestDescribesYou: String(formData.get("bestDescribesYou") ?? ""),
-    dateOfBirth: String(formData.get("dateOfBirth") ?? "").trim(),
-    address: String(formData.get("address") ?? "").trim(),
-    facebookProfileUrl: String(formData.get("facebookProfileUrl") ?? "").trim(),
-    facebookPhotoUrl: String(formData.get("facebookPhotoUrl") ?? "").trim(),
+    phone: formatInternationalPhone(
+      String(formData.get("phoneCountry") ?? "PH"),
+      String(formData.get("phoneNational") ?? ""),
+    ),
+    phoneCountry: String(formData.get("phoneCountry") ?? "PH").trim().toUpperCase(),
+    company: String(formData.get("company") ?? "").trim(),
   });
 
   if (!parsed.success) {
@@ -47,25 +55,26 @@ export async function registerAccount(
 
   try {
     await ensureSeedUsers();
-    const { confirmPassword: _confirmPassword, ...account } = parsed.data;
     const user = await createUser({
-      ...account,
+      name: parsed.data.name,
+      email: parsed.data.email,
+      password: randomUUID(),
       role: "member",
+      phone: parsed.data.phone,
+      phoneCountry: parsed.data.phoneCountry,
+      company: parsed.data.company,
+      profileComplete: false,
+      paymentVerified: false,
+      passwordSet: false,
     });
     await setSessionCookie(user.id, true);
     await syncContactToGhl({
       name: parsed.data.name,
       email: parsed.data.email,
-      dateOfBirth: parsed.data.dateOfBirth,
-      address: parsed.data.address,
-      bestDescribesYou: parsed.data.bestDescribesYou,
-      facebookProfileUrl: parsed.data.facebookProfileUrl,
-      facebookPhotoUrl: parsed.data.facebookPhotoUrl,
+      phone: parsed.data.phone,
+      company: parsed.data.company,
       source: "Website registration",
-      tags: [
-        "Registration",
-        ...parsed.data.memberships.map((item) => (item === "jes" ? "JES Member" : "Spartans")),
-      ],
+      tags: ["Registration", "Pending verification"],
     });
   } catch (error) {
     return {
@@ -93,11 +102,86 @@ export async function loginAccount(
   const user = await authenticateUser(parsed.data.email, parsed.data.password);
 
   if (!user) {
-    return { error: "That email and password do not match an account." };
+    return { error: "That email and password or mobile number do not match an account." };
   }
 
   await setSessionCookie(user.id, String(formData.get("remember") ?? "") === "on");
   redirect("/dashboard");
+}
+
+export async function completeAccountProfile(
+  _prevState: AuthFormState,
+  formData: FormData,
+): Promise<AuthFormState> {
+  const user = await requireSessionUser();
+  const parsed = completeProfileSchema.safeParse({
+    password: String(formData.get("password") ?? ""),
+    confirmPassword: String(formData.get("confirmPassword") ?? ""),
+    memberships: formData.getAll("memberships").map(String),
+    bestDescribesYou: String(formData.get("bestDescribesYou") ?? ""),
+    dateOfBirth: String(formData.get("dateOfBirth") ?? "").trim(),
+    address: String(formData.get("address") ?? "").trim(),
+    facebookProfileUrl: String(formData.get("facebookProfileUrl") ?? "").trim(),
+    facebookPhotoUrl: String(formData.get("facebookPhotoUrl") ?? "").trim(),
+  });
+
+  if (!parsed.success) {
+    const firstError = Object.values(parsed.error.flatten().fieldErrors)[0]?.[0];
+    return { error: firstError || "Check your profile details and try again." };
+  }
+
+  try {
+    const { confirmPassword: _confirmPassword, ...profile } = parsed.data;
+    await completeMemberProfile(user.id, profile);
+    await syncContactToGhl({
+      name: user.name,
+      email: user.email,
+      phone: user.phone,
+      company: user.company,
+      dateOfBirth: profile.dateOfBirth,
+      address: profile.address,
+      bestDescribesYou: profile.bestDescribesYou,
+      facebookProfileUrl: profile.facebookProfileUrl,
+      facebookPhotoUrl: profile.facebookPhotoUrl,
+      source: "Account profile",
+      tags: [
+        "Profile complete",
+        ...profile.memberships.map((item) => (item === "jes" ? "JES Member" : "Spartans")),
+      ],
+    });
+  } catch (error) {
+    return {
+      error: error instanceof Error ? error.message : "I couldn't save your profile just now.",
+    };
+  }
+
+  revalidatePath("/dashboard");
+  revalidatePath("/dashboard/profile");
+  redirect("/dashboard");
+}
+
+export async function verifyMemberPayment(
+  _prevState: AuthFormState,
+  formData: FormData,
+): Promise<AuthFormState> {
+  await requireRoles(["admin"]);
+  const userId = String(formData.get("userId") ?? "");
+
+  if (!userId) {
+    return { error: "Missing member." };
+  }
+
+  try {
+    await setMemberPaymentVerified(userId, true);
+  } catch (error) {
+    return {
+      error: error instanceof Error ? error.message : "I couldn't verify this registration.",
+    };
+  }
+
+  revalidatePath("/dashboard");
+  revalidatePath("/dashboard/registrations");
+  return { success: "Payment verified." };
 }
 
 export async function logout() {

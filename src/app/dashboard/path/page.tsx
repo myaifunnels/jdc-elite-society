@@ -5,7 +5,28 @@ import { programs } from "@/data/programs";
 import { requireRoles } from "@/lib/session";
 
 export default async function MemberPathPage() {
-  await requireRoles(["member"]);
+  const user = await requireRoles(["member"]);
+
+  if (user.accountStatus !== "verified") {
+    return (
+      <DashboardShell
+        title="My path"
+        description="Your membership is still pending. Complete your profile and wait for our team to verify registration and payment."
+      >
+        <article className="card-surface rounded-[2rem] p-6 sm:p-8">
+          <p className="text-sm text-[var(--muted)]">
+            Tracks unlock after your account is verified.
+          </p>
+          <Link
+            href="/dashboard/profile"
+            className="button-primary pressable mt-6 inline-flex rounded-full px-4 py-2 text-sm font-semibold"
+          >
+            {user.profileComplete ? "View profile" : "Complete profile"}
+          </Link>
+        </article>
+      </DashboardShell>
+    );
+  }
 
   return (
     <DashboardShell

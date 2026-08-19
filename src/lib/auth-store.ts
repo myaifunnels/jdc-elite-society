@@ -2,7 +2,8 @@ import { Pool } from "pg";
 
 import { hashPassword } from "@/lib/password";
 import { parseMemberships, serializeMemberships, type Membership } from "@/lib/membership";
-import { AuthUser, DashboardRole } from "@/lib/types";
+import { AccountStatus, AuthUser, DashboardRole } from "@/lib/types";
+import { normalizePhone } from "@/lib/countries";
 
 export type AuthUserRecord = AuthUser & {
   passwordHash: string;
@@ -33,6 +34,37 @@ function getPool() {
   return pool;
 }
 
+function isPrivileged(role: DashboardRole) {
+  return role === "admin" || role === "partner";
+}
+
+function deriveStatus(input: {
+  role: DashboardRole;
+  profileComplete: boolean;
+  paymentVerified: boolean;
+}): AccountStatus {
+  if (isPrivileged(input.role) || (input.profileComplete && input.paymentVerified)) {
+    return "verified";
+  }
+
+  return "pending";
+}
+
+function phonesMatch(input: string, stored: string) {
+  const entered = normalizePhone(input);
+  const saved = normalizePhone(stored);
+
+  if (!entered || !saved) {
+    return false;
+  }
+
+  if (entered === saved) {
+    return true;
+  }
+
+  return entered.length >= 8 && (saved.endsWith(entered) || entered.endsWith(saved));
+}
+
 function publicUser(user: AuthUserRecord): AuthUser {
   return {
     id: user.id,
@@ -40,6 +72,13 @@ function publicUser(user: AuthUserRecord): AuthUser {
     email: user.email,
     role: user.role,
     memberships: user.memberships,
+    phone: user.phone,
+    phoneCountry: user.phoneCountry,
+    company: user.company,
+    profileComplete: user.profileComplete,
+    paymentVerified: user.paymentVerified,
+    passwordSet: user.passwordSet,
+    accountStatus: deriveStatus(user),
     bestDescribesYou: user.bestDescribesYou,
     dateOfBirth: user.dateOfBirth,
     address: user.address,
@@ -50,12 +89,25 @@ function publicUser(user: AuthUserRecord): AuthUser {
 }
 
 function mapRow(row: Record<string, unknown>): AuthUserRecord {
+  const role = row.role === "admin" || row.role === "partner" || row.role === "member" ? row.role : "member";
+  const privileged = isPrivileged(role);
+  const profileComplete = row.profile_complete === true || row.profile_complete === "t" || privileged;
+  const paymentVerified = row.payment_verified === true || row.payment_verified === "t" || privileged;
+  const passwordSet = row.password_set === true || row.password_set === "t" || privileged;
+
   return {
     id: String(row.id),
     name: String(row.name ?? ""),
     email: String(row.email ?? "").toLowerCase(),
-    role: row.role === "admin" || row.role === "partner" || row.role === "member" ? row.role : "member",
+    role,
     memberships: parseMemberships(row.memberships),
+    phone: String(row.phone ?? ""),
+    phoneCountry: String(row.phone_country ?? "PH"),
+    company: String(row.company ?? ""),
+    profileComplete,
+    paymentVerified,
+    passwordSet,
+    accountStatus: deriveStatus({ role, profileComplete, paymentVerified }),
     bestDescribesYou: String(row.best_describes_you ?? ""),
     dateOfBirth: String(row.date_of_birth ?? ""),
     address: String(row.address ?? ""),
@@ -104,6 +156,42 @@ async function ensureTable(client: Pool) {
   await client.query(`
     ALTER TABLE site_users
     ADD COLUMN IF NOT EXISTS memberships TEXT NOT NULL DEFAULT ''
+  `);
+  await client.query(`
+    ALTER TABLE site_users
+    ADD COLUMN IF NOT EXISTS phone TEXT NOT NULL DEFAULT ''
+  `);
+  await client.query(`
+    ALTER TABLE site_users
+    ADD COLUMN IF NOT EXISTS phone_country TEXT NOT NULL DEFAULT 'PH'
+  `);
+  await client.query(`
+    ALTER TABLE site_users
+    ADD COLUMN IF NOT EXISTS company TEXT NOT NULL DEFAULT ''
+  `);
+  await client.query(`
+    ALTER TABLE site_users
+    ADD COLUMN IF NOT EXISTS profile_complete BOOLEAN NOT NULL DEFAULT FALSE
+  `);
+  await client.query(`
+    ALTER TABLE site_users
+    ADD COLUMN IF NOT EXISTS payment_verified BOOLEAN NOT NULL DEFAULT FALSE
+  `);
+  await client.query(`
+    ALTER TABLE site_users
+    ADD COLUMN IF NOT EXISTS password_set BOOLEAN NOT NULL DEFAULT FALSE
+  `);
+  await client.query(`
+    UPDATE site_users
+    SET profile_complete = TRUE, payment_verified = TRUE, password_set = TRUE
+    WHERE role IN ('admin', 'partner')
+  `);
+  await client.query(`
+    UPDATE site_users
+    SET profile_complete = TRUE, payment_verified = TRUE, password_set = TRUE
+    WHERE role = 'member'
+      AND COALESCE(date_of_birth, '') <> ''
+      AND COALESCE(address, '') <> ''
   `);
   tableReady = true;
 }
@@ -245,12 +333,18 @@ export async function createUser(input: {
   email: string;
   password: string;
   role: Exclude<DashboardRole, "admin"> | "admin";
+  phone?: string;
+  phoneCountry?: string;
+  company?: string;
   bestDescribesYou?: string;
   dateOfBirth?: string;
   address?: string;
   facebookProfileUrl?: string;
   facebookPhotoUrl?: string;
   memberships?: Membership[];
+  profileComplete?: boolean;
+  paymentVerified?: boolean;
+  passwordSet?: boolean;
 }) {
   const email = input.email.trim().toLowerCase();
   const existing = await findUserByEmail(email);
@@ -259,12 +353,23 @@ export async function createUser(input: {
     throw new Error("An account with this email already exists.");
   }
 
+  const privileged = isPrivileged(input.role);
+  const profileComplete = input.profileComplete ?? privileged;
+  const paymentVerified = input.paymentVerified ?? privileged;
+  const passwordSet = input.passwordSet ?? privileged;
   const user: AuthUserRecord = {
     id: `user-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
     name: input.name.trim(),
     email,
     role: input.role,
     memberships: parseMemberships(input.memberships ?? []),
+    phone: input.phone ?? "",
+    phoneCountry: input.phoneCountry ?? "PH",
+    company: input.company ?? "",
+    profileComplete,
+    paymentVerified,
+    passwordSet,
+    accountStatus: deriveStatus({ role: input.role, profileComplete, paymentVerified }),
     bestDescribesYou: input.bestDescribesYou ?? "",
     dateOfBirth: input.dateOfBirth ?? "",
     address: input.address ?? "",
@@ -284,9 +389,10 @@ export async function createUser(input: {
         `
         INSERT INTO site_users (
           id, name, email, role, password_hash, created_at, best_describes_you,
-          date_of_birth, address, facebook_profile_url, facebook_photo_url, memberships
+          date_of_birth, address, facebook_profile_url, facebook_photo_url, memberships,
+          phone, phone_country, company, profile_complete, payment_verified, password_set
         )
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
         `,
         [
           user.id,
@@ -301,6 +407,12 @@ export async function createUser(input: {
           user.facebookProfileUrl,
           user.facebookPhotoUrl,
           serializeMemberships(user.memberships),
+          user.phone,
+          user.phoneCountry,
+          user.company,
+          user.profileComplete,
+          user.paymentVerified,
+          user.passwordSet,
         ],
       );
     } catch (error) {
@@ -326,6 +438,154 @@ export async function authenticateUser(email: string, password: string) {
     return null;
   }
 
-  const valid = await verifyPassword(password, user.passwordHash);
-  return valid ? publicUser(user) : null;
+  if (await verifyPassword(password, user.passwordHash)) {
+    return publicUser(user);
+  }
+
+  if (!user.passwordSet && phonesMatch(password, user.phone)) {
+    return publicUser(user);
+  }
+
+  return null;
+}
+
+export async function completeMemberProfile(
+  userId: string,
+  input: {
+    password: string;
+    memberships: Membership[];
+    bestDescribesYou: string;
+    dateOfBirth: string;
+    address: string;
+    facebookProfileUrl?: string;
+    facebookPhotoUrl?: string;
+  },
+) {
+  const user = await findUserById(userId);
+  if (!user) {
+    throw new Error("Account not found.");
+  }
+
+  const passwordHash = await hashPassword(input.password);
+  const next: AuthUserRecord = {
+    ...user,
+    memberships: parseMemberships(input.memberships),
+    bestDescribesYou: input.bestDescribesYou,
+    dateOfBirth: input.dateOfBirth,
+    address: input.address,
+    facebookProfileUrl: input.facebookProfileUrl ?? "",
+    facebookPhotoUrl: input.facebookPhotoUrl ?? "",
+    profileComplete: true,
+    passwordSet: true,
+    passwordHash,
+    accountStatus: deriveStatus({
+      role: user.role,
+      profileComplete: true,
+      paymentVerified: user.paymentVerified,
+    }),
+  };
+
+  await persistUserUpdate(next);
+  return publicUser(next);
+}
+
+export async function setMemberPaymentVerified(userId: string, verified = true) {
+  const user = await findUserById(userId);
+  if (!user) {
+    throw new Error("Account not found.");
+  }
+
+  const next: AuthUserRecord = {
+    ...user,
+    paymentVerified: verified,
+    accountStatus: deriveStatus({
+      role: user.role,
+      profileComplete: user.profileComplete,
+      paymentVerified: verified,
+    }),
+  };
+
+  await persistUserUpdate(next);
+  return publicUser(next);
+}
+
+export async function listMemberRegistrations() {
+  await ensureSeedUsers();
+  const client = getPool();
+
+  if (!client) {
+    return memoryUsers.filter((user) => user.role === "member").map(publicUser);
+  }
+
+  try {
+    await ensureTable(client);
+    const result = await client.query(
+      "SELECT * FROM site_users WHERE role = 'member' ORDER BY created_at DESC",
+    );
+    return result.rows.map((row) => publicUser(mapRow(row)));
+  } catch (error) {
+    console.error("Failed to list member registrations", error);
+    return memoryUsers.filter((user) => user.role === "member").map(publicUser);
+  }
+}
+
+async function persistUserUpdate(user: AuthUserRecord) {
+  const memoryIndex = memoryUsers.findIndex((item) => item.id === user.id);
+  if (memoryIndex >= 0) {
+    memoryUsers[memoryIndex] = user;
+  } else {
+    memoryUsers.unshift(user);
+  }
+
+  const client = getPool();
+  if (!client) {
+    return;
+  }
+
+  try {
+    await ensureTable(client);
+    await client.query(
+      `
+      UPDATE site_users SET
+        name = $2,
+        email = $3,
+        role = $4,
+        password_hash = $5,
+        best_describes_you = $6,
+        date_of_birth = $7,
+        address = $8,
+        facebook_profile_url = $9,
+        facebook_photo_url = $10,
+        memberships = $11,
+        phone = $12,
+        phone_country = $13,
+        company = $14,
+        profile_complete = $15,
+        payment_verified = $16,
+        password_set = $17
+      WHERE id = $1
+      `,
+      [
+        user.id,
+        user.name,
+        user.email,
+        user.role,
+        user.passwordHash,
+        user.bestDescribesYou,
+        user.dateOfBirth,
+        user.address,
+        user.facebookProfileUrl,
+        user.facebookPhotoUrl,
+        serializeMemberships(user.memberships),
+        user.phone,
+        user.phoneCountry,
+        user.company,
+        user.profileComplete,
+        user.paymentVerified,
+        user.passwordSet,
+      ],
+    );
+  } catch (error) {
+    console.error("Failed to update user", error);
+  }
 }

@@ -25,6 +25,7 @@ export type SiteStat = {
 };
 
 export type DashboardRole = "admin" | "partner" | "member";
+export type AccountStatus = "pending" | "verified";
 
 export type AuthUser = {
   id: string;
@@ -32,6 +33,13 @@ export type AuthUser = {
   email: string;
   role: DashboardRole;
   memberships: Membership[];
+  phone: string;
+  phoneCountry: string;
+  company: string;
+  profileComplete: boolean;
+  paymentVerified: boolean;
+  passwordSet: boolean;
+  accountStatus: AccountStatus;
   bestDescribesYou?: string;
   dateOfBirth?: string;
   address?: string;
