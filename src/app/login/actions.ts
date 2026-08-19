@@ -32,10 +32,38 @@ import {
   resolveAudienceLabel,
 } from "@/lib/validations";
 
+export type RegisterDraft = {
+  name: string;
+  email: string;
+  phoneCountry: string;
+  phoneNational: string;
+  company: string;
+};
+
 export type AuthFormState = {
   error?: string;
   success?: string;
+  fields?: RegisterDraft;
+  formKey?: string;
 };
+
+function readRegisterDraft(formData: FormData): RegisterDraft {
+  return {
+    name: String(formData.get("name") ?? ""),
+    email: String(formData.get("email") ?? ""),
+    phoneCountry: String(formData.get("phoneCountry") ?? "PH").trim().toUpperCase() || "PH",
+    phoneNational: String(formData.get("phoneNational") ?? ""),
+    company: String(formData.get("company") ?? ""),
+  };
+}
+
+function registerError(error: string, formData: FormData): AuthFormState {
+  return {
+    error,
+    fields: readRegisterDraft(formData),
+    formKey: String(Date.now()),
+  };
+}
 
 async function setSessionCookie(userId: string, remember = true) {
   const cookieStore = await cookies();
@@ -67,7 +95,7 @@ export async function registerAccount(
 
   if (!parsed.success) {
     const firstError = Object.values(parsed.error.flatten().fieldErrors)[0]?.[0];
-    return { error: firstError || "Check the registration details and try again." };
+    return registerError(firstError || "Check the registration details and try again.", formData);
   }
 
   await ensureSeedUsers();
@@ -115,9 +143,10 @@ export async function registerAccount(
       tags: ["Registration", "Pending verification", ...extraTags],
     });
   } catch (error) {
-    return {
-      error: error instanceof Error ? error.message : "I couldn't create this account just now.",
-    };
+    return registerError(
+      error instanceof Error ? error.message : "I couldn't create this account just now.",
+      formData,
+    );
   }
 
   redirect("/dashboard");

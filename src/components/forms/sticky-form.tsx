@@ -4,14 +4,49 @@ import { useEffect, useRef, type ComponentProps, type FormEvent, type ReactNode 
 
 import { readStoredForm, shouldPersistField, writeStoredForm } from "@/lib/form-storage";
 
+function collectValues(form: HTMLFormElement) {
+  const next: Record<string, string> = {};
+  for (const field of Array.from(form.elements)) {
+    if (
+      (field instanceof HTMLInputElement ||
+        field instanceof HTMLSelectElement ||
+        field instanceof HTMLTextAreaElement) &&
+      shouldPersistField(field)
+    ) {
+      next[field.name] = field.value;
+    }
+  }
+  return next;
+}
+
+function restoreValues(form: HTMLFormElement, storageKey: string) {
+  const saved = readStoredForm(storageKey);
+  for (const [name, value] of Object.entries(saved)) {
+    const field = form.elements.namedItem(name);
+    if (
+      (field instanceof HTMLInputElement ||
+        field instanceof HTMLSelectElement ||
+        field instanceof HTMLTextAreaElement) &&
+      shouldPersistField(field) &&
+      !(field.dataset.lock === "true" && field.value)
+    ) {
+      field.value = value;
+      field.dispatchEvent(new Event("input", { bubbles: true }));
+      field.dispatchEvent(new Event("change", { bubbles: true }));
+    }
+  }
+}
+
 export function StickyForm({
   storageKey,
+  restoreToken,
   className,
   action,
   encType,
   children,
 }: {
   storageKey: string;
+  restoreToken?: string;
   className?: string;
   action?: ComponentProps<"form">["action"];
   encType?: string;
@@ -25,62 +60,31 @@ export function StickyForm({
       return;
     }
 
-    const saved = readStoredForm(storageKey);
-    for (const [name, value] of Object.entries(saved)) {
-      const field = form.elements.namedItem(name);
-      if (
-        (field instanceof HTMLInputElement ||
-          field instanceof HTMLSelectElement ||
-          field instanceof HTMLTextAreaElement) &&
-        shouldPersistField(field) &&
-        !(field.dataset.lock === "true" && field.value)
-      ) {
-        field.value = value;
-        field.dispatchEvent(new Event("input", { bubbles: true }));
-      }
-    }
+    restoreValues(form, storageKey);
 
     function persist() {
       if (!form) {
         return;
       }
+      writeStoredForm(storageKey, collectValues(form));
+    }
 
-      const next: Record<string, string> = {};
-      for (const field of Array.from(form.elements)) {
-        if (
-          (field instanceof HTMLInputElement ||
-            field instanceof HTMLSelectElement ||
-            field instanceof HTMLTextAreaElement) &&
-          shouldPersistField(field)
-        ) {
-          next[field.name] = field.value;
-        }
-      }
-      writeStoredForm(storageKey, next);
+    function onReset() {
+      queueMicrotask(() => restoreValues(form, storageKey));
     }
 
     form.addEventListener("input", persist);
     form.addEventListener("change", persist);
+    form.addEventListener("reset", onReset);
     return () => {
       form.removeEventListener("input", persist);
       form.removeEventListener("change", persist);
+      form.removeEventListener("reset", onReset);
     };
-  }, [storageKey]);
+  }, [storageKey, restoreToken]);
 
   function onSubmit(event: FormEvent<HTMLFormElement>) {
-    const form = event.currentTarget;
-    const next: Record<string, string> = {};
-    for (const field of Array.from(form.elements)) {
-      if (
-        (field instanceof HTMLInputElement ||
-          field instanceof HTMLSelectElement ||
-          field instanceof HTMLTextAreaElement) &&
-        shouldPersistField(field)
-      ) {
-        next[field.name] = field.value;
-      }
-    }
-    writeStoredForm(storageKey, next);
+    writeStoredForm(storageKey, collectValues(event.currentTarget));
   }
 
   return (

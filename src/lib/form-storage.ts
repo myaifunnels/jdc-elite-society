@@ -44,7 +44,7 @@ export function shouldPersistField(field: Element) {
     return false;
   }
 
-  if (field instanceof HTMLInputElement && (field.type === "password" || field.type === "hidden" || field.type === "file")) {
+  if (field instanceof HTMLInputElement && (field.type === "password" || field.type === "file")) {
     return false;
   }
 
