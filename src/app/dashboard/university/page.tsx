@@ -9,6 +9,7 @@ export default async function UniversityPage() {
 
   return (
     <DashboardShell
+      fill
       title="University"
       description={
         unlocked
@@ -16,9 +17,7 @@ export default async function UniversityPage() {
           : "University opens after your account is verified."
       }
     >
-      <div className="dashboard-widget-grid">
-        <UniversityCommunityEmbed unlocked={unlocked} verifyHref={verifyHref} />
-      </div>
+      <UniversityCommunityEmbed unlocked={unlocked} verifyHref={verifyHref} />
     </DashboardShell>
   );
 }

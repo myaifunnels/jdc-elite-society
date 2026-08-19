@@ -2,11 +2,23 @@ export function DashboardShell({
   title,
   description,
   children,
+  fill = false,
 }: {
   title: string;
   description: string;
   children: React.ReactNode;
+  fill?: boolean;
 }) {
+  if (fill) {
+    return (
+      <main id="dashboard-main" tabIndex={-1} className="university-fill outline-none">
+        <h1 className="sr-only">{title}</h1>
+        <p className="sr-only">{description}</p>
+        {children}
+      </main>
+    );
+  }
+
   return (
     <>
       <header className="dashboard-toolbar">

@@ -10,26 +10,25 @@ export function UniversityCommunityEmbed({
   verifyHref: string;
 }) {
   return (
-    <section className="macos-window macos-app-window dashboard-span-2 university-community-window">
-      <header className="macos-titlebar">
-        <h2 className="macos-title">{unlocked ? "JDC Elite Society community" : "University locked"}</h2>
-      </header>
+    <section className={unlocked ? "university-community-window is-live" : "university-community-window"}>
+      <h2 className="sr-only">{unlocked ? "JDC Elite Society community" : "University locked"}</h2>
       {unlocked ? (
         <>
-          <div className="university-community-frame-wrap">
-            <iframe
-              title="JDC Elite Society community"
-              src={UNIVERSITY_COMMUNITY_URL}
-              className="university-community-frame"
-              allow="clipboard-read; clipboard-write; fullscreen; autoplay"
-              referrerPolicy="strict-origin-when-cross-origin"
-            />
-          </div>
-          <p className="university-community-open">
-            <a href={UNIVERSITY_COMMUNITY_URL} target="_blank" rel="noreferrer">
-              Open community.coachjdc.org in a new tab
-            </a>
-          </p>
+          <iframe
+            title="JDC Elite Society community"
+            src={UNIVERSITY_COMMUNITY_URL}
+            className="university-community-frame"
+            allow="clipboard-read; clipboard-write; fullscreen; autoplay"
+            referrerPolicy="strict-origin-when-cross-origin"
+          />
+          <a
+            className="university-community-open"
+            href={UNIVERSITY_COMMUNITY_URL}
+            target="_blank"
+            rel="noreferrer"
+          >
+            Open in a new tab
+          </a>
         </>
       ) : (
         <div className="macos-body">
