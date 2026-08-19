@@ -22,7 +22,7 @@ export default async function MemberPathPage() {
             href="/dashboard/profile"
             className="button-primary pressable mt-6 inline-flex rounded-full px-4 py-2 text-sm font-semibold"
           >
-            {user.profileComplete ? "View profile" : "Complete profile"}
+            {user.profileComplete ? "Edit account" : "Complete account"}
           </Link>
         </article>
       </DashboardShell>

@@ -3701,4 +3701,215 @@ html:not(.dark) .dashboard-desktop {
   color: var(--foreground);
 }
 
+.account-dash-stack {
+  display: grid;
+  gap: 1rem;
+}
+
+.account-dash {
+  display: grid;
+  gap: 1rem;
+}
+
+.account-dash-hero {
+  position: relative;
+  overflow: hidden;
+  display: grid;
+  gap: 1rem;
+  padding: 1.35rem 1.4rem 1.25rem;
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background: color-mix(in srgb, var(--surface) 82%, transparent);
+}
+
+@media (min-width: 900px) {
+  .account-dash-hero {
+    grid-template-columns: 1fr auto;
+    align-items: end;
+  }
+}
+
+.account-dash-hero-bg {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(120% 90% at 0% 0%, color-mix(in srgb, var(--brand) 28%, transparent), transparent 55%),
+    radial-gradient(80% 70% at 100% 0%, color-mix(in srgb, var(--brand-dark, var(--brand)) 18%, transparent), transparent 50%);
+  pointer-events: none;
+}
+
+.account-dash-hero-copy,
+.account-dash-status {
+  position: relative;
+}
+
+.account-dash-hero-copy h2 {
+  margin: 0.2rem 0 0.45rem;
+  font-size: clamp(1.55rem, 2.4vw, 2.15rem);
+  line-height: 1.15;
+  letter-spacing: -0.04em;
+}
+
+.account-dash-hero-copy p {
+  margin: 0;
+  max-width: 42rem;
+  color: var(--muted);
+  font-size: 0.95rem;
+  line-height: 1.55;
+}
+
+.account-dash-status {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  justify-content: flex-start;
+}
+
+.account-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-height: 2rem;
+  padding: 0.25rem 0.7rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface) 70%, transparent);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.account-chip.is-live {
+  border-color: color-mix(in srgb, var(--brand) 40%, var(--line));
+  background: color-mix(in srgb, var(--brand) 16%, transparent);
+  color: var(--foreground);
+}
+
+.account-chip.is-quiet {
+  font-weight: 650;
+  color: var(--muted);
+}
+
+.account-dash-layout {
+  display: grid;
+  gap: 1rem;
+}
+
+@media (min-width: 980px) {
+  .account-dash-layout {
+    grid-template-columns: minmax(260px, 320px) minmax(0, 1fr);
+    align-items: start;
+  }
+}
+
+.account-dash-card {
+  display: grid;
+  gap: 1rem;
+  padding: 1.15rem 1.2rem 1.25rem;
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.06);
+}
+
+.account-dash-main {
+  display: grid;
+  gap: 1rem;
+}
+
+.account-dash-identity {
+  position: sticky;
+  top: 0.8rem;
+}
+
+.account-dash-identity .photo-upload {
+  margin: 0;
+}
+
+.account-dash-identity-meta {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.account-dash-identity-meta strong {
+  font-size: 1.12rem;
+  letter-spacing: -0.03em;
+}
+
+.account-dash-identity-meta em {
+  color: var(--muted);
+  font-style: normal;
+  font-size: 0.86rem;
+}
+
+.account-dash-facts {
+  display: grid;
+  gap: 0.7rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.account-dash-facts li {
+  display: grid;
+  grid-template-columns: 1.1rem 1fr;
+  gap: 0.7rem;
+  align-items: start;
+  color: var(--muted);
+}
+
+.account-dash-facts span {
+  display: grid;
+  gap: 0.1rem;
+  font-size: 0.74rem;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.account-dash-facts b {
+  color: var(--foreground);
+  font-size: 0.9rem;
+  font-weight: 650;
+  letter-spacing: 0;
+  text-transform: none;
+  overflow-wrap: anywhere;
+}
+
+.account-dash-links {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.account-dash-section-head h3 {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0;
+  font-size: 1.05rem;
+  letter-spacing: -0.03em;
+}
+
+.account-dash-section-head p {
+  margin: 0.25rem 0 0;
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+
+.account-dash-save {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.95rem 1.1rem;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  position: sticky;
+  bottom: 0.6rem;
+}
+
+.account-dash-pending .macos-app-window {
+  width: 100%;
+}
+
 

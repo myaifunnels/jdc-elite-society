@@ -45,9 +45,9 @@ export const CAPABILITIES: Array<{ id: Capability; label: string; detail: string
 
 export const ACCESS_ROLES: Array<{ id: AccessRole; label: string; detail: string }> = [
   { id: "admin", label: "Admin", detail: "Full platform. Defaults on for every room." },
-  { id: "partner", label: "Partner", detail: "Assigned contacts, University, and optional partnership." },
+  { id: "partner", label: "Partner", detail: "Assigned contacts, University, own account, and optional partnership." },
   { id: "member", label: "Member", detail: "Verified membership: University, profile, and path." },
-  { id: "contact", label: "Contact", detail: "Limited portal for CRM contacts: home and University." },
+  { id: "contact", label: "Contact", detail: "Limited portal for CRM contacts: home, account, and University." },
 ];
 
 export const ROLE_DEFAULTS: Record<AccessRole, AccessMap> = {
@@ -69,7 +69,7 @@ export const ROLE_DEFAULTS: Record<AccessRole, AccessMap> = {
   partner: {
     dashboard: true,
     university: true,
-    profile: false,
+    profile: true,
     path: false,
     "contacts.view": true,
     "contacts.all": false,
@@ -99,7 +99,7 @@ export const ROLE_DEFAULTS: Record<AccessRole, AccessMap> = {
   contact: {
     dashboard: true,
     university: true,
-    profile: false,
+    profile: true,
     path: false,
     "contacts.view": false,
     "contacts.all": false,
@@ -137,6 +137,7 @@ export function mergeAccess(role: AccessRole, roleDefaults: AccessMap, overrides
     resolved.access = true;
     resolved.dashboard = true;
   }
+  resolved.profile = true;
   return { role, defaults, overrides, resolved };
 }
 

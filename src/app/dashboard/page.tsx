@@ -1,16 +1,15 @@
 import Link from "next/link";
 
+import { AccountProfileDashboard } from "@/components/dashboard/account-profile-dashboard";
 import { ContactAvatar } from "@/components/dashboard/contact-avatar";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { MacosWindow } from "@/components/dashboard/macos-window";
 import { PartnersMap } from "@/components/dashboard/partners-map";
 import { dashboardMetrics } from "@/data/crm";
-import { programs } from "@/data/programs";
 import { PendingMemberHome } from "@/components/dashboard/pending-member-home";
 import { listContacts, listPartnerMapPins, listViewerMetrics } from "@/lib/crm-store";
 import { adminPartnershipSnapshot } from "@/lib/affiliate-store";
 import { formatManilaDate, formatPhp } from "@/lib/pay-cycle";
-import { membershipLabel } from "@/lib/membership";
 import { hasAccess } from "@/lib/access";
 import { resolveAccess } from "@/lib/access-store";
 import { requireSessionUser } from "@/lib/session";
@@ -27,71 +26,30 @@ export default async function DashboardPage() {
         title={`Welcome, ${user.name.split(" ")[0]}`}
         description={
           pending
-            ? user.profileComplete
-              ? "Your seat is reserved. The team is turning your account on."
-              : "Finish your profile and you will be next in line for an active account."
-            : "Your member workspace: your path, your programs, and a way to talk to Coach JDC."
+            ? "Edit your account below. The team turns the full member room on after registration and payment."
+            : "Your account, your path, and University — all in one workspace."
         }
       >
-        {pending ? (
-          <PendingMemberHome user={user} />
-        ) : (
-          <div className="dashboard-widget-grid">
-            <MacosWindow title="Your room" className="dashboard-span-2">
+        <div className="account-dash-stack">
+          {pending ? <PendingMemberHome user={user} compact /> : null}
+          <AccountProfileDashboard
+            user={user}
+            showWorkspaceLinks={!pending}
+            showPath={!pending && hasAccess(access, "path")}
+          />
+          {!pending && user.affiliateAccess ? (
+            <MacosWindow title="Partnership Program" className="dashboard-span-2">
               <p className="macos-lead" style={{ textAlign: "left" }}>
-                Signed in as {membershipLabel(user.memberships)}. JES means JDC Elite Society. This
-                workspace is for the person doing the work — not the admin or partner rooms.
+                You have invite-only partner access. 20% is recorded by the team and released on the 15th and 30th.
               </p>
               <div className="macos-actions">
-                {hasAccess(access, "path") ? (
-                  <Link href="/dashboard/path" className="macos-btn macos-btn-primary">
-                    See my path
-                  </Link>
-                ) : null}
-                {hasAccess(access, "university") ? (
-                  <Link href="/dashboard/university" className="macos-btn macos-btn-primary">
-                    Open University
-                  </Link>
-                ) : null}
-                <Link href="/contact" className="macos-btn macos-btn-secondary">
-                  Talk to Coach JDC
+                <Link href="/dashboard/partnership" className="macos-btn macos-btn-primary">
+                  Open Partnership
                 </Link>
               </div>
             </MacosWindow>
-
-            {programs.slice(0, 3).map((program) => (
-              <Link key={program.slug} href={`/programs/${program.slug}`} className="dashboard-metric-card">
-                <p className="macos-kicker">Track</p>
-                <p className="dashboard-metric-title">{program.title}</p>
-                <p className="dashboard-metric-copy">{program.shortDescription}</p>
-              </Link>
-            ))}
-
-            <MacosWindow title="University" className="dashboard-span-2">
-              <p className="macos-lead" style={{ textAlign: "left" }}>
-                The membership community lives in University: community.coachjdc.org, inside this workspace.
-              </p>
-              <div className="macos-actions">
-                <Link href="/dashboard/university" className="macos-btn macos-btn-primary">
-                  Open University
-                </Link>
-              </div>
-            </MacosWindow>
-
-            {user.affiliateAccess ? (
-              <MacosWindow title="Partnership Program" className="dashboard-span-2">
-                <p className="macos-lead" style={{ textAlign: "left" }}>
-                  You have invite-only partner access. 20% is recorded by the team and released on the 15th and 30th.
-                </p>
-                <div className="macos-actions">
-                  <Link href="/dashboard/partnership" className="macos-btn macos-btn-primary">
-                    Open Partnership
-                  </Link>
-                </div>
-              </MacosWindow>
-            ) : null}
-          </div>
-        )}
+          ) : null}
+        </div>
       </DashboardShell>
     );
   }
@@ -115,6 +73,17 @@ export default async function DashboardPage() {
               <p className="dashboard-metric-copy">{metric.detail}</p>
             </article>
           ))}
+
+          <MacosWindow title="Your account">
+            <p className="macos-lead" style={{ textAlign: "left" }}>
+              Update your photo, phone, company, and password. This is the card on your login.
+            </p>
+            <div className="macos-actions">
+              <Link href="/dashboard/profile" className="macos-btn macos-btn-primary">
+                Edit account
+              </Link>
+            </div>
+          </MacosWindow>
 
           <MacosWindow title="Your contacts" className="dashboard-span-2" bodyClassName="dashboard-contact-list">
             {contacts.length === 0 ? (

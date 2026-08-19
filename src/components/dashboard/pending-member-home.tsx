@@ -2,15 +2,20 @@ import Link from "next/link";
 
 import { ContactAvatar } from "@/components/dashboard/contact-avatar";
 import { MacosWindow } from "@/components/dashboard/macos-window";
-import { programs } from "@/data/programs";
 import { AuthUser } from "@/lib/types";
 
-export function PendingMemberHome({ user }: { user: AuthUser }) {
+export function PendingMemberHome({
+  user,
+  compact = false,
+}: {
+  user: AuthUser;
+  compact?: boolean;
+}) {
   const firstName = user.name.split(" ")[0] || "there";
   const photoUrl = user.facebookPhotoUrl;
 
   return (
-    <div className="dashboard-widget-grid">
+    <div className={compact ? "account-dash-pending" : "dashboard-widget-grid"}>
       <MacosWindow title={user.profileComplete ? "Your seat is reserved" : "You're in"} className="dashboard-span-2">
         <div className="pending-hero">
           <ContactAvatar name={user.name} photoUrl={photoUrl} size="xl" />
@@ -23,7 +28,7 @@ export function PendingMemberHome({ user }: { user: AuthUser }) {
             </h2>
             <p>
               {user.profileComplete
-                ? "The team is reviewing your registration and payment. Stay close — verified members get the path, the programs, and Coach JDC."
+                ? "The team is reviewing your registration and payment. You can still edit your account below anytime."
                 : "Put your face on the account, tell us who you are, and we start the verification clock."}
             </p>
           </div>
@@ -33,7 +38,7 @@ export function PendingMemberHome({ user }: { user: AuthUser }) {
           <li className={user.profileComplete ? "is-done" : "is-current"}>
             <span>1</span>
             <strong>Profile</strong>
-            <em>{user.profileComplete ? "Done. You look ready." : "Photo, story, and membership."}</em>
+            <em>{user.profileComplete ? "Saved. Keep it current." : "Photo, story, and membership."}</em>
           </li>
           <li className={user.paymentVerified ? "is-done" : user.profileComplete ? "is-current" : ""}>
             <span>2</span>
@@ -48,12 +53,9 @@ export function PendingMemberHome({ user }: { user: AuthUser }) {
         </ol>
 
         <div className="macos-actions">
-          <Link
-            href="/dashboard/profile"
-            className={user.profileComplete ? "macos-btn macos-btn-secondary" : "macos-btn macos-btn-primary"}
-          >
-            {user.profileComplete ? "See my profile" : "Complete my profile"}
-          </Link>
+          <a href="#account-editor" className="macos-btn macos-btn-primary">
+            {user.profileComplete ? "Edit my account" : "Complete my account"}
+          </a>
           <Link href="/dashboard/university" className="macos-btn macos-btn-secondary">
             Peek at University
           </Link>
@@ -62,14 +64,6 @@ export function PendingMemberHome({ user }: { user: AuthUser }) {
           </Link>
         </div>
       </MacosWindow>
-
-      {programs.slice(0, 3).map((program) => (
-        <article key={program.slug} className="dashboard-metric-card is-locked">
-          <p className="macos-kicker">Unlocks when active</p>
-          <p className="dashboard-metric-title">{program.title}</p>
-          <p className="dashboard-metric-copy">{program.shortDescription}</p>
-        </article>
-      ))}
     </div>
   );
 }

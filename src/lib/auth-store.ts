@@ -1,6 +1,6 @@
 import { Pool } from "pg";
 
-import { hashPassword } from "@/lib/password";
+import { hashPassword, verifyPassword } from "@/lib/password";
 import { parseMemberships, serializeMemberships, type Membership } from "@/lib/membership";
 import { AccountStatus, AuthUser, DashboardRole } from "@/lib/types";
 
@@ -427,7 +427,6 @@ export async function getPublicUserById(id: string) {
 
 export async function authenticateUser(email: string, password: string) {
   await ensureSeedUsers();
-  const { verifyPassword } = await import("@/lib/password");
   const user = await findUserByEmail(email);
 
   if (!user) {
@@ -466,6 +465,60 @@ export async function completeMemberProfile(
     facebookProfileUrl: input.facebookProfileUrl ?? "",
     facebookPhotoUrl: input.facebookPhotoUrl ?? "",
     profileComplete: true,
+    accountStatus: deriveStatus({
+      role: user.role,
+      profileComplete: true,
+      paymentVerified: user.paymentVerified,
+    }),
+  };
+
+  await persistUserUpdate(next);
+  return publicUser(next);
+}
+
+export async function updateOwnAccount(
+  userId: string,
+  input: {
+    name: string;
+    phone: string;
+    phoneCountry: string;
+    company: string;
+    memberships: Membership[];
+    bestDescribesYou: string;
+    dateOfBirth: string;
+    address: string;
+    facebookProfileUrl?: string;
+    facebookPhotoUrl?: string;
+    currentPassword?: string;
+    newPassword?: string;
+  },
+) {
+  const user = await findUserById(userId);
+  if (!user) {
+    throw new Error("Account not found.");
+  }
+
+  if (input.newPassword) {
+    if (!input.currentPassword || !(await verifyPassword(input.currentPassword, user.passwordHash))) {
+      throw new Error("Current password is incorrect.");
+    }
+  }
+
+  const next: AuthUserRecord = {
+    ...user,
+    name: input.name.trim(),
+    phone: input.phone,
+    phoneCountry: input.phoneCountry,
+    company: input.company.trim(),
+    memberships: parseMemberships(input.memberships),
+    bestDescribesYou: input.bestDescribesYou,
+    dateOfBirth: input.dateOfBirth,
+    address: input.address,
+    facebookProfileUrl: input.facebookProfileUrl ?? "",
+    facebookPhotoUrl: input.facebookPhotoUrl ?? user.facebookPhotoUrl,
+    profileComplete: true,
+    passwordHash: input.newPassword ? await hashPassword(input.newPassword) : user.passwordHash,
+    passwordSet: true,
     accountStatus: deriveStatus({
       role: user.role,
       profileComplete: true,

@@ -47,3 +47,13 @@ export function formatInternationalPhone(iso: string, nationalNumber: string) {
   const digits = normalizePhone(nationalNumber).replace(/^0+/, "");
   return `${country.dial}${digits}`;
 }
+
+export function nationalDigitsFromInternational(iso: string, phone: string) {
+  const country = findCountry(iso);
+  const digits = normalizePhone(phone);
+  const dialDigits = normalizePhone(country.dial);
+  if (dialDigits && digits.startsWith(dialDigits)) {
+    return digits.slice(dialDigits.length);
+  }
+  return digits;
+}

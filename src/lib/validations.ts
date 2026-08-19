@@ -64,6 +64,58 @@ export function resolveAudienceLabel(option: string, other = "") {
   return option;
 }
 
+export function splitAudienceValue(value: string) {
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return { option: "" as const, other: "" };
+  }
+  if (trimmed === "Other" || trimmed.startsWith("Other:")) {
+    return { option: "Other" as const, other: trimmed.replace(/^Other:\s*/i, "").trim() };
+  }
+  if ((audienceOptions as readonly string[]).includes(trimmed)) {
+    return { option: trimmed as (typeof audienceOptions)[number], other: "" };
+  }
+  return { option: "Other" as const, other: trimmed };
+}
+
+export const accountProfileSchema = z
+  .object({
+    name: z.string().min(2, "Full name is required."),
+    company: z.string().min(2, "Company is required."),
+    phone: z.string().min(8, "Phone number is required."),
+    phoneCountry: z.string().min(2, "Choose a country."),
+    memberships: z.array(z.enum(membershipOptions)),
+    bestDescribesYou: z.enum(audienceOptions, { message: "Tell me what best describes you." }),
+    bestDescribesYouOther: z.string().optional().default(""),
+    dateOfBirth: z.string().min(1, "Date of birth is required."),
+    address: z.string().min(5, "Address is required."),
+    facebookProfileUrl: z.string().optional().default(""),
+    currentPassword: z.string().optional().default(""),
+    newPassword: z.string().optional().default(""),
+    confirmPassword: z.string().optional().default(""),
+    requireMembership: z.boolean().optional().default(true),
+  })
+  .refine((value) => value.bestDescribesYou !== "Other" || value.bestDescribesYouOther.trim().length >= 2, {
+    message: "Tell us what “other” is.",
+    path: ["bestDescribesYouOther"],
+  })
+  .refine((value) => !value.requireMembership || value.memberships.length >= 1, {
+    message: "Choose Spartans, JES Member, or both.",
+    path: ["memberships"],
+  })
+  .refine((value) => !value.newPassword || value.newPassword.length >= 8, {
+    message: "Use at least 8 characters.",
+    path: ["newPassword"],
+  })
+  .refine((value) => !value.newPassword || value.newPassword === value.confirmPassword, {
+    message: "Those passwords do not match.",
+    path: ["confirmPassword"],
+  })
+  .refine((value) => !value.newPassword || value.currentPassword.length >= 1, {
+    message: "Enter your current password to change it.",
+    path: ["currentPassword"],
+  });
+
 export const loginSchema = z.object({
   email: z.email("Enter a valid email."),
   password: z.string().min(1, "Password is required."),

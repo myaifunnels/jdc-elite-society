@@ -36,7 +36,7 @@ const navCatalog: Array<{
 }> = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, capability: "dashboard" },
   { href: "/dashboard/university", label: "University", icon: GraduationCap, capability: "university" },
-  { href: "/dashboard/profile", label: "Account profile", icon: UserRound, capability: "profile" },
+  { href: "/dashboard/profile", label: "Account", icon: UserRound, capability: "profile" },
   { href: "/dashboard/path", label: "My path", icon: BookOpen, capability: "path" },
   { href: "/dashboard/contacts", label: "Contacts", icon: Users, capability: "contacts.view" },
   { href: "/dashboard/registrations", label: "Registrations", icon: ClipboardList, capability: "registrations" },
