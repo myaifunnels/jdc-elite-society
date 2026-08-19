@@ -11,12 +11,15 @@ import { listContacts, listPartnerMapPins, listViewerMetrics } from "@/lib/crm-s
 import { adminPartnershipSnapshot } from "@/lib/affiliate-store";
 import { formatManilaDate, formatPhp } from "@/lib/pay-cycle";
 import { membershipLabel } from "@/lib/membership";
+import { hasAccess } from "@/lib/access";
+import { resolveAccess } from "@/lib/access-store";
 import { requireSessionUser } from "@/lib/session";
 
 export default async function DashboardPage() {
   const user = await requireSessionUser();
+  const access = await resolveAccess(user);
 
-  if (user.role === "member") {
+  if (!hasAccess(access, "contacts.view") && !hasAccess(access, "registrations")) {
     const pending = user.accountStatus !== "verified";
 
     return (
@@ -40,9 +43,16 @@ export default async function DashboardPage() {
                 workspace is for the person doing the work — not the admin or partner rooms.
               </p>
               <div className="macos-actions">
-                <Link href="/dashboard/path" className="macos-btn macos-btn-primary">
-                  See my path
-                </Link>
+                {hasAccess(access, "path") ? (
+                  <Link href="/dashboard/path" className="macos-btn macos-btn-primary">
+                    See my path
+                  </Link>
+                ) : null}
+                {hasAccess(access, "university") ? (
+                  <Link href="/dashboard/university" className="macos-btn macos-btn-primary">
+                    Open University
+                  </Link>
+                ) : null}
                 <Link href="/contact" className="macos-btn macos-btn-secondary">
                   Talk to Coach JDC
                 </Link>
@@ -86,10 +96,11 @@ export default async function DashboardPage() {
     );
   }
 
-  if (user.role === "partner") {
-    const contacts = await listContacts(user, "contact");
-    const metrics = await listViewerMetrics(user);
-    const pins = await listPartnerMapPins(user);
+  if (hasAccess(access, "contacts.view") && !hasAccess(access, "registrations")) {
+    const viewer = { ...user, seeAllContacts: hasAccess(access, "contacts.all") };
+    const contacts = await listContacts(viewer, "contact");
+    const metrics = await listViewerMetrics(viewer);
+    const pins = await listPartnerMapPins(viewer);
 
     return (
       <DashboardShell
@@ -165,9 +176,10 @@ export default async function DashboardPage() {
     );
   }
 
-  const contacts = await listContacts(user);
-  const partners = await listContacts(user, "partner");
-  const pins = await listPartnerMapPins(user);
+  const viewer = { ...user, seeAllContacts: hasAccess(access, "contacts.all") };
+  const contacts = await listContacts(viewer);
+  const partners = await listContacts(viewer, "partner");
+  const pins = await listPartnerMapPins(viewer);
   const partnership = await adminPartnershipSnapshot();
 
   return (

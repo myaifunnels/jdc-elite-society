@@ -18,7 +18,7 @@ import {
 import { storeProfilePhoto } from "@/lib/r2-upload";
 import { formatInternationalPhone } from "@/lib/countries";
 import { syncContactToGhl } from "@/lib/ghl";
-import { requireRoles, requireSessionUser, sessionCookieName } from "@/lib/session";
+import { requireCapability, requireSessionUser, sessionCookieName } from "@/lib/session";
 import {
   completeProfileSchema,
   forgotPasswordSchema,
@@ -206,7 +206,7 @@ export async function verifyMemberPayment(
   _prevState: AuthFormState,
   formData: FormData,
 ): Promise<AuthFormState> {
-  await requireRoles(["admin"]);
+  await requireCapability("registrations");
   const userId = String(formData.get("userId") ?? "");
 
   if (!userId) {

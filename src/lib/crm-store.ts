@@ -20,7 +20,9 @@ import {
   PartnerMapPin,
 } from "@/lib/types";
 
-export type CrmViewer = Pick<AuthUser, "role" | "name" | "email">;
+export type CrmViewer = Pick<AuthUser, "role" | "name" | "email"> & {
+  seeAllContacts?: boolean;
+};
 
 const memoryRecords: ContactRecord[] = [...contactSeed];
 const GHL_SYNC_MS = 60_000;
@@ -256,7 +258,7 @@ function isAssignedToViewer(contact: ContactRecord, viewer: CrmViewer) {
 }
 
 function visibleToViewer(viewer: CrmViewer) {
-  if (viewer.role === "admin") {
+  if (viewer.seeAllContacts || viewer.role === "admin") {
     return memoryRecords;
   }
 

@@ -4,10 +4,10 @@ import { MacosWindow } from "@/components/dashboard/macos-window";
 import { VerifyPaymentButton } from "@/components/dashboard/verify-payment-button";
 import { listMemberRegistrations } from "@/lib/auth-store";
 import { membershipLabel } from "@/lib/membership";
-import { requireRoles } from "@/lib/session";
+import { requireCapability } from "@/lib/session";
 
 export default async function RegistrationsPage() {
-  await requireRoles(["admin"]);
+  await requireCapability("registrations");
   const members = await listMemberRegistrations();
 
   return (

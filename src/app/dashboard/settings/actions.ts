@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 
 import { isSafeAssetUrl, resolveLogoHref } from "@/lib/branding";
 import { saveBrandingSettings } from "@/lib/branding-store";
-import { requireSessionUser } from "@/lib/session";
+import { requireCapability } from "@/lib/session";
 
 export type BrandingFormState = {
   error?: string;
@@ -15,11 +15,7 @@ export async function saveLogoSettings(
   _prevState: BrandingFormState,
   formData: FormData,
 ): Promise<BrandingFormState> {
-  const user = await requireSessionUser();
-
-  if (user.role !== "admin") {
-    return { error: "Only admins can update the site logo." };
-  }
+  await requireCapability("settings");
 
   const logoUrl = String(formData.get("logoUrl") ?? "").trim();
   const logoHref = resolveLogoHref(String(formData.get("logoHref") ?? "").trim() || "/", logoUrl);

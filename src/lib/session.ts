@@ -1,7 +1,8 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
-import { hasAffiliateWorkspace } from "@/lib/affiliate";
+import { hasAccess, type Capability } from "@/lib/access";
+import { resolveAccess } from "@/lib/access-store";
 import { getPublicUserById } from "@/lib/auth-store";
 import { AuthUser, DashboardRole } from "@/lib/types";
 
@@ -42,12 +43,18 @@ export async function requireRoles(roles: DashboardRole[]) {
   return user;
 }
 
-export async function requireAffiliateAccess() {
+export async function requireCapability(capability: Capability) {
   const user = await requireSessionUser();
+  const access = await resolveAccess(user);
 
-  if (!hasAffiliateWorkspace(user)) {
+  if (!hasAccess(access, capability)) {
     redirect("/dashboard");
   }
 
+  return { user, access };
+}
+
+export async function requireAffiliateAccess() {
+  const { user } = await requireCapability("partnership");
   return user;
 }

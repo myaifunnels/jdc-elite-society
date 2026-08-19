@@ -9,10 +9,10 @@ import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { AddressMap } from "@/components/maps/address-map";
 import { isGhlReady, isMapsReady, isR2Ready, maskSecret } from "@/lib/integrations";
 import { getResolvedIntegrationSettings } from "@/lib/integrations-store";
-import { requireRoles } from "@/lib/session";
+import { requireCapability } from "@/lib/session";
 
 export default async function IntegrationsPage() {
-  await requireRoles(["admin"]);
+  await requireCapability("integrations");
 
   const settings = await getResolvedIntegrationSettings();
   const mapsReady = isMapsReady(settings);

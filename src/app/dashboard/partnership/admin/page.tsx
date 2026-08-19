@@ -18,10 +18,10 @@ import {
 } from "@/lib/affiliate-store";
 import { listPublicUsers } from "@/lib/auth-store";
 import { followingPayDate, formatManilaDate, formatPhp, nextPayDate } from "@/lib/pay-cycle";
-import { requireRoles } from "@/lib/session";
+import { requireCapability } from "@/lib/session";
 
 export default async function PartnershipAdminPage() {
-  await requireRoles(["admin"]);
+  await requireCapability("partnership.admin");
   const users = await listPublicUsers();
   const profiles = await listProfiles();
   const payday = nextPayDate();

@@ -5,10 +5,10 @@ import { ContactAvatar } from "@/components/dashboard/contact-avatar";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { MacosWindow } from "@/components/dashboard/macos-window";
 import { membershipLabel } from "@/lib/membership";
-import { requireRoles } from "@/lib/session";
+import { requireCapability } from "@/lib/session";
 
 export default async function AccountProfilePage() {
-  const user = await requireRoles(["member"]);
+  const user = (await requireCapability("profile")).user;
 
   return (
     <DashboardShell

@@ -4,8 +4,9 @@ import { ContactAvatar } from "@/components/dashboard/contact-avatar";
 import { ContactsMap } from "@/components/dashboard/contacts-map";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { MacosWindow } from "@/components/dashboard/macos-window";
+import { hasAccess } from "@/lib/access";
 import { listContactMapPins, listContacts, listTagIndex } from "@/lib/crm-store";
-import { requireRoles } from "@/lib/session";
+import { requireCapability } from "@/lib/session";
 import { TAG_GROUPS, tagGroupFor, uniqueTags } from "@/lib/tags";
 import { ContactKind } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -39,22 +40,23 @@ export default async function ContactsPage({
 }: {
   searchParams: Promise<{ kind?: string; view?: string; tag?: string | string[]; q?: string }>;
 }) {
-  const user = await requireRoles(["admin", "partner"]);
+  const { user, access } = await requireCapability("contacts.view");
+  const viewer = { ...user, seeAllContacts: hasAccess(access, "contacts.all") };
   const raw = await searchParams;
   const view: View = raw.view === "roster" || raw.view === "map" ? raw.view : "dashboard";
   const kind: ContactKind | undefined =
-    user.role === "admin" && (raw.kind === "partner" || raw.kind === "contact")
+    hasAccess(access, "contacts.all") && (raw.kind === "partner" || raw.kind === "contact")
       ? raw.kind
-      : user.role === "partner"
-        ? "contact"
-        : undefined;
+      : hasAccess(access, "contacts.all")
+        ? undefined
+        : "contact";
   const selectedTags = asList(raw.tag);
   const query = { kind, tags: selectedTags, q: raw.q };
   const [contacts, allContacts, tags, pins] = await Promise.all([
-    listContacts(user, query),
-    listContacts(user, { kind }),
-    listTagIndex(user),
-    listContactMapPins(user, query),
+    listContacts(viewer, query),
+    listContacts(viewer, { kind }),
+    listTagIndex(viewer),
+    listContactMapPins(viewer, query),
   ]);
 
   const ghlCount = allContacts.filter((contact) => contact.ghlContactId || contact.source.includes("GHL")).length;
@@ -66,8 +68,7 @@ export default async function ContactsPage({
     { id: "roster" as const, label: "Roster" },
     { id: "map" as const, label: "Map" },
   ];
-  const kinds =
-    user.role === "admin"
+  const kinds = hasAccess(access, "contacts.all")
       ? [
           { href: contactsHref({ view, q: raw.q, tags: selectedTags }), label: "All", active: !kind },
           {
@@ -85,9 +86,9 @@ export default async function ContactsPage({
 
   return (
     <DashboardShell
-      title={user.role === "admin" ? "Contacts" : "My contacts"}
+      title={hasAccess(access, "contacts.all") ? "Contacts" : "My contacts"}
       description={
-        user.role === "admin"
+        hasAccess(access, "contacts.all")
           ? "JDC Elite Society roster from AiFunnels GHL: tags sync both ways, with a dashboard and a map."
           : "Only the people assigned to you. Tags follow the GHL Elite Society subaccount."
       }

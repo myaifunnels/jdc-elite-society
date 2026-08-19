@@ -1,31 +1,36 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { grantContactPortalAction } from "@/app/dashboard/access/actions";
 import { ContactAvatar } from "@/components/dashboard/contact-avatar";
 import { ContactTagEditor } from "@/components/dashboard/contact-tag-editor";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { MacosWindow } from "@/components/dashboard/macos-window";
 import { AddressMap } from "@/components/maps/address-map";
+import { hasAccess } from "@/lib/access";
 import { getContact, listAssignedContacts, listTagIndex } from "@/lib/crm-store";
 import { getGoogleMapsConfig } from "@/lib/maps";
-import { requireRoles } from "@/lib/session";
+import { findUserByEmail } from "@/lib/auth-store";
+import { requireCapability } from "@/lib/session";
 
 export default async function ContactDashboardPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const user = await requireRoles(["admin", "partner"]);
+  const { user, access } = await requireCapability("contacts.view");
+  const viewer = { ...user, seeAllContacts: hasAccess(access, "contacts.all") };
   const { id } = await params;
-  const contact = await getContact(user, id);
+  const contact = await getContact(viewer, id);
 
   if (!contact) {
     notFound();
   }
 
-  const assigned = contact.kind === "partner" ? await listAssignedContacts(user, contact.name) : [];
+  const assigned = contact.kind === "partner" ? await listAssignedContacts(viewer, contact.name) : [];
   const mapsConfig = await getGoogleMapsConfig();
-  const tagIndex = await listTagIndex(user);
+  const tagIndex = await listTagIndex(viewer);
+  const portalUser = await findUserByEmail(contact.email);
   const isPartner = contact.kind === "partner";
 
   return (
@@ -114,8 +119,42 @@ export default async function ContactDashboardPage({
             contactId={contact.id}
             tags={contact.tags}
             suggestions={tagIndex.map((item) => item.tag)}
-            canEdit={user.role === "admin" || user.role === "partner"}
+            canEdit={hasAccess(access, "contacts.tags")}
           />
+        </MacosWindow>
+
+        <MacosWindow title="Portal access" className="dashboard-span-2">
+          {portalUser ? (
+            <>
+              <p className="macos-lead" style={{ textAlign: "left" }}>
+                This contact has a login as {portalUser.role}. Their rooms follow that role&apos;s defaults unless you
+                tweak them.
+              </p>
+              {hasAccess(access, "access") ? (
+                <div className="macos-actions">
+                  <Link href={`/dashboard/access/${portalUser.id}`} className="macos-btn macos-btn-primary">
+                    Configure access
+                  </Link>
+                </div>
+              ) : null}
+            </>
+          ) : (
+            <>
+              <p className="macos-lead" style={{ textAlign: "left" }}>
+                No login yet. Grant Contact access for a limited portal (home + University). They set a password from
+                Forgot password on the sign-in page.
+              </p>
+              {hasAccess(access, "access") ? (
+                <form action={grantContactPortalAction} className="macos-actions">
+                  <input type="hidden" name="email" value={contact.email} />
+                  <input type="hidden" name="name" value={contact.name} />
+                  <button type="submit" className="macos-btn macos-btn-primary">
+                    Grant Contact portal access
+                  </button>
+                </form>
+              ) : null}
+            </>
+          )}
         </MacosWindow>
 
         <MacosWindow title="Location" className={isPartner ? "dashboard-span-2" : undefined}>

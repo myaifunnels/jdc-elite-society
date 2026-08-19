@@ -1,14 +1,17 @@
 import { DashboardSidebar } from "@/components/dashboard/dashboard-sidebar";
+import { AccessMap } from "@/lib/access";
 import { BrandingSettings } from "@/lib/branding";
 import { membershipLabel } from "@/lib/membership";
 import { AuthUser } from "@/lib/types";
 
 export function DashboardFrame({
   user,
+  access,
   branding,
   children,
 }: {
   user: AuthUser;
+  access: AccessMap;
   branding: BrandingSettings;
   children: React.ReactNode;
 }) {
@@ -24,7 +27,7 @@ export function DashboardFrame({
           membershipLabel={membershipLabel(user.memberships)}
           accountStatus={user.accountStatus}
           branding={branding}
-          affiliateAccess={user.affiliateAccess}
+          access={access}
         />
         <div className="dashboard-app-main min-w-0">{children}</div>
       </div>

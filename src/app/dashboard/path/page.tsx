@@ -2,10 +2,10 @@ import Link from "next/link";
 
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { programs } from "@/data/programs";
-import { requireRoles } from "@/lib/session";
+import { requireCapability } from "@/lib/session";
 
 export default async function MemberPathPage() {
-  const user = await requireRoles(["member"]);
+  const user = (await requireCapability("path")).user;
 
   if (user.accountStatus !== "verified") {
     return (

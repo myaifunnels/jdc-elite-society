@@ -3,11 +3,11 @@ import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { LogoSettingsForm } from "@/components/dashboard/logo-settings-form";
 import { getResolvedBrandingSettings } from "@/lib/branding-store";
 import { isR2Configured } from "@/lib/r2";
-import { requireRoles } from "@/lib/session";
+import { requireCapability } from "@/lib/session";
 import Link from "next/link";
 
 export default async function SettingsPage() {
-  await requireRoles(["admin"]);
+  await requireCapability("settings");
   const r2Configured = await isR2Configured();
   const branding = await getResolvedBrandingSettings();
 
@@ -43,10 +43,10 @@ export default async function SettingsPage() {
               This page is designed as the operational handoff point before launching and wiring production integrations.
             </p>
             <Link
-              href="/dashboard/integrations"
+              href="/dashboard/access"
               className="button-secondary pressable mt-6 inline-flex rounded-full px-4 py-2 text-sm font-semibold"
             >
-              Open Integrations workspace
+              Open Access configuration
             </Link>
           </section>
         </div>

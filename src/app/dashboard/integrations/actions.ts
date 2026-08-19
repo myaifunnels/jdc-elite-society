@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 
 import { isGhlReady, isMapsReady, isR2Ready } from "@/lib/integrations";
 import { getResolvedIntegrationSettings, saveIntegrationSettings } from "@/lib/integrations-store";
-import { requireSessionUser } from "@/lib/session";
+import { requireCapability } from "@/lib/session";
 
 export type IntegrationFormState = {
   error?: string;
@@ -15,11 +15,7 @@ export async function saveGoogleMapsIntegration(
   _prevState: IntegrationFormState,
   formData: FormData,
 ): Promise<IntegrationFormState> {
-  const user = await requireSessionUser();
-
-  if (user.role !== "admin") {
-    return { error: "Only admins can update integrations." };
-  }
+  await requireCapability("integrations");
 
   const googleMapsEmbedKey = String(formData.get("googleMapsEmbedKey") ?? "").trim();
   const resolved = await getResolvedIntegrationSettings();
@@ -43,11 +39,7 @@ export async function saveR2Integration(
   _prevState: IntegrationFormState,
   formData: FormData,
 ): Promise<IntegrationFormState> {
-  const user = await requireSessionUser();
-
-  if (user.role !== "admin") {
-    return { error: "Only admins can update integrations." };
-  }
+  await requireCapability("integrations");
 
   const incoming = {
     r2AccountId: String(formData.get("r2AccountId") ?? "").trim(),
@@ -81,11 +73,7 @@ export async function saveGhlIntegration(
   _prevState: IntegrationFormState,
   formData: FormData,
 ): Promise<IntegrationFormState> {
-  const user = await requireSessionUser();
-
-  if (user.role !== "admin") {
-    return { error: "Only admins can update integrations." };
-  }
+  await requireCapability("integrations");
 
   const incoming = {
     ghlApiKey: String(formData.get("ghlApiKey") ?? "").trim(),

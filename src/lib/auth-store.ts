@@ -74,7 +74,10 @@ function publicUser(user: AuthUserRecord): AuthUser {
 }
 
 function mapRow(row: Record<string, unknown>): AuthUserRecord {
-  const role = row.role === "admin" || row.role === "partner" || row.role === "member" ? row.role : "member";
+  const role =
+    row.role === "admin" || row.role === "partner" || row.role === "member" || row.role === "contact"
+      ? row.role
+      : "member";
   const privileged = isPrivileged(role);
   const profileComplete = row.profile_complete === true || row.profile_complete === "t" || privileged;
   const paymentVerified = row.payment_verified === true || row.payment_verified === "t" || privileged;
@@ -499,19 +502,56 @@ export async function listMemberRegistrations() {
   const client = getPool();
 
   if (!client) {
-    return memoryUsers.filter((user) => user.role === "member").map(publicUser);
+    return memoryUsers.filter((user) => user.role === "member" || user.role === "contact").map(publicUser);
   }
 
   try {
     await ensureTable(client);
     const result = await client.query(
-      "SELECT * FROM site_users WHERE role = 'member' ORDER BY created_at DESC",
+      "SELECT * FROM site_users WHERE role IN ('member', 'contact') ORDER BY created_at DESC",
     );
     return result.rows.map((row) => publicUser(mapRow(row)));
   } catch (error) {
     console.error("Failed to list member registrations", error);
-    return memoryUsers.filter((user) => user.role === "member").map(publicUser);
+    return memoryUsers.filter((user) => user.role === "member" || user.role === "contact").map(publicUser);
   }
+}
+
+export async function listAllUsers() {
+  await ensureSeedUsers();
+  const client = getPool();
+
+  if (!client) {
+    return memoryUsers.map(publicUser);
+  }
+
+  try {
+    await ensureTable(client);
+    const result = await client.query("SELECT * FROM site_users ORDER BY role ASC, name ASC");
+    return result.rows.map((row) => publicUser(mapRow(row)));
+  } catch (error) {
+    console.error("Failed to list users", error);
+    return memoryUsers.map(publicUser);
+  }
+}
+
+export async function updateUserRole(userId: string, role: DashboardRole) {
+  const user = await findUserById(userId);
+  if (!user) {
+    throw new Error("Account not found.");
+  }
+
+  const next: AuthUserRecord = {
+    ...user,
+    role,
+    accountStatus: deriveStatus({
+      role,
+      profileComplete: user.profileComplete,
+      paymentVerified: user.paymentVerified,
+    }),
+  };
+  await persistUserUpdate(next);
+  return publicUser(next);
 }
 
 async function persistUserUpdate(user: AuthUserRecord) {

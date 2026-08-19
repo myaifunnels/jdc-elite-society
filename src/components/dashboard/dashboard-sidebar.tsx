@@ -14,6 +14,7 @@ import {
   Menu,
   Plug,
   Settings2,
+  Shield,
   UserRound,
   Users,
   X,
@@ -22,45 +23,31 @@ import {
 import { logout } from "@/app/login/actions";
 import { SiteLogo } from "@/components/branding/site-logo";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
+import { AccessMap, Capability } from "@/lib/access";
 import { BrandingSettings } from "@/lib/branding";
 import { DashboardRole } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
-const universityItem = { href: "/dashboard/university", label: "University", icon: GraduationCap };
+const navCatalog: Array<{
+  href: string;
+  label: string;
+  icon: typeof LayoutDashboard;
+  capability: Capability;
+}> = [
+  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, capability: "dashboard" },
+  { href: "/dashboard/university", label: "University", icon: GraduationCap, capability: "university" },
+  { href: "/dashboard/profile", label: "Account profile", icon: UserRound, capability: "profile" },
+  { href: "/dashboard/path", label: "My path", icon: BookOpen, capability: "path" },
+  { href: "/dashboard/contacts", label: "Contacts", icon: Users, capability: "contacts.view" },
+  { href: "/dashboard/registrations", label: "Registrations", icon: ClipboardList, capability: "registrations" },
+  { href: "/dashboard/partnership", label: "Partnership", icon: Handshake, capability: "partnership" },
+  { href: "/dashboard/access", label: "Access", icon: Shield, capability: "access" },
+  { href: "/dashboard/integrations", label: "Integrations", icon: Plug, capability: "integrations" },
+  { href: "/dashboard/settings", label: "Settings", icon: Settings2, capability: "settings" },
+];
 
-const navByRole: Record<
-  DashboardRole,
-  { href: string; label: string; icon: typeof LayoutDashboard }[]
-> = {
-  admin: [
-    { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-    universityItem,
-    { href: "/dashboard/registrations", label: "Registrations", icon: ClipboardList },
-    { href: "/dashboard/contacts", label: "Contacts", icon: Users },
-    { href: "/dashboard/integrations", label: "Integrations", icon: Plug },
-    { href: "/dashboard/settings", label: "Settings", icon: Settings2 },
-  ],
-  partner: [
-    { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-    universityItem,
-    { href: "/dashboard/contacts", label: "Contacts", icon: Users },
-  ],
-  member: [
-    { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-    universityItem,
-    { href: "/dashboard/profile", label: "Account profile", icon: UserRound },
-    { href: "/dashboard/path", label: "My path", icon: BookOpen },
-  ],
-};
-
-function navItems(role: DashboardRole, affiliateAccess: boolean) {
-  const base = navByRole[role];
-  if (!affiliateAccess && role !== "admin") {
-    return base;
-  }
-
-  const partnership = { href: "/dashboard/partnership", label: "Partnership", icon: Handshake };
-  return [base[0], partnership, ...base.slice(1)];
+function navItems(access: AccessMap) {
+  return navCatalog.filter((item) => access[item.capability]);
 }
 
 function isActivePath(pathname: string, href: string) {
@@ -77,7 +64,7 @@ function SidebarPanel({
   membershipLabel,
   accountStatus,
   branding,
-  affiliateAccess,
+  access,
   titleId,
   onNavigate,
   showClose = false,
@@ -87,7 +74,7 @@ function SidebarPanel({
   membershipLabel: string;
   accountStatus?: string;
   branding: BrandingSettings;
-  affiliateAccess: boolean;
+  access: AccessMap;
   titleId: string;
   onNavigate?: () => void;
   showClose?: boolean;
@@ -115,12 +102,12 @@ function SidebarPanel({
 
       <div className="px-4">
         <p id={titleId} className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-[var(--muted)]">
-          {role === "member" ? membershipLabel : role} workspace
+          {role === "member" || role === "contact" ? membershipLabel : role} workspace
         </p>
       </div>
 
       <nav aria-label="Dashboard" className="mt-3 grid gap-1 px-2">
-        {navItems(role, affiliateAccess).map((item) => {
+        {navItems(access).map((item) => {
           const Icon = item.icon;
           const active = isActivePath(pathname, item.href);
           const locked = item.href === "/dashboard/university" && accountStatus !== "verified";
@@ -147,8 +134,8 @@ function SidebarPanel({
           <div className="min-w-0">
             <p className="truncate text-sm font-semibold">{userName}</p>
             <p className="truncate text-xs text-[var(--muted)]">
-              {role === "member"
-                ? `${membershipLabel} · ${accountStatus === "verified" ? "Verified" : "Pending"}`
+              {role === "member" || role === "contact"
+                ? `${role} · ${accountStatus === "verified" ? "Verified" : "Pending"}`
                 : role}
             </p>
           </div>
@@ -176,14 +163,14 @@ export function DashboardSidebar({
   membershipLabel,
   accountStatus,
   branding,
-  affiliateAccess,
+  access,
 }: {
   role: DashboardRole;
   userName: string;
   membershipLabel: string;
   accountStatus?: string;
   branding: BrandingSettings;
-  affiliateAccess: boolean;
+  access: AccessMap;
 }) {
   const [open, setOpen] = useState(false);
   const titleId = useId();
@@ -265,7 +252,7 @@ export function DashboardSidebar({
           membershipLabel={membershipLabel}
           accountStatus={accountStatus}
           branding={branding}
-          affiliateAccess={affiliateAccess}
+          access={access}
           titleId={titleId}
           onNavigate={close}
           showClose
@@ -282,7 +269,7 @@ export function DashboardSidebar({
           membershipLabel={membershipLabel}
           accountStatus={accountStatus}
           branding={branding}
-          affiliateAccess={affiliateAccess}
+          access={access}
           titleId={`${titleId}-desktop`}
         />
       </aside>

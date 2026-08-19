@@ -1,8 +1,8 @@
 import { redirect } from "next/navigation";
 
-import { requireRoles } from "@/lib/session";
+import { requireCapability } from "@/lib/session";
 
 export default async function PartnersRedirectPage() {
-  await requireRoles(["admin"]);
+  await requireCapability("contacts.view");
   redirect("/dashboard/contacts?kind=partner");
 }

@@ -1,9 +1,9 @@
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { UniversityCommunityEmbed } from "@/components/dashboard/university-community-embed";
-import { requireSessionUser } from "@/lib/session";
+import { requireCapability } from "@/lib/session";
 
 export default async function UniversityPage() {
-  const user = await requireSessionUser();
+  const { user } = await requireCapability("university");
   const unlocked = user.accountStatus === "verified";
   const verifyHref = user.role === "member" ? "/dashboard/profile" : "/dashboard";
 

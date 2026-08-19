@@ -15,7 +15,7 @@ import {
   wouldCreateSponsorCycle,
 } from "@/lib/affiliate-store";
 import { DEFAULT_COMMISSION_RATE } from "@/lib/pay-cycle";
-import { requireAffiliateAccess, requireRoles, requireSessionUser } from "@/lib/session";
+import { requireAffiliateAccess, requireCapability, requireSessionUser } from "@/lib/session";
 import { AffiliateStatus, PayoutMethodKind } from "@/lib/types";
 
 export type PartnershipFormState = {
@@ -33,7 +33,7 @@ export async function grantAffiliateAccess(
   _prev: PartnershipFormState,
   formData: FormData,
 ): Promise<PartnershipFormState> {
-  await requireRoles(["admin"]);
+  await requireCapability("partnership.admin");
   const userId = String(formData.get("userId") ?? "").trim();
   const sponsorId = String(formData.get("sponsorId") ?? "").trim();
   const rateRaw = Number(formData.get("commissionRate") ?? DEFAULT_COMMISSION_RATE);
@@ -62,7 +62,7 @@ export async function updateAffiliateProfile(
   _prev: PartnershipFormState,
   formData: FormData,
 ): Promise<PartnershipFormState> {
-  await requireRoles(["admin"]);
+  await requireCapability("partnership.admin");
   const userId = String(formData.get("userId") ?? "").trim();
   const sponsorId = String(formData.get("sponsorId") ?? "").trim();
   const status = String(formData.get("status") ?? "active") as AffiliateStatus;
@@ -102,7 +102,7 @@ export async function recordAffiliateSale(
   _prev: PartnershipFormState,
   formData: FormData,
 ): Promise<PartnershipFormState> {
-  await requireRoles(["admin"]);
+  await requireCapability("partnership.admin");
   const affiliateUserId = String(formData.get("affiliateUserId") ?? "").trim();
   const grossAmount = Number(formData.get("grossAmount") ?? 0);
   const source = String(formData.get("source") ?? "").trim();
@@ -131,7 +131,7 @@ export async function voidAffiliateSale(
   _prev: PartnershipFormState,
   formData: FormData,
 ): Promise<PartnershipFormState> {
-  await requireRoles(["admin"]);
+  await requireCapability("partnership.admin");
   const id = String(formData.get("saleId") ?? "").trim();
   const sale = await voidSale(id);
   if (!sale) {
@@ -145,7 +145,7 @@ export async function markAffiliateCyclePaid(
   _prev: PartnershipFormState,
   formData: FormData,
 ): Promise<PartnershipFormState> {
-  await requireRoles(["admin"]);
+  await requireCapability("partnership.admin");
   const affiliateUserId = String(formData.get("affiliateUserId") ?? "").trim();
   const scheduledPayDate = String(formData.get("scheduledPayDate") ?? "").trim();
   const reference = String(formData.get("reference") ?? "").trim();
@@ -201,7 +201,7 @@ export async function saveAffiliateCampaign(
   _prev: PartnershipFormState,
   formData: FormData,
 ): Promise<PartnershipFormState> {
-  await requireRoles(["admin"]);
+  await requireCapability("partnership.admin");
   const slug = String(formData.get("slug") ?? "").trim();
   const title = String(formData.get("title") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim();
@@ -221,7 +221,7 @@ export async function saveAffiliateMaterial(
   _prev: PartnershipFormState,
   formData: FormData,
 ): Promise<PartnershipFormState> {
-  await requireRoles(["admin"]);
+  await requireCapability("partnership.admin");
   const title = String(formData.get("title") ?? "").trim();
   const category = String(formData.get("category") ?? "").trim();
   const fileUrl = String(formData.get("fileUrl") ?? "").trim();
