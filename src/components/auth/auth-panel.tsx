@@ -10,7 +10,6 @@ import { AuthFormState, loginAccount, registerAccount } from "@/app/login/action
 import { SiteLogo } from "@/components/branding/site-logo";
 import { PhoneField } from "@/components/forms/phone-field";
 import { StickyForm } from "@/components/forms/sticky-form";
-import { TEMPORARY_MEMBER_PASSWORD } from "@/lib/auth-constants";
 import { BrandingSettings } from "@/lib/branding";
 
 const initialState: AuthFormState = {};
@@ -41,12 +40,10 @@ export function AuthPanel({
   branding,
   mode,
   email = "",
-  existing = false,
 }: {
   branding: BrandingSettings;
   mode: "login" | "register";
   email?: string;
-  existing?: boolean;
 }) {
   const router = useRouter();
   const [loginState, loginAction, loginPending] = useActionState(loginAccount, initialState);
@@ -82,12 +79,6 @@ export function AuthPanel({
 
         {mode === "login" ? (
           <StickyForm storageKey="coach-jdc-member-login" action={loginAction} className="auth-form auth-form-login">
-            <p className="macos-lead">
-              {existing
-                ? `This email or phone is already in the system. Sign in with that email. Your temporary password is ${TEMPORARY_MEMBER_PASSWORD}. After you sign in, set a new password and confirmation password.`
-                : "Sign in with your email and password. If this is a first login after a duplicate registration, use JDCELITESOCIETY and then set a new password."}
-            </p>
-
             <AuthField label="Email" icon={<Mail size={15} aria-hidden />}>
               <input
                 name="email"
@@ -105,7 +96,7 @@ export function AuthPanel({
                 name="password"
                 type="password"
                 autoComplete="current-password"
-                placeholder={existing ? TEMPORARY_MEMBER_PASSWORD : "••••••••"}
+                placeholder="••••••••"
                 data-sticky="off"
                 required
               />

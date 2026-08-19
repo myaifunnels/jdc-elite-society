@@ -27,12 +27,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
 
   return (
     <AuthPageShell>
-      <AuthPanel
-        branding={branding}
-        mode="login"
-        email={params.email ?? ""}
-        existing={params.reason === "existing"}
-      />
+      <AuthPanel branding={branding} mode="login" email={params.email ?? ""} />
     </AuthPageShell>
   );
 }
