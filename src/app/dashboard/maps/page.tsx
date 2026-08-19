@@ -1,5 +1,8 @@
 import { redirect } from "next/navigation";
 
-export default function MapsRedirectPage() {
+import { requireRoles } from "@/lib/session";
+
+export default async function MapsRedirectPage() {
+  await requireRoles(["admin"]);
   redirect("/dashboard");
 }

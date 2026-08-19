@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
+import { AuthPageShell } from "@/components/auth/auth-page-shell";
 import { AuthPanel } from "@/components/auth/auth-panel";
 import { getResolvedBrandingSettings } from "@/lib/branding-store";
 import { getSessionUser } from "@/lib/session";
@@ -20,10 +21,8 @@ export default async function LoginPage() {
   const branding = await getResolvedBrandingSettings();
 
   return (
-    <div className="auth-screen auth-screen-centered">
-      <main className="auth-screen-main auth-screen-main-centered">
-        <AuthPanel branding={branding} mode="login" />
-      </main>
-    </div>
+    <AuthPageShell>
+      <AuthPanel branding={branding} mode="login" />
+    </AuthPageShell>
   );
 }
