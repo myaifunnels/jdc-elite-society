@@ -1,6 +1,11 @@
 export type UniversityLesson = {
   title: string;
   summary: string;
+  moduleTitle?: string;
+  videoUrl?: string;
+  embedUrl?: string;
+  thumbnailUrl?: string;
+  materials?: Array<{ title: string; url: string; type?: string }>;
 };
 
 export type UniversityCourse = {

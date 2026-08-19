@@ -14,8 +14,8 @@ export default async function UniversityPage() {
       title="University"
       description={
         unlocked
-          ? "Membership courses migrated from the JDC Elite Society subaccount in AiFunnels GHL."
-          : "See the membership courses waiting for you. Unlock them by verifying your account."
+          ? "Membership courses and lesson videos from the JDC Elite Society subaccount in AiFunnels GHL."
+          : "See the membership courses waiting for you. Unlock the videos by verifying your account."
       }
     >
       <UniversityCourseGrid courses={courses} unlocked={unlocked} verifyHref={verifyHref} />

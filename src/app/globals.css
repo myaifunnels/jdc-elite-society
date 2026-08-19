@@ -3048,6 +3048,71 @@ html:not(.dark) .dashboard-desktop {
   opacity: 0.78;
 }
 
+.university-lesson-body {
+  display: grid;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.university-lesson-module {
+  margin: 0;
+  color: var(--brand);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.university-video {
+  position: relative;
+  overflow: hidden;
+  margin-top: 0.45rem;
+  border-radius: 10px;
+  background: #0b1220;
+  aspect-ratio: 16 / 9;
+}
+
+.university-video video,
+.university-video iframe,
+.university-video img,
+.university-video-placeholder {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  object-fit: cover;
+}
+
+.university-video.is-locked span {
+  position: absolute;
+  inset: auto 0.75rem 0.75rem auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--brand) 88%, #0b1220);
+  padding: 0.28rem 0.65rem;
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.university-materials {
+  display: grid;
+  gap: 0.25rem;
+  margin: 0.35rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.university-materials a {
+  color: var(--brand);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
 .dashboard-mobile-bar {
   border-bottom: 1px solid var(--line);
   background: color-mix(in srgb, var(--surface-elevated) 88%, transparent);

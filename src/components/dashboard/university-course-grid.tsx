@@ -46,7 +46,12 @@ export function UniversityCourseGrid({
             <h2>{course.title}</h2>
             <p>{course.summary}</p>
             <p className="university-course-meta">
-              {course.lessons.length} lessons · {course.audience}
+              {course.lessons.length} lessons
+              {course.lessons.some((lesson) => lesson.videoUrl || lesson.embedUrl)
+                ? ` · ${course.lessons.filter((lesson) => lesson.videoUrl || lesson.embedUrl).length} videos`
+                : ""}
+              {" · "}
+              {course.audience}
             </p>
           </article>
         );

@@ -4,6 +4,7 @@ import { Lock } from "lucide-react";
 
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { MacosWindow } from "@/components/dashboard/macos-window";
+import { UniversityLessonMedia } from "@/components/dashboard/university-lesson-media";
 import { getUniversityCourse } from "@/data/university";
 import { listUniversityCourses } from "@/lib/ghl-courses";
 import { requireSessionUser } from "@/lib/session";
@@ -28,7 +29,11 @@ export default async function UniversityCoursePage({
   return (
     <DashboardShell
       title={course.title}
-      description={unlocked ? course.summary : "This course is locked until your account is verified."}
+      description={
+        unlocked
+          ? course.summary
+          : "This course is locked until your account is verified. Lesson videos stay hidden until then."
+      }
     >
       <div className="dashboard-widget-grid">
         <MacosWindow title={unlocked ? "Lessons" : "Locked course"} className="dashboard-span-2">
@@ -41,11 +46,24 @@ export default async function UniversityCoursePage({
 
           <ol className={unlocked ? "university-lesson-list" : "university-lesson-list is-locked"}>
             {course.lessons.map((lesson, index) => (
-              <li key={lesson.title}>
+              <li key={`${lesson.title}-${index}`}>
                 <span>{String(index + 1).padStart(2, "0")}</span>
-                <div>
+                <div className="university-lesson-body">
+                  {lesson.moduleTitle ? <p className="university-lesson-module">{lesson.moduleTitle}</p> : null}
                   <strong>{lesson.title}</strong>
                   <em>{lesson.summary}</em>
+                  <UniversityLessonMedia lesson={lesson} unlocked={unlocked} />
+                  {unlocked && lesson.materials?.length ? (
+                    <ul className="university-materials">
+                      {lesson.materials.map((file) => (
+                        <li key={file.url}>
+                          <a href={file.url} target="_blank" rel="noreferrer">
+                            {file.title}
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : null}
                 </div>
                 {!unlocked ? <Lock size={14} aria-hidden /> : null}
               </li>
