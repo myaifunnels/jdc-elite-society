@@ -1,7 +1,8 @@
 import { AffiliateQrCard } from "@/components/dashboard/affiliate-qr-card";
 import { CopyLinkButton } from "@/components/dashboard/copy-link-button";
 import { MacosWindow } from "@/components/dashboard/macos-window";
-import { getProfile, brandedUrl, listCampaigns } from "@/lib/affiliate-store";
+import { campaignsForPrograms } from "@/lib/affiliate";
+import { brandedUrl, getProfile } from "@/lib/affiliate-store";
 import { getResolvedBrandingSettings } from "@/lib/branding-store";
 import { requireAffiliateAccess } from "@/lib/session";
 
@@ -9,45 +10,39 @@ export default async function PartnershipLinkPage() {
   const user = await requireAffiliateAccess();
   const profile = await getProfile(user.id);
   const branding = await getResolvedBrandingSettings();
-  const campaigns = await listCampaigns(true);
+  const campaigns = campaignsForPrograms(profile?.programs ?? user.affiliatePrograms, user.role === "admin");
 
   if (!profile) {
     return <p className="macos-lead">Your partner profile is still being created. Refresh in a moment.</p>;
   }
 
-  const url = brandedUrl(profile.code);
+  if (campaigns.length === 0) {
+    return (
+      <p className="macos-lead">
+        No campaign is assigned yet. Admin must tag you as pioneer and/or jdc-partner.
+      </p>
+    );
+  }
 
   return (
     <div className="dashboard-widget-grid">
-      <MacosWindow title="Branded affiliate link" className="dashboard-span-2">
-        <p className="macos-lead" style={{ textAlign: "left" }}>
-          Share this link. It stamps a 30-day cookie, tracks the click, and sends people to register unless a campaign
-          says otherwise.
-        </p>
-        <p className="mt-4 break-all font-semibold">{url}</p>
-        <div className="macos-actions mt-4">
-          <CopyLinkButton value={url} />
-        </div>
-      </MacosWindow>
-
-      <MacosWindow title="QR code">
-        <AffiliateQrCard url={url} label={`${branding.logoAlt || "JDC"} ${profile.code}`} />
-      </MacosWindow>
-
-      <MacosWindow title="Campaign links" className="dashboard-span-2" bodyClassName="dashboard-contact-list">
-        {campaigns.map((campaign) => {
-          const campaignUrl = brandedUrl(profile.code, campaign.slug);
-          return (
-            <div key={campaign.id} className="dashboard-contact-row !cursor-default">
-              <span>
-                <strong>{campaign.title}</strong>
-                <em className="break-all">{campaignUrl}</em>
-              </span>
-              <CopyLinkButton value={campaignUrl} label="Copy" />
+      {campaigns.map((campaign) => {
+        const url = brandedUrl(profile.code, campaign.slug);
+        return (
+          <MacosWindow key={campaign.slug} title={campaign.shortTitle} className="dashboard-span-2">
+            <p className="macos-lead" style={{ textAlign: "left" }}>
+              {campaign.description}
+            </p>
+            <p className="mt-4 break-all font-semibold">{url}</p>
+            <div className="macos-actions mt-4">
+              <CopyLinkButton value={url} />
             </div>
-          );
-        })}
-      </MacosWindow>
+            <div className="mt-5">
+              <AffiliateQrCard url={url} label={`${branding.logoAlt || "JDC"} ${campaign.slug} ${profile.code}`} />
+            </div>
+          </MacosWindow>
+        );
+      })}
     </div>
   );
 }

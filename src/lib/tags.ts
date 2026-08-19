@@ -31,7 +31,7 @@ export const TAG_GROUPS: TagGroup[] = [
   {
     id: "membership",
     label: "Membership",
-    tags: ["JDC Elite Society", "University", "Website", "Inquiry", "Registration"],
+    tags: ["JDC Elite Society", "University", "Website", "Inquiry", "Registration", "pioneer", "jdc-partner"],
   },
 ];
 

@@ -3,7 +3,8 @@
 import { revalidatePath } from "next/cache";
 
 import { isSafeAssetUrl } from "@/lib/branding";
-import { setAffiliateAccess } from "@/lib/auth-store";
+import { getPublicUserById, setAffiliateAccess, setAffiliatePrograms } from "@/lib/auth-store";
+import { getContactByEmail, setContactAffiliateTag } from "@/lib/crm-store";
 import {
   markCyclePaid,
   recordSale,
@@ -14,6 +15,7 @@ import {
   voidSale,
   wouldCreateSponsorCycle,
 } from "@/lib/affiliate-store";
+import { hasAffiliateWorkspace, parseAffiliatePrograms, type AffiliateProgramId } from "@/lib/affiliate";
 import { DEFAULT_COMMISSION_RATE } from "@/lib/pay-cycle";
 import { requireAffiliateAccess, requireCapability, requireSessionUser } from "@/lib/session";
 import { AffiliateStatus, PayoutMethodKind } from "@/lib/types";
@@ -29,6 +31,20 @@ function revalidatePartnership() {
   revalidatePath("/dashboard/partnership", "layout");
 }
 
+async function syncUserProgramsToContact(userId: string, programs: AffiliateProgramId[]) {
+  const account = await getPublicUserById(userId);
+  if (!account) {
+    return;
+  }
+  const contact = await getContactByEmail(account.email);
+  if (!contact) {
+    return;
+  }
+  const viewer = { ...account, seeAllContacts: true };
+  await setContactAffiliateTag(viewer, contact.id, "pioneer", programs.includes("pioneer"));
+  await setContactAffiliateTag(viewer, contact.id, "jdc-partner", programs.includes("jdc-partner"));
+}
+
 export async function grantAffiliateAccess(
   _prev: PartnershipFormState,
   formData: FormData,
@@ -36,26 +52,35 @@ export async function grantAffiliateAccess(
   await requireCapability("partnership.admin");
   const userId = String(formData.get("userId") ?? "").trim();
   const sponsorId = String(formData.get("sponsorId") ?? "").trim();
+  const programs = parseAffiliatePrograms([
+    formData.get("pioneer") === "on" ? "pioneer" : "",
+    formData.get("jdcPartner") === "on" ? "jdc-partner" : "",
+  ]);
   const rateRaw = Number(formData.get("commissionRate") ?? DEFAULT_COMMISSION_RATE);
   const commissionRate = Number.isFinite(rateRaw) && rateRaw > 0 && rateRaw <= 1 ? rateRaw : DEFAULT_COMMISSION_RATE;
 
   if (!userId) {
     return { error: "Choose a user to grant access." };
   }
+  if (programs.length === 0) {
+    return { error: "Choose Pioneer, JDC Partner, or both." };
+  }
 
   if (await wouldCreateSponsorCycle(userId, sponsorId)) {
     return { error: "That sponsor would create a loop in the tree." };
   }
 
-  await setAffiliateAccess(userId, true);
+  await setAffiliatePrograms(userId, programs);
   await upsertProfile({
     userId,
     sponsorId,
     status: "active",
     commissionRate,
+    programs,
   });
+  await syncUserProgramsToContact(userId, programs);
   revalidatePartnership();
-  return { success: "Partnership access granted. They will see Partnership in the sidebar." };
+  return { success: "Partnership access granted. They will see the campaigns that match their tags." };
 }
 
 export async function updateAffiliateProfile(
@@ -70,6 +95,10 @@ export async function updateAffiliateProfile(
   const commissionRate = Number.isFinite(rateRaw) && rateRaw > 0 && rateRaw <= 1 ? rateRaw : DEFAULT_COMMISSION_RATE;
   const regenerateCode = String(formData.get("regenerateCode") ?? "") === "on";
   const revoke = String(formData.get("revoke") ?? "") === "on";
+  const programs = parseAffiliatePrograms([
+    formData.get("pioneer") === "on" ? "pioneer" : "",
+    formData.get("jdcPartner") === "on" ? "jdc-partner" : "",
+  ]);
 
   if (!userId) {
     return { error: "Missing partner." };
@@ -80,20 +109,28 @@ export async function updateAffiliateProfile(
   }
 
   if (revoke) {
+    await setAffiliatePrograms(userId, []);
     await setAffiliateAccess(userId, false);
-    await upsertProfile({ userId, sponsorId, status: "paused", commissionRate });
+    await upsertProfile({ userId, sponsorId, status: "paused", commissionRate, programs: [] });
+    await syncUserProgramsToContact(userId, []);
     revalidatePartnership();
     return { success: "Access revoked. They no longer see the Partnership workspace." };
   }
 
-  await setAffiliateAccess(userId, true);
+  if (programs.length === 0) {
+    return { error: "Choose Pioneer, JDC Partner, or both — or revoke access." };
+  }
+
+  await setAffiliatePrograms(userId, programs);
   await upsertProfile({
     userId,
     sponsorId,
     status: status === "paused" || status === "invited" ? status : "active",
     commissionRate,
     regenerateCode,
+    programs,
   });
+  await syncUserProgramsToContact(userId, programs);
   revalidatePartnership();
   return { success: "Partner profile updated." };
 }
@@ -107,6 +144,7 @@ export async function recordAffiliateSale(
   const grossAmount = Number(formData.get("grossAmount") ?? 0);
   const source = String(formData.get("source") ?? "").trim();
   const soldAt = String(formData.get("soldAt") ?? "").trim();
+  const campaignSlug = String(formData.get("campaignSlug") ?? "").trim();
 
   if (!affiliateUserId) {
     return { error: "Choose the affiliate who earned this sale." };
@@ -115,16 +153,21 @@ export async function recordAffiliateSale(
     return { error: "Enter the gross sale amount." };
   }
 
-  const sale = await recordSale({
-    affiliateUserId,
-    grossAmount,
-    source: source || "Recorded sale",
-    soldAt: soldAt || undefined,
-  });
-  revalidatePartnership();
-  return {
-    success: `Sale recorded. ${sale.commissionAmount.toFixed(2)} commission is in the ${sale.scheduledPayDate} pay cycle.`,
-  };
+  try {
+    const sale = await recordSale({
+      affiliateUserId,
+      grossAmount,
+      source: source || "",
+      campaignSlug,
+      soldAt: soldAt || undefined,
+    });
+    revalidatePartnership();
+    return {
+      success: `Sale recorded. ${sale.commissionAmount.toFixed(2)} commission is in the ${sale.scheduledPayDate} pay cycle.`,
+    };
+  } catch (error) {
+    return { error: error instanceof Error ? error.message : "Could not record that sale." };
+  }
 }
 
 export async function voidAffiliateSale(
@@ -248,8 +291,12 @@ export async function saveAffiliateMaterial(
 
 export async function ensureOwnAffiliateProfile() {
   const user = await requireSessionUser();
-  if (user.role !== "admin" && !user.affiliateAccess) {
+  if (!hasAffiliateWorkspace(user)) {
     return null;
   }
-  return upsertProfile({ userId: user.id });
+  const programs: AffiliateProgramId[] =
+    user.role === "admin" && user.affiliatePrograms.length === 0
+      ? ["pioneer", "jdc-partner"]
+      : user.affiliatePrograms;
+  return upsertProfile({ userId: user.id, programs, status: "active" });
 }

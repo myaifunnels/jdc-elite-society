@@ -4,7 +4,10 @@ import { redirect } from "next/navigation";
 
 import { hasAccess, type Capability } from "@/lib/access";
 import { resolveAccess } from "@/lib/access-store";
-import { getPublicUserById } from "@/lib/auth-store";
+import { hasAffiliateWorkspace, parseAffiliatePrograms } from "@/lib/affiliate";
+import { upsertProfile } from "@/lib/affiliate-store";
+import { getPublicUserById, setAffiliatePrograms } from "@/lib/auth-store";
+import { getContactByEmail } from "@/lib/crm-store";
 import { AuthUser, DashboardRole } from "@/lib/types";
 
 const SESSION_COOKIE = "coach-jdc-user";
@@ -63,6 +66,31 @@ export function decodeImpersonation(raw: string | undefined): ImpersonationState
 
 export type SessionUser = AuthUser;
 
+async function syncAffiliateProgramsFromContact(user: AuthUser): Promise<AuthUser> {
+  const contact = await getContactByEmail(user.email);
+  const fromContact = parseAffiliatePrograms(contact?.tags ?? []);
+  if (fromContact.length === 0) {
+    return user;
+  }
+
+  const merged = parseAffiliatePrograms([...user.affiliatePrograms, ...fromContact]);
+  if (merged.join(",") === user.affiliatePrograms.join(",")) {
+    return {
+      ...user,
+      affiliatePrograms: merged,
+      affiliateAccess: user.affiliateAccess || merged.length > 0,
+    };
+  }
+
+  await setAffiliatePrograms(user.id, merged);
+  await upsertProfile({ userId: user.id, programs: merged, status: "active" });
+  return {
+    ...user,
+    affiliatePrograms: merged,
+    affiliateAccess: true,
+  };
+}
+
 export async function getSessionUser(): Promise<SessionUser | null> {
   const cookieStore = await cookies();
   const userId = cookieStore.get(SESSION_COOKIE)?.value;
@@ -71,7 +99,12 @@ export async function getSessionUser(): Promise<SessionUser | null> {
     return null;
   }
 
-  return getPublicUserById(userId);
+  const user = await getPublicUserById(userId);
+  if (!user) {
+    return null;
+  }
+
+  return syncAffiliateProgramsFromContact(user);
 }
 
 export const sessionCookieName = SESSION_COOKIE;
@@ -120,5 +153,8 @@ export async function requireCapability(capability: Capability) {
 
 export async function requireAffiliateAccess() {
   const { user } = await requireCapability("partnership");
+  if (!hasAffiliateWorkspace(user) && user.role !== "admin") {
+    redirect("/dashboard");
+  }
   return user;
 }

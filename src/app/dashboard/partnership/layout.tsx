@@ -14,7 +14,7 @@ export default async function PartnershipLayout({
   return (
     <DashboardShell
       title="JDC Partnership Program"
-      description="Invite-only workspace. You earn 20% on recorded sales. Payouts are reviewed and released on the 15th and 30th (last day of February). Nothing is deposited automatically."
+      description="Pioneer and jdc-partner campaigns. 20% on recorded purchases, paid on the 15th and 30th. Each campaign has its own link and QR."
     >
       <PartnershipNav isAdmin={user.role === "admin"} />
       {children}

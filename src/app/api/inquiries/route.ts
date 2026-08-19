@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
-import { AFFILIATE_COOKIE, normalizeAffiliateCode } from "@/lib/affiliate";
+import { AFFILIATE_CAMPAIGN_COOKIE, AFFILIATE_COOKIE, normalizeAffiliateCode } from "@/lib/affiliate";
 import { getProfileByCode, recordAttribution } from "@/lib/affiliate-store";
 import { existingAccountLoginPath } from "@/lib/auth-constants";
 import { findUserByEmailOrPhone, issueTemporaryPassword } from "@/lib/auth-store";
@@ -37,10 +37,13 @@ export async function POST(request: Request) {
   }
 
   const referralCode = normalizeAffiliateCode(cookieStore.get(AFFILIATE_COOKIE)?.value ?? "");
+  const campaignSlug = normalizeAffiliateCode(cookieStore.get(AFFILIATE_CAMPAIGN_COOKIE)?.value ?? "");
   const affiliate = referralCode ? await getProfileByCode(referralCode) : null;
 
   const audience = parsed.data.bestDescribesYou?.trim() || "Not specified";
-  const extraTags = affiliate ? [`affiliate:${affiliate.code}`] : [];
+  const extraTags = affiliate
+    ? [`affiliate:${affiliate.code}`, campaignSlug ? `campaign:${campaignSlug}` : ""].filter(Boolean)
+    : [];
   const lead = await createLead({
     ...parsed.data,
     bestDescribesYou: audience,
@@ -60,6 +63,7 @@ export async function POST(request: Request) {
     await recordAttribution({
       kind: "inquiry",
       code: affiliate.code,
+      campaignSlug,
       email: parsed.data.email,
       name: parsed.data.name,
     });
