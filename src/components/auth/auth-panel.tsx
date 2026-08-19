@@ -9,6 +9,8 @@ import { useActionState } from "react";
 import { AuthFormState, loginAccount, registerAccount } from "@/app/login/actions";
 import { SiteLogo } from "@/components/branding/site-logo";
 import { PhoneField } from "@/components/forms/phone-field";
+import { StickyForm } from "@/components/forms/sticky-form";
+import { TEMPORARY_MEMBER_PASSWORD } from "@/lib/auth-constants";
 import { BrandingSettings } from "@/lib/branding";
 
 const initialState: AuthFormState = {};
@@ -38,9 +40,13 @@ function AuthField({
 export function AuthPanel({
   branding,
   mode,
+  email = "",
+  existing = false,
 }: {
   branding: BrandingSettings;
   mode: "login" | "register";
+  email?: string;
+  existing?: boolean;
 }) {
   const router = useRouter();
   const [loginState, loginAction, loginPending] = useActionState(loginAccount, initialState);
@@ -72,13 +78,23 @@ export function AuthPanel({
         <SiteLogo branding={branding} href="/" compact={Boolean(branding.logoUrl)} />
 
         {mode === "login" ? (
-          <form action={loginAction} className="auth-form auth-form-login">
+          <StickyForm storageKey="coach-jdc-member-login" action={loginAction} className="auth-form auth-form-login">
             <p className="macos-lead">
-              Sign in with your email and password. If you can&apos;t sign in, register first.
+              {existing
+                ? `This email or phone is already in the system. Sign in with that email. Your temporary password is ${TEMPORARY_MEMBER_PASSWORD}. After you sign in, set a new password and confirmation password.`
+                : "Sign in with your email and password. If this is a first login after a duplicate registration, use JDCELITESOCIETY and then set a new password."}
             </p>
 
             <AuthField label="Email" icon={<Mail size={15} aria-hidden />}>
-              <input name="email" type="email" autoComplete="username" placeholder="name@mail.com" required />
+              <input
+                name="email"
+                type="email"
+                autoComplete="username"
+                placeholder="name@mail.com"
+                defaultValue={email}
+                data-lock={email ? "true" : undefined}
+                required
+              />
             </AuthField>
 
             <AuthField label="Password" icon={<Lock size={15} aria-hidden />}>
@@ -86,7 +102,8 @@ export function AuthPanel({
                 name="password"
                 type="password"
                 autoComplete="current-password"
-                placeholder="••••••••"
+                placeholder={existing ? TEMPORARY_MEMBER_PASSWORD : "••••••••"}
+                data-sticky="off"
                 required
               />
             </AuthField>
@@ -114,9 +131,9 @@ export function AuthPanel({
                 {loginPending ? "Signing In..." : "Sign In"}
               </button>
             </div>
-          </form>
+          </StickyForm>
         ) : (
-          <form action={registerAction} className="auth-form auth-form-grid">
+          <StickyForm storageKey="coach-jdc-register" action={registerAction} className="auth-form auth-form-grid">
             <p className="macos-lead">Create your account to open the dashboard.</p>
 
             <AuthField label="Full name" icon={<UserRound size={15} aria-hidden />}>
@@ -132,7 +149,7 @@ export function AuthPanel({
               <input name="company" autoComplete="organization" placeholder="Your company" required />
             </AuthField>
             <AuthField label="Password" icon={<Lock size={15} aria-hidden />}>
-              <input name="password" type="password" autoComplete="new-password" placeholder="At least 8 characters" required />
+              <input name="password" type="password" autoComplete="new-password" placeholder="At least 8 characters" data-sticky="off" required />
             </AuthField>
             <AuthField label="Confirm password" icon={<Lock size={15} aria-hidden />}>
               <input
@@ -140,6 +157,7 @@ export function AuthPanel({
                 type="password"
                 autoComplete="new-password"
                 placeholder="Re-enter your password"
+                data-sticky="off"
                 required
               />
             </AuthField>
@@ -157,7 +175,7 @@ export function AuthPanel({
                 {registerPending ? "Creating Account..." : "Create Account"}
               </button>
             </div>
-          </form>
+          </StickyForm>
         )}
       </div>
     </div>

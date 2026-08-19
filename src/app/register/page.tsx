@@ -15,7 +15,7 @@ export default async function RegisterPage() {
   const user = await getSessionUser();
 
   if (user) {
-    redirect("/dashboard");
+    redirect(user.passwordSet ? "/dashboard" : "/account/password");
   }
 
   const branding = await getResolvedBrandingSettings();

@@ -6,6 +6,7 @@ import { useActionState } from "react";
 
 import { AuthFormState, requestPasswordResetAccount } from "@/app/login/actions";
 import { SiteLogo } from "@/components/branding/site-logo";
+import { StickyForm } from "@/components/forms/sticky-form";
 import { BrandingSettings } from "@/lib/branding";
 
 const initialState: AuthFormState = {};
@@ -20,7 +21,7 @@ export function ForgotPasswordForm({ branding }: { branding: BrandingSettings })
       </header>
       <div className="macos-body">
         <SiteLogo branding={branding} href="/" compact={Boolean(branding.logoUrl)} />
-        <form action={action} className="auth-form auth-form-login">
+        <StickyForm storageKey="coach-jdc-forgot-password" action={action} className="auth-form auth-form-login">
           <p className="macos-lead">Enter the email on your account. If it matches, we will send a reset link.</p>
           <label className="auth-field">
             <span>Email</span>
@@ -42,7 +43,7 @@ export function ForgotPasswordForm({ branding }: { branding: BrandingSettings })
               {pending ? "Sending..." : "Send Reset Link"}
             </button>
           </div>
-        </form>
+        </StickyForm>
       </div>
     </div>
   );

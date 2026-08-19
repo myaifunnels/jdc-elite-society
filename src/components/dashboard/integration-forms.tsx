@@ -9,6 +9,7 @@ import {
   saveR2Integration,
 } from "@/app/dashboard/integrations/actions";
 import { FloatField } from "@/components/forms/float-field";
+import { StickyForm } from "@/components/forms/sticky-form";
 import { maskSecret } from "@/lib/integrations";
 
 const initialState: IntegrationFormState = {};
@@ -24,7 +25,7 @@ export function GoogleMapsIntegrationForm({
   );
 
   return (
-    <form action={formAction} className="mt-6 grid gap-4">
+    <StickyForm storageKey="coach-jdc-maps-integration" action={formAction} className="mt-6 grid gap-4">
       <FloatField label={configured ? `Enter a new Maps API key (${maskSecret("set")})` : "Enter your Maps API key"}>
         <input name="googleMapsEmbedKey" type="password" autoComplete="off" placeholder=" " />
       </FloatField>
@@ -39,7 +40,7 @@ export function GoogleMapsIntegrationForm({
       >
         {pending ? "Saving..." : "Save Google Maps"}
       </button>
-    </form>
+    </StickyForm>
   );
 }
 
@@ -57,14 +58,14 @@ export function R2IntegrationForm({
   const [state, formAction, pending] = useActionState(saveR2Integration, initialState);
 
   return (
-    <form action={formAction} className="mt-6 grid gap-4">
+    <StickyForm storageKey="coach-jdc-r2-integration" action={formAction} className="mt-6 grid gap-4">
       <FloatField label="Enter your Cloudflare account ID">
         <input name="r2AccountId" autoComplete="off" defaultValue={accountId} placeholder=" " />
       </FloatField>
       <FloatField
         label={accessKeyConfigured ? `Enter a new access key (${maskSecret("set")})` : "Enter your R2 access key"}
       >
-        <input name="r2AccessKeyId" autoComplete="off" placeholder=" " />
+        <input name="r2AccessKeyId" autoComplete="off" data-sticky="off" placeholder=" " />
       </FloatField>
       <FloatField
         label={accessKeyConfigured ? `Enter a new secret key (${maskSecret("set")})` : "Enter your R2 secret key"}
@@ -88,7 +89,7 @@ export function R2IntegrationForm({
       >
         {pending ? "Saving..." : "Save Cloudflare R2"}
       </button>
-    </form>
+    </StickyForm>
   );
 }
 
@@ -102,7 +103,7 @@ export function GhlIntegrationForm({
   const [state, formAction, pending] = useActionState(saveGhlIntegration, initialState);
 
   return (
-    <form action={formAction} className="mt-6 grid gap-4">
+    <StickyForm storageKey="coach-jdc-ghl-integration" action={formAction} className="mt-6 grid gap-4">
       <FloatField
         label={configured ? `Enter a new GHL token (${maskSecret("set")})` : "Enter your GHL private token"}
       >
@@ -122,6 +123,6 @@ export function GhlIntegrationForm({
       >
         {pending ? "Saving..." : "Save GoHighLevel"}
       </button>
-    </form>
+    </StickyForm>
   );
 }

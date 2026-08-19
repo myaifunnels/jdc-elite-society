@@ -1,6 +1,7 @@
 import { Pool } from "pg";
 
 import { hashPassword } from "@/lib/password";
+import { normalizePhoneDigits, phonesMatch } from "@/lib/identity";
 import { parseMemberships, serializeMemberships, type Membership } from "@/lib/membership";
 import { AccountStatus, AuthUser, DashboardRole } from "@/lib/types";
 
@@ -286,6 +287,75 @@ async function updateUserRecord(
   }
 }
 
+export async function findUserByEmailOrPhone(email: string, phone: string) {
+  const byEmail = email.trim() ? await findUserByEmail(email) : null;
+  if (byEmail) {
+    return byEmail;
+  }
+
+  const digits = normalizePhoneDigits(phone);
+  if (digits.length < 8) {
+    return null;
+  }
+
+  const client = getPool();
+  if (!client) {
+    return memoryUsers.find((user) => phonesMatch(user.phone, phone)) ?? null;
+  }
+
+  try {
+    await ensureTable(client);
+    const result = await client.query(
+      `
+      SELECT * FROM site_users
+      WHERE regexp_replace(phone, '[^0-9]', '', 'g') = $1
+         OR (
+           length($1) >= 10
+           AND right(regexp_replace(phone, '[^0-9]', '', 'g'), 10) = right($1, 10)
+         )
+      LIMIT 1
+      `,
+      [digits],
+    );
+    return result.rows[0] ? mapRow(result.rows[0]) : null;
+  } catch (error) {
+    console.error("Failed to load user by phone", error);
+    return memoryUsers.find((user) => phonesMatch(user.phone, phone)) ?? null;
+  }
+}
+
+export async function issueTemporaryPassword(userId: string) {
+  const { TEMPORARY_MEMBER_PASSWORD } = await import("@/lib/auth-constants");
+  const passwordHash = await hashPassword(TEMPORARY_MEMBER_PASSWORD);
+  const memoryIndex = memoryUsers.findIndex((user) => user.id === userId);
+  if (memoryIndex >= 0) {
+    memoryUsers[memoryIndex] = {
+      ...memoryUsers[memoryIndex],
+      passwordHash,
+      passwordSet: false,
+    };
+  }
+
+  const client = getPool();
+  if (!client) {
+    return;
+  }
+
+  try {
+    await ensureTable(client);
+    await client.query(
+      "UPDATE site_users SET password_hash = $2, password_set = FALSE WHERE id = $1",
+      [userId, passwordHash],
+    );
+  } catch (error) {
+    console.error("Failed to issue temporary password", error);
+  }
+}
+
+export async function setUserPassword(userId: string, password: string) {
+  await updateUserPasswordHash(userId, await hashPassword(password));
+}
+
 export async function findUserByEmail(email: string) {
   const normalized = email.trim().toLowerCase();
   const client = getPool();
@@ -340,10 +410,10 @@ export async function createUser(input: {
   passwordSet?: boolean;
 }) {
   const email = input.email.trim().toLowerCase();
-  const existing = await findUserByEmail(email);
+  const existing = await findUserByEmailOrPhone(email, input.phone ?? "");
 
   if (existing) {
-    throw new Error("An account with this email already exists.");
+    throw new Error("An account with this email or phone already exists.");
   }
 
   const privileged = isPrivileged(input.role);
