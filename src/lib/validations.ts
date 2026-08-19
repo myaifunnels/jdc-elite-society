@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { membershipOptions } from "@/lib/membership";
+
 export const audienceOptions = [
   "OFW",
   "Employee",
@@ -24,17 +26,23 @@ export const leadSchema = z.object({
 
 export type LeadInput = z.infer<typeof leadSchema>;
 
-export const registerSchema = z.object({
-  name: z.string().min(2, "Name is required."),
-  email: z.email("Enter a valid email."),
-  password: z.string().min(8, "Use at least 8 characters."),
-  role: z.enum(["member", "partner"], { message: "Choose how you are joining." }),
-  bestDescribesYou: z.enum(audienceOptions, { message: "Tell me what best describes you." }),
-  dateOfBirth: z.string().min(1, "Date of birth is required."),
-  address: z.string().min(5, "Address is required."),
-  facebookProfileUrl: z.string().optional().default(""),
-  facebookPhotoUrl: z.string().optional().default(""),
-});
+export const registerSchema = z
+  .object({
+    name: z.string().min(2, "Name is required."),
+    email: z.email("Enter a valid email."),
+    password: z.string().min(8, "Use at least 8 characters."),
+    confirmPassword: z.string().min(1, "Confirm your password."),
+    memberships: z.array(z.enum(membershipOptions)).min(1, "Choose Spartans, JES Member, or both."),
+    bestDescribesYou: z.enum(audienceOptions, { message: "Tell me what best describes you." }),
+    dateOfBirth: z.string().min(1, "Date of birth is required."),
+    address: z.string().min(5, "Address is required."),
+    facebookProfileUrl: z.string().optional().default(""),
+    facebookPhotoUrl: z.string().optional().default(""),
+  })
+  .refine((value) => value.password === value.confirmPassword, {
+    message: "Passwords do not match.",
+    path: ["confirmPassword"],
+  });
 
 export const loginSchema = z.object({
   email: z.email("Enter a valid email."),

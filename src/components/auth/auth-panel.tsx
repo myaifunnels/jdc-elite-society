@@ -3,12 +3,13 @@
 import { Calendar, Image as ImageIcon, Lock, Mail, MapPin, UserRound } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useActionState, useState, type FormEvent, type ReactNode } from "react";
+import { useActionState, useEffect, useState, type FormEvent, type ReactNode } from "react";
 
 import { AuthFormState, loginAccount, registerAccount } from "@/app/login/actions";
 import { SiteLogo } from "@/components/branding/site-logo";
 import { AddressAutocomplete } from "@/components/forms/address-autocomplete";
 import { BrandingSettings } from "@/lib/branding";
+import { membershipTheme, type Membership } from "@/lib/membership";
 import { audienceOptions } from "@/lib/validations";
 
 const initialState: AuthFormState = {};
@@ -54,6 +55,10 @@ function fieldValue(form: HTMLFormElement, name: string) {
   return String(new FormData(form).get(name) ?? "").trim();
 }
 
+function fieldValues(form: HTMLFormElement, name: string) {
+  return [...new FormData(form).getAll(name)].map((value) => String(value));
+}
+
 export function AuthPanel({
   branding,
   mode,
@@ -64,11 +69,41 @@ export function AuthPanel({
   const router = useRouter();
   const [step, setStep] = useState(0);
   const [stepError, setStepError] = useState("");
+  const [memberships, setMemberships] = useState<Membership[]>([]);
   const [loginState, loginAction, loginPending] = useActionState(loginAccount, initialState);
   const [registerState, registerAction, registerPending] = useActionState(registerAccount, initialState);
 
   const stepCopy = registerSteps[step];
   const windowTitle = mode === "login" ? "Sign In" : `Register — ${stepCopy.title}`;
+
+  useEffect(() => {
+    if (mode !== "register") {
+      return;
+    }
+
+    const root = document.documentElement;
+    const previous = root.dataset.membership ?? "";
+    const next = membershipTheme(memberships);
+    if (next) {
+      root.dataset.membership = next;
+    } else {
+      delete root.dataset.membership;
+    }
+
+    return () => {
+      if (previous) {
+        root.dataset.membership = previous;
+      } else {
+        delete root.dataset.membership;
+      }
+    };
+  }, [memberships, mode]);
+
+  function toggleMembership(value: Membership) {
+    setMemberships((current) =>
+      current.includes(value) ? current.filter((item) => item !== value) : [...current, value],
+    );
+  }
 
   function goTo(next: number) {
     setStepError("");
@@ -80,6 +115,7 @@ export function AuthPanel({
       if (fieldValue(form, "name").length < 2) return "Enter your full name.";
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(fieldValue(form, "email"))) return "Enter a valid email.";
       if (fieldValue(form, "password").length < 8) return "Use at least 8 characters.";
+      if (fieldValue(form, "password") !== fieldValue(form, "confirmPassword")) return "Passwords do not match.";
       return "";
     }
 
@@ -87,7 +123,7 @@ export function AuthPanel({
       if (!fieldValue(form, "dateOfBirth")) return "Enter your date of birth.";
       if (fieldValue(form, "address").length < 5) return "Enter your address.";
       if (!fieldValue(form, "bestDescribesYou")) return "Tell us what best describes you.";
-      if (!fieldValue(form, "role")) return "Choose how you are joining.";
+      if (fieldValues(form, "memberships").length < 1) return "Choose Spartans, JES Member, or both.";
       return "";
     }
 
@@ -203,8 +239,16 @@ export function AuthPanel({
               <AuthField label="Email address" icon={<Mail size={15} aria-hidden />}>
                 <input name="email" type="email" autoComplete="email" placeholder="name@mail.com" />
               </AuthField>
-              <AuthField label="Password" icon={<Lock size={15} aria-hidden />} className="auth-span-2">
+              <AuthField label="Password" icon={<Lock size={15} aria-hidden />}>
                 <input name="password" type="password" autoComplete="new-password" placeholder="At least 8 characters" />
+              </AuthField>
+              <AuthField label="Confirm password" icon={<Lock size={15} aria-hidden />}>
+                <input
+                  name="confirmPassword"
+                  type="password"
+                  autoComplete="new-password"
+                  placeholder="Re-enter your password"
+                />
               </AuthField>
             </div>
 
@@ -228,17 +272,32 @@ export function AuthPanel({
                 </select>
               </AuthField>
               <fieldset className="auth-roles">
-                <legend>What best describes your role here?</legend>
+                <legend>Your role here</legend>
                 <div className="auth-roles-row">
                   <label>
-                    <input type="radio" name="role" value="member" defaultChecked />
-                    Member
+                    <input
+                      type="checkbox"
+                      name="memberships"
+                      value="spartan"
+                      checked={memberships.includes("spartan")}
+                      onChange={() => toggleMembership("spartan")}
+                    />
+                    Spartans
                   </label>
                   <label>
-                    <input type="radio" name="role" value="partner" />
-                    Partner
+                    <input
+                      type="checkbox"
+                      name="memberships"
+                      value="jes"
+                      checked={memberships.includes("jes")}
+                      onChange={() => toggleMembership("jes")}
+                    />
+                    JES Member
                   </label>
                 </div>
+                <p className="auth-note">
+                  JES means JDC Elite Society. Select Spartans, JES Member, or both if you belong to each.
+                </p>
               </fieldset>
             </div>
 

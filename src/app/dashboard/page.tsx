@@ -3,6 +3,7 @@ import Link from "next/link";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { dashboardMetrics, partnerSummary } from "@/data/crm";
 import { programs } from "@/data/programs";
+import { membershipLabel } from "@/lib/membership";
 import { requireSessionUser } from "@/lib/session";
 
 export default async function DashboardPage() {
@@ -18,7 +19,8 @@ export default async function DashboardPage() {
           <section className="card-surface rounded-[2rem] p-6 sm:p-8">
             <p className="text-sm font-semibold">Your role</p>
             <p className="mt-2 text-[var(--muted)]">
-              Signed in as a member. Partners and admins see different rooms. This one is for the person doing the work.
+              Signed in as {membershipLabel(user.memberships)}. JES means JDC Elite Society. This
+              workspace is for the person doing the work.
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
               <Link href="/dashboard/path" className="button-primary pressable rounded-full px-4 py-2 text-sm font-semibold">

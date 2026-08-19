@@ -46,6 +46,7 @@ function isActivePath(pathname: string, href: string) {
 function SidebarPanel({
   role,
   userName,
+  membershipLabel,
   branding,
   titleId,
   onNavigate,
@@ -53,6 +54,7 @@ function SidebarPanel({
 }: {
   role: DashboardRole;
   userName: string;
+  membershipLabel: string;
   branding: BrandingSettings;
   titleId: string;
   onNavigate?: () => void;
@@ -78,7 +80,7 @@ function SidebarPanel({
 
       <div className="px-4 pt-5">
         <p id={titleId} className="text-[0.68rem] font-semibold uppercase tracking-[0.28em] text-[var(--muted)]">
-          {role} workspace
+          {role === "member" ? membershipLabel : role} workspace
         </p>
       </div>
 
@@ -111,7 +113,9 @@ function SidebarPanel({
         <div className="flex items-center justify-between gap-3">
           <div className="min-w-0">
             <p className="truncate text-sm font-semibold">{userName}</p>
-            <p className="truncate text-xs capitalize text-[var(--muted)]">{role}</p>
+            <p className="truncate text-xs text-[var(--muted)]">
+              {role === "member" ? membershipLabel : role}
+            </p>
           </div>
           <ThemeToggle />
         </div>
@@ -141,10 +145,12 @@ function SidebarPanel({
 export function DashboardSidebar({
   role,
   userName,
+  membershipLabel,
   branding,
 }: {
   role: DashboardRole;
   userName: string;
+  membershipLabel: string;
   branding: BrandingSettings;
 }) {
   const [open, setOpen] = useState(false);
@@ -224,6 +230,7 @@ export function DashboardSidebar({
         <SidebarPanel
           role={role}
           userName={userName}
+          membershipLabel={membershipLabel}
           branding={branding}
           titleId={titleId}
           onNavigate={close}
@@ -238,6 +245,7 @@ export function DashboardSidebar({
         <SidebarPanel
           role={role}
           userName={userName}
+          membershipLabel={membershipLabel}
           branding={branding}
           titleId={`${titleId}-desktop`}
         />

@@ -9,7 +9,7 @@ export default async function DashboardLayout({
   const branding = await getResolvedBrandingSettings();
 
   return (
-    <DashboardFrame role={user.role} userName={user.name} branding={branding}>
+    <DashboardFrame user={user} branding={branding}>
       {children}
     </DashboardFrame>
   );

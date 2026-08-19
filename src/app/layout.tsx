@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Playfair_Display } from "next/font/google";
 import { ThemeProvider } from "@/components/theme/theme-provider";
+import { membershipTheme } from "@/lib/membership";
+import { getSessionUser } from "@/lib/session";
 import { siteUrl } from "@/lib/site";
 import "./globals.css";
 
@@ -57,11 +59,15 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  const user = await getSessionUser();
+  const membership = membershipTheme(user?.memberships);
+
   return (
     <html
       lang="en"
       data-scroll-behavior="smooth"
+      data-membership={membership || undefined}
       suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} ${playfair.variable} dark h-full antialiased`}
     >

@@ -31,7 +31,8 @@ export async function registerAccount(
     name: String(formData.get("name") ?? "").trim(),
     email: String(formData.get("email") ?? "").trim(),
     password: String(formData.get("password") ?? ""),
-    role: String(formData.get("role") ?? ""),
+    confirmPassword: String(formData.get("confirmPassword") ?? ""),
+    memberships: formData.getAll("memberships").map(String),
     bestDescribesYou: String(formData.get("bestDescribesYou") ?? ""),
     dateOfBirth: String(formData.get("dateOfBirth") ?? "").trim(),
     address: String(formData.get("address") ?? "").trim(),
@@ -46,7 +47,11 @@ export async function registerAccount(
 
   try {
     await ensureSeedUsers();
-    const user = await createUser(parsed.data);
+    const { confirmPassword: _confirmPassword, ...account } = parsed.data;
+    const user = await createUser({
+      ...account,
+      role: "member",
+    });
     await setSessionCookie(user.id, true);
     await syncContactToGhl({
       name: parsed.data.name,
@@ -57,7 +62,10 @@ export async function registerAccount(
       facebookProfileUrl: parsed.data.facebookProfileUrl,
       facebookPhotoUrl: parsed.data.facebookPhotoUrl,
       source: "Website registration",
-      tags: ["Registration", parsed.data.role],
+      tags: [
+        "Registration",
+        ...parsed.data.memberships.map((item) => (item === "jes" ? "JES Member" : "Spartans")),
+      ],
     });
   } catch (error) {
     return {
