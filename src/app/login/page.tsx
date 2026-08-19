@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 };
 
 type LoginPageProps = {
-  searchParams: Promise<{ email?: string; reason?: string }>;
+  searchParams: Promise<{ email?: string }>;
 };
 
 export default async function LoginPage({ searchParams }: LoginPageProps) {
