@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 
 import { BrandingFormState, saveLogoSettings } from "@/app/dashboard/settings/actions";
+import { StickyForm } from "@/components/forms/sticky-form";
 import { BrandingSettings } from "@/lib/branding";
 
 const initialState: BrandingFormState = {};
@@ -35,7 +36,7 @@ export function LogoSettingsForm({ branding }: { branding: BrandingSettings }) {
         ) : null}
       </div>
 
-      <form action={formAction} className="mt-6 grid gap-4">
+      <StickyForm storageKey="coach-jdc-logo-settings" action={formAction} className="mt-6 grid gap-4">
         <label className="grid gap-2 text-sm">
           <span className="font-medium">Logo image URL</span>
           <input
@@ -75,7 +76,7 @@ export function LogoSettingsForm({ branding }: { branding: BrandingSettings }) {
         >
           {pending ? "Saving..." : "Save logo"}
         </button>
-      </form>
+      </StickyForm>
     </section>
   );
 }

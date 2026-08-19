@@ -1,11 +1,13 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "next/navigation";
 
 import { programs } from "@/data/programs";
 import { siteContent } from "@/data/site-content";
+import { inquiryDraftStorageKey, readStoredForm, writeStoredForm } from "@/lib/form-storage";
 import { cn } from "@/lib/utils";
 import { audienceOptions, LeadInput, leadSchema } from "@/lib/validations";
 
@@ -13,11 +15,19 @@ type InquiryFormProps = {
   className?: string;
   defaultProgram?: string;
   showIntro?: boolean;
+  variant?: "full" | "sticky";
 };
 
-export function InquiryForm({ className, defaultProgram, showIntro = true }: InquiryFormProps) {
+export function InquiryForm({
+  className,
+  defaultProgram,
+  showIntro = true,
+  variant = "full",
+}: InquiryFormProps) {
+  const router = useRouter();
   const [submitted, setSubmitted] = useState(false);
   const [serverError, setServerError] = useState("");
+  const skipDraftWrite = useRef(true);
 
   const defaultValues = useMemo<LeadInput>(
     () => ({
@@ -46,31 +56,67 @@ export function InquiryForm({ className, defaultProgram, showIntro = true }: Inq
     defaultValues,
   });
 
-  const address = useWatch({ control, name: "address" });
+  const values = useWatch({ control });
+  const address = values.address;
 
-  async function onSubmit(values: LeadInput) {
+  useEffect(() => {
+    const saved = readStoredForm(inquiryDraftStorageKey);
+    restored.current = true;
+    reset({
+      ...defaultValues,
+      ...saved,
+      tags: saved.tags || defaultValues.tags,
+      programInterest: saved.programInterest || defaultValues.programInterest,
+    });
+  }, [defaultValues, reset]);
+
+  useEffect(() => {
+    if (skipDraftWrite.current) {
+      skipDraftWrite.current = false;
+      return;
+    }
+
+    if (!values) {
+      return;
+    }
+
+    writeStoredForm(inquiryDraftStorageKey, values);
+  }, [values]);
+
+  async function onSubmit(formValues: LeadInput) {
     setServerError("");
+    writeStoredForm(inquiryDraftStorageKey, formValues);
 
     const response = await fetch("/api/inquiries", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(values),
+      body: JSON.stringify(formValues),
     });
 
+    const payload = (await response.json().catch(() => null)) as
+      | { redirectTo?: string; duplicate?: boolean; error?: string }
+      | null;
+
+    if (response.status === 409 && payload?.redirectTo) {
+      router.push(payload.redirectTo);
+      return;
+    }
+
     if (!response.ok) {
-      setServerError("I couldn't receive this just now. Try again.");
+      setServerError(payload?.error || "I couldn't receive this just now. Try again.");
       return;
     }
 
     setSubmitted(true);
-    reset(defaultValues);
   }
 
+  const compact = variant === "sticky";
+
   return (
-    <div className={cn("grid gap-6 lg:grid-cols-[1.25fr_0.75fr]", className)}>
+    <div className={cn(compact ? "grid gap-4" : "grid gap-6 lg:grid-cols-[1.25fr_0.75fr]", className)}>
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className="glass-panel fade-up rounded-[2rem] p-6 sm:p-8"
+        className={cn("glass-panel fade-up rounded-[2rem]", compact ? "p-5" : "p-6 sm:p-8")}
       >
         {showIntro ? (
           <div className="mb-6 space-y-2">
@@ -82,15 +128,27 @@ export function InquiryForm({ className, defaultProgram, showIntro = true }: Inq
 
         <div className="grid gap-4 md:grid-cols-2">
           <Field label="Full name" error={errors.name?.message}>
-            <input className={inputClass} {...register("name")} placeholder="Juan Dela Cruz" />
+            <input className={inputClass} autoComplete="name" {...register("name")} placeholder="Juan Dela Cruz" />
           </Field>
 
           <Field label="Email" error={errors.email?.message}>
-            <input className={inputClass} {...register("email")} placeholder="juan@example.com" />
+            <input
+              className={inputClass}
+              type="email"
+              autoComplete="email"
+              {...register("email")}
+              placeholder="juan@example.com"
+            />
           </Field>
 
           <Field label="Phone" error={errors.phone?.message}>
-            <input className={inputClass} {...register("phone")} placeholder="+63 917 000 0000" />
+            <input
+              className={inputClass}
+              type="tel"
+              autoComplete="tel"
+              {...register("phone")}
+              placeholder="+63 917 000 0000"
+            />
           </Field>
 
           <Field label="Date of birth" error={errors.dateOfBirth?.message}>
@@ -139,7 +197,7 @@ export function InquiryForm({ className, defaultProgram, showIntro = true }: Inq
         <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="text-sm text-[var(--muted)]">
             {submitted
-              ? siteContent.inquiry.success
+              ? "Received. If you need to sign in later, use this email and the temporary password JDCELITESOCIETY, then set a new password."
               : siteContent.inquiry.helper}
           </div>
 
@@ -155,31 +213,33 @@ export function InquiryForm({ className, defaultProgram, showIntro = true }: Inq
         {serverError ? <p className="mt-4 text-sm text-red-700">{serverError}</p> : null}
       </form>
 
-      <aside className="glass-panel fade-up-delay-1 fade-up rounded-[2rem] p-6 sm:p-8">
-        <p className="text-sm font-semibold tracking-[-0.01em]">{siteContent.inquiry.nextHeading}</p>
-        <ul className="mt-4 grid gap-3 text-sm text-[var(--muted)]">
-          {siteContent.inquiry.nextSteps.map((item) => (
-            <li key={item}>{item}</li>
-          ))}
-        </ul>
+      {compact ? null : (
+        <aside className="glass-panel fade-up-delay-1 fade-up rounded-[2rem] p-6 sm:p-8">
+          <p className="text-sm font-semibold tracking-[-0.01em]">{siteContent.inquiry.nextHeading}</p>
+          <ul className="mt-4 grid gap-3 text-sm text-[var(--muted)]">
+            {siteContent.inquiry.nextSteps.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
 
-        <div className="mt-6 rounded-3xl border border-dashed border-[var(--line)] bg-[color:var(--surface-elevated)]/80 p-4 text-sm">
-          <p className="font-medium">Where you are tells me the season you&apos;re in.</p>
-          <p className="mt-2 text-[var(--muted)]">
-            {address?.trim() || "Add where you live or work. OFW or home, it matters."}
-          </p>
-          {address?.trim() ? (
-            <a
-              href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="button-secondary pressable mt-4 inline-flex rounded-full px-4 py-2 font-medium"
-            >
-              Open in Google Maps
-            </a>
-          ) : null}
-        </div>
-      </aside>
+          <div className="mt-6 rounded-3xl border border-dashed border-[var(--line)] bg-[color:var(--surface-elevated)]/80 p-4 text-sm">
+            <p className="font-medium">Where you are tells me the season you&apos;re in.</p>
+            <p className="mt-2 text-[var(--muted)]">
+              {address?.trim() || "Add where you live or work. OFW or home, it matters."}
+            </p>
+            {address?.trim() ? (
+              <a
+                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="button-secondary pressable mt-4 inline-flex rounded-full px-4 py-2 font-medium"
+              >
+                Open in Google Maps
+              </a>
+            ) : null}
+          </div>
+        </aside>
+      )}
     </div>
   );
 }

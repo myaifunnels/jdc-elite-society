@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 
 import { AdminLoginState, loginAdmin } from "@/app/login/actions";
+import { StickyForm } from "@/components/forms/sticky-form";
 
 const initialState: AdminLoginState = {};
 
@@ -10,7 +11,7 @@ export function AdminLoginForm() {
   const [state, formAction, pending] = useActionState(loginAdmin, initialState);
 
   return (
-    <form action={formAction} className="glass-panel rounded-[2rem] p-8">
+    <StickyForm storageKey="coach-jdc-admin-login" action={formAction} className="glass-panel rounded-[2rem] p-8">
       <p className="eyebrow text-xs">Admin</p>
       <h2 className="mt-3 text-3xl font-semibold tracking-[-0.03em]">
         Sign in to the command center
@@ -25,6 +26,7 @@ export function AdminLoginForm() {
           <input
             name="username"
             defaultValue="admin"
+            autoComplete="username"
             className="w-full rounded-2xl border border-[var(--line)] bg-[color:var(--surface-elevated)]/86 px-4 py-3 outline-none transition focus:border-[var(--brand)] focus:ring-2 focus:ring-[rgba(184,134,77,0.18)]"
           />
         </label>
@@ -34,7 +36,7 @@ export function AdminLoginForm() {
           <input
             type="password"
             name="password"
-            defaultValue="admin"
+            autoComplete="current-password"
             className="w-full rounded-2xl border border-[var(--line)] bg-[color:var(--surface-elevated)]/86 px-4 py-3 outline-none transition focus:border-[var(--brand)] focus:ring-2 focus:ring-[rgba(184,134,77,0.18)]"
           />
         </label>
@@ -49,6 +51,6 @@ export function AdminLoginForm() {
       >
         {pending ? "Signing in..." : "Sign in as admin"}
       </button>
-    </form>
+    </StickyForm>
   );
 }

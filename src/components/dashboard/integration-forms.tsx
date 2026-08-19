@@ -7,6 +7,7 @@ import {
   saveGoogleMapsIntegration,
   saveR2Integration,
 } from "@/app/dashboard/integrations/actions";
+import { StickyForm } from "@/components/forms/sticky-form";
 import { maskSecret } from "@/lib/integrations";
 
 const initialState: IntegrationFormState = {};
@@ -25,13 +26,14 @@ export function GoogleMapsIntegrationForm({
   );
 
   return (
-    <form action={formAction} className="mt-6 grid gap-4">
+    <StickyForm storageKey="coach-jdc-maps-integration" action={formAction} className="mt-6 grid gap-4">
       <label className="grid gap-2 text-sm">
         <span className="font-medium">Maps Embed API key</span>
         <input
           name="googleMapsEmbedKey"
           type="password"
           autoComplete="off"
+          data-sticky="off"
           placeholder={configured ? maskSecret("set") : "AIza..."}
           className={inputClass}
         />
@@ -47,7 +49,7 @@ export function GoogleMapsIntegrationForm({
       >
         {pending ? "Saving..." : "Save Google Maps"}
       </button>
-    </form>
+    </StickyForm>
   );
 }
 
@@ -65,7 +67,7 @@ export function R2IntegrationForm({
   const [state, formAction, pending] = useActionState(saveR2Integration, initialState);
 
   return (
-    <form action={formAction} className="mt-6 grid gap-4">
+    <StickyForm storageKey="coach-jdc-r2-integration" action={formAction} className="mt-6 grid gap-4">
       <label className="grid gap-2 text-sm">
         <span className="font-medium">Account ID</span>
         <input
@@ -81,6 +83,7 @@ export function R2IntegrationForm({
         <input
           name="r2AccessKeyId"
           autoComplete="off"
+          data-sticky="off"
           placeholder={accessKeyConfigured ? maskSecret("set") : "R2 access key"}
           className={inputClass}
         />
@@ -91,6 +94,7 @@ export function R2IntegrationForm({
           name="r2SecretAccessKey"
           type="password"
           autoComplete="off"
+          data-sticky="off"
           placeholder={accessKeyConfigured ? maskSecret("set") : "R2 secret key"}
           className={inputClass}
         />
@@ -119,6 +123,6 @@ export function R2IntegrationForm({
       >
         {pending ? "Saving..." : "Save Cloudflare R2"}
       </button>
-    </form>
+    </StickyForm>
   );
 }

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { createLead } from "@/lib/crm-store";
+import { registerInquiry } from "@/lib/inquiry";
 import { leadSchema } from "@/lib/validations";
 
 export async function POST(request: Request) {
@@ -14,18 +14,11 @@ export async function POST(request: Request) {
     );
   }
 
-  const lead = createLead({
-    ...parsed.data,
-    tags: Array.from(
-      new Set(
-        [
-          ...parsed.data.tags.split(",").map((tag) => tag.trim()),
-          parsed.data.bestDescribesYou,
-        ].filter(Boolean),
-      ),
-    ),
-    source: "Website inquiry",
-  });
+  const result = await registerInquiry(parsed.data);
 
-  return NextResponse.json({ lead });
+  if (result.duplicate) {
+    return NextResponse.json(result, { status: 409 });
+  }
+
+  return NextResponse.json(result);
 }

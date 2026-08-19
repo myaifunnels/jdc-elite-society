@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { SiteLogo } from "@/components/branding/site-logo";
 import { ScrollTopButton } from "@/components/layout/scroll-top-button";
+import { StickyContact } from "@/components/layout/sticky-contact";
 import { siteContent } from "@/data/site-content";
 import { getResolvedBrandingSettings } from "@/lib/branding-store";
 
@@ -160,6 +161,7 @@ export async function SiteFooter() {
         </p>
         <div className="site-footer-copy">Copyright © 2026 JDC Elite Society. All Rights Reserved.</div>
       </div>
+      <StickyContact />
     </footer>
   );
 }

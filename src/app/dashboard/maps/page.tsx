@@ -2,11 +2,11 @@ import { AddressMap } from "@/components/maps/address-map";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { listLeads } from "@/lib/crm-store";
 import { getGoogleMapsConfig } from "@/lib/maps";
-import { requireSessionUser } from "@/lib/session";
+import { requireStaffUser } from "@/lib/session";
 
 export default async function MapsPage() {
-  const user = await requireSessionUser();
-  const leads = listLeads(user.role);
+  const user = await requireStaffUser();
+  const leads = await listLeads(user.role);
   const featuredLead = leads[0];
   const mapsConfig = await getGoogleMapsConfig();
 
