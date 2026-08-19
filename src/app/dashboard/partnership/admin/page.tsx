@@ -1,0 +1,161 @@
+import { MacosWindow } from "@/components/dashboard/macos-window";
+import {
+  CampaignForm,
+  GrantAccessForm,
+  MarkPaidForm,
+  RecordSaleForm,
+  UpdateAffiliateForm,
+  VoidSaleForm,
+} from "@/components/dashboard/partnership-forms";
+import { maskAccountNumber } from "@/lib/affiliate";
+import {
+  cycleQueue,
+  getPayoutMethod,
+  listCampaigns,
+  listProfiles,
+  listSales,
+  unpaidApprovedSales,
+} from "@/lib/affiliate-store";
+import { listPublicUsers } from "@/lib/auth-store";
+import { followingPayDate, formatManilaDate, formatPhp, nextPayDate } from "@/lib/pay-cycle";
+import { requireRoles } from "@/lib/session";
+
+export default async function PartnershipAdminPage() {
+  await requireRoles(["admin"]);
+  const users = await listPublicUsers();
+  const profiles = await listProfiles();
+  const payday = nextPayDate();
+  const following = followingPayDate();
+  const thisQueue = await cycleQueue(payday);
+  const nextQueue = await cycleQueue(following);
+  const unpaid = await unpaidApprovedSales();
+  const recentSales = (await listSales()).slice(0, 12);
+  const campaigns = await listCampaigns(false);
+
+  async function queueRows(scheduled: string, grouped: Awaited<ReturnType<typeof cycleQueue>>) {
+    return Promise.all(
+      [...grouped.entries()].map(async ([userId, row]) => {
+        const person = users.find((item) => item.id === userId);
+        const method = await getPayoutMethod(userId);
+        return { userId, person, method, ...row, scheduled };
+      }),
+    );
+  }
+
+  const dueNow = await queueRows(payday, thisQueue);
+  const dueNext = await queueRows(following, nextQueue);
+
+  return (
+    <div className="dashboard-widget-grid">
+      <MacosWindow title="Grant access" className="dashboard-span-2">
+        <p className="macos-lead" style={{ textAlign: "left" }}>
+          Invite-only. Grant selected leaders or partners. They keep their existing role (member/partner) and gain
+          the Partnership workspace.
+        </p>
+        <div className="mt-4">
+          <GrantAccessForm users={users} profiles={profiles} />
+        </div>
+      </MacosWindow>
+
+      <MacosWindow title="Roster" className="dashboard-span-2">
+        {profiles.length === 0 ? (
+          <p className="macos-lead" style={{ textAlign: "left" }}>
+            No affiliates yet.
+          </p>
+        ) : (
+          <div className="grid gap-3 md:grid-cols-2">
+            {profiles.map((profile) => (
+              <UpdateAffiliateForm key={profile.userId} profile={profile} users={users} profiles={profiles} />
+            ))}
+          </div>
+        )}
+      </MacosWindow>
+
+      <MacosWindow title="Record a sale" className="dashboard-span-2">
+        <p className="macos-lead" style={{ textAlign: "left" }}>
+          Enter a closed sale. 20% (or the partner’s rate) is computed and parked in the 15th or 30th cycle. This does
+          not pay anyone automatically.
+        </p>
+        <div className="mt-4">
+          <RecordSaleForm users={users} profiles={profiles} />
+        </div>
+      </MacosWindow>
+
+      <MacosWindow title={`Pay cycle · ${formatManilaDate(payday)}`} className="dashboard-span-2">
+        {dueNow.length === 0 ? (
+          <p className="macos-lead" style={{ textAlign: "left" }}>
+            Nothing unpaid for this payday. Unpaid approved commissions: {unpaid.length}.
+          </p>
+        ) : (
+          <div className="grid gap-4">
+            {dueNow.map((row) => (
+              <div key={row.userId} className="rounded-2xl border border-[var(--line)] p-4">
+                <p className="font-semibold">{row.person?.name ?? row.userId}</p>
+                <p className="text-sm text-[var(--muted)]">
+                  {formatPhp(row.amount)} ·{" "}
+                  {row.method
+                    ? `${row.method.method} · ${row.method.accountName} · ${maskAccountNumber(row.method.accountNumber)}`
+                    : "No payout method on file"}
+                </p>
+                <div className="mt-3">
+                  <MarkPaidForm affiliateUserId={row.userId} scheduledPayDate={row.scheduled} amount={row.amount} />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </MacosWindow>
+
+      <MacosWindow title={`Next cycle · ${formatManilaDate(following)}`}>
+        {dueNext.length === 0 ? (
+          <p className="macos-lead" style={{ textAlign: "left" }}>
+            Empty.
+          </p>
+        ) : (
+          <ul className="grid gap-2 text-sm">
+            {dueNext.map((row) => (
+              <li key={row.userId}>
+                {row.person?.name ?? row.userId} · {formatPhp(row.amount)}
+              </li>
+            ))}
+          </ul>
+        )}
+      </MacosWindow>
+
+      <MacosWindow title="Recent sales" bodyClassName="dashboard-contact-list">
+        {recentSales.length === 0 ? (
+          <p className="macos-lead" style={{ textAlign: "left" }}>
+            No sales recorded.
+          </p>
+        ) : (
+          recentSales.map((sale) => {
+            const person = users.find((item) => item.id === sale.affiliateUserId);
+            return (
+              <div key={sale.id} className="dashboard-contact-row !cursor-default">
+                <span>
+                  <strong>{person?.name ?? sale.affiliateUserId}</strong>
+                  <em>
+                    {formatPhp(sale.commissionAmount)} · due {formatManilaDate(sale.scheduledPayDate)} · {sale.status}
+                  </em>
+                </span>
+                {!sale.payoutId && sale.status !== "void" ? <VoidSaleForm saleId={sale.id} /> : null}
+              </div>
+            );
+          })
+        )}
+      </MacosWindow>
+
+      <MacosWindow title="Campaigns" className="dashboard-span-2">
+        <ul className="mb-4 grid gap-2 text-sm">
+          {campaigns.map((campaign) => (
+            <li key={campaign.id}>
+              {campaign.title} · /go/CODE/{campaign.slug} → {campaign.destinationPath}
+              {campaign.active ? "" : " (inactive)"}
+            </li>
+          ))}
+        </ul>
+        <CampaignForm />
+      </MacosWindow>
+    </div>
+  );
+}

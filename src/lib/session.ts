@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
+import { hasAffiliateWorkspace } from "@/lib/affiliate";
 import { getPublicUserById } from "@/lib/auth-store";
 import { AuthUser, DashboardRole } from "@/lib/types";
 
@@ -35,6 +36,16 @@ export async function requireRoles(roles: DashboardRole[]) {
   const user = await requireSessionUser();
 
   if (!roles.includes(user.role)) {
+    redirect("/dashboard");
+  }
+
+  return user;
+}
+
+export async function requireAffiliateAccess() {
+  const user = await requireSessionUser();
+
+  if (!hasAffiliateWorkspace(user)) {
     redirect("/dashboard");
   }
 

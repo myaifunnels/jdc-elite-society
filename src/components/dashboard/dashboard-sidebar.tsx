@@ -6,6 +6,7 @@ import { useEffect, useId, useState } from "react";
 import {
   BookOpen,
   ClipboardList,
+  Handshake,
   LayoutDashboard,
   LogOut,
   Menu,
@@ -45,6 +46,16 @@ const navByRole: Record<
   ],
 };
 
+function navItems(role: DashboardRole, affiliateAccess: boolean) {
+  const base = navByRole[role];
+  if (!affiliateAccess && role !== "admin") {
+    return base;
+  }
+
+  const partnership = { href: "/dashboard/partnership", label: "Partnership", icon: Handshake };
+  return [base[0], partnership, ...base.slice(1)];
+}
+
 function isActivePath(pathname: string, href: string) {
   if (href === "/dashboard") {
     return pathname === "/dashboard";
@@ -59,6 +70,7 @@ function SidebarPanel({
   membershipLabel,
   accountStatus,
   branding,
+  affiliateAccess,
   titleId,
   onNavigate,
   showClose = false,
@@ -68,6 +80,7 @@ function SidebarPanel({
   membershipLabel: string;
   accountStatus?: string;
   branding: BrandingSettings;
+  affiliateAccess: boolean;
   titleId: string;
   onNavigate?: () => void;
   showClose?: boolean;
@@ -100,7 +113,7 @@ function SidebarPanel({
       </div>
 
       <nav aria-label="Dashboard" className="mt-3 grid gap-1 px-2">
-        {navByRole[role].map((item) => {
+        {navItems(role, affiliateAccess).map((item) => {
           const Icon = item.icon;
           const active = isActivePath(pathname, item.href);
 
@@ -153,12 +166,14 @@ export function DashboardSidebar({
   membershipLabel,
   accountStatus,
   branding,
+  affiliateAccess,
 }: {
   role: DashboardRole;
   userName: string;
   membershipLabel: string;
   accountStatus?: string;
   branding: BrandingSettings;
+  affiliateAccess: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const titleId = useId();
@@ -240,6 +255,7 @@ export function DashboardSidebar({
           membershipLabel={membershipLabel}
           accountStatus={accountStatus}
           branding={branding}
+          affiliateAccess={affiliateAccess}
           titleId={titleId}
           onNavigate={close}
           showClose
@@ -256,6 +272,7 @@ export function DashboardSidebar({
           membershipLabel={membershipLabel}
           accountStatus={accountStatus}
           branding={branding}
+          affiliateAccess={affiliateAccess}
           titleId={`${titleId}-desktop`}
         />
       </aside>

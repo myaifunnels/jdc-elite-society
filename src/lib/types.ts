@@ -33,6 +33,7 @@ export type AuthUser = {
   email: string;
   role: DashboardRole;
   memberships: Membership[];
+  affiliateAccess: boolean;
   phone: string;
   phoneCountry: string;
   company: string;
@@ -46,6 +47,106 @@ export type AuthUser = {
   facebookProfileUrl?: string;
   facebookPhotoUrl?: string;
   createdAt: string;
+};
+
+export type AffiliateStatus = "invited" | "active" | "paused";
+export type PayoutMethodKind = "bank" | "gcash" | "maya" | "other";
+export type AffiliateSaleStatus = "pending" | "approved" | "void";
+export type AffiliatePayoutStatus = "pending" | "approved" | "paid";
+
+export type AffiliateProfile = {
+  userId: string;
+  code: string;
+  sponsorId: string;
+  status: AffiliateStatus;
+  commissionRate: number;
+  activatedAt: string;
+};
+
+export type AffiliatePayoutMethod = {
+  userId: string;
+  method: PayoutMethodKind;
+  bankName: string;
+  accountName: string;
+  accountNumber: string;
+  updatedAt: string;
+};
+
+export type AffiliateSale = {
+  id: string;
+  affiliateUserId: string;
+  grossAmount: number;
+  commissionAmount: number;
+  source: string;
+  status: AffiliateSaleStatus;
+  soldAt: string;
+  periodStart: string;
+  periodEnd: string;
+  scheduledPayDate: string;
+  payoutId: string;
+  createdAt: string;
+};
+
+export type AffiliatePayout = {
+  id: string;
+  affiliateUserId: string;
+  amount: number;
+  status: AffiliatePayoutStatus;
+  periodStart: string;
+  periodEnd: string;
+  scheduledPayDate: string;
+  paidAt: string;
+  reference: string;
+  note: string;
+  createdAt: string;
+};
+
+export type AffiliateCampaign = {
+  id: string;
+  slug: string;
+  title: string;
+  description: string;
+  destinationPath: string;
+  active: boolean;
+};
+
+export type AffiliateMaterial = {
+  id: string;
+  title: string;
+  category: string;
+  fileUrl: string;
+  fileName: string;
+  sortOrder: number;
+  active: boolean;
+};
+
+export type AffiliateClick = {
+  id: string;
+  code: string;
+  campaignSlug: string;
+  path: string;
+  userAgent: string;
+  createdAt: string;
+};
+
+export type AffiliateAttribution = {
+  id: string;
+  kind: "inquiry" | "registration";
+  code: string;
+  email: string;
+  name: string;
+  userId: string;
+  createdAt: string;
+};
+
+export type AffiliateTreeNode = {
+  userId: string;
+  name: string;
+  email: string;
+  code: string;
+  status: AffiliateStatus;
+  activatedAt: string;
+  children: AffiliateTreeNode[];
 };
 
 export type ContactKind = "partner" | "contact";

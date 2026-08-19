@@ -5,6 +5,8 @@ import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
+import { AFFILIATE_COOKIE, normalizeAffiliateCode } from "@/lib/affiliate";
+import { getProfileByCode, recordAttribution } from "@/lib/affiliate-store";
 import {
   authenticateUser,
   completeMemberProfile,
@@ -76,13 +78,26 @@ export async function registerAccount(
       passwordSet: false,
     });
     await setSessionCookie(user.id, true);
+    const cookieStore = await cookies();
+    const referralCode = normalizeAffiliateCode(cookieStore.get(AFFILIATE_COOKIE)?.value ?? "");
+    const affiliate = referralCode ? await getProfileByCode(referralCode) : null;
+    const extraTags = affiliate ? [`affiliate:${affiliate.code}`] : [];
+    if (affiliate) {
+      await recordAttribution({
+        kind: "registration",
+        code: affiliate.code,
+        email: parsed.data.email,
+        name: parsed.data.name,
+        userId: user.id,
+      });
+    }
     await syncContactToGhl({
       name: parsed.data.name,
       email: parsed.data.email,
       phone: parsed.data.phone,
       company: parsed.data.company,
-      source: "Website registration",
-      tags: ["Registration", "Pending verification"],
+      source: affiliate ? `Website registration · ${affiliate.code}` : "Website registration",
+      tags: ["Registration", "Pending verification", ...extraTags],
     });
   } catch (error) {
     return {
