@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 
 import { AuthFormState, registerAccount } from "@/app/login/actions";
 import { FloatField } from "@/components/forms/float-field";
@@ -17,9 +17,16 @@ export function RegisterForm({
   showSignInLink?: boolean;
 }) {
   const [state, formAction, pending] = useActionState(registerAccount, initialState);
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const fields = state.fields;
 
   return (
-    <form action={formAction} className={compact ? "grid gap-4" : "glass-panel rounded-[2rem] p-6 sm:p-8"}>
+    <form
+      key={state.formKey ?? "register"}
+      action={formAction}
+      className={compact ? "grid gap-4" : "glass-panel rounded-[2rem] p-6 sm:p-8"}
+    >
       {compact ? null : (
         <div className="mb-2">
           <p className="eyebrow text-xs">Create your account</p>
@@ -32,23 +39,52 @@ export function RegisterForm({
 
       <div className="grid gap-4">
         <FloatField label="Full name">
-          <input name="name" autoComplete="name" placeholder=" " required />
+          <input name="name" autoComplete="name" placeholder=" " required defaultValue={fields?.name ?? ""} />
         </FloatField>
         <FloatField label="Email address">
-          <input name="email" type="email" autoComplete="email" placeholder=" " required />
+          <input
+            name="email"
+            type="email"
+            autoComplete="email"
+            placeholder=" "
+            required
+            defaultValue={fields?.email ?? ""}
+          />
         </FloatField>
         <div className="phone-field-card">
           <p className="phone-field-label">Phone number</p>
-          <PhoneField />
+          <PhoneField defaultIso={fields?.phoneCountry} defaultNational={fields?.phoneNational} />
         </div>
         <FloatField label="Company">
-          <input name="company" autoComplete="organization" placeholder=" " required />
+          <input
+            name="company"
+            autoComplete="organization"
+            placeholder=" "
+            required
+            defaultValue={fields?.company ?? ""}
+          />
         </FloatField>
         <FloatField label="Password">
-          <input name="password" type="password" autoComplete="new-password" placeholder=" " required />
+          <input
+            name="password"
+            type="password"
+            autoComplete="new-password"
+            placeholder=" "
+            required
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+          />
         </FloatField>
         <FloatField label="Confirm password">
-          <input name="confirmPassword" type="password" autoComplete="new-password" placeholder=" " required />
+          <input
+            name="confirmPassword"
+            type="password"
+            autoComplete="new-password"
+            placeholder=" "
+            required
+            value={confirmPassword}
+            onChange={(event) => setConfirmPassword(event.target.value)}
+          />
         </FloatField>
       </div>
 

@@ -3,7 +3,7 @@
 import { Building2, Lock, Mail, Smartphone, UserRound } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { type ReactNode } from "react";
+import { type ReactNode, useState } from "react";
 import { useActionState } from "react";
 
 import { AuthFormState, loginAccount, registerAccount } from "@/app/login/actions";
@@ -45,7 +45,10 @@ export function AuthPanel({
   const router = useRouter();
   const [loginState, loginAction, loginPending] = useActionState(loginAccount, initialState);
   const [registerState, registerAction, registerPending] = useActionState(registerAccount, initialState);
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const windowTitle = mode === "login" ? "Sign In" : "Register";
+  const fields = registerState.fields;
 
   return (
     <div className={mode === "login" ? "macos-window is-signin" : "macos-window"}>
@@ -116,23 +119,54 @@ export function AuthPanel({
             </div>
           </form>
         ) : (
-          <form action={registerAction} className="auth-form auth-form-grid">
+          <form
+            key={registerState.formKey ?? "register"}
+            action={registerAction}
+            className="auth-form auth-form-grid"
+          >
             <p className="macos-lead">Create your account to open the dashboard.</p>
 
             <AuthField label="Full name" icon={<UserRound size={15} aria-hidden />}>
-              <input name="name" autoComplete="name" placeholder="Juan Dela Cruz" required />
+              <input
+                name="name"
+                autoComplete="name"
+                placeholder="Juan Dela Cruz"
+                required
+                defaultValue={fields?.name ?? ""}
+              />
             </AuthField>
             <AuthField label="Email address" icon={<Mail size={15} aria-hidden />}>
-              <input name="email" type="email" autoComplete="email" placeholder="name@mail.com" required />
+              <input
+                name="email"
+                type="email"
+                autoComplete="email"
+                placeholder="name@mail.com"
+                required
+                defaultValue={fields?.email ?? ""}
+              />
             </AuthField>
             <AuthField label="Phone number" className="auth-span-2" icon={<Smartphone size={15} aria-hidden />}>
-              <PhoneField />
+              <PhoneField defaultIso={fields?.phoneCountry} defaultNational={fields?.phoneNational} />
             </AuthField>
             <AuthField label="Company" className="auth-span-2" icon={<Building2 size={15} aria-hidden />}>
-              <input name="company" autoComplete="organization" placeholder="Your company" required />
+              <input
+                name="company"
+                autoComplete="organization"
+                placeholder="Your company"
+                required
+                defaultValue={fields?.company ?? ""}
+              />
             </AuthField>
             <AuthField label="Password" icon={<Lock size={15} aria-hidden />}>
-              <input name="password" type="password" autoComplete="new-password" placeholder="At least 8 characters" required />
+              <input
+                name="password"
+                type="password"
+                autoComplete="new-password"
+                placeholder="At least 8 characters"
+                required
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+              />
             </AuthField>
             <AuthField label="Confirm password" icon={<Lock size={15} aria-hidden />}>
               <input
@@ -141,6 +175,8 @@ export function AuthPanel({
                 autoComplete="new-password"
                 placeholder="Re-enter your password"
                 required
+                value={confirmPassword}
+                onChange={(event) => setConfirmPassword(event.target.value)}
               />
             </AuthField>
 
