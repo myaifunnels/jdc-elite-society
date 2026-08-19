@@ -1,3 +1,4 @@
+import { ContactAvatar } from "@/components/dashboard/contact-avatar";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { MacosWindow } from "@/components/dashboard/macos-window";
 import { VerifyPaymentButton } from "@/components/dashboard/verify-payment-button";
@@ -22,6 +23,7 @@ export default async function RegistrationsPage() {
         ) : (
           members.map((member) => (
             <article key={member.id} className="registration-row">
+              <ContactAvatar name={member.name} photoUrl={member.facebookPhotoUrl} size="lg" />
               <div>
                 <strong>{member.name}</strong>
                 <em>

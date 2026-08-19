@@ -182,6 +182,9 @@ export async function saveAffiliatePayoutMethod(
   if (method === "bank" && !bankName) {
     return { error: "Enter the bank name." };
   }
+  if (method === "other" && !bankName) {
+    return { error: "Tell us which e-wallet." };
+  }
 
   await savePayoutMethod({
     userId: user.id,

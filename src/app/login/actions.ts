@@ -15,6 +15,7 @@ import {
   resetPasswordWithToken,
   setMemberPaymentVerified,
 } from "@/lib/auth-store";
+import { storeProfilePhoto } from "@/lib/r2-upload";
 import { formatInternationalPhone } from "@/lib/countries";
 import { syncContactToGhl } from "@/lib/ghl";
 import { requireRoles, requireSessionUser, sessionCookieName } from "@/lib/session";
@@ -24,6 +25,7 @@ import {
   loginSchema,
   registerSchema,
   resetPasswordSchema,
+  resolveAudienceLabel,
 } from "@/lib/validations";
 
 export type AuthFormState = {
@@ -142,10 +144,10 @@ export async function completeAccountProfile(
   const parsed = completeProfileSchema.safeParse({
     memberships: formData.getAll("memberships").map(String),
     bestDescribesYou: String(formData.get("bestDescribesYou") ?? ""),
+    bestDescribesYouOther: String(formData.get("bestDescribesYouOther") ?? "").trim(),
     dateOfBirth: String(formData.get("dateOfBirth") ?? "").trim(),
     address: String(formData.get("address") ?? "").trim(),
     facebookProfileUrl: String(formData.get("facebookProfileUrl") ?? "").trim(),
-    facebookPhotoUrl: String(formData.get("facebookPhotoUrl") ?? "").trim(),
   });
 
   if (!parsed.success) {
@@ -154,7 +156,25 @@ export async function completeAccountProfile(
   }
 
   try {
-    await completeMemberProfile(user.id, parsed.data);
+    const photo = formData.get("profilePhoto");
+    const photoUrl =
+      photo instanceof File && photo.size > 0
+        ? await storeProfilePhoto(photo, user.id)
+        : user.facebookPhotoUrl;
+
+    if (!photoUrl) {
+      return { error: "Upload your profile picture." };
+    }
+
+    const audience = resolveAudienceLabel(parsed.data.bestDescribesYou, parsed.data.bestDescribesYouOther);
+    await completeMemberProfile(user.id, {
+      memberships: parsed.data.memberships,
+      bestDescribesYou: audience,
+      dateOfBirth: parsed.data.dateOfBirth,
+      address: parsed.data.address,
+      facebookProfileUrl: parsed.data.facebookProfileUrl,
+      facebookPhotoUrl: photoUrl,
+    });
     await syncContactToGhl({
       name: user.name,
       email: user.email,
@@ -162,9 +182,9 @@ export async function completeAccountProfile(
       company: user.company,
       dateOfBirth: parsed.data.dateOfBirth,
       address: parsed.data.address,
-      bestDescribesYou: parsed.data.bestDescribesYou,
+      bestDescribesYou: audience,
       facebookProfileUrl: parsed.data.facebookProfileUrl,
-      facebookPhotoUrl: parsed.data.facebookPhotoUrl,
+      facebookPhotoUrl: photoUrl,
       source: "Account profile",
       tags: [
         "Profile complete",

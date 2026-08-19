@@ -2195,6 +2195,164 @@ html.dark .auth-screen-centered,
   text-decoration: line-through;
 }
 
+.pending-hero {
+  display: grid;
+  gap: 1.1rem;
+  align-items: start;
+  text-align: left;
+}
+
+@media (min-width: 640px) {
+  .pending-hero {
+    grid-template-columns: auto 1fr;
+    gap: 1.4rem;
+  }
+}
+
+.pending-hero h2 {
+  margin: 0.15rem 0 0.4rem;
+  font-size: 1.55rem;
+  line-height: 1.2;
+  letter-spacing: -0.03em;
+}
+
+.pending-hero p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+.pending-progress {
+  display: grid;
+  gap: 0.65rem;
+  margin: 1.15rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media (min-width: 768px) {
+  .pending-progress {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.pending-progress li {
+  display: grid;
+  gap: 0.2rem;
+  padding: 0.85rem 0.9rem;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--surface) 70%, transparent);
+}
+
+.pending-progress li span {
+  display: grid;
+  place-items: center;
+  width: 1.45rem;
+  height: 1.45rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--brand) 16%, transparent);
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.pending-progress li strong {
+  font-size: 0.92rem;
+}
+
+.pending-progress li em {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-style: normal;
+}
+
+.pending-progress li.is-current {
+  border-color: color-mix(in srgb, var(--brand) 55%, var(--line));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 14%, transparent);
+}
+
+.pending-progress li.is-done {
+  opacity: 0.78;
+}
+
+.dashboard-metric-card.is-locked {
+  position: relative;
+  opacity: 0.78;
+}
+
+.dashboard-metric-card.is-locked::after {
+  content: "Soon";
+  position: absolute;
+  top: 0.85rem;
+  right: 0.9rem;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--brand);
+}
+
+.photo-upload {
+  display: grid;
+  justify-items: start;
+  gap: 0.55rem;
+}
+
+.photo-upload-frame {
+  display: grid;
+  overflow: hidden;
+  place-items: center;
+  width: 6.5rem;
+  height: 6.5rem;
+  border: 1px dashed var(--line);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--brand) 12%, var(--surface));
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.photo-upload-frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.photo-upload-pick {
+  position: relative;
+  display: inline-flex;
+  cursor: pointer;
+  align-items: center;
+  min-height: 2.1rem;
+  padding: 0 0.9rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface-elevated) 88%, white);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.photo-upload-pick input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+
+.photo-upload p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.contact-avatar.is-xl {
+  width: 6rem;
+  height: 6rem;
+  font-size: 1.4rem;
+}
+
 .registration-row {
   display: flex;
   flex-wrap: wrap;

@@ -41,14 +41,28 @@ export const registerSchema = z
     path: ["confirmPassword"],
   });
 
-export const completeProfileSchema = z.object({
-  memberships: z.array(z.enum(membershipOptions)).min(1, "Choose Spartans, JES Member, or both."),
-  bestDescribesYou: z.enum(audienceOptions, { message: "Tell me what best describes you." }),
-  dateOfBirth: z.string().min(1, "Date of birth is required."),
-  address: z.string().min(5, "Address is required."),
-  facebookProfileUrl: z.string().optional().default(""),
-  facebookPhotoUrl: z.string().optional().default(""),
-});
+export const completeProfileSchema = z
+  .object({
+    memberships: z.array(z.enum(membershipOptions)).min(1, "Choose Spartans, JES Member, or both."),
+    bestDescribesYou: z.enum(audienceOptions, { message: "Tell me what best describes you." }),
+    bestDescribesYouOther: z.string().optional().default(""),
+    dateOfBirth: z.string().min(1, "Date of birth is required."),
+    address: z.string().min(5, "Address is required."),
+    facebookProfileUrl: z.string().optional().default(""),
+  })
+  .refine((value) => value.bestDescribesYou !== "Other" || value.bestDescribesYouOther.trim().length >= 2, {
+    message: "Tell us what “other” is.",
+    path: ["bestDescribesYouOther"],
+  });
+
+export function resolveAudienceLabel(option: string, other = "") {
+  if (option === "Other") {
+    const detail = other.trim();
+    return detail ? `Other: ${detail}` : "Other";
+  }
+
+  return option;
+}
 
 export const loginSchema = z.object({
   email: z.email("Enter a valid email."),

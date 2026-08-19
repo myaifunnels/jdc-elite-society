@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 
 import {
   PartnershipFormState,
@@ -14,7 +14,7 @@ import {
   voidAffiliateSale,
 } from "@/app/dashboard/partnership/actions";
 import { FloatField } from "@/components/forms/float-field";
-import { AffiliatePayoutMethod, AffiliateProfile, AuthUser } from "@/lib/types";
+import { AffiliatePayoutMethod, AffiliateProfile, AuthUser, PayoutMethodKind } from "@/lib/types";
 import { maskAccountNumber } from "@/lib/affiliate";
 import { formatPhp } from "@/lib/pay-cycle";
 
@@ -232,21 +232,33 @@ export function VoidSaleForm({ saleId }: { saleId: string }) {
 
 export function PayoutMethodForm({ method }: { method: AffiliatePayoutMethod | null }) {
   const [state, action, pending] = useActionState(saveAffiliatePayoutMethod, initial);
+  const [payoutKind, setPayoutKind] = useState<PayoutMethodKind>(method?.method ?? "gcash");
 
   return (
     <form action={action} className="grid gap-3">
       <label className="auth-field">
         Method
-        <select name="method" className="macos-select" defaultValue={method?.method ?? "gcash"}>
+        <select
+          name="method"
+          className="macos-select"
+          value={payoutKind}
+          onChange={(event) => setPayoutKind(event.target.value as PayoutMethodKind)}
+        >
           <option value="gcash">GCash</option>
           <option value="maya">Maya</option>
           <option value="bank">Bank transfer</option>
           <option value="other">Other e-wallet</option>
         </select>
       </label>
-      <FloatField label="Bank or wallet name">
-        <input name="bankName" defaultValue={method?.bankName ?? ""} placeholder=" " />
-      </FloatField>
+      {payoutKind === "other" ? (
+        <FloatField label="Which e-wallet?">
+          <input name="bankName" defaultValue={method?.bankName ?? ""} placeholder=" " required />
+        </FloatField>
+      ) : (
+        <FloatField label="Bank or wallet name">
+          <input name="bankName" defaultValue={method?.bankName ?? ""} placeholder=" " />
+        </FloatField>
+      )}
       <FloatField label="Account name">
         <input name="accountName" defaultValue={method?.accountName ?? ""} required placeholder=" " />
       </FloatField>

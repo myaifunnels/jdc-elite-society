@@ -11,11 +11,12 @@ export default async function MemberPathPage() {
     return (
       <DashboardShell
         title="My path"
-        description="Your membership is still pending. Complete your profile and wait for our team to verify registration and payment."
+        description="This room opens the moment your account goes active. Stay ready."
       >
         <article className="card-surface rounded-[2rem] p-6 sm:p-8">
           <p className="text-sm text-[var(--muted)]">
-            Tracks unlock after your account is verified.
+            Your tracks are waiting behind the verification door. Finish the queue and this is the
+            first place you&apos;ll want to be.
           </p>
           <Link
             href="/dashboard/profile"
