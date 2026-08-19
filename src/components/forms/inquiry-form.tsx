@@ -61,7 +61,6 @@ export function InquiryForm({
 
   useEffect(() => {
     const saved = readStoredForm(inquiryDraftStorageKey);
-    restored.current = true;
     reset({
       ...defaultValues,
       ...saved,
