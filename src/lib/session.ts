@@ -61,8 +61,6 @@ export function decodeImpersonation(raw: string | undefined): ImpersonationState
   return { adminId, targetId };
 }
 
-export type SessionUser = AuthUser;
-
 export async function getSessionUser(): Promise<SessionUser | null> {
   const cookieStore = await cookies();
   const userId = cookieStore.get(SESSION_COOKIE)?.value;

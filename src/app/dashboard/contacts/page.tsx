@@ -55,13 +55,13 @@ export default async function ContactsPage({
         : "contact";
   const selectedTags = asList(raw.tag);
   const query = { kind, tags: selectedTags, q: raw.q };
-  const [contacts, allContacts, tags, pins, users] = await Promise.all([
+  const [contacts, allContacts, tags, pins] = await Promise.all([
     listContacts(viewer, query),
     listContacts(viewer, { kind }),
     listTagIndex(viewer),
     listContactMapPins(viewer, query),
-    user.role === "admin" ? listAllUsers() : Promise.resolve([]),
   ]);
+  const users = user.role === "admin" ? await listAllUsers() : [];
   const usersByEmail = new Map(users.map((item) => [item.email.toLowerCase(), item]));
 
   const ghlCount = allContacts.filter((contact) => contact.ghlContactId || contact.source.includes("GHL")).length;
@@ -209,15 +209,27 @@ export default async function ContactsPage({
                         <td>{contact.region ?? contact.city}</td>
                         <td className="capitalize">{contact.status}</td>
                         {user.role === "admin" ? (
-                          <td className="capitalize">{portal ? portal.role : "No login"}</td>
+                          <td className="capitalize">
+                            {portal
+                              ? portal.role
+                              : contact.ghlContactId || contact.source.toLowerCase().includes("ghl")
+                                ? "Contact"
+                                : "No login"}
+                          </td>
                         ) : null}
                         <td>
                           <div className="contact-row-actions">
                             <Link href={`/dashboard/contacts/${contact.id}`} className="macos-btn macos-btn-secondary">
                               Contact
                             </Link>
-                            {user.role === "admin" && portal && portal.role !== "admin" ? (
-                              <OpenUserDashboardButton userId={portal.id} label="User dashboard" />
+                            {user.role === "admin" && portal?.role !== "admin" && contact.email ? (
+                              <OpenUserDashboardButton
+                                userId={portal?.id}
+                                email={contact.email}
+                                name={contact.name}
+                                phone={contact.phone}
+                                label="User dashboard"
+                              />
                             ) : null}
                           </div>
                         </td>

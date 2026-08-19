@@ -128,8 +128,8 @@ export default async function ContactDashboardPage({
           {portalUser ? (
             <>
               <p className="macos-lead" style={{ textAlign: "left" }}>
-                This contact has a login as {portalUser.role}. Their rooms follow that role&apos;s defaults unless you
-                tweak them.
+                This contact has a login as {portalUser.role}. GHL-synced people get a Contact dashboard automatically.
+                Their rooms follow that role&apos;s defaults unless you tweak them.
               </p>
               {hasAccess(access, "access") ? (
                 <div className="macos-actions">
@@ -137,30 +137,46 @@ export default async function ContactDashboardPage({
                     Configure access
                   </Link>
                   {user.role === "admin" && portalUser.role !== "admin" ? (
-                    <OpenUserDashboardButton userId={portalUser.id} />
+                    <OpenUserDashboardButton
+                      userId={portalUser.id}
+                      email={contact.email}
+                      name={contact.name}
+                      phone={contact.phone}
+                    />
                   ) : null}
                 </div>
               ) : user.role === "admin" && portalUser.role !== "admin" ? (
                 <div className="macos-actions">
-                  <OpenUserDashboardButton userId={portalUser.id} />
+                  <OpenUserDashboardButton
+                    userId={portalUser.id}
+                    email={contact.email}
+                    name={contact.name}
+                    phone={contact.phone}
+                  />
                 </div>
               ) : null}
             </>
           ) : (
             <>
               <p className="macos-lead" style={{ textAlign: "left" }}>
-                No login yet. Grant Contact access for a limited portal (home + University). They set a password from
-                Forgot password on the sign-in page.
+                {contact.ghlContactId
+                  ? "This GHL contact will get a Contact dashboard when you open it. They can set a password from Forgot password."
+                  : "No login yet. Grant Contact access for a limited portal (home + University). They set a password from Forgot password on the sign-in page."}
               </p>
-              {hasAccess(access, "access") ? (
-                <form action={grantContactPortalAction} className="macos-actions">
-                  <input type="hidden" name="email" value={contact.email} />
-                  <input type="hidden" name="name" value={contact.name} />
-                  <button type="submit" className="macos-btn macos-btn-primary">
-                    Grant Contact portal access
-                  </button>
-                </form>
-              ) : null}
+              <div className="macos-actions">
+                {user.role === "admin" && contact.email ? (
+                  <OpenUserDashboardButton email={contact.email} name={contact.name} phone={contact.phone} />
+                ) : null}
+                {hasAccess(access, "access") ? (
+                  <form action={grantContactPortalAction}>
+                    <input type="hidden" name="email" value={contact.email} />
+                    <input type="hidden" name="name" value={contact.name} />
+                    <button type="submit" className="macos-btn macos-btn-secondary">
+                      Grant Contact portal access
+                    </button>
+                  </form>
+                ) : null}
+              </div>
             </>
           )}
         </MacosWindow>

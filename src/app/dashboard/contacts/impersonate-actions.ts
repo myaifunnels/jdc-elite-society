@@ -3,7 +3,7 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
-import { findUserById } from "@/lib/auth-store";
+import { ensurePortalUserForContact, findUserById } from "@/lib/auth-store";
 import {
   decodeImpersonation,
   encodeImpersonation,
@@ -32,7 +32,14 @@ export async function openUserDashboard(formData: FormData) {
   }
 
   const userId = String(formData.get("userId") ?? "").trim();
-  const target = userId ? await findUserById(userId) : null;
+  const email = String(formData.get("email") ?? "").trim();
+  const name = String(formData.get("name") ?? "").trim();
+  const phone = String(formData.get("phone") ?? "").trim();
+  let target = userId ? await findUserById(userId) : null;
+  if (!target && email) {
+    const provisioned = await ensurePortalUserForContact({ name: name || email, email, phone });
+    target = provisioned ? await findUserById(provisioned.id) : null;
+  }
   if (!target || target.role === "admin") {
     redirect("/dashboard/contacts");
   }

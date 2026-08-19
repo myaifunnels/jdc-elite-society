@@ -10,6 +10,7 @@ import {
   removeGhlContactTags,
   type GhlRemoteContact,
 } from "@/lib/ghl";
+import { ensurePortalUserForContact } from "@/lib/auth-store";
 import { TAG_GROUPS, uniqueTags } from "@/lib/tags";
 import {
   AuthUser,
@@ -29,6 +30,7 @@ const memoryRecords: ContactRecord[] = [...contactSeed];
 const GHL_SYNC_MS = 60_000;
 let lastGhlSyncAt = 0;
 let tableReady = false;
+let portalsBackfilled = false;
 let pool: Pool | null | undefined;
 
 function getPool() {
@@ -241,6 +243,42 @@ async function syncGhlContacts() {
     const mapped = fromGhlContact(item);
     if (mapped) {
       await persistContact(mapped);
+      await ensurePortalUserForContact({
+        name: mapped.name,
+        email: mapped.email,
+        phone: mapped.phone,
+        bestDescribesYou: mapped.bestDescribesYou,
+        dateOfBirth: mapped.dateOfBirth,
+        address: mapped.address,
+        facebookPhotoUrl: mapped.photoUrl,
+        company: mapped.programInterest,
+      }).catch((error) => {
+        console.error("Failed to provision GHL contact portal", mapped.email, error);
+      });
+    }
+  }
+}
+
+async function provisionGhlPortals() {
+  if (portalsBackfilled) {
+    return;
+  }
+  portalsBackfilled = true;
+  const contacts = memoryRecords.filter((contact) => contact.ghlContactId || contact.source.toLowerCase().includes("ghl"));
+  for (const contact of contacts) {
+    try {
+      await ensurePortalUserForContact({
+        name: contact.name,
+        email: contact.email,
+        phone: contact.phone,
+        bestDescribesYou: contact.bestDescribesYou,
+        dateOfBirth: contact.dateOfBirth,
+        address: contact.address,
+        facebookPhotoUrl: contact.photoUrl,
+        company: contact.programInterest,
+      });
+    } catch (error) {
+      console.error("Failed to provision GHL contact portal", contact.email, error);
     }
   }
 }
@@ -248,6 +286,7 @@ async function syncGhlContacts() {
 async function hydrateCrm() {
   await loadPersistedContacts();
   await syncGhlContacts();
+  await provisionGhlPortals();
 }
 
 function isOwnPartnerRecord(contact: ContactRecord, viewer: CrmViewer) {

@@ -10,6 +10,10 @@ export async function hashPassword(password: string) {
 }
 
 export async function verifyPassword(password: string, stored: string) {
+  if (stored.startsWith("pending:")) {
+    return false;
+  }
+
   const [salt, hash] = stored.split(":");
 
   if (!salt || !hash) {

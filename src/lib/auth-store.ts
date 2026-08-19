@@ -1,4 +1,5 @@
 import { Pool } from "pg";
+import { randomBytes } from "node:crypto";
 
 import { normalizePhoneDigits, phonesMatch } from "@/lib/identity";
 import { hashPassword, verifyPassword } from "@/lib/password";
@@ -487,6 +488,100 @@ export async function createUser(input: {
   }
 
   return publicUser(user);
+}
+
+export async function ensurePortalUserForContact(input: {
+  name: string;
+  email: string;
+  phone?: string;
+  phoneCountry?: string;
+  company?: string;
+  bestDescribesYou?: string;
+  dateOfBirth?: string;
+  address?: string;
+  facebookPhotoUrl?: string;
+}) {
+  const email = input.email.trim().toLowerCase();
+  const name = input.name.trim();
+  if (!email || !name) {
+    return null;
+  }
+
+  await ensureSeedUsers();
+  const existing = await findUserByEmail(email);
+  if (existing) {
+    return publicUser(existing);
+  }
+
+  const user: AuthUserRecord = {
+    id: `user-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+    name,
+    email,
+    role: "contact",
+    affiliateAccess: false,
+    memberships: [],
+    phone: input.phone ?? "",
+    phoneCountry: input.phoneCountry ?? "PH",
+    company: input.company ?? "",
+    profileComplete: true,
+    paymentVerified: true,
+    passwordSet: false,
+    accountStatus: "verified",
+    bestDescribesYou: input.bestDescribesYou ?? "",
+    dateOfBirth: input.dateOfBirth ?? "",
+    address: input.address ?? "",
+    facebookProfileUrl: "",
+    facebookPhotoUrl: input.facebookPhotoUrl ?? "",
+    passwordHash: `pending:${randomBytes(16).toString("hex")}`,
+    createdAt: new Date().toISOString(),
+  };
+
+  memoryUsers.unshift(user);
+
+  const client = getPool();
+  if (client) {
+    try {
+      await ensureTable(client);
+      await client.query(
+        `
+        INSERT INTO site_users (
+          id, name, email, role, password_hash, created_at, best_describes_you,
+          date_of_birth, address, facebook_profile_url, facebook_photo_url, memberships,
+          phone, phone_country, company, profile_complete, payment_verified, password_set,
+          affiliate_access
+        )
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)
+        ON CONFLICT (email) DO NOTHING
+        `,
+        [
+          user.id,
+          user.name,
+          user.email,
+          user.role,
+          user.passwordHash,
+          user.createdAt,
+          user.bestDescribesYou,
+          user.dateOfBirth,
+          user.address,
+          user.facebookProfileUrl,
+          user.facebookPhotoUrl,
+          serializeMemberships(user.memberships),
+          user.phone,
+          user.phoneCountry,
+          user.company,
+          user.profileComplete,
+          user.paymentVerified,
+          user.passwordSet,
+          user.affiliateAccess,
+        ],
+      );
+    } catch (error) {
+      console.error("Failed to provision contact portal", error);
+    }
+  }
+
+  const saved = await findUserByEmail(email);
+  return saved ? publicUser(saved) : publicUser(user);
 }
 
 export async function getPublicUserById(id: string) {
