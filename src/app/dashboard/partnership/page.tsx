@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { MacosWindow } from "@/components/dashboard/macos-window";
+import { campaignsForPrograms, programLabel } from "@/lib/affiliate";
 import { affiliateDashboardStats } from "@/lib/affiliate-store";
 import { PAYOUT_COPY, formatManilaDate, formatPhp } from "@/lib/pay-cycle";
 import { requireAffiliateAccess } from "@/lib/session";
@@ -8,7 +9,8 @@ import { requireAffiliateAccess } from "@/lib/session";
 export default async function PartnershipHomePage() {
   const user = await requireAffiliateAccess();
   const stats = await affiliateDashboardStats(user.id);
-  const rate = Math.round((stats.profile?.commissionRate ?? 0.2) * 100);
+  const campaigns = campaignsForPrograms(stats.profile?.programs ?? user.affiliatePrograms, user.role === "admin");
+  const labels = (stats.profile?.programs ?? user.affiliatePrograms).map(programLabel).join(" · ") || "Admin";
 
   return (
     <div className="dashboard-widget-grid">
@@ -30,7 +32,7 @@ export default async function PartnershipHomePage() {
       <article className="dashboard-metric-card">
         <p className="macos-kicker">Paid to date</p>
         <p className="dashboard-metric-value">{formatPhp(stats.paidToDate)}</p>
-        <p className="dashboard-metric-copy">{rate}% · paid on the 15th and 30th</p>
+        <p className="dashboard-metric-copy">{labels} · 20% · paid on the 15th and 30th</p>
       </article>
       <article className="dashboard-metric-card">
         <p className="macos-kicker">Clicks</p>
@@ -45,7 +47,10 @@ export default async function PartnershipHomePage() {
 
       <MacosWindow title="How payouts work" className="dashboard-span-2">
         <p className="macos-lead" style={{ textAlign: "left" }}>
-          {PAYOUT_COPY} Access is granted by admin to selected leaders and partners — this is not a public signup.
+          {PAYOUT_COPY}{" "}
+          {campaigns.length === 1
+            ? `You can promote ${campaigns[0].title}.`
+            : "Use a separate link and QR for each campaign you are allowed to promote."}
         </p>
         <div className="macos-actions">
           <Link href="/dashboard/partnership/link" className="macos-btn macos-btn-primary">

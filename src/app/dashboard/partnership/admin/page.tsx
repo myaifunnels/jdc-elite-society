@@ -49,8 +49,8 @@ export default async function PartnershipAdminPage() {
     <div className="dashboard-widget-grid">
       <MacosWindow title="Grant access" className="dashboard-span-2">
         <p className="macos-lead" style={{ textAlign: "left" }}>
-          Invite-only. Grant selected leaders or partners. They keep their existing role (member/partner) and gain
-          the Partnership workspace.
+          Tag a contact pioneer for the Foundation Course campaign. Tag jdc-partner (coaches only) to unlock the extra
+          20% Mastermind Sessions 1 and 2 campaign with a separate link.
         </p>
         <div className="mt-4">
           <GrantAccessForm users={users} profiles={profiles} />
@@ -73,8 +73,8 @@ export default async function PartnershipAdminPage() {
 
       <MacosWindow title="Record a sale" className="dashboard-span-2">
         <p className="macos-lead" style={{ textAlign: "left" }}>
-          Enter a closed sale. 20% (or the partner’s rate) is computed and parked in the 15th or 30th cycle. This does
-          not pay anyone automatically.
+          Enter a closed purchase. Foundation Course is for pioneers. Mastermind Sessions 1 and 2 is the extra 20%
+          campaign for jdc-partner coaches. Commission is not paid automatically.
         </p>
         <div className="mt-4">
           <RecordSaleForm users={users} profiles={profiles} />

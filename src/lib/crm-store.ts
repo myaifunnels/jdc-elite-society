@@ -568,6 +568,28 @@ export async function findContactByEmailOrPhone(email: string, phone: string) {
   );
 }
 
+export async function getContactByEmail(email: string) {
+  await loadPersistedContacts();
+  return memoryRecords.find((record) => emailsMatch(record.email, email)) ?? null;
+}
+
+export async function setContactAffiliateTag(
+  viewer: CrmViewer,
+  contactId: string,
+  tag: "pioneer" | "jdc-partner",
+  enabled: boolean,
+) {
+  const contact = await getContact(viewer, contactId);
+  if (!contact) {
+    return { ok: false as const, error: "Contact not found." };
+  }
+
+  const next = enabled
+    ? uniqueTags([...contact.tags, tag])
+    : contact.tags.filter((item) => item.toLowerCase() !== tag);
+  return setContactTags(viewer, contactId, next);
+}
+
 export async function createLead(
   payload: Omit<ContactRecord, "id" | "createdAt" | "status" | "source" | "kind"> & {
     source?: string;

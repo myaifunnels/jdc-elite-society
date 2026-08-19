@@ -70,7 +70,7 @@ export default async function PartnershipPayoutsPage() {
                 <ul className="mt-3 grid gap-2 text-sm">
                   {cycle.items.map((sale) => (
                     <li key={sale.id}>
-                      {formatManilaDate(sale.soldAt)} · {sale.source || "Sale"} · {formatPhp(sale.commissionAmount)} ·{" "}
+                      {formatManilaDate(sale.soldAt)} · {sale.campaignSlug || sale.source || "Sale"} · {formatPhp(sale.commissionAmount)} ·{" "}
                       {sale.status}
                       {sale.payoutId ? " · included in payout" : ""}
                     </li>

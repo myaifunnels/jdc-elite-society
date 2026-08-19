@@ -1,3 +1,4 @@
+import { AffiliateProgramId } from "@/lib/affiliate";
 import { Membership } from "@/lib/membership";
 
 export type Program = {
@@ -34,6 +35,7 @@ export type AuthUser = {
   role: DashboardRole;
   memberships: Membership[];
   affiliateAccess: boolean;
+  affiliatePrograms: AffiliateProgramId[];
   phone: string;
   phoneCountry: string;
   company: string;
@@ -60,6 +62,7 @@ export type AffiliateProfile = {
   sponsorId: string;
   status: AffiliateStatus;
   commissionRate: number;
+  programs: AffiliateProgramId[];
   activatedAt: string;
 };
 
@@ -78,6 +81,7 @@ export type AffiliateSale = {
   grossAmount: number;
   commissionAmount: number;
   source: string;
+  campaignSlug: string;
   status: AffiliateSaleStatus;
   soldAt: string;
   periodStart: string;
@@ -107,6 +111,7 @@ export type AffiliateCampaign = {
   title: string;
   description: string;
   destinationPath: string;
+  requiredProgram: AffiliateProgramId | "";
   active: boolean;
 };
 
@@ -133,6 +138,7 @@ export type AffiliateAttribution = {
   id: string;
   kind: "inquiry" | "registration";
   code: string;
+  campaignSlug: string;
   email: string;
   name: string;
   userId: string;

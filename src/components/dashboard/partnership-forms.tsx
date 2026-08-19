@@ -15,7 +15,7 @@ import {
 } from "@/app/dashboard/partnership/actions";
 import { FloatField } from "@/components/forms/float-field";
 import { AffiliatePayoutMethod, AffiliateProfile, AuthUser, PayoutMethodKind } from "@/lib/types";
-import { maskAccountNumber } from "@/lib/affiliate";
+import { maskAccountNumber, PRODUCT_CAMPAIGNS, programLabel } from "@/lib/affiliate";
 import { formatPhp } from "@/lib/pay-cycle";
 
 const initial: PartnershipFormState = {};
@@ -28,7 +28,6 @@ export function GrantAccessForm({
   profiles: AffiliateProfile[];
 }) {
   const [state, action, pending] = useActionState(grantAffiliateAccess, initial);
-  const candidates = users.filter((user) => !user.affiliateAccess);
 
   return (
     <form action={action} className="grid gap-3">
@@ -38,12 +37,21 @@ export function GrantAccessForm({
           <option value="" disabled>
             Choose a user
           </option>
-          {candidates.map((user) => (
+          {users.map((user) => (
             <option key={user.id} value={user.id}>
               {user.name} · {user.email} · {user.role}
+              {user.affiliatePrograms.length ? ` · ${user.affiliatePrograms.map(programLabel).join(", ")}` : ""}
             </option>
           ))}
         </select>
+      </label>
+      <label className="flex items-center gap-2 text-sm">
+        <input type="checkbox" name="pioneer" defaultChecked />
+        Pioneer — Foundation Course (20%)
+      </label>
+      <label className="flex items-center gap-2 text-sm">
+        <input type="checkbox" name="jdcPartner" />
+        jdc-partner — Mastermind Events extra 20%
       </label>
       <label className="auth-field">
         Sponsor (optional)
@@ -65,7 +73,7 @@ export function GrantAccessForm({
       {state.error ? <p className="text-sm text-red-500">{state.error}</p> : null}
       {state.success ? <p className="text-sm text-emerald-400">{state.success}</p> : null}
       <button type="submit" disabled={pending} className="macos-btn macos-btn-primary pressable w-fit disabled:opacity-70">
-        {pending ? "Granting…" : "Grant access"}
+        {pending ? "Granting…" : "Grant campaign access"}
       </button>
     </form>
   );
@@ -89,6 +97,7 @@ export function UpdateAffiliateForm({
       <p className="text-sm font-semibold">{person?.name ?? profile.code}</p>
       <p className="text-xs text-[var(--muted)]">
         {person?.email} · /go/{profile.code}
+        {profile.programs.length ? ` · ${profile.programs.map(programLabel).join(", ")}` : ""}
       </p>
       <label className="auth-field">
         Status
@@ -125,6 +134,14 @@ export function UpdateAffiliateForm({
           placeholder=" "
         />
       </FloatField>
+      <label className="flex items-center gap-2 text-sm">
+        <input type="checkbox" name="pioneer" defaultChecked={profile.programs.includes("pioneer")} />
+        Pioneer campaign
+      </label>
+      <label className="flex items-center gap-2 text-sm">
+        <input type="checkbox" name="jdcPartner" defaultChecked={profile.programs.includes("jdc-partner")} />
+        jdc-partner Mastermind campaign
+      </label>
       <label className="flex items-center gap-2 text-sm">
         <input type="checkbox" name="regenerateCode" />
         Regenerate share code
@@ -167,6 +184,16 @@ export function RecordSaleForm({
               </option>
             );
           })}
+        </select>
+      </label>
+      <label className="auth-field">
+        Campaign
+        <select name="campaignSlug" className="macos-select" required defaultValue="foundation">
+          {PRODUCT_CAMPAIGNS.map((campaign) => (
+            <option key={campaign.slug} value={campaign.slug}>
+              {campaign.shortTitle} · 20%
+            </option>
+          ))}
         </select>
       </label>
       <FloatField label="Gross sale amount (PHP)">

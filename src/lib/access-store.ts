@@ -199,11 +199,13 @@ export async function saveUserAccess(userId: string, role: AccessRole, overrides
   return record;
 }
 
-export async function resolveAccess(user: Pick<AuthUser, "id" | "role" | "affiliateAccess">): Promise<AccessProfile> {
+export async function resolveAccess(
+  user: Pick<AuthUser, "id" | "role" | "affiliateAccess" | "affiliatePrograms">,
+): Promise<AccessProfile> {
   const roleDefaults = await loadRoleDefaults();
   const record = await getUserAccessRecord(user.id, parseAccessRole(user.role));
   const profile = mergeAccess(record.role, roleDefaults[record.role], record.overrides);
-  if (user.affiliateAccess) {
+  if (user.affiliateAccess || (user.affiliatePrograms?.length ?? 0) > 0) {
     profile.resolved.partnership = true;
   }
   return profile;

@@ -1,6 +1,16 @@
 import { Pool } from "pg";
 
-import { affiliateLinkPath, normalizeAffiliateCode } from "@/lib/affiliate";
+import {
+  affiliateLinkPath,
+  canPromoteCampaign,
+  defaultCampaignForPrograms,
+  getProductCampaign,
+  normalizeAffiliateCode,
+  parseAffiliatePrograms,
+  PRODUCT_CAMPAIGNS,
+  serializeAffiliatePrograms,
+  type AffiliateProgramId,
+} from "@/lib/affiliate";
 import {
   cycleForPayDate,
   cycleForYmd,
@@ -79,6 +89,7 @@ function mapProfile(row: Record<string, unknown>): AffiliateProfile {
     sponsorId: String(row.sponsor_id ?? ""),
     status: row.status === "paused" || row.status === "invited" ? row.status : "active",
     commissionRate: asNumber(row.commission_rate, DEFAULT_COMMISSION_RATE),
+    programs: parseAffiliatePrograms(row.programs),
     activatedAt: String(row.activated_at ?? new Date().toISOString()),
   };
 }
@@ -103,6 +114,7 @@ function mapSale(row: Record<string, unknown>): AffiliateSale {
     grossAmount: asNumber(row.gross_amount),
     commissionAmount: asNumber(row.commission_amount),
     source: String(row.source ?? ""),
+    campaignSlug: String(row.campaign_slug ?? ""),
     status: status === "pending" || status === "void" ? status : "approved",
     soldAt: String(row.sold_at ?? ""),
     periodStart: String(row.period_start ?? ""),
@@ -137,6 +149,7 @@ function mapCampaign(row: Record<string, unknown>): AffiliateCampaign {
     title: String(row.title ?? ""),
     description: String(row.description ?? ""),
     destinationPath: String(row.destination_path ?? "/register"),
+    requiredProgram: parseAffiliatePrograms(row.required_program)[0] ?? "",
     active: asBool(row.active ?? true),
   };
 }
@@ -169,6 +182,7 @@ function mapAttribution(row: Record<string, unknown>): AffiliateAttribution {
     id: String(row.id ?? ""),
     kind: String(row.kind ?? "") === "registration" ? "registration" : "inquiry",
     code: String(row.code ?? ""),
+    campaignSlug: String(row.campaign_slug ?? ""),
     email: String(row.email ?? ""),
     name: String(row.name ?? ""),
     userId: String(row.user_id ?? ""),
@@ -190,6 +204,10 @@ async function ensureTable(client: Pool) {
       commission_rate NUMERIC NOT NULL DEFAULT 0.20,
       activated_at TIMESTAMPTZ DEFAULT NOW()
     )
+  `);
+  await client.query(`
+    ALTER TABLE affiliate_profiles
+    ADD COLUMN IF NOT EXISTS programs TEXT NOT NULL DEFAULT ''
   `);
   await client.query(`
     CREATE TABLE IF NOT EXISTS affiliate_payout_methods (
@@ -218,6 +236,10 @@ async function ensureTable(client: Pool) {
     )
   `);
   await client.query(`
+    ALTER TABLE affiliate_sales
+    ADD COLUMN IF NOT EXISTS campaign_slug TEXT NOT NULL DEFAULT ''
+  `);
+  await client.query(`
     CREATE TABLE IF NOT EXISTS affiliate_payouts (
       id TEXT PRIMARY KEY,
       affiliate_user_id TEXT NOT NULL,
@@ -241,6 +263,10 @@ async function ensureTable(client: Pool) {
       destination_path TEXT NOT NULL,
       active BOOLEAN NOT NULL DEFAULT TRUE
     )
+  `);
+  await client.query(`
+    ALTER TABLE affiliate_campaigns
+    ADD COLUMN IF NOT EXISTS required_program TEXT NOT NULL DEFAULT ''
   `);
   await client.query(`
     CREATE TABLE IF NOT EXISTS affiliate_materials (
@@ -274,55 +300,28 @@ async function ensureTable(client: Pool) {
       created_at TIMESTAMPTZ DEFAULT NOW()
     )
   `);
-
+  await client.query(`
+    ALTER TABLE affiliate_attributions
+    ADD COLUMN IF NOT EXISTS campaign_slug TEXT NOT NULL DEFAULT ''
+  `);
   tableReady = true;
 }
 
-const defaultCampaigns: AffiliateCampaign[] = [
-  {
-    id: "camp-register",
-    slug: "register",
-    title: "Registration",
-    description: "Send people to create a member account.",
-    destinationPath: "/register",
-    active: true,
-  },
-  {
-    id: "camp-programs",
-    slug: "programs",
-    title: "Programs",
-    description: "Send people to the program board.",
-    destinationPath: "/programs",
-    active: true,
-  },
-  {
-    id: "camp-jes",
-    slug: "jes",
-    title: "JDC Elite Society",
-    description: "Highlight membership and the Elite Society path.",
-    destinationPath: "/programs",
-    active: true,
-  },
-  {
-    id: "camp-home",
-    slug: "facebook",
-    title: "Facebook / social",
-    description: "Homepage landing for social posts.",
-    destinationPath: "/",
-    active: true,
-  },
-];
+const defaultCampaigns: AffiliateCampaign[] = PRODUCT_CAMPAIGNS.map((campaign) => ({
+  id: `camp-${campaign.slug}`,
+  slug: campaign.slug,
+  title: campaign.title,
+  description: campaign.description,
+  destinationPath: campaign.destinationPath,
+  requiredProgram: campaign.requiredProgram,
+  active: true,
+}));
 
 async function ensureSeed() {
   if (seeded) {
     return;
   }
   seeded = true;
-
-  const existing = await listCampaigns(false);
-  if (existing.length > 0) {
-    return;
-  }
 
   const client = getPool();
   memory.campaigns = defaultCampaigns.map((item) => ({ ...item }));
@@ -336,9 +335,14 @@ async function ensureSeed() {
     for (const campaign of defaultCampaigns) {
       await client.query(
         `
-        INSERT INTO affiliate_campaigns (id, slug, title, description, destination_path, active)
-        VALUES ($1, $2, $3, $4, $5, $6)
-        ON CONFLICT (slug) DO NOTHING
+        INSERT INTO affiliate_campaigns (id, slug, title, description, destination_path, active, required_program)
+        VALUES ($1, $2, $3, $4, $5, $6, $7)
+        ON CONFLICT (slug) DO UPDATE SET
+          title = EXCLUDED.title,
+          description = EXCLUDED.description,
+          destination_path = EXCLUDED.destination_path,
+          required_program = EXCLUDED.required_program,
+          active = TRUE
         `,
         [
           campaign.id,
@@ -347,6 +351,7 @@ async function ensureSeed() {
           campaign.description,
           campaign.destinationPath,
           campaign.active,
+          campaign.requiredProgram,
         ],
       );
     }
@@ -405,6 +410,7 @@ export async function upsertProfile(input: {
   sponsorId?: string;
   status?: AffiliateStatus;
   commissionRate?: number;
+  programs?: AffiliateProgramId[];
   regenerateCode?: boolean;
 }) {
   const existing = await getProfile(input.userId);
@@ -422,6 +428,7 @@ export async function upsertProfile(input: {
     sponsorId: input.sponsorId ?? existing?.sponsorId ?? "",
     status: input.status ?? existing?.status ?? "active",
     commissionRate: input.commissionRate ?? existing?.commissionRate ?? DEFAULT_COMMISSION_RATE,
+    programs: parseAffiliatePrograms(input.programs ?? existing?.programs ?? user?.affiliatePrograms),
     activatedAt: existing?.activatedAt ?? new Date().toISOString(),
   };
 
@@ -436,15 +443,24 @@ export async function upsertProfile(input: {
     async (client) => {
       await client.query(
         `
-        INSERT INTO affiliate_profiles (user_id, code, sponsor_id, status, commission_rate, activated_at)
-        VALUES ($1, $2, $3, $4, $5, $6)
+        INSERT INTO affiliate_profiles (user_id, code, sponsor_id, status, commission_rate, activated_at, programs)
+        VALUES ($1, $2, $3, $4, $5, $6, $7)
         ON CONFLICT (user_id) DO UPDATE SET
           code = EXCLUDED.code,
           sponsor_id = EXCLUDED.sponsor_id,
           status = EXCLUDED.status,
-          commission_rate = EXCLUDED.commission_rate
+          commission_rate = EXCLUDED.commission_rate,
+          programs = EXCLUDED.programs
         `,
-        [next.userId, next.code, next.sponsorId, next.status, next.commissionRate, next.activatedAt],
+        [
+          next.userId,
+          next.code,
+          next.sponsorId,
+          next.status,
+          next.commissionRate,
+          next.activatedAt,
+          serializeAffiliatePrograms(next.programs),
+        ],
       );
       return next;
     },
@@ -552,11 +568,23 @@ export async function recordSale(input: {
   affiliateUserId: string;
   grossAmount: number;
   source: string;
+  campaignSlug: string;
   soldAt?: string;
   status?: AffiliateSaleStatus;
 }) {
   const profile = await getProfile(input.affiliateUserId);
-  const rate = profile?.commissionRate ?? DEFAULT_COMMISSION_RATE;
+  const campaign = getProductCampaign(input.campaignSlug);
+  if (!campaign) {
+    throw new Error("Choose Foundation Course or Mastermind Events.");
+  }
+  if (!canPromoteCampaign(profile?.programs, campaign)) {
+    throw new Error(
+      campaign.requiredProgram === "pioneer"
+        ? "That promoter needs the pioneer tag for the Foundation Course campaign."
+        : "That promoter needs the jdc-partner tag for the Mastermind campaign.",
+    );
+  }
+  const rate = campaign.commissionRate;
   const soldAt = input.soldAt || manilaYmd();
   const cycle = cycleForYmd(soldAt);
   const sale: AffiliateSale = {
@@ -564,7 +592,8 @@ export async function recordSale(input: {
     affiliateUserId: input.affiliateUserId,
     grossAmount: input.grossAmount,
     commissionAmount: Math.round(input.grossAmount * rate * 100) / 100,
-    source: input.source.trim(),
+    source: input.source.trim() || campaign.title,
+    campaignSlug: campaign.slug,
     status: input.status ?? "approved",
     soldAt,
     periodStart: cycle.periodStart,
@@ -581,9 +610,9 @@ export async function recordSale(input: {
         `
         INSERT INTO affiliate_sales (
           id, affiliate_user_id, gross_amount, commission_amount, source, status,
-          sold_at, period_start, period_end, scheduled_pay_date, payout_id, created_at
+          sold_at, period_start, period_end, scheduled_pay_date, payout_id, created_at, campaign_slug
         )
-        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
+        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
         `,
         [
           sale.id,
@@ -598,6 +627,7 @@ export async function recordSale(input: {
           sale.scheduledPayDate,
           sale.payoutId,
           sale.createdAt,
+          sale.campaignSlug,
         ],
       );
       return sale;
@@ -759,6 +789,7 @@ export async function upsertCampaign(input: {
     title: input.title.trim(),
     description: input.description.trim(),
     destinationPath: input.destinationPath.trim() || "/register",
+    requiredProgram: existing?.requiredProgram ?? "",
     active: input.active ?? existing?.active ?? true,
   };
 
@@ -906,11 +937,13 @@ export async function recordAttribution(input: {
   email: string;
   name: string;
   userId?: string;
+  campaignSlug?: string;
 }) {
   const attribution: AffiliateAttribution = {
     id: newId("attr"),
     kind: input.kind,
     code: normalizeAffiliateCode(input.code),
+    campaignSlug: normalizeAffiliateCode(input.campaignSlug ?? ""),
     email: input.email.trim().toLowerCase(),
     name: input.name.trim(),
     userId: input.userId ?? "",
@@ -922,8 +955,8 @@ export async function recordAttribution(input: {
     async (client) => {
       await client.query(
         `
-        INSERT INTO affiliate_attributions (id, kind, code, email, name, user_id, created_at)
-        VALUES ($1,$2,$3,$4,$5,$6,$7)
+        INSERT INTO affiliate_attributions (id, kind, code, email, name, user_id, created_at, campaign_slug)
+        VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
         `,
         [
           attribution.id,
@@ -933,6 +966,7 @@ export async function recordAttribution(input: {
           attribution.name,
           attribution.userId,
           attribution.createdAt,
+          attribution.campaignSlug,
         ],
       );
       return attribution;
@@ -961,17 +995,16 @@ export async function listAttributions(code?: string) {
 export async function resolveGoDestination(code: string, campaignSlug = "") {
   const profile = await getProfileByCode(code);
   if (!profile || profile.status === "paused") {
-    return { profile, destination: "/register" };
+    return { profile, destination: "/register", campaign: null as ReturnType<typeof getProductCampaign> };
   }
 
-  if (campaignSlug) {
-    const campaign = await getCampaignBySlug(campaignSlug);
-    if (campaign?.active) {
-      return { profile, destination: campaign.destinationPath || "/register" };
-    }
-  }
+  const requested = getProductCampaign(campaignSlug);
+  const campaign =
+    requested && canPromoteCampaign(profile.programs, requested)
+      ? requested
+      : defaultCampaignForPrograms(profile.programs);
 
-  return { profile, destination: "/register" };
+  return { profile, destination: campaign.destinationPath, campaign };
 }
 
 export function brandedUrl(code: string, campaignSlug = "") {

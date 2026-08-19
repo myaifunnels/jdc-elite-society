@@ -1,6 +1,7 @@
 import { Pool } from "pg";
 import { randomBytes } from "node:crypto";
 
+import { parseAffiliatePrograms, serializeAffiliatePrograms, type AffiliateProgramId } from "@/lib/affiliate";
 import { normalizePhoneDigits, phonesMatch } from "@/lib/identity";
 import { hashPassword, verifyPassword } from "@/lib/password";
 import { parseMemberships, serializeMemberships, type Membership } from "@/lib/membership";
@@ -59,6 +60,7 @@ function publicUser(user: AuthUserRecord): AuthUser {
     role: user.role,
     memberships: user.memberships,
     affiliateAccess: user.affiliateAccess,
+    affiliatePrograms: user.affiliatePrograms,
     phone: user.phone,
     phoneCountry: user.phoneCountry,
     company: user.company,
@@ -91,6 +93,7 @@ function mapRow(row: Record<string, unknown>): AuthUserRecord {
     email: String(row.email ?? "").toLowerCase(),
     role,
     affiliateAccess: row.affiliate_access === true || row.affiliate_access === "t" || row.affiliate_access === "true",
+    affiliatePrograms: parseAffiliatePrograms(row.affiliate_programs),
     memberships: parseMemberships(row.memberships),
     phone: String(row.phone ?? ""),
     phoneCountry: String(row.phone_country ?? "PH"),
@@ -175,6 +178,10 @@ async function ensureTable(client: Pool) {
   await client.query(`
     ALTER TABLE site_users
     ADD COLUMN IF NOT EXISTS affiliate_access BOOLEAN NOT NULL DEFAULT FALSE
+  `);
+  await client.query(`
+    ALTER TABLE site_users
+    ADD COLUMN IF NOT EXISTS affiliate_programs TEXT NOT NULL DEFAULT ''
   `);
   await client.query(`
     UPDATE site_users
@@ -427,6 +434,7 @@ export async function createUser(input: {
     email,
     role: input.role,
     affiliateAccess: false,
+    affiliatePrograms: [],
     memberships: parseMemberships(input.memberships ?? []),
     phone: input.phone ?? "",
     phoneCountry: input.phoneCountry ?? "PH",
@@ -456,9 +464,9 @@ export async function createUser(input: {
           id, name, email, role, password_hash, created_at, best_describes_you,
           date_of_birth, address, facebook_profile_url, facebook_photo_url, memberships,
           phone, phone_country, company, profile_complete, payment_verified, password_set,
-          affiliate_access
+          affiliate_access, affiliate_programs
         )
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20)
         `,
         [
           user.id,
@@ -480,6 +488,7 @@ export async function createUser(input: {
           user.paymentVerified,
           user.passwordSet,
           user.affiliateAccess,
+          serializeAffiliatePrograms(user.affiliatePrograms),
         ],
       );
     } catch (error) {
@@ -519,6 +528,7 @@ export async function ensurePortalUserForContact(input: {
     email,
     role: "contact",
     affiliateAccess: false,
+    affiliatePrograms: [],
     memberships: [],
     phone: input.phone ?? "",
     phoneCountry: input.phoneCountry ?? "PH",
@@ -548,9 +558,9 @@ export async function ensurePortalUserForContact(input: {
           id, name, email, role, password_hash, created_at, best_describes_you,
           date_of_birth, address, facebook_profile_url, facebook_photo_url, memberships,
           phone, phone_country, company, profile_complete, payment_verified, password_set,
-          affiliate_access
+          affiliate_access, affiliate_programs
         )
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20)
         ON CONFLICT (email) DO NOTHING
         `,
         [
@@ -573,6 +583,7 @@ export async function ensurePortalUserForContact(input: {
           user.paymentVerified,
           user.passwordSet,
           user.affiliateAccess,
+          serializeAffiliatePrograms(user.affiliatePrograms),
         ],
       );
     } catch (error) {
@@ -876,6 +887,38 @@ export async function listPublicUsers() {
   } catch (error) {
     console.error("Failed to list users", error);
     return memoryUsers.map(publicUser);
+  }
+}
+
+export async function setAffiliatePrograms(id: string, programs: AffiliateProgramId[]) {
+  const next = parseAffiliatePrograms(programs);
+  const affiliateAccess = next.length > 0;
+  const memoryIndex = memoryUsers.findIndex((user) => user.id === id);
+  if (memoryIndex >= 0) {
+    memoryUsers[memoryIndex] = {
+      ...memoryUsers[memoryIndex],
+      affiliatePrograms: next,
+      affiliateAccess,
+    };
+  }
+
+  const client = getPool();
+  if (!client) {
+    const user = memoryUsers.find((item) => item.id === id);
+    return user ? publicUser(user) : null;
+  }
+
+  try {
+    await ensureTable(client);
+    await client.query(
+      "UPDATE site_users SET affiliate_programs = $2, affiliate_access = $3 WHERE id = $1",
+      [id, serializeAffiliatePrograms(next), affiliateAccess],
+    );
+    return getPublicUserById(id);
+  } catch (error) {
+    console.error("Failed to update affiliate programs", error);
+    const user = memoryUsers.find((item) => item.id === id);
+    return user ? publicUser(user) : null;
   }
 }
 

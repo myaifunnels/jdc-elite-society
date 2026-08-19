@@ -37,7 +37,7 @@ export default async function DashboardPage() {
             showWorkspaceLinks={!pending}
             showPath={!pending && hasAccess(access, "path")}
           />
-          {!pending && user.affiliateAccess ? (
+          {!pending && hasAccess(access, "partnership") ? (
             <MacosWindow title="Partnership Program" className="dashboard-span-2">
               <p className="macos-lead" style={{ textAlign: "left" }}>
                 You have invite-only partner access. 20% is recorded by the team and released on the 15th and 30th.
@@ -108,18 +108,7 @@ export default async function DashboardPage() {
             </Link>
           </MacosWindow>
 
-          <MacosWindow title="University">
-            <p className="macos-lead" style={{ textAlign: "left" }}>
-              The JDC Elite Society community at community.coachjdc.org.
-            </p>
-            <div className="macos-actions">
-              <Link href="/dashboard/university" className="macos-btn macos-btn-primary">
-                Open University
-              </Link>
-            </div>
-          </MacosWindow>
-
-          {user.affiliateAccess ? (
+          {hasAccess(access, "partnership") ? (
             <MacosWindow title="Partnership Program" className="dashboard-span-2">
               <p className="macos-lead" style={{ textAlign: "left" }}>
                 Separate from CRM coverage: your 20% partnership link, tree, and 15th/30th payouts live here.

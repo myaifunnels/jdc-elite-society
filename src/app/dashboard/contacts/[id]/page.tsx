@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { grantContactPortalAction } from "@/app/dashboard/access/actions";
+import { ContactAffiliateTags } from "@/components/dashboard/contact-affiliate-tags";
 import { ContactAvatar } from "@/components/dashboard/contact-avatar";
 import { ContactTagEditor } from "@/components/dashboard/contact-tag-editor";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
@@ -114,7 +115,8 @@ export default async function ContactDashboardPage({
         <MacosWindow title="Tags" className="dashboard-span-2">
           <p className="macos-lead" style={{ textAlign: "left" }}>
             Advanced tags stay aligned with AiFunnels GHL. Add or remove a tag here and it writes back to the Elite
-            Society location.
+            Society location. Pioneer and jdc-partner tags unlock the matching affiliate campaigns when this contact
+            has a login.
           </p>
           <ContactTagEditor
             contactId={contact.id}
@@ -122,6 +124,16 @@ export default async function ContactDashboardPage({
             suggestions={tagIndex.map((item) => item.tag)}
             canEdit={hasAccess(access, "contacts.tags")}
           />
+        </MacosWindow>
+
+        <MacosWindow title="Partnership campaigns" className="dashboard-span-2">
+          {hasAccess(access, "contacts.tags") ? (
+            <ContactAffiliateTags contactId={contact.id} tags={contact.tags} />
+          ) : (
+            <p className="macos-lead" style={{ textAlign: "left" }}>
+              Pioneer and jdc-partner tags are managed by admin.
+            </p>
+          )}
         </MacosWindow>
 
         <MacosWindow title="Portal access" className="dashboard-span-2">

@@ -60,26 +60,24 @@ export function StickyForm({
       return;
     }
 
-    restoreValues(form, storageKey);
+    const current = form;
+    restoreValues(current, storageKey);
 
     function persist() {
-      if (!form) {
-        return;
-      }
-      writeStoredForm(storageKey, collectValues(form));
+      writeStoredForm(storageKey, collectValues(current));
     }
 
     function onReset() {
-      queueMicrotask(() => restoreValues(form, storageKey));
+      queueMicrotask(() => restoreValues(current, storageKey));
     }
 
-    form.addEventListener("input", persist);
-    form.addEventListener("change", persist);
-    form.addEventListener("reset", onReset);
+    current.addEventListener("input", persist);
+    current.addEventListener("change", persist);
+    current.addEventListener("reset", onReset);
     return () => {
-      form.removeEventListener("input", persist);
-      form.removeEventListener("change", persist);
-      form.removeEventListener("reset", onReset);
+      current.removeEventListener("input", persist);
+      current.removeEventListener("change", persist);
+      current.removeEventListener("reset", onReset);
     };
   }, [storageKey, restoreToken]);
 

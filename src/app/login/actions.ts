@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
-import { AFFILIATE_COOKIE, normalizeAffiliateCode } from "@/lib/affiliate";
+import { AFFILIATE_CAMPAIGN_COOKIE, AFFILIATE_COOKIE, normalizeAffiliateCode } from "@/lib/affiliate";
 import { getProfileByCode, recordAttribution } from "@/lib/affiliate-store";
 import { existingAccountLoginPath, isTemporaryMemberPassword } from "@/lib/auth-constants";
 import {
@@ -123,12 +123,14 @@ export async function registerAccount(
     await setSessionCookie(user.id, true);
     const cookieStore = await cookies();
     const referralCode = normalizeAffiliateCode(cookieStore.get(AFFILIATE_COOKIE)?.value ?? "");
+    const campaignSlug = normalizeAffiliateCode(cookieStore.get(AFFILIATE_CAMPAIGN_COOKIE)?.value ?? "");
     const affiliate = referralCode ? await getProfileByCode(referralCode) : null;
-    const extraTags = affiliate ? [`affiliate:${affiliate.code}`] : [];
+    const extraTags = affiliate ? [`affiliate:${affiliate.code}`, campaignSlug ? `campaign:${campaignSlug}` : ""].filter(Boolean) : [];
     if (affiliate) {
       await recordAttribution({
         kind: "registration",
         code: affiliate.code,
+        campaignSlug,
         email: parsed.data.email,
         name: parsed.data.name,
         userId: user.id,
