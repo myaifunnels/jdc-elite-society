@@ -55,7 +55,11 @@ export function RegisterForm({
         </FloatField>
         <div className="phone-field-card">
           <p className="phone-field-label">Phone number</p>
-          <PhoneField defaultIso={fields?.phoneCountry} defaultNational={fields?.phoneNational} />
+          <PhoneField
+            key={state.formKey ?? "phone"}
+            defaultIso={fields?.phoneCountry}
+            defaultNational={fields?.phoneNational}
+          />
         </div>
         <FloatField label="Company">
           <input
@@ -72,6 +76,7 @@ export function RegisterForm({
             type="password"
             autoComplete="new-password"
             placeholder=" "
+            data-sticky="off"
             required
             value={password}
             onChange={(event) => setPassword(event.target.value)}
@@ -83,6 +88,7 @@ export function RegisterForm({
             type="password"
             autoComplete="new-password"
             placeholder=" "
+            data-sticky="off"
             required
             value={confirmPassword}
             onChange={(event) => setConfirmPassword(event.target.value)}

@@ -164,7 +164,11 @@ export function AuthPanel({
               />
             </AuthField>
             <AuthField label="Phone number" className="auth-span-2" icon={<Smartphone size={15} aria-hidden />}>
-              <PhoneField defaultIso={fields?.phoneCountry} defaultNational={fields?.phoneNational} />
+              <PhoneField
+                key={registerState.formKey ?? "phone"}
+                defaultIso={fields?.phoneCountry}
+                defaultNational={fields?.phoneNational}
+              />
             </AuthField>
             <AuthField label="Company" className="auth-span-2" icon={<Building2 size={15} aria-hidden />}>
               <input
