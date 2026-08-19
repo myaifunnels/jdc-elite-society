@@ -42,18 +42,6 @@ export function CompleteProfileForm() {
     <form action={formAction} className="grid gap-4">
       <div className="grid gap-4 md:grid-cols-2">
         <label className="auth-field">
-          <span>Create a password</span>
-          <span className="auth-input-wrap">
-            <input name="password" type="password" autoComplete="new-password" required />
-          </span>
-        </label>
-        <label className="auth-field">
-          <span>Confirm password</span>
-          <span className="auth-input-wrap">
-            <input name="confirmPassword" type="password" autoComplete="new-password" required />
-          </span>
-        </label>
-        <label className="auth-field">
           <span>Date of birth</span>
           <span className="auth-input-wrap">
             <input name="dateOfBirth" type="date" autoComplete="bday" required />

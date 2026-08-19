@@ -8,7 +8,7 @@ import { getSessionUser } from "@/lib/session";
 
 export const metadata: Metadata = {
   title: "Register",
-  description: "Create a Coach JDC account as a member or partner and open the dashboard that matches your role.",
+  description: "Create a Coach JDC account and open the dashboard.",
 };
 
 export default async function RegisterPage() {

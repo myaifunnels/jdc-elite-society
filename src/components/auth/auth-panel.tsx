@@ -74,20 +74,19 @@ export function AuthPanel({
         {mode === "login" ? (
           <form action={loginAction} className="auth-form auth-form-login">
             <p className="macos-lead">
-              Sign in to open your dashboard. If you have not set a password yet, use your email and
-              mobile number.
+              Sign in with your email and password. If you can&apos;t sign in, register first.
             </p>
 
             <AuthField label="Email" icon={<Mail size={15} aria-hidden />}>
               <input name="email" type="email" autoComplete="username" placeholder="name@mail.com" required />
             </AuthField>
 
-            <AuthField label="Password or mobile number" icon={<Lock size={15} aria-hidden />}>
+            <AuthField label="Password" icon={<Lock size={15} aria-hidden />}>
               <input
                 name="password"
-                type="text"
+                type="password"
                 autoComplete="current-password"
-                placeholder="Password or 917 123 4567"
+                placeholder="••••••••"
                 required
               />
             </AuthField>
@@ -106,9 +105,9 @@ export function AuthPanel({
 
             <div className="macos-actions">
               <p className="auth-switch-copy">
-                Not a member yet?{" "}
+                Can&apos;t sign in?{" "}
                 <Link href="/register" className="auth-forgot">
-                  Register
+                  Register first
                 </Link>
               </p>
               <button type="submit" className="macos-btn macos-btn-primary" disabled={loginPending}>
@@ -118,11 +117,7 @@ export function AuthPanel({
           </form>
         ) : (
           <form action={registerAction} className="auth-form auth-form-grid">
-            <p className="macos-lead">
-              Register with your name, email, mobile number, and company. You can open the dashboard
-              right away. Your account stays pending until you finish your profile and our team
-              verifies your registration and payment.
-            </p>
+            <p className="macos-lead">Create your account to open the dashboard.</p>
 
             <AuthField label="Full name" icon={<UserRound size={15} aria-hidden />}>
               <input name="name" autoComplete="name" placeholder="Juan Dela Cruz" required />
@@ -135,6 +130,18 @@ export function AuthPanel({
             </AuthField>
             <AuthField label="Company" className="auth-span-2" icon={<Building2 size={15} aria-hidden />}>
               <input name="company" autoComplete="organization" placeholder="Your company" required />
+            </AuthField>
+            <AuthField label="Password" icon={<Lock size={15} aria-hidden />}>
+              <input name="password" type="password" autoComplete="new-password" placeholder="At least 8 characters" required />
+            </AuthField>
+            <AuthField label="Confirm password" icon={<Lock size={15} aria-hidden />}>
+              <input
+                name="confirmPassword"
+                type="password"
+                autoComplete="new-password"
+                placeholder="Re-enter your password"
+                required
+              />
             </AuthField>
 
             {registerState.error ? <p className="auth-error">{registerState.error}</p> : null}

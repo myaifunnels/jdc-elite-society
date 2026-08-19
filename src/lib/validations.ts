@@ -26,33 +26,33 @@ export const leadSchema = z.object({
 
 export type LeadInput = z.infer<typeof leadSchema>;
 
-export const registerSchema = z.object({
-  name: z.string().min(2, "Full name is required."),
-  email: z.email("Enter a valid email."),
-  phone: z.string().min(8, "Phone number is required."),
-  phoneCountry: z.string().min(2, "Choose a country."),
-  company: z.string().min(2, "Company is required."),
-});
-
-export const completeProfileSchema = z
+export const registerSchema = z
   .object({
+    name: z.string().min(2, "Full name is required."),
+    email: z.email("Enter a valid email."),
+    phone: z.string().min(8, "Phone number is required."),
+    phoneCountry: z.string().min(2, "Choose a country."),
+    company: z.string().min(2, "Company is required."),
     password: z.string().min(8, "Use at least 8 characters."),
     confirmPassword: z.string().min(1, "Confirm your password."),
-    memberships: z.array(z.enum(membershipOptions)).min(1, "Choose Spartans, JES Member, or both."),
-    bestDescribesYou: z.enum(audienceOptions, { message: "Tell me what best describes you." }),
-    dateOfBirth: z.string().min(1, "Date of birth is required."),
-    address: z.string().min(5, "Address is required."),
-    facebookProfileUrl: z.string().optional().default(""),
-    facebookPhotoUrl: z.string().optional().default(""),
   })
   .refine((value) => value.password === value.confirmPassword, {
     message: "Passwords do not match.",
     path: ["confirmPassword"],
   });
 
+export const completeProfileSchema = z.object({
+  memberships: z.array(z.enum(membershipOptions)).min(1, "Choose Spartans, JES Member, or both."),
+  bestDescribesYou: z.enum(audienceOptions, { message: "Tell me what best describes you." }),
+  dateOfBirth: z.string().min(1, "Date of birth is required."),
+  address: z.string().min(5, "Address is required."),
+  facebookProfileUrl: z.string().optional().default(""),
+  facebookPhotoUrl: z.string().optional().default(""),
+});
+
 export const loginSchema = z.object({
   email: z.email("Enter a valid email."),
-  password: z.string().min(1, "Enter your password or mobile number."),
+  password: z.string().min(1, "Password is required."),
 });
 
 export const forgotPasswordSchema = z.object({

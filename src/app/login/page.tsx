@@ -8,7 +8,7 @@ import { getSessionUser } from "@/lib/session";
 
 export const metadata: Metadata = {
   title: "Sign in",
-  description: "Sign in to your Coach JDC dashboard, or register as a member or partner.",
+  description: "Sign in with your email and password, or register first.",
 };
 
 export default async function LoginPage() {

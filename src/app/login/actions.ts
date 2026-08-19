@@ -1,6 +1,5 @@
 "use server";
 
-import { randomUUID } from "crypto";
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
@@ -54,6 +53,8 @@ export async function registerAccount(
     ),
     phoneCountry: String(formData.get("phoneCountry") ?? "PH").trim().toUpperCase(),
     company: String(formData.get("company") ?? "").trim(),
+    password: String(formData.get("password") ?? ""),
+    confirmPassword: String(formData.get("confirmPassword") ?? ""),
   });
 
   if (!parsed.success) {
@@ -63,17 +64,18 @@ export async function registerAccount(
 
   try {
     await ensureSeedUsers();
+    const { confirmPassword: _confirmPassword, ...account } = parsed.data;
     const user = await createUser({
-      name: parsed.data.name,
-      email: parsed.data.email,
-      password: randomUUID(),
+      name: account.name,
+      email: account.email,
+      password: account.password,
       role: "member",
-      phone: parsed.data.phone,
-      phoneCountry: parsed.data.phoneCountry,
-      company: parsed.data.company,
+      phone: account.phone,
+      phoneCountry: account.phoneCountry,
+      company: account.company,
       profileComplete: false,
       paymentVerified: false,
-      passwordSet: false,
+      passwordSet: true,
     });
     await setSessionCookie(user.id, true);
     await syncContactToGhl({
@@ -110,7 +112,7 @@ export async function loginAccount(
   const user = await authenticateUser(parsed.data.email, parsed.data.password);
 
   if (!user) {
-    return { error: "That email and password or mobile number do not match an account." };
+    return { error: "That email and password do not match. If you can't sign in, register first." };
   }
 
   await setSessionCookie(user.id, String(formData.get("remember") ?? "") === "on");
@@ -123,8 +125,6 @@ export async function completeAccountProfile(
 ): Promise<AuthFormState> {
   const user = await requireSessionUser();
   const parsed = completeProfileSchema.safeParse({
-    password: String(formData.get("password") ?? ""),
-    confirmPassword: String(formData.get("confirmPassword") ?? ""),
     memberships: formData.getAll("memberships").map(String),
     bestDescribesYou: String(formData.get("bestDescribesYou") ?? ""),
     dateOfBirth: String(formData.get("dateOfBirth") ?? "").trim(),
@@ -139,22 +139,21 @@ export async function completeAccountProfile(
   }
 
   try {
-    const { confirmPassword: _confirmPassword, ...profile } = parsed.data;
-    await completeMemberProfile(user.id, profile);
+    await completeMemberProfile(user.id, parsed.data);
     await syncContactToGhl({
       name: user.name,
       email: user.email,
       phone: user.phone,
       company: user.company,
-      dateOfBirth: profile.dateOfBirth,
-      address: profile.address,
-      bestDescribesYou: profile.bestDescribesYou,
-      facebookProfileUrl: profile.facebookProfileUrl,
-      facebookPhotoUrl: profile.facebookPhotoUrl,
+      dateOfBirth: parsed.data.dateOfBirth,
+      address: parsed.data.address,
+      bestDescribesYou: parsed.data.bestDescribesYou,
+      facebookProfileUrl: parsed.data.facebookProfileUrl,
+      facebookPhotoUrl: parsed.data.facebookPhotoUrl,
       source: "Account profile",
       tags: [
         "Profile complete",
-        ...profile.memberships.map((item) => (item === "jes" ? "JES Member" : "Spartans")),
+        ...parsed.data.memberships.map((item) => (item === "jes" ? "JES Member" : "Spartans")),
       ],
     });
   } catch (error) {
