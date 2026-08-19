@@ -11,28 +11,6 @@ function safePath(path: string) {
   return path;
 }
 
-function publicOrigin(request: NextRequest) {
-  const forwardedHost = request.headers.get("x-forwarded-host");
-  const forwardedProto = request.headers.get("x-forwarded-proto") ?? "https";
-  if (forwardedHost && !forwardedHost.includes("0.0.0.0")) {
-    return `${forwardedProto}://${forwardedHost.split(",")[0].trim()}`;
-  }
-
-  const host = request.headers.get("host") ?? "";
-  if (host && !host.startsWith("0.0.0.0") && !host.startsWith("127.0.0.1") && !host.startsWith("localhost")) {
-    return `${forwardedProto}://${host}`;
-  }
-
-  return siteUrl;
-}
-
-function safePath(path: string) {
-  if (!path.startsWith("/") || path.startsWith("//")) {
-    return "/register";
-  }
-  return path;
-}
-
 export async function GET(
   request: NextRequest,
   context: { params: Promise<{ code: string; campaign?: string[] }> },
@@ -40,13 +18,14 @@ export async function GET(
   const { code: rawCode, campaign } = await context.params;
   const code = normalizeAffiliateCode(rawCode ?? "");
   const campaignSlug = normalizeAffiliateCode(campaign?.[0] ?? "");
+  const origin = siteUrl;
 
   if (!code) {
-    return NextResponse.redirect(new URL("/register", publicOrigin(request)));
+    return NextResponse.redirect(new URL("/register", origin));
   }
 
   const { profile, destination } = await resolveGoDestination(code, campaignSlug);
-  const target = new URL(safePath(destination), publicOrigin(request));
+  const target = new URL(safePath(destination), origin);
   const response = NextResponse.redirect(target);
 
   if (profile && profile.status !== "paused") {
