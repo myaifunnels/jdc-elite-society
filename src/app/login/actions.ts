@@ -10,12 +10,20 @@ import {
   completeMemberProfile,
   createUser,
   ensureSeedUsers,
+  requestPasswordReset,
+  resetPasswordWithToken,
   setMemberPaymentVerified,
 } from "@/lib/auth-store";
 import { formatInternationalPhone } from "@/lib/countries";
 import { syncContactToGhl } from "@/lib/ghl";
 import { requireRoles, requireSessionUser, sessionCookieName } from "@/lib/session";
-import { completeProfileSchema, loginSchema, registerSchema } from "@/lib/validations";
+import {
+  completeProfileSchema,
+  forgotPasswordSchema,
+  loginSchema,
+  registerSchema,
+  resetPasswordSchema,
+} from "@/lib/validations";
 
 export type AuthFormState = {
   error?: string;
@@ -182,6 +190,54 @@ export async function verifyMemberPayment(
   revalidatePath("/dashboard");
   revalidatePath("/dashboard/registrations");
   return { success: "Payment verified." };
+}
+
+export async function requestPasswordResetAccount(
+  _prevState: AuthFormState,
+  formData: FormData,
+): Promise<AuthFormState> {
+  const parsed = forgotPasswordSchema.safeParse({
+    email: String(formData.get("email") ?? "").trim(),
+  });
+
+  if (!parsed.success) {
+    const firstError = Object.values(parsed.error.flatten().fieldErrors)[0]?.[0];
+    return { error: firstError || "Enter the email on the account." };
+  }
+
+  try {
+    await requestPasswordReset(parsed.data.email);
+  } catch (error) {
+    console.error("Password reset request failed", error);
+  }
+
+  return {
+    success: "If that email is on an account, we sent a reset link. Check your inbox and spam folder.",
+  };
+}
+
+export async function resetPasswordAccount(
+  _prevState: AuthFormState,
+  formData: FormData,
+): Promise<AuthFormState> {
+  const parsed = resetPasswordSchema.safeParse({
+    token: String(formData.get("token") ?? "").trim(),
+    password: String(formData.get("password") ?? ""),
+    confirmPassword: String(formData.get("confirmPassword") ?? ""),
+  });
+
+  if (!parsed.success) {
+    const firstError = Object.values(parsed.error.flatten().fieldErrors)[0]?.[0];
+    return { error: firstError || "Check the new password and try again." };
+  }
+
+  const updated = await resetPasswordWithToken(parsed.data.token, parsed.data.password);
+
+  if (!updated) {
+    return { error: "This reset link is invalid or has expired. Request a new one." };
+  }
+
+  redirect("/login");
 }
 
 export async function logout() {

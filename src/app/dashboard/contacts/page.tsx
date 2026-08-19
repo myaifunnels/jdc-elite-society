@@ -16,23 +16,31 @@ export default async function ContactsPage({
   const user = await requireRoles(["admin", "partner"]);
   const { kind: rawKind } = await searchParams;
   const kind: ContactKind | undefined =
-    rawKind === "partner" || rawKind === "contact" ? rawKind : undefined;
-  const contacts = listContacts(user.role, kind);
+    user.role === "admin" && (rawKind === "partner" || rawKind === "contact") ? rawKind : user.role === "partner" ? "contact" : undefined;
+  const contacts = listContacts(user, kind);
 
-  const filters = [
-    { href: "/dashboard/contacts", label: "All", active: !kind },
-    { href: "/dashboard/contacts?kind=partner", label: "Partners", active: kind === "partner" },
-    { href: "/dashboard/contacts?kind=contact", label: "Contacts", active: kind === "contact" },
-  ];
+  const filters =
+    user.role === "admin"
+      ? [
+          { href: "/dashboard/contacts", label: "All", active: !kind },
+          { href: "/dashboard/contacts?kind=partner", label: "Partners", active: kind === "partner" },
+          { href: "/dashboard/contacts?kind=contact", label: "Contacts", active: kind === "contact" },
+        ]
+      : [];
 
   return (
     <DashboardShell
-      title="Contacts"
-      description="Partners and contacts live in one roster. Open any row to see the detailed dashboard."
+      title={user.role === "admin" ? "Contacts" : "My contacts"}
+      description={
+        user.role === "admin"
+          ? "Partners and contacts live in one roster. Open any row to see the detailed dashboard."
+          : "Only the people assigned to you. You cannot open another partner's book."
+      }
     >
       <MacosWindow
         title={user.role === "admin" ? "All contacts" : "Your contacts"}
         toolbar={
+          filters.length > 0 ? (
           <div className="macos-toolbar">
             <div className="macos-segment" style={{ gridTemplateColumns: "1fr 1fr 1fr", width: "min(24rem, 100%)" }}>
               {filters.map((filter) => (
@@ -42,6 +50,7 @@ export default async function ContactsPage({
               ))}
             </div>
           </div>
+          ) : undefined
         }
       >
         <div className="overflow-x-auto">

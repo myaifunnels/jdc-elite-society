@@ -1,5 +1,8 @@
 import { redirect } from "next/navigation";
 
-export default function LeadsRedirectPage() {
-  redirect("/dashboard/contacts?kind=contact");
+import { requireRoles } from "@/lib/session";
+
+export default async function LeadsRedirectPage() {
+  await requireRoles(["admin", "partner"]);
+  redirect("/dashboard/contacts");
 }

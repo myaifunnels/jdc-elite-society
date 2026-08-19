@@ -16,13 +16,13 @@ export default async function ContactDashboardPage({
 }) {
   const user = await requireRoles(["admin", "partner"]);
   const { id } = await params;
-  const contact = getContact(user.role, id);
+  const contact = getContact(user, id);
 
   if (!contact) {
     notFound();
   }
 
-  const assigned = contact.kind === "partner" ? listAssignedContacts(user.role, contact.name) : [];
+  const assigned = contact.kind === "partner" ? listAssignedContacts(user, contact.name) : [];
   const mapsConfig = await getGoogleMapsConfig();
   const isPartner = contact.kind === "partner";
 

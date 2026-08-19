@@ -35,6 +35,10 @@ services:
         sync: false
       - key: GHL_LOCATION_ID
         sync: false
+      - key: RESEND_API_KEY
+        sync: false
+      - key: MAIL_FROM
+        sync: false
 databases:
   - name: coach-jdc-platform-db
     databaseName: coach_jdc_platform

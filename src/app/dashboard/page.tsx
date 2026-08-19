@@ -6,7 +6,7 @@ import { MacosWindow } from "@/components/dashboard/macos-window";
 import { PartnersMap } from "@/components/dashboard/partners-map";
 import { dashboardMetrics } from "@/data/crm";
 import { programs } from "@/data/programs";
-import { listContacts, listPartnerMapPins } from "@/lib/crm-store";
+import { listContacts, listPartnerMapPins, listViewerMetrics } from "@/lib/crm-store";
 import { membershipLabel } from "@/lib/membership";
 import { requireSessionUser } from "@/lib/session";
 
@@ -22,11 +22,11 @@ export default async function DashboardPage() {
         description={
           pending
             ? "Your account is pending. Complete your profile, then wait for our team to verify your registration and payment."
-            : "This is your member workspace. Follow a track, stay honest about where you are, and talk to Coach JDC when you're ready."
+            : "Your member workspace: your path, your programs, and a way to talk to Coach JDC."
         }
       >
         <div className="dashboard-widget-grid">
-          <MacosWindow title={pending ? "Account pending" : "Your role"} className="dashboard-span-2">
+          <MacosWindow title={pending ? "Account pending" : "Your room"} className="dashboard-span-2">
             {pending ? (
               <>
                 <p className="macos-lead" style={{ textAlign: "left" }}>
@@ -63,7 +63,7 @@ export default async function DashboardPage() {
               <>
                 <p className="macos-lead" style={{ textAlign: "left" }}>
                   Signed in as {membershipLabel(user.memberships)}. JES means JDC Elite Society. This
-                  workspace is for the person doing the work.
+                  workspace is for the person doing the work — not the admin or partner rooms.
                 </p>
                 <div className="macos-actions">
                   <Link href="/dashboard/path" className="macos-btn macos-btn-primary">
@@ -99,36 +99,78 @@ export default async function DashboardPage() {
     );
   }
 
-  const contacts = listContacts(user.role);
-  const partners = listContacts(user.role, "partner");
-  const pins = listPartnerMapPins(user.role);
-  const isAdmin = user.role === "admin";
+  if (user.role === "partner") {
+    const contacts = listContacts(user, "contact");
+    const metrics = listViewerMetrics(user);
+    const pins = listPartnerMapPins(user);
+
+    return (
+      <DashboardShell
+        title="Partner dashboard"
+        description="Only your assigned contacts and your own coverage. You do not see the full admin workspace."
+      >
+        <div className="dashboard-widget-grid">
+          {metrics.map((metric) => (
+            <article key={metric.label} className="dashboard-metric-card">
+              <p className="macos-kicker">{metric.label}</p>
+              <p className="dashboard-metric-value">{metric.value}</p>
+              <p className="dashboard-metric-copy">{metric.detail}</p>
+            </article>
+          ))}
+
+          <MacosWindow title="Your contacts" className="dashboard-span-2" bodyClassName="dashboard-contact-list">
+            {contacts.length === 0 ? (
+              <p className="macos-lead" style={{ textAlign: "left" }}>
+                No contacts are assigned to you yet.
+              </p>
+            ) : (
+              contacts.map((contact) => (
+                <Link key={contact.id} href={`/dashboard/contacts/${contact.id}`} className="dashboard-contact-row">
+                  <ContactAvatar name={contact.name} photoUrl={contact.photoUrl} />
+                  <span>
+                    <strong>{contact.name}</strong>
+                    <em>
+                      {contact.programInterest} · {contact.status}
+                    </em>
+                  </span>
+                </Link>
+              ))
+            )}
+            <Link href="/dashboard/contacts" className="macos-btn macos-btn-secondary mt-2 self-start">
+              Open my contacts
+            </Link>
+          </MacosWindow>
+
+          {pins.length > 0 ? (
+            <MacosWindow title="Your coverage" className="dashboard-span-2" bodyClassName="partners-map-body">
+              <p className="macos-lead" style={{ textAlign: "left" }}>
+                This pin is yours. Other partner locations stay in the admin dashboard.
+              </p>
+              <PartnersMap partners={pins} />
+            </MacosWindow>
+          ) : null}
+        </div>
+      </DashboardShell>
+    );
+  }
+
+  const contacts = listContacts(user);
+  const partners = listContacts(user, "partner");
+  const pins = listPartnerMapPins(user);
 
   return (
     <DashboardShell
-      title={isAdmin ? "Dashboard" : "Partner dashboard"}
-      description={
-        isAdmin
-          ? "Contacts, partner coverage, integrations, and site settings in one workspace."
-          : "Your assigned contacts, conversion activity, and the slice of the CRM that belongs to you."
-      }
+      title="Dashboard"
+      description="Full admin access: contacts, partner coverage, integrations, and site settings."
     >
       <div className="dashboard-widget-grid">
-        {dashboardMetrics.slice(0, isAdmin ? 3 : 2).map((metric) => (
+        {dashboardMetrics.map((metric) => (
           <article key={metric.label} className="dashboard-metric-card">
             <p className="macos-kicker">{metric.label}</p>
             <p className="dashboard-metric-value">{metric.value}</p>
             <p className="dashboard-metric-copy">{metric.detail}</p>
           </article>
         ))}
-
-        {!isAdmin ? (
-          <article className="dashboard-metric-card">
-            <p className="macos-kicker">Your access</p>
-            <p className="dashboard-metric-value">Partner</p>
-            <p className="dashboard-metric-copy">Assigned contacts and your own dashboard.</p>
-          </article>
-        ) : null}
 
         <MacosWindow title="Partner map" className="dashboard-span-2" bodyClassName="partners-map-body">
           <p className="macos-lead" style={{ textAlign: "left" }}>
@@ -154,7 +196,7 @@ export default async function DashboardPage() {
           </Link>
         </MacosWindow>
 
-        <MacosWindow title={isAdmin ? "Partners" : "Your partner card"} bodyClassName="dashboard-contact-list">
+        <MacosWindow title="Partners" bodyClassName="dashboard-contact-list">
           {partners.map((partner) => (
             <Link key={partner.id} href={`/dashboard/contacts/${partner.id}`} className="dashboard-contact-row">
               <ContactAvatar name={partner.name} photoUrl={partner.photoUrl} />
@@ -168,31 +210,27 @@ export default async function DashboardPage() {
           ))}
         </MacosWindow>
 
-        {isAdmin ? (
-          <MacosWindow title="Registrations">
-            <p className="macos-lead" style={{ textAlign: "left" }}>
-              Verify member registration and payment after they complete their account profile.
-            </p>
-            <div className="macos-actions">
-              <Link href="/dashboard/registrations" className="macos-btn macos-btn-primary">
-                Open registrations
-              </Link>
-            </div>
-          </MacosWindow>
-        ) : null}
+        <MacosWindow title="Registrations">
+          <p className="macos-lead" style={{ textAlign: "left" }}>
+            Verify member registration and payment after they complete their account profile.
+          </p>
+          <div className="macos-actions">
+            <Link href="/dashboard/registrations" className="macos-btn macos-btn-primary">
+              Open registrations
+            </Link>
+          </div>
+        </MacosWindow>
 
-        {isAdmin ? (
-          <MacosWindow title="Integrations">
-            <p className="macos-lead" style={{ textAlign: "left" }}>
-              Review Google Maps and Cloudflare R2 configuration.
-            </p>
-            <div className="macos-actions">
-              <Link href="/dashboard/integrations" className="macos-btn macos-btn-secondary">
-                Open Integrations
-              </Link>
-            </div>
-          </MacosWindow>
-        ) : null}
+        <MacosWindow title="Integrations">
+          <p className="macos-lead" style={{ textAlign: "left" }}>
+            Review Google Maps and Cloudflare R2 configuration.
+          </p>
+          <div className="macos-actions">
+            <Link href="/dashboard/integrations" className="macos-btn macos-btn-secondary">
+              Open Integrations
+            </Link>
+          </div>
+        </MacosWindow>
       </div>
     </DashboardShell>
   );

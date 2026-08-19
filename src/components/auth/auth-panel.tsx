@@ -48,7 +48,7 @@ export function AuthPanel({
   const windowTitle = mode === "login" ? "Sign In" : "Register";
 
   return (
-    <div className="macos-window">
+    <div className={mode === "login" ? "macos-window is-signin" : "macos-window"}>
       <header className="macos-titlebar">
         <p className="macos-title">{windowTitle}</p>
       </header>
@@ -72,14 +72,14 @@ export function AuthPanel({
         <SiteLogo branding={branding} href="/" compact={Boolean(branding.logoUrl)} />
 
         {mode === "login" ? (
-          <form action={loginAction} className="auth-form auth-form-grid">
+          <form action={loginAction} className="auth-form auth-form-login">
             <p className="macos-lead">
               Sign in to open your dashboard. If you have not set a password yet, use your email and
               mobile number.
             </p>
 
-            <AuthField label="Email address" icon={<Mail size={15} aria-hidden />}>
-              <input name="email" type="email" autoComplete="email" placeholder="name@mail.com" required />
+            <AuthField label="Email" icon={<Mail size={15} aria-hidden />}>
+              <input name="email" type="email" autoComplete="username" placeholder="name@mail.com" required />
             </AuthField>
 
             <AuthField label="Password or mobile number" icon={<Lock size={15} aria-hidden />}>
@@ -97,7 +97,7 @@ export function AuthPanel({
                 <input type="checkbox" name="remember" />
                 Remember me
               </label>
-              <Link href="/contact" className="auth-forgot">
+              <Link href="/forgot-password" className="auth-forgot">
                 Forgot password?
               </Link>
             </div>

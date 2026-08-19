@@ -1,29 +1,14 @@
-import Link from "next/link";
-
 import { DesignSystemPanel } from "@/components/dashboard/design-system-panel";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { LogoSettingsForm } from "@/components/dashboard/logo-settings-form";
 import { getResolvedBrandingSettings } from "@/lib/branding-store";
 import { isR2Configured } from "@/lib/r2";
-import { requireSessionUser } from "@/lib/session";
+import { requireRoles } from "@/lib/session";
+import Link from "next/link";
 
 export default async function SettingsPage() {
-  const user = await requireSessionUser();
+  await requireRoles(["admin"]);
   const r2Configured = await isR2Configured();
-
-  if (user.role !== "admin") {
-    return (
-      <DashboardShell
-        title="Settings"
-        description="Only admins can configure platform-level deployment and integration settings."
-      >
-        <div className="card-surface rounded-[2rem] p-8 text-sm text-[var(--muted)]">
-          Partner sessions do not have access to platform settings.
-        </div>
-      </DashboardShell>
-    );
-  }
-
   const branding = await getResolvedBrandingSettings();
 
   return (
