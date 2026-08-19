@@ -57,6 +57,17 @@ export default async function DashboardPage() {
               </Link>
             ))}
 
+            <MacosWindow title="University" className="dashboard-span-2">
+              <p className="macos-lead" style={{ textAlign: "left" }}>
+                Life and Money Mastery, Exclusive Mentoring, and the JDC Mastermind sessions from the JDC Elite Society membership.
+              </p>
+              <div className="macos-actions">
+                <Link href="/dashboard/university" className="macos-btn macos-btn-primary">
+                  Open University
+                </Link>
+              </div>
+            </MacosWindow>
+
             {user.affiliateAccess ? (
               <MacosWindow title="Partnership Program" className="dashboard-span-2">
                 <p className="macos-lead" style={{ textAlign: "left" }}>
@@ -115,6 +126,17 @@ export default async function DashboardPage() {
             <Link href="/dashboard/contacts" className="macos-btn macos-btn-secondary mt-2 self-start">
               Open my contacts
             </Link>
+          </MacosWindow>
+
+          <MacosWindow title="University">
+            <p className="macos-lead" style={{ textAlign: "left" }}>
+              Membership courses from the JDC Elite Society GHL subaccount.
+            </p>
+            <div className="macos-actions">
+              <Link href="/dashboard/university" className="macos-btn macos-btn-primary">
+                Open University
+              </Link>
+            </div>
           </MacosWindow>
 
           {user.affiliateAccess ? (
@@ -184,6 +206,17 @@ export default async function DashboardPage() {
           <Link href="/dashboard/contacts" className="macos-btn macos-btn-secondary mt-2 self-start">
             Open contacts
           </Link>
+        </MacosWindow>
+
+        <MacosWindow title="University">
+          <p className="macos-lead" style={{ textAlign: "left" }}>
+            Membership courses migrated from the JDC Elite Society subaccount in AiFunnels GHL.
+          </p>
+          <div className="macos-actions">
+            <Link href="/dashboard/university" className="macos-btn macos-btn-primary">
+              Open University
+            </Link>
+          </div>
         </MacosWindow>
 
         <MacosWindow title="Partners" bodyClassName="dashboard-contact-list">

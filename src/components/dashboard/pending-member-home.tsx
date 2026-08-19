@@ -54,6 +54,9 @@ export function PendingMemberHome({ user }: { user: AuthUser }) {
           >
             {user.profileComplete ? "See my profile" : "Complete my profile"}
           </Link>
+          <Link href="/dashboard/university" className="macos-btn macos-btn-secondary">
+            Peek at University
+          </Link>
           <Link href="/contact" className="macos-btn macos-btn-secondary">
             Message Coach JDC
           </Link>

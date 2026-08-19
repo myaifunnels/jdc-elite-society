@@ -2930,6 +2930,124 @@ html:not(.dark) .dashboard-desktop {
   color: var(--foreground);
 }
 
+.dashboard-nav-item.is-locked {
+  justify-content: flex-start;
+}
+
+.dashboard-nav-lock {
+  margin-left: auto;
+  opacity: 0.78;
+}
+
+.university-course-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.university-course-card {
+  position: relative;
+  display: grid;
+  gap: 0.45rem;
+  min-height: 11rem;
+  padding: 1.1rem 1.15rem 1.15rem;
+  border: 1px solid rgba(255, 255, 255, 0.38);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--surface-elevated) 82%, transparent);
+  box-shadow:
+    0 16px 32px rgba(15, 23, 42, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+.university-course-card.is-locked {
+  opacity: 0.88;
+}
+
+.university-course-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--muted);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.university-lock-badge {
+  position: absolute;
+  top: 0.9rem;
+  right: 0.9rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.28rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--brand) 16%, var(--surface));
+  padding: 0.18rem 0.55rem;
+  color: var(--brand);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.university-course-card h2 {
+  margin: 0.35rem 2.8rem 0 0;
+  font-size: 1.15rem;
+  letter-spacing: -0.03em;
+}
+
+.university-course-card p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.86rem;
+  line-height: 1.45;
+}
+
+.university-course-meta {
+  margin-top: auto !important;
+  font-size: 0.75rem !important;
+}
+
+.university-lesson-list {
+  display: grid;
+  gap: 0.55rem;
+  margin: 1rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.university-lesson-list li {
+  display: grid;
+  grid-template-columns: 2.1rem 1fr auto;
+  gap: 0.7rem;
+  align-items: start;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 0.75rem 0.85rem;
+}
+
+.university-lesson-list li span {
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.university-lesson-list strong,
+.university-lesson-list em {
+  display: block;
+}
+
+.university-lesson-list em {
+  margin-top: 0.15rem;
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-style: normal;
+}
+
+.university-lesson-list.is-locked {
+  opacity: 0.78;
+}
+
 .dashboard-mobile-bar {
   border-bottom: 1px solid var(--line);
   background: color-mix(in srgb, var(--surface-elevated) 88%, transparent);

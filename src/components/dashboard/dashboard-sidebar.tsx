@@ -6,8 +6,10 @@ import { useEffect, useId, useState } from "react";
 import {
   BookOpen,
   ClipboardList,
+  GraduationCap,
   Handshake,
   LayoutDashboard,
+  Lock,
   LogOut,
   Menu,
   Plug,
@@ -24,12 +26,15 @@ import { BrandingSettings } from "@/lib/branding";
 import { DashboardRole } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
+const universityItem = { href: "/dashboard/university", label: "University", icon: GraduationCap };
+
 const navByRole: Record<
   DashboardRole,
   { href: string; label: string; icon: typeof LayoutDashboard }[]
 > = {
   admin: [
     { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+    universityItem,
     { href: "/dashboard/registrations", label: "Registrations", icon: ClipboardList },
     { href: "/dashboard/contacts", label: "Contacts", icon: Users },
     { href: "/dashboard/integrations", label: "Integrations", icon: Plug },
@@ -37,10 +42,12 @@ const navByRole: Record<
   ],
   partner: [
     { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+    universityItem,
     { href: "/dashboard/contacts", label: "Contacts", icon: Users },
   ],
   member: [
     { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+    universityItem,
     { href: "/dashboard/profile", label: "Account profile", icon: UserRound },
     { href: "/dashboard/path", label: "My path", icon: BookOpen },
   ],
@@ -116,6 +123,7 @@ function SidebarPanel({
         {navItems(role, affiliateAccess).map((item) => {
           const Icon = item.icon;
           const active = isActivePath(pathname, item.href);
+          const locked = item.href === "/dashboard/university" && accountStatus !== "verified";
 
           return (
             <Link
@@ -123,10 +131,12 @@ function SidebarPanel({
               href={item.href}
               aria-current={active ? "page" : undefined}
               onClick={onNavigate}
-              className={cn("dashboard-nav-item pressable", active && "is-active")}
+              className={cn("dashboard-nav-item pressable", active && "is-active", locked && "is-locked")}
             >
               <Icon size={16} aria-hidden />
               {item.label}
+              {locked ? <Lock size={13} className="dashboard-nav-lock" aria-hidden /> : null}
+              {locked ? <span className="sr-only">Locked until your account is verified</span> : null}
             </Link>
           );
         })}
