@@ -303,6 +303,17 @@ function matchesQuery(contact: ContactRecord, query: ContactQuery) {
   return haystack.includes(needle);
 }
 
+function rankMatch(contact: ContactRecord, needle: string) {
+  const name = contact.name.toLowerCase();
+  const email = contact.email.toLowerCase();
+  if (name.startsWith(needle)) return 0;
+  if (name.split(/\s+/).some((part) => part.startsWith(needle))) return 1;
+  if (email.startsWith(needle)) return 2;
+  if (name.includes(needle)) return 3;
+  if (email.includes(needle)) return 4;
+  return 5;
+}
+
 export async function listContacts(viewer: CrmViewer, kindOrQuery?: ContactKind | ContactQuery) {
   await hydrateCrm();
   const query: ContactQuery = typeof kindOrQuery === "string" ? { kind: kindOrQuery } : (kindOrQuery ?? {});
@@ -313,6 +324,47 @@ export async function listContacts(viewer: CrmViewer, kindOrQuery?: ContactKind 
       const byDate = String(right.createdAt).localeCompare(String(left.createdAt));
       return byDate || left.name.localeCompare(right.name);
     });
+}
+
+export type ContactSuggestion = {
+  id: string;
+  name: string;
+  email: string;
+  city: string;
+  kind: ContactKind;
+  photoUrl?: string;
+  status: ContactRecord["status"];
+};
+
+export async function suggestContacts(
+  viewer: CrmViewer,
+  query: ContactQuery,
+  limit = 8,
+): Promise<{ contacts: ContactSuggestion[]; tags: Array<{ tag: string; count: number }> }> {
+  const needle = String(query.q ?? "").trim().toLowerCase();
+  const contacts = await listContacts(viewer, { kind: query.kind, tags: query.tags });
+  const ranked = needle
+    ? contacts
+        .filter((contact) => matchesQuery(contact, { q: needle }))
+        .sort((left, right) => rankMatch(left, needle) - rankMatch(right, needle) || left.name.localeCompare(right.name))
+    : contacts;
+  const tagIndex = await listTagIndex(viewer);
+  const tags = needle
+    ? tagIndex.filter((item) => item.tag.toLowerCase().includes(needle)).slice(0, 8)
+    : tagIndex.filter((item) => item.count > 0).slice(0, 8);
+
+  return {
+    contacts: ranked.slice(0, limit).map((contact) => ({
+      id: contact.id,
+      name: contact.name,
+      email: contact.email,
+      city: contact.city || contact.region || "",
+      kind: contact.kind,
+      photoUrl: contact.photoUrl,
+      status: contact.status,
+    })),
+    tags,
+  };
 }
 
 export async function listLeads(viewer: CrmViewer) {

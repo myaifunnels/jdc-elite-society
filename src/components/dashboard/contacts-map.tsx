@@ -78,8 +78,7 @@ export function ContactsMap({
           `<div class="partner-map-popup">
             <strong>${escapeHtml(pin.name)}</strong>
             <p>${escapeHtml(pin.region || pin.address || pin.kind)}</p>
-            <p>${escapeHtml(pin.tags.slice(0, 6).join(" · "))}</p>
-            <a href="/dashboard/contacts/${encodeURIComponent(pin.id)}">Open dashboard</a>
+            <a href="/dashboard/contacts/${encodeURIComponent(pin.id)}">Open contact</a>
           </div>`,
         );
         bounds.extend([pin.lat, pin.lng]);

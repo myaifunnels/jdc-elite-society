@@ -1,3 +1,4 @@
+import { createHmac, timingSafeEqual } from "node:crypto";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
@@ -7,6 +8,58 @@ import { getPublicUserById } from "@/lib/auth-store";
 import { AuthUser, DashboardRole } from "@/lib/types";
 
 const SESSION_COOKIE = "coach-jdc-user";
+export const impersonatorCookieName = "coach-jdc-impersonator";
+
+export type SessionUser = AuthUser;
+
+function cookieSecret() {
+  return process.env.AUTH_SECRET || process.env.DATABASE_URL || "coach-jdc-dev-secret";
+}
+
+function signValue(value: string) {
+  const signature = createHmac("sha256", cookieSecret()).update(value).digest("hex").slice(0, 32);
+  return `${value}.${signature}`;
+}
+
+function readSignedValue(raw: string | undefined) {
+  if (!raw) {
+    return null;
+  }
+  const index = raw.lastIndexOf(".");
+  if (index < 1) {
+    return null;
+  }
+  const value = raw.slice(0, index);
+  const signature = raw.slice(index + 1);
+  const expected = createHmac("sha256", cookieSecret()).update(value).digest("hex").slice(0, 32);
+  const left = Buffer.from(signature);
+  const right = Buffer.from(expected);
+  if (left.length !== right.length || !timingSafeEqual(left, right)) {
+    return null;
+  }
+  return value;
+}
+
+export type ImpersonationState = {
+  adminId: string;
+  targetId: string;
+};
+
+export function encodeImpersonation(state: ImpersonationState) {
+  return signValue(`${state.adminId}:${state.targetId}`);
+}
+
+export function decodeImpersonation(raw: string | undefined): ImpersonationState | null {
+  const value = readSignedValue(raw);
+  if (!value) {
+    return null;
+  }
+  const [adminId, targetId] = value.split(":");
+  if (!adminId || !targetId) {
+    return null;
+  }
+  return { adminId, targetId };
+}
 
 export type SessionUser = AuthUser;
 
@@ -22,6 +75,17 @@ export async function getSessionUser(): Promise<SessionUser | null> {
 }
 
 export const sessionCookieName = SESSION_COOKIE;
+
+export async function getImpersonator() {
+  const cookieStore = await cookies();
+  const sessionUser = await getSessionUser();
+  const state = decodeImpersonation(cookieStore.get(impersonatorCookieName)?.value);
+  if (!state || !sessionUser || sessionUser.id !== state.targetId) {
+    return null;
+  }
+  const admin = await getPublicUserById(state.adminId);
+  return admin?.role === "admin" ? admin : null;
+}
 
 export async function requireSessionUser() {
   const user = await getSessionUser();

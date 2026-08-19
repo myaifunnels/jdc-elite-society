@@ -6,6 +6,7 @@ import { ContactAvatar } from "@/components/dashboard/contact-avatar";
 import { ContactTagEditor } from "@/components/dashboard/contact-tag-editor";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { MacosWindow } from "@/components/dashboard/macos-window";
+import { OpenUserDashboardButton } from "@/components/dashboard/open-user-dashboard-button";
 import { AddressMap } from "@/components/maps/address-map";
 import { hasAccess } from "@/lib/access";
 import { getContact, listAssignedContacts, listTagIndex } from "@/lib/crm-store";
@@ -135,6 +136,13 @@ export default async function ContactDashboardPage({
                   <Link href={`/dashboard/access/${portalUser.id}`} className="macos-btn macos-btn-primary">
                     Configure access
                   </Link>
+                  {user.role === "admin" && portalUser.role !== "admin" ? (
+                    <OpenUserDashboardButton userId={portalUser.id} />
+                  ) : null}
+                </div>
+              ) : user.role === "admin" && portalUser.role !== "admin" ? (
+                <div className="macos-actions">
+                  <OpenUserDashboardButton userId={portalUser.id} />
                 </div>
               ) : null}
             </>

@@ -2,12 +2,15 @@ import Link from "next/link";
 
 import { ContactAvatar } from "@/components/dashboard/contact-avatar";
 import { ContactsMap } from "@/components/dashboard/contacts-map";
+import { ContactsSearch } from "@/components/dashboard/contacts-search";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { MacosWindow } from "@/components/dashboard/macos-window";
+import { OpenUserDashboardButton } from "@/components/dashboard/open-user-dashboard-button";
 import { hasAccess } from "@/lib/access";
+import { listAllUsers } from "@/lib/auth-store";
 import { listContactMapPins, listContacts, listTagIndex } from "@/lib/crm-store";
 import { requireCapability } from "@/lib/session";
-import { TAG_GROUPS, tagGroupFor, uniqueTags } from "@/lib/tags";
+import { uniqueTags } from "@/lib/tags";
 import { ContactKind } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -52,15 +55,16 @@ export default async function ContactsPage({
         : "contact";
   const selectedTags = asList(raw.tag);
   const query = { kind, tags: selectedTags, q: raw.q };
-  const [contacts, allContacts, tags, pins] = await Promise.all([
+  const [contacts, allContacts, tags, pins, users] = await Promise.all([
     listContacts(viewer, query),
     listContacts(viewer, { kind }),
     listTagIndex(viewer),
     listContactMapPins(viewer, query),
+    user.role === "admin" ? listAllUsers() : Promise.resolve([]),
   ]);
+  const usersByEmail = new Map(users.map((item) => [item.email.toLowerCase(), item]));
 
   const ghlCount = allContacts.filter((contact) => contact.ghlContactId || contact.source.includes("GHL")).length;
-  const taggedCount = allContacts.filter((contact) => contact.tags.length > 0).length;
   const followUp = allContacts.filter((contact) => contact.status === "follow-up" || contact.status === "qualified");
 
   const views = [
@@ -69,28 +73,28 @@ export default async function ContactsPage({
     { id: "map" as const, label: "Map" },
   ];
   const kinds = hasAccess(access, "contacts.all")
-      ? [
-          { href: contactsHref({ view, q: raw.q, tags: selectedTags }), label: "All", active: !kind },
-          {
-            href: contactsHref({ view, kind: "partner", q: raw.q, tags: selectedTags }),
-            label: "Partners",
-            active: kind === "partner",
-          },
-          {
-            href: contactsHref({ view, kind: "contact", q: raw.q, tags: selectedTags }),
-            label: "Contacts",
-            active: kind === "contact",
-          },
-        ]
-      : [];
+    ? [
+        { href: contactsHref({ view, q: raw.q, tags: selectedTags }), label: "All", active: !kind },
+        {
+          href: contactsHref({ view, kind: "partner", q: raw.q, tags: selectedTags }),
+          label: "Partners",
+          active: kind === "partner",
+        },
+        {
+          href: contactsHref({ view, kind: "contact", q: raw.q, tags: selectedTags }),
+          label: "Contacts",
+          active: kind === "contact",
+        },
+      ]
+    : [];
 
   return (
     <DashboardShell
       title={hasAccess(access, "contacts.all") ? "Contacts" : "My contacts"}
       description={
         hasAccess(access, "contacts.all")
-          ? "JDC Elite Society roster from AiFunnels GHL: tags sync both ways, with a dashboard and a map."
-          : "Only the people assigned to you. Tags follow the GHL Elite Society subaccount."
+          ? "Search the Elite Society roster. Filter by tag when you need it. Open a user’s dashboard to see what they see."
+          : "Search the people assigned to you. Filter by tag when you need it."
       }
     >
       <MacosWindow
@@ -122,46 +126,7 @@ export default async function ContactsPage({
           </div>
         ) : null}
 
-        <form className="contact-search" action="/dashboard/contacts" method="get">
-          {view !== "dashboard" ? <input type="hidden" name="view" value={view} /> : null}
-          {kind ? <input type="hidden" name="kind" value={kind} /> : null}
-          {selectedTags.map((tag) => (
-            <input key={tag} type="hidden" name="tag" value={tag} />
-          ))}
-          <input name="q" defaultValue={raw.q ?? ""} placeholder="Search name, email, city, or tag" />
-          <button type="submit" className="macos-btn macos-btn-secondary">
-            Search
-          </button>
-        </form>
-
-        <div className="contact-tag-cloud">
-          {TAG_GROUPS.flatMap((group) => group.tags)
-            .concat(tags.filter((item) => item.count > 0).map((item) => item.tag))
-            .filter((tag, index, list) => list.findIndex((item) => item.toLowerCase() === tag.toLowerCase()) === index)
-            .slice(0, 28)
-            .map((tag) => {
-              const active = selectedTags.some((item) => item.toLowerCase() === tag.toLowerCase());
-              const nextTags = active
-                ? selectedTags.filter((item) => item.toLowerCase() !== tag.toLowerCase())
-                : uniqueTags([...selectedTags, tag]);
-              const count = tags.find((item) => item.tag.toLowerCase() === tag.toLowerCase())?.count ?? 0;
-              return (
-                <Link
-                  key={tag}
-                  href={contactsHref({ view, kind, q: raw.q, tags: nextTags })}
-                  className={cn("tag-chip", `is-${tagGroupFor(tag)}`, active && "is-active")}
-                >
-                  {tag}
-                  {count ? <em>{count}</em> : null}
-                </Link>
-              );
-            })}
-          {selectedTags.length ? (
-            <Link href={contactsHref({ view, kind, q: raw.q })} className="tag-chip is-ghost">
-              Clear tags
-            </Link>
-          ) : null}
-        </div>
+        <ContactsSearch view={view} kind={kind} q={raw.q} selectedTags={selectedTags} tags={tags} />
 
         {view === "dashboard" ? (
           <>
@@ -177,9 +142,9 @@ export default async function ContactsPage({
                 <p className="dashboard-metric-copy">From the Elite Society subaccount</p>
               </article>
               <article className="dashboard-metric-card">
-                <p className="macos-kicker">Tagged</p>
-                <p className="dashboard-metric-value">{taggedCount}</p>
-                <p className="dashboard-metric-copy">Tags pull and push with GHL</p>
+                <p className="macos-kicker">Matching</p>
+                <p className="dashboard-metric-value">{contacts.length}</p>
+                <p className="dashboard-metric-copy">Results for this search</p>
               </article>
               <article className="dashboard-metric-card">
                 <p className="macos-kicker">Follow-up</p>
@@ -195,7 +160,7 @@ export default async function ContactsPage({
                   <span>
                     <strong>{contact.name}</strong>
                     <em>
-                      {contact.tags.slice(0, 4).join(" · ") || contact.source} · {contact.city || contact.status}
+                      {contact.email} · {contact.city || contact.status}
                     </em>
                   </span>
                 </Link>
@@ -215,48 +180,50 @@ export default async function ContactsPage({
                 <tr>
                   <th>Name</th>
                   <th>Type</th>
-                  <th>Tags</th>
                   <th>Location</th>
                   <th>Status</th>
-                  <th />
+                  {user.role === "admin" ? <th>Portal</th> : null}
+                  <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {contacts.length === 0 ? (
                   <tr>
-                    <td colSpan={6}>No contacts match those filters.</td>
+                    <td colSpan={user.role === "admin" ? 6 : 5}>No contacts match those filters.</td>
                   </tr>
                 ) : (
-                  contacts.map((contact) => (
-                    <tr key={contact.id}>
-                      <td>
-                        <div className="dashboard-contact-row is-plain">
-                          <ContactAvatar name={contact.name} photoUrl={contact.photoUrl} size="sm" />
-                          <span>
-                            <strong>{contact.name}</strong>
-                            <em>{contact.email}</em>
-                          </span>
-                        </div>
-                      </td>
-                      <td className="capitalize">{contact.kind}</td>
-                      <td>
-                        <div className="contact-tag-cloud is-compact">
-                          {contact.tags.slice(0, 4).map((tag) => (
-                            <span key={tag} className={cn("tag-chip", `is-${tagGroupFor(tag)}`)}>
-                              {tag}
+                  contacts.map((contact) => {
+                    const portal = usersByEmail.get(contact.email.toLowerCase());
+                    return (
+                      <tr key={contact.id}>
+                        <td>
+                          <div className="dashboard-contact-row is-plain">
+                            <ContactAvatar name={contact.name} photoUrl={contact.photoUrl} size="sm" />
+                            <span>
+                              <strong>{contact.name}</strong>
+                              <em>{contact.email}</em>
                             </span>
-                          ))}
-                        </div>
-                      </td>
-                      <td>{contact.region ?? contact.city}</td>
-                      <td className="capitalize">{contact.status}</td>
-                      <td>
-                        <Link href={`/dashboard/contacts/${contact.id}`} className="macos-btn macos-btn-secondary">
-                          Dashboard
-                        </Link>
-                      </td>
-                    </tr>
-                  ))
+                          </div>
+                        </td>
+                        <td className="capitalize">{contact.kind}</td>
+                        <td>{contact.region ?? contact.city}</td>
+                        <td className="capitalize">{contact.status}</td>
+                        {user.role === "admin" ? (
+                          <td className="capitalize">{portal ? portal.role : "No login"}</td>
+                        ) : null}
+                        <td>
+                          <div className="contact-row-actions">
+                            <Link href={`/dashboard/contacts/${contact.id}`} className="macos-btn macos-btn-secondary">
+                              Contact
+                            </Link>
+                            {user.role === "admin" && portal && portal.role !== "admin" ? (
+                              <OpenUserDashboardButton userId={portal.id} label="User dashboard" />
+                            ) : null}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
                 )}
               </tbody>
             </table>

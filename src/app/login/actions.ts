@@ -22,7 +22,7 @@ import {
 import { storeProfilePhoto } from "@/lib/r2-upload";
 import { formatInternationalPhone } from "@/lib/countries";
 import { syncContactToGhl } from "@/lib/ghl";
-import { requireCapability, requireSessionUser, sessionCookieName } from "@/lib/session";
+import { requireCapability, requireSessionUser, sessionCookieName, impersonatorCookieName } from "@/lib/session";
 import {
   completeProfileSchema,
   forgotPasswordSchema,
@@ -344,5 +344,6 @@ export async function changeSignedInPassword(
 export async function logout() {
   const cookieStore = await cookies();
   cookieStore.delete(sessionCookieName);
+  cookieStore.delete(impersonatorCookieName);
   redirect("/");
 }
