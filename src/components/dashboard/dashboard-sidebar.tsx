@@ -6,7 +6,6 @@ import { useEffect, useId, useState } from "react";
 import { BookOpen, LayoutDashboard, LogOut, Menu, Plug, Settings2, Users, X } from "lucide-react";
 
 import { logout } from "@/app/login/actions";
-import { MacosTrafficLights } from "@/components/dashboard/macos-window";
 import { SiteLogo } from "@/components/branding/site-logo";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { BrandingSettings } from "@/lib/branding";
@@ -60,9 +59,8 @@ function SidebarPanel({
 
   return (
     <>
-      <div className="dashboard-sidebar-head">
-        <MacosTrafficLights />
-        {showClose ? (
+      {showClose ? (
+        <div className="dashboard-sidebar-head">
           <button
             type="button"
             className="glass-icon-btn pressable inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-full"
@@ -71,10 +69,8 @@ function SidebarPanel({
             <X size={16} />
             <span className="sr-only">Close navigation</span>
           </button>
-        ) : (
-          <span />
-        )}
-      </div>
+        </div>
+      ) : null}
 
       <div className="px-3 pb-3">
         <SiteLogo branding={branding} href="/dashboard" compact />

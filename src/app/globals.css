@@ -370,22 +370,29 @@ a,
 
 .card-surface {
   background:
-    linear-gradient(180deg, color-mix(in srgb, var(--chrome-bright) 6%, transparent), transparent 28%),
-    var(--surface);
-  border: 1px solid var(--line);
-  box-shadow: var(--shadow-lg);
-  backdrop-filter: blur(20px) saturate(170%);
-  -webkit-backdrop-filter: blur(20px) saturate(170%);
+    linear-gradient(180deg, color-mix(in srgb, var(--chrome-bright) 8%, transparent), transparent 32%),
+    color-mix(in srgb, var(--surface) 78%, transparent);
+  border: 1px solid color-mix(in srgb, var(--chrome-bright) 16%, transparent);
+  box-shadow:
+    10px 14px 32px rgba(0, 0, 0, 0.32),
+    -3px -4px 14px rgba(255, 255, 255, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(22px) saturate(170%);
+  -webkit-backdrop-filter: blur(22px) saturate(170%);
 }
 
 .glass-panel {
   background:
-    linear-gradient(145deg, color-mix(in srgb, var(--chrome-bright) 10%, transparent), transparent 32%),
-    linear-gradient(180deg, var(--surface-elevated), var(--surface));
-  border: 1px solid var(--line-strong);
-  box-shadow: var(--shadow-xl);
-  backdrop-filter: blur(24px) saturate(180%);
-  -webkit-backdrop-filter: blur(24px) saturate(180%);
+    linear-gradient(145deg, color-mix(in srgb, var(--chrome-bright) 12%, transparent), transparent 34%),
+    color-mix(in srgb, var(--surface-elevated) 70%, transparent);
+  border: 1px solid color-mix(in srgb, var(--chrome-bright) 18%, transparent);
+  box-shadow:
+    12px 18px 40px rgba(0, 0, 0, 0.36),
+    -4px -6px 16px rgba(255, 255, 255, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.22);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
 }
 
 .visual-frame {
@@ -1783,12 +1790,16 @@ html.dark .auth-screen-centered,
   display: grid;
   width: min(38rem, 100%);
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.45);
-  border-radius: 12px;
-  background: color-mix(in srgb, var(--surface-elevated) 82%, transparent);
+  border: 1px solid color-mix(in srgb, var(--chrome-bright) 22%, transparent);
+  border-radius: 18px;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--chrome-bright) 8%, transparent), transparent 28%),
+    color-mix(in srgb, var(--surface-elevated) 72%, transparent);
   box-shadow:
-    0 40px 80px rgba(15, 23, 42, 0.28),
-    0 2px 0 rgba(255, 255, 255, 0.35) inset;
+    12px 18px 40px rgba(0, 0, 0, 0.38),
+    -4px -6px 18px rgba(255, 255, 255, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.28);
   backdrop-filter: blur(40px) saturate(180%);
   -webkit-backdrop-filter: blur(40px) saturate(180%);
   color: var(--foreground);
@@ -1796,39 +1807,13 @@ html.dark .auth-screen-centered,
 
 .macos-titlebar {
   display: grid;
-  grid-template-columns: 4.2rem 1fr 4.2rem;
-  align-items: center;
+  place-items: center;
   min-height: 2.4rem;
-  padding: 0 0.75rem;
+  padding: 0 1rem;
   border-bottom: 1px solid color-mix(in srgb, var(--line) 80%, transparent);
-  background: color-mix(in srgb, var(--surface) 70%, transparent);
-}
-
-.macos-lights {
-  display: flex;
-  gap: 0.42rem;
-  align-items: center;
-}
-
-.macos-light {
-  width: 0.78rem;
-  height: 0.78rem;
-  border-radius: 999px;
-  border: 0;
-  display: inline-block;
-  box-shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.18);
-}
-
-.macos-light.is-close {
-  background: #ff5f57;
-}
-
-.macos-light.is-min {
-  background: #febc2e;
-}
-
-.macos-light.is-zoom {
-  background: #28c840;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--chrome-bright) 10%, transparent), transparent 70%),
+    color-mix(in srgb, var(--surface) 62%, transparent);
 }
 
 .macos-title {
@@ -2506,9 +2491,13 @@ html:not(.dark) .dashboard-desktop {
 .dashboard-sidebar-head {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  min-height: 2.5rem;
-  padding: 0.7rem 0.9rem 0.35rem;
+  justify-content: flex-end;
+  min-height: 0.5rem;
+  padding: 0.7rem 0.9rem 0.15rem;
+}
+
+.dashboard-sidebar-head:empty {
+  display: none;
 }
 
 .dashboard-nav-item {
@@ -2598,12 +2587,15 @@ html:not(.dark) .dashboard-desktop {
   gap: 0.35rem;
   min-height: 8.5rem;
   padding: 1rem 1.05rem;
-  border: 1px solid rgba(255, 255, 255, 0.38);
-  border-radius: 12px;
-  background: color-mix(in srgb, var(--surface-elevated) 82%, transparent);
+  border: 1px solid color-mix(in srgb, var(--chrome-bright) 16%, transparent);
+  border-radius: 18px;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--chrome-bright) 10%, transparent), transparent 36%),
+    color-mix(in srgb, var(--surface-elevated) 74%, transparent);
   box-shadow:
-    0 16px 32px rgba(15, 23, 42, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+    10px 16px 32px rgba(0, 0, 0, 0.3),
+    -3px -5px 14px rgba(255, 255, 255, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14);
   backdrop-filter: blur(24px) saturate(170%);
   -webkit-backdrop-filter: blur(24px) saturate(170%);
   text-decoration: none;

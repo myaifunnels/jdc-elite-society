@@ -109,11 +109,6 @@ export function AuthPanel({
   return (
     <div className="macos-window">
       <header className="macos-titlebar">
-        <div className="macos-lights" aria-hidden="true">
-          <Link href="/" className="macos-light is-close" aria-label="Back to home" />
-          <span className="macos-light is-min" />
-          <span className="macos-light is-zoom" />
-        </div>
         <p className="macos-title">{windowTitle}</p>
       </header>
 
