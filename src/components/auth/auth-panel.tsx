@@ -3,12 +3,13 @@
 import { Building2, Lock, Mail, Smartphone, UserRound } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { type ReactNode } from "react";
+import { type ReactNode, useState } from "react";
 import { useActionState } from "react";
 
 import { AuthFormState, loginAccount, registerAccount } from "@/app/login/actions";
 import { SiteLogo } from "@/components/branding/site-logo";
 import { PhoneField } from "@/components/forms/phone-field";
+import { StickyForm } from "@/components/forms/sticky-form";
 import { BrandingSettings } from "@/lib/branding";
 
 const initialState: AuthFormState = {};
@@ -38,14 +39,19 @@ function AuthField({
 export function AuthPanel({
   branding,
   mode,
+  email = "",
 }: {
   branding: BrandingSettings;
   mode: "login" | "register";
+  email?: string;
 }) {
   const router = useRouter();
   const [loginState, loginAction, loginPending] = useActionState(loginAccount, initialState);
   const [registerState, registerAction, registerPending] = useActionState(registerAccount, initialState);
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const windowTitle = mode === "login" ? "Sign In" : "Register";
+  const fields = registerState.fields;
 
   return (
     <div className={mode === "login" ? "macos-window is-signin" : "macos-window"}>
@@ -72,13 +78,17 @@ export function AuthPanel({
         <SiteLogo branding={branding} href="/" compact={Boolean(branding.logoUrl)} />
 
         {mode === "login" ? (
-          <form action={loginAction} className="auth-form auth-form-login">
-            <p className="macos-lead">
-              Sign in with your email and password. If you can&apos;t sign in, register first.
-            </p>
-
+          <StickyForm storageKey="coach-jdc-member-login" action={loginAction} className="auth-form auth-form-login">
             <AuthField label="Email" icon={<Mail size={15} aria-hidden />}>
-              <input name="email" type="email" autoComplete="username" placeholder="name@mail.com" required />
+              <input
+                name="email"
+                type="email"
+                autoComplete="username"
+                placeholder="name@mail.com"
+                defaultValue={email}
+                data-lock={email ? "true" : undefined}
+                required
+              />
             </AuthField>
 
             <AuthField label="Password" icon={<Lock size={15} aria-hidden />}>
@@ -87,6 +97,7 @@ export function AuthPanel({
                 type="password"
                 autoComplete="current-password"
                 placeholder="••••••••"
+                data-sticky="off"
                 required
               />
             </AuthField>
@@ -114,25 +125,62 @@ export function AuthPanel({
                 {loginPending ? "Signing In..." : "Sign In"}
               </button>
             </div>
-          </form>
+          </StickyForm>
         ) : (
-          <form action={registerAction} className="auth-form auth-form-grid">
+          <StickyForm
+            storageKey="coach-jdc-register"
+            restoreToken={registerState.formKey}
+            action={registerAction}
+            className="auth-form auth-form-grid"
+          >
             <p className="macos-lead">Create your account to open the dashboard.</p>
 
             <AuthField label="Full name" icon={<UserRound size={15} aria-hidden />}>
-              <input name="name" autoComplete="name" placeholder="Juan Dela Cruz" required />
+              <input
+                name="name"
+                autoComplete="name"
+                placeholder="Juan Dela Cruz"
+                required
+                defaultValue={fields?.name ?? ""}
+              />
             </AuthField>
             <AuthField label="Email address" icon={<Mail size={15} aria-hidden />}>
-              <input name="email" type="email" autoComplete="email" placeholder="name@mail.com" required />
+              <input
+                name="email"
+                type="email"
+                autoComplete="email"
+                placeholder="name@mail.com"
+                required
+                defaultValue={fields?.email ?? ""}
+              />
             </AuthField>
             <AuthField label="Phone number" className="auth-span-2" icon={<Smartphone size={15} aria-hidden />}>
-              <PhoneField />
+              <PhoneField
+                key={registerState.formKey ?? "phone"}
+                defaultIso={fields?.phoneCountry}
+                defaultNational={fields?.phoneNational}
+              />
             </AuthField>
             <AuthField label="Company" className="auth-span-2" icon={<Building2 size={15} aria-hidden />}>
-              <input name="company" autoComplete="organization" placeholder="Your company" required />
+              <input
+                name="company"
+                autoComplete="organization"
+                placeholder="Your company"
+                required
+                defaultValue={fields?.company ?? ""}
+              />
             </AuthField>
             <AuthField label="Password" icon={<Lock size={15} aria-hidden />}>
-              <input name="password" type="password" autoComplete="new-password" placeholder="At least 8 characters" required />
+              <input
+                name="password"
+                type="password"
+                autoComplete="new-password"
+                placeholder="At least 8 characters"
+                data-sticky="off"
+                required
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+              />
             </AuthField>
             <AuthField label="Confirm password" icon={<Lock size={15} aria-hidden />}>
               <input
@@ -140,7 +188,10 @@ export function AuthPanel({
                 type="password"
                 autoComplete="new-password"
                 placeholder="Re-enter your password"
+                data-sticky="off"
                 required
+                value={confirmPassword}
+                onChange={(event) => setConfirmPassword(event.target.value)}
               />
             </AuthField>
 
@@ -157,7 +208,7 @@ export function AuthPanel({
                 {registerPending ? "Creating Account..." : "Create Account"}
               </button>
             </div>
-          </form>
+          </StickyForm>
         )}
       </div>
     </div>

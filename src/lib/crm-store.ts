@@ -2,6 +2,7 @@ import { Pool } from "pg";
 
 import { contactSeed } from "@/data/crm";
 import { geocodeAddress } from "@/lib/geocode";
+import { emailsMatch, phonesMatch } from "@/lib/identity";
 import {
   addGhlContactTags,
   listGhlLocationContacts,
@@ -125,7 +126,10 @@ async function persistContact(contact: ContactRecord) {
 function upsertLocal(incoming: ContactRecord) {
   const email = incoming.email.toLowerCase();
   const index = memoryRecords.findIndex(
-    (record) => record.id === incoming.id || (email && record.email.toLowerCase() === email),
+    (record) =>
+      record.id === incoming.id ||
+      (email && record.email.toLowerCase() === email) ||
+      phonesMatch(record.phone, incoming.phone),
   );
 
   if (index >= 0) {
@@ -464,19 +468,40 @@ export async function listViewerMetrics(viewer: CrmViewer): Promise<DashboardMet
   ];
 }
 
+export async function findContactByEmailOrPhone(email: string, phone: string) {
+  await loadPersistedContacts();
+  return (
+    memoryRecords.find(
+      (record) => emailsMatch(record.email, email) || phonesMatch(record.phone, phone),
+    ) ?? null
+  );
+}
+
 export async function createLead(
   payload: Omit<ContactRecord, "id" | "createdAt" | "status" | "source" | "kind"> & {
     source?: string;
   },
 ) {
-  const lead: ContactRecord = {
-    id: `contact-${Date.now()}`,
-    kind: "contact",
-    createdAt: new Date().toISOString().slice(0, 10),
-    status: "new",
-    source: payload.source ?? "Website form",
-    ...payload,
-  };
+  const existing = await findContactByEmailOrPhone(payload.email, payload.phone);
+  const lead: ContactRecord = existing
+    ? {
+        ...existing,
+        ...payload,
+        id: existing.id,
+        kind: existing.kind,
+        createdAt: existing.createdAt,
+        status: existing.status,
+        source: existing.source,
+        tags: uniqueTags([...(existing.tags ?? []), ...(payload.tags ?? [])]),
+      }
+    : {
+        id: `contact-${Date.now()}`,
+        kind: "contact",
+        createdAt: new Date().toISOString().slice(0, 10),
+        status: "new",
+        source: payload.source ?? "Website form",
+        ...payload,
+      };
 
   await persistContact(lead);
   return lead;

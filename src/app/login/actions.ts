@@ -6,14 +6,18 @@ import { redirect } from "next/navigation";
 
 import { AFFILIATE_COOKIE, normalizeAffiliateCode } from "@/lib/affiliate";
 import { getProfileByCode, recordAttribution } from "@/lib/affiliate-store";
+import { existingAccountLoginPath, isTemporaryMemberPassword } from "@/lib/auth-constants";
 import {
   authenticateUser,
   completeMemberProfile,
   createUser,
   ensureSeedUsers,
+  findUserByEmailOrPhone,
+  issueTemporaryPassword,
   requestPasswordReset,
   resetPasswordWithToken,
   setMemberPaymentVerified,
+  setUserPassword,
 } from "@/lib/auth-store";
 import { storeProfilePhoto } from "@/lib/r2-upload";
 import { formatInternationalPhone } from "@/lib/countries";
@@ -28,10 +32,38 @@ import {
   resolveAudienceLabel,
 } from "@/lib/validations";
 
+export type RegisterDraft = {
+  name: string;
+  email: string;
+  phoneCountry: string;
+  phoneNational: string;
+  company: string;
+};
+
 export type AuthFormState = {
   error?: string;
   success?: string;
+  fields?: RegisterDraft;
+  formKey?: string;
 };
+
+function readRegisterDraft(formData: FormData): RegisterDraft {
+  return {
+    name: String(formData.get("name") ?? ""),
+    email: String(formData.get("email") ?? ""),
+    phoneCountry: String(formData.get("phoneCountry") ?? "PH").trim().toUpperCase() || "PH",
+    phoneNational: String(formData.get("phoneNational") ?? ""),
+    company: String(formData.get("company") ?? ""),
+  };
+}
+
+function registerError(error: string, formData: FormData): AuthFormState {
+  return {
+    error,
+    fields: readRegisterDraft(formData),
+    formKey: String(Date.now()),
+  };
+}
 
 async function setSessionCookie(userId: string, remember = true) {
   const cookieStore = await cookies();
@@ -63,20 +95,27 @@ export async function registerAccount(
 
   if (!parsed.success) {
     const firstError = Object.values(parsed.error.flatten().fieldErrors)[0]?.[0];
-    return { error: firstError || "Check the registration details and try again." };
+    return registerError(firstError || "Check the registration details and try again.", formData);
+  }
+
+  await ensureSeedUsers();
+  const existing = await findUserByEmailOrPhone(parsed.data.email, parsed.data.phone);
+  if (existing) {
+    if (existing.role !== "admin" && existing.role !== "partner") {
+      await issueTemporaryPassword(existing.id);
+    }
+    redirect(existingAccountLoginPath(existing.email));
   }
 
   try {
-    await ensureSeedUsers();
-    const { confirmPassword: _confirmPassword, ...account } = parsed.data;
     const user = await createUser({
-      name: account.name,
-      email: account.email,
-      password: account.password,
+      name: parsed.data.name,
+      email: parsed.data.email,
+      password: parsed.data.password,
       role: "member",
-      phone: account.phone,
-      phoneCountry: account.phoneCountry,
-      company: account.company,
+      phone: parsed.data.phone,
+      phoneCountry: parsed.data.phoneCountry,
+      company: parsed.data.company,
       profileComplete: false,
       paymentVerified: false,
       passwordSet: true,
@@ -104,9 +143,10 @@ export async function registerAccount(
       tags: ["Registration", "Pending verification", ...extraTags],
     });
   } catch (error) {
-    return {
-      error: error instanceof Error ? error.message : "I couldn't create this account just now.",
-    };
+    return registerError(
+      error instanceof Error ? error.message : "I couldn't create this account just now.",
+      formData,
+    );
   }
 
   redirect("/dashboard");
@@ -133,6 +173,9 @@ export async function loginAccount(
   }
 
   await setSessionCookie(user.id, String(formData.get("remember") ?? "") === "on");
+  if (!user.passwordSet || isTemporaryMemberPassword(parsed.data.password)) {
+    redirect("/account/password");
+  }
   redirect("/dashboard");
 }
 
@@ -272,6 +315,30 @@ export async function resetPasswordAccount(
   }
 
   redirect("/login");
+}
+
+export async function changeSignedInPassword(
+  _prevState: AuthFormState,
+  formData: FormData,
+): Promise<AuthFormState> {
+  const user = await requireSessionUser();
+  const password = String(formData.get("password") ?? "");
+  const confirmation = String(formData.get("confirmPassword") ?? "");
+
+  if (password.length < 8) {
+    return { error: "Use a new password with at least 8 characters." };
+  }
+
+  if (password !== confirmation) {
+    return { error: "The new password and confirmation password must match." };
+  }
+
+  if (isTemporaryMemberPassword(password)) {
+    return { error: "Choose a new password. Do not reuse JDCELITESOCIETY." };
+  }
+
+  await setUserPassword(user.id, password);
+  redirect("/dashboard");
 }
 
 export async function logout() {

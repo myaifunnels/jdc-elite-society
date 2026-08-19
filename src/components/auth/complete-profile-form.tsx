@@ -5,6 +5,7 @@ import { useActionState, useEffect, useState } from "react";
 import { AuthFormState, completeAccountProfile } from "@/app/login/actions";
 import { AddressAutocomplete } from "@/components/forms/address-autocomplete";
 import { PhotoUploadField } from "@/components/forms/photo-upload-field";
+import { StickyForm } from "@/components/forms/sticky-form";
 import { membershipTheme, type Membership } from "@/lib/membership";
 import { audienceOptions } from "@/lib/validations";
 
@@ -41,7 +42,7 @@ export function CompleteProfileForm() {
   }
 
   return (
-    <form action={formAction} className="grid gap-4" encType="multipart/form-data">
+    <StickyForm storageKey="coach-jdc-complete-profile" action={formAction} className="grid gap-4" encType="multipart/form-data">
       <PhotoUploadField required />
 
       <div className="grid gap-4 md:grid-cols-2">
@@ -132,6 +133,6 @@ export function CompleteProfileForm() {
       <button type="submit" className="macos-btn macos-btn-primary self-start" disabled={pending}>
         {pending ? "Saving your profile..." : "Lock in my profile"}
       </button>
-    </form>
+    </StickyForm>
   );
 }

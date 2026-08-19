@@ -3912,4 +3912,56 @@ html:not(.dark) .dashboard-desktop {
   width: 100%;
 }
 
+.sticky-contact {
+  position: fixed;
+  right: 1.1rem;
+  bottom: 1.1rem;
+  z-index: 80;
+  display: grid;
+  justify-items: end;
+  gap: 0.75rem;
+}
+
+.sticky-contact-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--brand) 35%, var(--line));
+  background: var(--brand);
+  color: white;
+  padding: 0.85rem 1.15rem;
+  font-size: 0.92rem;
+  font-weight: 700;
+  box-shadow: var(--shadow-xl);
+}
+
+.sticky-contact-panel {
+  width: min(26rem, calc(100vw - 1.5rem));
+  max-height: min(78vh, 44rem);
+  overflow: auto;
+  border: 1px solid var(--line);
+  border-radius: 1.5rem;
+  background: color-mix(in srgb, var(--surface-elevated) 94%, transparent);
+  padding: 1rem;
+  box-shadow: var(--shadow-xl);
+  backdrop-filter: blur(18px);
+}
+
+@media (max-width: 640px) {
+  .sticky-contact {
+    left: 0.75rem;
+    right: 0.75rem;
+    justify-items: stretch;
+  }
+
+  .sticky-contact-toggle {
+    justify-content: center;
+  }
+
+  .sticky-contact-panel {
+    width: 100%;
+  }
+}
+
 

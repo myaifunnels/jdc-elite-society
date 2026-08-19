@@ -11,18 +11,23 @@ export const metadata: Metadata = {
   description: "Sign in with your email and password, or register first.",
 };
 
-export default async function LoginPage() {
+type LoginPageProps = {
+  searchParams: Promise<{ email?: string }>;
+};
+
+export default async function LoginPage({ searchParams }: LoginPageProps) {
   const user = await getSessionUser();
+  const params = await searchParams;
 
   if (user) {
-    redirect("/dashboard");
+    redirect(user.passwordSet ? "/dashboard" : "/account/password");
   }
 
   const branding = await getResolvedBrandingSettings();
 
   return (
     <AuthPageShell>
-      <AuthPanel branding={branding} mode="login" />
+      <AuthPanel branding={branding} mode="login" email={params.email ?? ""} />
     </AuthPageShell>
   );
 }

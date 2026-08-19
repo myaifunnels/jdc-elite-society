@@ -3,6 +3,8 @@ import { NextResponse } from "next/server";
 
 import { AFFILIATE_COOKIE, normalizeAffiliateCode } from "@/lib/affiliate";
 import { getProfileByCode, recordAttribution } from "@/lib/affiliate-store";
+import { existingAccountLoginPath } from "@/lib/auth-constants";
+import { findUserByEmailOrPhone, issueTemporaryPassword } from "@/lib/auth-store";
 import { createLead } from "@/lib/crm-store";
 import { syncContactToGhl } from "@/lib/ghl";
 import { leadSchema } from "@/lib/validations";
@@ -19,6 +21,21 @@ export async function POST(request: Request) {
   }
 
   const cookieStore = await cookies();
+  const existingUser = await findUserByEmailOrPhone(parsed.data.email, parsed.data.phone);
+  if (existingUser) {
+    if (existingUser.role !== "admin" && existingUser.role !== "partner") {
+      await issueTemporaryPassword(existingUser.id);
+    }
+    return NextResponse.json(
+      {
+        duplicate: true,
+        email: existingUser.email,
+        redirectTo: existingAccountLoginPath(existingUser.email),
+      },
+      { status: 409 },
+    );
+  }
+
   const referralCode = normalizeAffiliateCode(cookieStore.get(AFFILIATE_COOKIE)?.value ?? "");
   const affiliate = referralCode ? await getProfileByCode(referralCode) : null;
 
