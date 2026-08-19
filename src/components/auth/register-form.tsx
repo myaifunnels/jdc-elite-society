@@ -41,6 +41,9 @@ export function RegisterForm({
         <FloatField label="Create a password">
           <input name="password" type="password" autoComplete="new-password" placeholder=" " />
         </FloatField>
+        <FloatField label="Confirm your password">
+          <input name="confirmPassword" type="password" autoComplete="new-password" placeholder=" " />
+        </FloatField>
         <FloatField label="Enter your date of birth">
           <input name="dateOfBirth" type="date" autoComplete="bday" required />
         </FloatField>
@@ -64,21 +67,24 @@ export function RegisterForm({
           <input name="facebookPhotoUrl" type="url" placeholder=" " />
         </FloatField>
         <fieldset className="grid gap-3">
-          <legend className="text-sm font-medium">What best describes your role here?</legend>
+          <legend className="text-sm font-medium">Your role here</legend>
           <label className="flex cursor-pointer items-start gap-3 rounded-2xl border border-[var(--line)] px-4 py-3">
-            <input type="radio" name="role" value="member" defaultChecked className="mt-1" />
+            <input type="checkbox" name="memberships" value="spartan" className="mt-1" />
             <span>
-              <span className="block font-semibold">Member</span>
-              <span className="text-sm text-[var(--muted)]">I&apos;m here to be coached and follow a program track.</span>
+              <span className="block font-semibold">Spartans</span>
+              <span className="text-sm text-[var(--muted)]">Join the Spartans track.</span>
             </span>
           </label>
           <label className="flex cursor-pointer items-start gap-3 rounded-2xl border border-[var(--line)] px-4 py-3">
-            <input type="radio" name="role" value="partner" className="mt-1" />
+            <input type="checkbox" name="memberships" value="jes" className="mt-1" />
             <span>
-              <span className="block font-semibold">Partner</span>
-              <span className="text-sm text-[var(--muted)]">I work with Coach JDC on contacts and regional follow-through.</span>
+              <span className="block font-semibold">JES Member</span>
+              <span className="text-sm text-[var(--muted)]">JES means JDC Elite Society.</span>
             </span>
           </label>
+          <p className="text-sm text-[var(--muted)]">
+            You can select Spartans, JES Member, or both.
+          </p>
         </fieldset>
       </div>
 

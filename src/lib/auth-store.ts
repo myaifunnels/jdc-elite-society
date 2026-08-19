@@ -1,6 +1,7 @@
 import { Pool } from "pg";
 
 import { hashPassword } from "@/lib/password";
+import { parseMemberships, serializeMemberships, type Membership } from "@/lib/membership";
 import { AuthUser, DashboardRole } from "@/lib/types";
 
 export type AuthUserRecord = AuthUser & {
@@ -38,6 +39,7 @@ function publicUser(user: AuthUserRecord): AuthUser {
     name: user.name,
     email: user.email,
     role: user.role,
+    memberships: user.memberships,
     bestDescribesYou: user.bestDescribesYou,
     dateOfBirth: user.dateOfBirth,
     address: user.address,
@@ -53,6 +55,7 @@ function mapRow(row: Record<string, unknown>): AuthUserRecord {
     name: String(row.name ?? ""),
     email: String(row.email ?? "").toLowerCase(),
     role: row.role === "admin" || row.role === "partner" || row.role === "member" ? row.role : "member",
+    memberships: parseMemberships(row.memberships),
     bestDescribesYou: String(row.best_describes_you ?? ""),
     dateOfBirth: String(row.date_of_birth ?? ""),
     address: String(row.address ?? ""),
@@ -97,6 +100,10 @@ async function ensureTable(client: Pool) {
   await client.query(`
     ALTER TABLE site_users
     ADD COLUMN IF NOT EXISTS facebook_photo_url TEXT NOT NULL DEFAULT ''
+  `);
+  await client.query(`
+    ALTER TABLE site_users
+    ADD COLUMN IF NOT EXISTS memberships TEXT NOT NULL DEFAULT ''
   `);
   tableReady = true;
 }
@@ -243,6 +250,7 @@ export async function createUser(input: {
   address?: string;
   facebookProfileUrl?: string;
   facebookPhotoUrl?: string;
+  memberships?: Membership[];
 }) {
   const email = input.email.trim().toLowerCase();
   const existing = await findUserByEmail(email);
@@ -256,6 +264,7 @@ export async function createUser(input: {
     name: input.name.trim(),
     email,
     role: input.role,
+    memberships: parseMemberships(input.memberships ?? []),
     bestDescribesYou: input.bestDescribesYou ?? "",
     dateOfBirth: input.dateOfBirth ?? "",
     address: input.address ?? "",
@@ -275,9 +284,9 @@ export async function createUser(input: {
         `
         INSERT INTO site_users (
           id, name, email, role, password_hash, created_at, best_describes_you,
-          date_of_birth, address, facebook_profile_url, facebook_photo_url
+          date_of_birth, address, facebook_profile_url, facebook_photo_url, memberships
         )
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
         `,
         [
           user.id,
@@ -291,6 +300,7 @@ export async function createUser(input: {
           user.address,
           user.facebookProfileUrl,
           user.facebookPhotoUrl,
+          serializeMemberships(user.memberships),
         ],
       );
     } catch (error) {

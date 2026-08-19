@@ -1,15 +1,14 @@
 import { DashboardSidebar } from "@/components/dashboard/dashboard-sidebar";
 import { BrandingSettings } from "@/lib/branding";
-import { DashboardRole } from "@/lib/types";
+import { membershipLabel } from "@/lib/membership";
+import { AuthUser } from "@/lib/types";
 
 export function DashboardFrame({
-  role,
-  userName,
+  user,
   branding,
   children,
 }: {
-  role: DashboardRole;
-  userName: string;
+  user: AuthUser;
   branding: BrandingSettings;
   children: React.ReactNode;
 }) {
@@ -19,7 +18,12 @@ export function DashboardFrame({
         Skip to dashboard content
       </a>
       <div className="dashboard-app">
-        <DashboardSidebar role={role} userName={userName} branding={branding} />
+        <DashboardSidebar
+          role={user.role}
+          userName={user.name}
+          membershipLabel={membershipLabel(user.memberships)}
+          branding={branding}
+        />
         <div className="dashboard-app-main min-w-0">{children}</div>
       </div>
     </div>

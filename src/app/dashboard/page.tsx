@@ -7,6 +7,7 @@ import { PartnersMap } from "@/components/dashboard/partners-map";
 import { dashboardMetrics } from "@/data/crm";
 import { programs } from "@/data/programs";
 import { listContacts, listPartnerMapPins } from "@/lib/crm-store";
+import { membershipLabel } from "@/lib/membership";
 import { requireSessionUser } from "@/lib/session";
 
 export default async function DashboardPage() {
@@ -21,7 +22,8 @@ export default async function DashboardPage() {
         <div className="dashboard-widget-grid">
           <MacosWindow title="Your role" className="dashboard-span-2">
             <p className="macos-lead" style={{ textAlign: "left" }}>
-              Signed in as a member. Partners and admins see different rooms. This one is for the person doing the work.
+              Signed in as {membershipLabel(user.memberships)}. JES means JDC Elite Society. This
+              workspace is for the person doing the work.
             </p>
             <div className="macos-actions">
               <Link href="/dashboard/path" className="macos-btn macos-btn-primary">

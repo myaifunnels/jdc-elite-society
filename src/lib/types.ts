@@ -1,3 +1,5 @@
+import { Membership } from "@/lib/membership";
+
 export type Program = {
   slug: string;
   title: string;
@@ -29,6 +31,7 @@ export type AuthUser = {
   name: string;
   email: string;
   role: DashboardRole;
+  memberships: Membership[];
   bestDescribesYou?: string;
   dateOfBirth?: string;
   address?: string;
