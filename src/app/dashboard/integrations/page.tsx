@@ -31,7 +31,7 @@ export default async function IntegrationsPage() {
               <div>
                 <p className="text-sm font-semibold">Google Maps</p>
                 <p className="mt-2 text-sm text-[var(--muted)]">
-                  Paste the Maps Embed API key to enable live map previews in the admin Maps workspace.
+                  Paste the Maps Embed API key to enable live map previews on contact dashboards.
                 </p>
               </div>
               <span
@@ -53,10 +53,10 @@ export default async function IntegrationsPage() {
 
             <div className="mt-6">
               <Link
-                href="/dashboard/maps"
+                href="/dashboard"
                 className="button-secondary pressable rounded-full px-4 py-2 text-sm font-semibold"
               >
-                Open Maps workspace
+                Open dashboard map
               </Link>
             </div>
           </section>

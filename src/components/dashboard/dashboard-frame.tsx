@@ -14,12 +14,14 @@ export function DashboardFrame({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-dvh">
+    <div className="dashboard-desktop">
       <a href="#dashboard-main" className="skip-link">
         Skip to dashboard content
       </a>
-      <DashboardSidebar role={role} userName={userName} branding={branding} />
-      <div className="min-w-0 lg:pl-[17rem]">{children}</div>
+      <div className="dashboard-app">
+        <DashboardSidebar role={role} userName={userName} branding={branding} />
+        <div className="dashboard-app-main min-w-0">{children}</div>
+      </div>
     </div>
   );
 }

@@ -37,22 +37,35 @@ export type AuthUser = {
   createdAt: string;
 };
 
-export type LeadRecord = {
+export type ContactKind = "partner" | "contact";
+
+export type ContactStatus = "new" | "qualified" | "follow-up" | "won" | "active" | "ramping";
+
+export type ContactRecord = {
   id: string;
+  kind: ContactKind;
   name: string;
   email: string;
   phone: string;
   dateOfBirth: string;
   address: string;
   city: string;
+  region?: string;
   tags: string[];
   bestDescribesYou: string;
   programInterest: string;
-  status: "new" | "qualified" | "follow-up" | "won";
+  status: ContactStatus;
   source: string;
   assignedPartner?: string;
+  photoUrl?: string;
+  lat?: number;
+  lng?: number;
+  activeContacts?: number;
+  winRate?: string;
   createdAt: string;
 };
+
+export type LeadRecord = ContactRecord;
 
 export type DashboardMetric = {
   label: string;
@@ -60,11 +73,14 @@ export type DashboardMetric = {
   detail: string;
 };
 
-export type PartnerSummary = {
+export type PartnerSummary = ContactRecord;
+
+export type PartnerMapPin = {
   id: string;
   name: string;
   region: string;
-  activeLeads: number;
-  winRate: string;
-  status: "active" | "ramping";
+  address: string;
+  photoUrl?: string;
+  lat: number;
+  lng: number;
 };

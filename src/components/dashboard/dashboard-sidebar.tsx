@@ -3,9 +3,10 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useId, useState } from "react";
-import { BookOpen, Handshake, LayoutDashboard, LogOut, Map, Menu, Plug, Settings2, Users, X } from "lucide-react";
+import { BookOpen, LayoutDashboard, LogOut, Menu, Plug, Settings2, Users, X } from "lucide-react";
 
 import { logout } from "@/app/login/actions";
+import { MacosTrafficLights } from "@/components/dashboard/macos-window";
 import { SiteLogo } from "@/components/branding/site-logo";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { BrandingSettings } from "@/lib/branding";
@@ -17,20 +18,17 @@ const navByRole: Record<
   { href: string; label: string; icon: typeof LayoutDashboard }[]
 > = {
   admin: [
-    { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
-    { href: "/dashboard/leads", label: "Leads", icon: Users },
-    { href: "/dashboard/maps", label: "Maps", icon: Map },
+    { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+    { href: "/dashboard/contacts", label: "Contacts", icon: Users },
     { href: "/dashboard/integrations", label: "Integrations", icon: Plug },
-    { href: "/dashboard/partners", label: "Partners", icon: Handshake },
     { href: "/dashboard/settings", label: "Settings", icon: Settings2 },
   ],
   partner: [
-    { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
-    { href: "/dashboard/leads", label: "My leads", icon: Users },
-    { href: "/dashboard/partners", label: "Partner summary", icon: Handshake },
+    { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+    { href: "/dashboard/contacts", label: "Contacts", icon: Users },
   ],
   member: [
-    { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
+    { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
     { href: "/dashboard/path", label: "My path", icon: BookOpen },
   ],
 };
@@ -62,27 +60,33 @@ function SidebarPanel({
 
   return (
     <>
-      <div className="flex items-center justify-between gap-3 border-b border-[var(--line)] px-4 py-4">
-        <SiteLogo branding={branding} href="/dashboard" compact />
+      <div className="dashboard-sidebar-head">
+        <MacosTrafficLights />
         {showClose ? (
           <button
             type="button"
-            className="glass-icon-btn pressable inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full"
+            className="glass-icon-btn pressable inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-full"
             onClick={onNavigate}
           >
-            <X size={18} />
+            <X size={16} />
             <span className="sr-only">Close navigation</span>
           </button>
-        ) : null}
+        ) : (
+          <span />
+        )}
       </div>
 
-      <div className="px-4 pt-5">
-        <p id={titleId} className="text-[0.68rem] font-semibold uppercase tracking-[0.28em] text-[var(--muted)]">
+      <div className="px-3 pb-3">
+        <SiteLogo branding={branding} href="/dashboard" compact />
+      </div>
+
+      <div className="px-4">
+        <p id={titleId} className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-[var(--muted)]">
           {role} workspace
         </p>
       </div>
 
-      <nav aria-label="Dashboard" className="mt-3 grid gap-1 px-3">
+      <nav aria-label="Dashboard" className="mt-3 grid gap-1 px-2">
         {navByRole[role].map((item) => {
           const Icon = item.icon;
           const active = isActivePath(pathname, item.href);
@@ -93,21 +97,16 @@ function SidebarPanel({
               href={item.href}
               aria-current={active ? "page" : undefined}
               onClick={onNavigate}
-              className={cn(
-                "pressable inline-flex min-h-11 items-center gap-3 rounded-2xl px-3 text-sm font-medium transition",
-                active
-                  ? "bg-[var(--brand-soft)] text-[var(--foreground)]"
-                  : "text-[var(--muted)] hover:bg-[color:var(--brand-soft)] hover:text-[var(--foreground)]",
-              )}
+              className={cn("dashboard-nav-item pressable", active && "is-active")}
             >
-              <Icon size={18} aria-hidden />
+              <Icon size={16} aria-hidden />
               {item.label}
             </Link>
           );
         })}
       </nav>
 
-      <div className="mt-auto grid gap-3 border-t border-[var(--line)] p-4">
+      <div className="mt-auto grid gap-3 border-t border-[var(--line)] p-3">
         <div className="flex items-center justify-between gap-3">
           <div className="min-w-0">
             <p className="truncate text-sm font-semibold">{userName}</p>
@@ -116,20 +115,13 @@ function SidebarPanel({
           <ThemeToggle />
         </div>
 
-        <Link
-          href="/"
-          onClick={onNavigate}
-          className="pressable inline-flex min-h-11 items-center justify-center rounded-2xl px-3 text-sm font-medium text-[var(--muted)] transition hover:bg-[color:var(--brand-soft)] hover:text-[var(--foreground)]"
-        >
+        <Link href="/" onClick={onNavigate} className="dashboard-nav-item pressable">
           View public site
         </Link>
 
         <form action={logout}>
-          <button
-            type="submit"
-            className="button-secondary pressable inline-flex min-h-11 w-full cursor-pointer items-center justify-center gap-2 rounded-2xl px-3 text-sm font-medium"
-          >
-            <LogOut size={16} aria-hidden />
+          <button type="submit" className="macos-btn macos-btn-secondary pressable w-full gap-2">
+            <LogOut size={14} aria-hidden />
             Sign out
           </button>
         </form>
@@ -185,7 +177,7 @@ export function DashboardSidebar({
 
   return (
     <>
-      <div className="sticky top-0 z-30 flex items-center justify-between gap-3 border-b border-[var(--line)] bg-[color:var(--background)]/88 px-4 py-3 backdrop-blur-xl lg:hidden">
+      <div className="dashboard-mobile-bar sticky top-0 z-30 flex items-center justify-between gap-3 px-4 py-3 lg:hidden">
         <SiteLogo branding={branding} href="/dashboard" compact />
         <div className="flex items-center gap-2">
           <ThemeToggle />
@@ -217,7 +209,7 @@ export function DashboardSidebar({
         aria-hidden={!open}
         inert={!open}
         className={cn(
-          "dashboard-sidebar fixed inset-y-0 left-0 z-50 flex w-[17rem] flex-col overflow-y-auto border-r border-[var(--line)] bg-[color:var(--surface-elevated)]/94 shadow-[var(--shadow-xl)] backdrop-blur-2xl transition-transform duration-200 ease-out lg:hidden",
+          "dashboard-sidebar fixed inset-y-0 left-0 z-50 flex w-[16.5rem] flex-col overflow-y-auto transition-transform duration-200 ease-out lg:hidden",
           open ? "translate-x-0" : "-translate-x-full",
         )}
       >
@@ -233,7 +225,7 @@ export function DashboardSidebar({
 
       <aside
         aria-labelledby={`${titleId}-desktop`}
-        className="dashboard-sidebar fixed inset-y-0 left-0 z-40 hidden w-[17rem] flex-col overflow-y-auto border-r border-[var(--line)] bg-[color:var(--surface-elevated)]/94 shadow-[var(--shadow-xl)] backdrop-blur-2xl lg:flex"
+        className="dashboard-sidebar hidden w-[16.5rem] shrink-0 flex-col overflow-y-auto lg:flex"
       >
         <SidebarPanel
           role={role}

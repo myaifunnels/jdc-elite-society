@@ -171,7 +171,7 @@ export default async function Home() {
                   Create an account. We&apos;ll open the dashboard that matches your role.
                 </h2>
                 <p className="mt-4 text-[var(--muted)]">
-                  Members get a coaching workspace. Partners get assigned leads. Admins keep the full command center.
+                  Members get a coaching workspace. Partners get assigned contacts. Admins keep the full command center.
                   Choose your role when you register — the room you enter depends on that.
                 </p>
               </div>

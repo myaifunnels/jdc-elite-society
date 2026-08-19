@@ -32,8 +32,8 @@ export async function saveGoogleMapsIntegration(
     await saveIntegrationSettings({ googleMapsEmbedKey });
   }
   revalidatePath("/dashboard/integrations");
-  revalidatePath("/dashboard/maps");
-  revalidatePath("/dashboard/leads");
+  revalidatePath("/dashboard");
+  revalidatePath("/dashboard/contacts");
   revalidatePath("/contact");
 
   return { success: "Google Maps key saved." };

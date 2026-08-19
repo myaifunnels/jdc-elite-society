@@ -76,7 +76,7 @@ export function RegisterForm({
             <input type="radio" name="role" value="partner" className="mt-1" />
             <span>
               <span className="block font-semibold">Partner</span>
-              <span className="text-sm text-[var(--muted)]">I work with Coach JDC on leads and regional follow-through.</span>
+              <span className="text-sm text-[var(--muted)]">I work with Coach JDC on contacts and regional follow-through.</span>
             </span>
           </label>
         </fieldset>

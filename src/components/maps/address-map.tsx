@@ -10,7 +10,7 @@ export function AddressMap({ address, embedKey }: AddressMapProps) {
   if (!trimmed) {
     return (
       <div className="card-surface rounded-3xl p-6 text-sm text-[var(--muted)]">
-        Add an address to preview the Google Maps lookup link for this lead or inquiry.
+        Add an address to preview the Google Maps lookup link for this contact or inquiry.
       </div>
     );
   }
@@ -25,7 +25,7 @@ export function AddressMap({ address, embedKey }: AddressMapProps) {
     <div className="overflow-hidden rounded-3xl border border-[var(--line)] bg-[color:var(--surface-elevated)]">
       {embedUrl ? (
         <iframe
-          title="Lead address map"
+          title="Contact address map"
           src={embedUrl}
           className="h-64 w-full border-0"
           loading="lazy"
