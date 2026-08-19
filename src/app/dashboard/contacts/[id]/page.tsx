@@ -2,10 +2,11 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { ContactAvatar } from "@/components/dashboard/contact-avatar";
+import { ContactTagEditor } from "@/components/dashboard/contact-tag-editor";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { MacosWindow } from "@/components/dashboard/macos-window";
 import { AddressMap } from "@/components/maps/address-map";
-import { getContact, listAssignedContacts } from "@/lib/crm-store";
+import { getContact, listAssignedContacts, listTagIndex } from "@/lib/crm-store";
 import { getGoogleMapsConfig } from "@/lib/maps";
 import { requireRoles } from "@/lib/session";
 
@@ -24,6 +25,7 @@ export default async function ContactDashboardPage({
 
   const assigned = contact.kind === "partner" ? await listAssignedContacts(user, contact.name) : [];
   const mapsConfig = await getGoogleMapsConfig();
+  const tagIndex = await listTagIndex(user);
   const isPartner = contact.kind === "partner";
 
   return (
@@ -32,7 +34,7 @@ export default async function ContactDashboardPage({
       description={
         isPartner
           ? "Partner dashboard with coverage, assigned contacts, and location."
-          : "Detailed contact dashboard with profile, assignment, and location."
+          : "Contact dashboard: profile, GHL tags, and location."
       }
     >
       <div className="dashboard-widget-grid">
@@ -97,16 +99,24 @@ export default async function ContactDashboardPage({
             </article>
             <article className="dashboard-metric-card">
               <p className="macos-kicker">Tags</p>
-              <div className="mt-3 flex flex-wrap gap-2">
-                {contact.tags.map((tag) => (
-                  <span key={tag} className="dashboard-chip">
-                    {tag}
-                  </span>
-                ))}
-              </div>
+              <p className="dashboard-metric-value">{contact.tags.length}</p>
+              <p className="dashboard-metric-copy">Synced with the JDC Elite Society GHL subaccount.</p>
             </article>
           </>
         )}
+
+        <MacosWindow title="Tags" className="dashboard-span-2">
+          <p className="macos-lead" style={{ textAlign: "left" }}>
+            Advanced tags stay aligned with AiFunnels GHL. Add or remove a tag here and it writes back to the Elite
+            Society location.
+          </p>
+          <ContactTagEditor
+            contactId={contact.id}
+            tags={contact.tags}
+            suggestions={tagIndex.map((item) => item.tag)}
+            canEdit={user.role === "admin" || user.role === "partner"}
+          />
+        </MacosWindow>
 
         <MacosWindow title="Location" className={isPartner ? "dashboard-span-2" : undefined}>
           <AddressMap address={contact.address} embedKey={mapsConfig.embedKey} />

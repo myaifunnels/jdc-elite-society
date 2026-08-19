@@ -3403,6 +3403,137 @@ html:not(.dark) .dashboard-desktop {
   font-weight: 650;
 }
 
+.contacts-toolbar {
+  width: 100%;
+}
+
+.contact-search,
+.contact-tag-cloud,
+.contact-tag-editor,
+.contacts-metric-row,
+.partners-map-widget {
+  grid-column: 1 / -1;
+}
+
+.contact-search {
+  display: flex;
+  gap: 0.55rem;
+}
+
+.contact-search input {
+  flex: 1;
+  min-height: 2.2rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--surface) 80%, transparent);
+  padding: 0 0.75rem;
+  color: var(--foreground);
+}
+
+.contacts-metric-row {
+  display: grid;
+  gap: 0.7rem;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+}
+
+.contact-tag-cloud {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.contact-tag-cloud.is-compact {
+  gap: 0.28rem;
+}
+
+.tag-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.28rem;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: var(--brand-soft);
+  padding: 0.18rem 0.55rem;
+  color: var(--brand-dark);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.tag-chip em {
+  font-style: normal;
+  opacity: 0.7;
+}
+
+.tag-chip button {
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font-size: 0.95rem;
+  line-height: 1;
+}
+
+.tag-chip.is-audience {
+  background: color-mix(in srgb, #007aff 16%, var(--surface));
+  color: #0b4ea2;
+}
+
+.tag-chip.is-program {
+  background: color-mix(in srgb, #34c759 16%, var(--surface));
+  color: #0d6b32;
+}
+
+.tag-chip.is-stage {
+  background: color-mix(in srgb, #ff9f0a 18%, var(--surface));
+  color: #8a4b00;
+}
+
+.tag-chip.is-membership,
+.tag-chip.is-ghl {
+  background: color-mix(in srgb, var(--brand) 16%, var(--surface));
+  color: var(--brand);
+}
+
+.tag-chip.is-custom {
+  background: color-mix(in srgb, var(--muted) 16%, var(--surface));
+  color: var(--foreground);
+}
+
+.tag-chip.is-ghost {
+  background: transparent;
+  border-color: var(--line);
+}
+
+.tag-chip.is-active {
+  box-shadow: inset 0 0 0 1px currentColor;
+}
+
+.contact-tag-form {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.contact-tag-form input {
+  flex: 1;
+  min-height: 2.2rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--surface) 80%, transparent);
+  padding: 0 0.75rem;
+  color: var(--foreground);
+}
+
+.contact-tag-suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.partners-map-canvas.is-tall {
+  height: min(68vh, 42rem);
+}
+
 .partners-map-body {
   gap: 0.75rem;
 }

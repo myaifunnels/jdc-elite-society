@@ -113,6 +113,8 @@ export type GhlRemoteContact = {
   type?: string;
   assignedTo?: string;
   profilePhoto?: string;
+  latitude?: number | string;
+  longitude?: number | string;
   customFields?: Array<{ id?: string; key?: string; field_value?: string; value?: string }>;
 };
 
@@ -224,5 +226,83 @@ export async function listGhlLocationContacts() {
   } catch (error) {
     console.error("GHL contact list failed", error);
     return { skipped: false as const, contacts };
+  }
+}
+
+export async function listGhlLocationTags() {
+  const settings = await getResolvedIntegrationSettings();
+  const token = settings.ghlApiKey;
+  const locationId = settings.ghlLocationId;
+
+  if (!token || !locationId) {
+    return [] as string[];
+  }
+
+  try {
+    const response = await fetch(`https://services.leadconnectorhq.com/locations/${locationId}/tags`, {
+      headers: ghlHeaders(token),
+      cache: "no-store",
+    });
+    if (!response.ok) {
+      return [];
+    }
+
+    const payload = (await response.json()) as Record<string, unknown>;
+    const bags = [payload.tags, payload.data];
+    const list = bags.find((item) => Array.isArray(item)) as Array<{ name?: string; tag?: string }> | undefined;
+    return (list ?? [])
+      .map((item) => String(item.name ?? item.tag ?? "").trim())
+      .filter(Boolean);
+  } catch (error) {
+    console.error("GHL tags list failed", error);
+    return [];
+  }
+}
+
+export async function addGhlContactTags(contactId: string, tags: string[]) {
+  const settings = await getResolvedIntegrationSettings();
+  const token = settings.ghlApiKey;
+  if (!token || !contactId || tags.length === 0) {
+    return { skipped: true as const };
+  }
+
+  try {
+    const response = await fetch(`https://services.leadconnectorhq.com/contacts/${contactId}/tags`, {
+      method: "POST",
+      headers: ghlHeaders(token, true),
+      body: JSON.stringify({ tags }),
+    });
+    if (!response.ok) {
+      console.error("GHL add tags failed", response.status, await response.text());
+      return { skipped: false as const, ok: false as const };
+    }
+    return { skipped: false as const, ok: true as const };
+  } catch (error) {
+    console.error("GHL add tags error", error);
+    return { skipped: false as const, ok: false as const };
+  }
+}
+
+export async function removeGhlContactTags(contactId: string, tags: string[]) {
+  const settings = await getResolvedIntegrationSettings();
+  const token = settings.ghlApiKey;
+  if (!token || !contactId || tags.length === 0) {
+    return { skipped: true as const };
+  }
+
+  try {
+    const response = await fetch(`https://services.leadconnectorhq.com/contacts/${contactId}/tags`, {
+      method: "DELETE",
+      headers: ghlHeaders(token, true),
+      body: JSON.stringify({ tags }),
+    });
+    if (!response.ok) {
+      console.error("GHL remove tags failed", response.status, await response.text());
+      return { skipped: false as const, ok: false as const };
+    }
+    return { skipped: false as const, ok: true as const };
+  } catch (error) {
+    console.error("GHL remove tags error", error);
+    return { skipped: false as const, ok: false as const };
   }
 }

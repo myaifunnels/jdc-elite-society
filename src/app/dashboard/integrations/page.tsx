@@ -107,8 +107,8 @@ export default async function IntegrationsPage() {
               <p className="text-sm font-semibold">GoHighLevel — JDC Elite Society</p>
               <p className="mt-2 text-sm text-[var(--muted)]">
                 Registrations and inquiry leads sync into the JDC Elite Society subaccount. Use a Private Integration
-                token with Contacts read/write access and that location&apos;s ID. Contacts pull into the admin roster;
-                registrations still push the other way.
+                token with Contacts read/write access and that location&apos;s ID. Contacts and tags sync both ways with
+                the admin roster; registrations still push the other way.
               </p>
             </div>
             <span

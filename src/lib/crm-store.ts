@@ -1,8 +1,24 @@
 import { Pool } from "pg";
 
 import { contactSeed } from "@/data/crm";
-import { listGhlLocationContacts, type GhlRemoteContact } from "@/lib/ghl";
-import { AuthUser, ContactKind, ContactRecord, ContactStatus, DashboardMetric, PartnerMapPin } from "@/lib/types";
+import { geocodeAddress } from "@/lib/geocode";
+import {
+  addGhlContactTags,
+  listGhlLocationContacts,
+  listGhlLocationTags,
+  removeGhlContactTags,
+  type GhlRemoteContact,
+} from "@/lib/ghl";
+import { TAG_GROUPS, uniqueTags } from "@/lib/tags";
+import {
+  AuthUser,
+  ContactKind,
+  ContactMapPin,
+  ContactRecord,
+  ContactStatus,
+  DashboardMetric,
+  PartnerMapPin,
+} from "@/lib/types";
 
 export type CrmViewer = Pick<AuthUser, "role" | "name" | "email">;
 
@@ -121,6 +137,8 @@ function upsertLocal(incoming: ContactRecord) {
       photoUrl: incoming.photoUrl || current.photoUrl,
       lat: incoming.lat ?? current.lat,
       lng: incoming.lng ?? current.lng,
+      ghlContactId: incoming.ghlContactId || current.ghlContactId,
+      tags: incoming.ghlContactId ? uniqueTags(incoming.tags) : uniqueTags([...(incoming.tags ?? []), ...current.tags]),
     };
     return;
   }
@@ -159,6 +177,11 @@ function mapGhlStatus(tags: string[], type?: string): ContactStatus {
   return "new";
 }
 
+function asCoord(value: unknown) {
+  const number = Number(value);
+  return Number.isFinite(number) ? number : undefined;
+}
+
 function fromGhlContact(contact: GhlRemoteContact): ContactRecord | null {
   const email = String(contact.email ?? "").trim();
   const name = [contact.firstName, contact.lastName].filter(Boolean).join(" ").trim() || String(contact.name ?? "").trim();
@@ -166,7 +189,7 @@ function fromGhlContact(contact: GhlRemoteContact): ContactRecord | null {
     return null;
   }
 
-  const tags = (contact.tags ?? []).map((tag) => String(tag).trim()).filter(Boolean);
+  const tags = uniqueTags(contact.tags ?? []);
   const isPartner = tags.some((tag) => tag.toLowerCase().includes("partner")) || String(contact.type ?? "").toLowerCase() === "partner";
   const city = String(contact.city ?? "").trim();
   const region = String(contact.state ?? contact.country ?? "").trim();
@@ -175,6 +198,7 @@ function fromGhlContact(contact: GhlRemoteContact): ContactRecord | null {
 
   return {
     id: `ghl-${contact.id}`,
+    ghlContactId: String(contact.id),
     kind: isPartner ? "partner" : "contact",
     name,
     email,
@@ -183,13 +207,15 @@ function fromGhlContact(contact: GhlRemoteContact): ContactRecord | null {
     address,
     city,
     region: region || undefined,
-    tags: tags.length ? tags : ["GHL"],
+    tags: tags.length ? tags : ["JDC Elite Society"],
     bestDescribesYou: customField(contact, ["best_describes", "audience"]) || tags[0] || "GHL contact",
     programInterest: customField(contact, ["program"]) || "JDC Elite Society",
     status: mapGhlStatus(tags, contact.type),
     source: String(contact.source ?? "").trim() || "GHL · JDC Elite Society",
     assignedPartner: contact.assignedTo ? String(contact.assignedTo) : undefined,
     photoUrl: photoUrl || undefined,
+    lat: asCoord(contact.latitude),
+    lng: asCoord(contact.longitude),
     createdAt: String(contact.dateAdded ?? new Date().toISOString()).slice(0, 10),
   };
 }
@@ -241,13 +267,46 @@ function visibleToViewer(viewer: CrmViewer) {
   return [];
 }
 
-export async function listContacts(viewer: CrmViewer, kind?: ContactKind) {
+export type ContactQuery = {
+  kind?: ContactKind;
+  tags?: string[];
+  q?: string;
+};
+
+function matchesQuery(contact: ContactRecord, query: ContactQuery) {
+  if (query.kind && contact.kind !== query.kind) {
+    return false;
+  }
+
+  const wanted = uniqueTags(query.tags ?? []);
+  if (wanted.length) {
+    const have = new Set(contact.tags.map((tag) => tag.toLowerCase()));
+    if (!wanted.every((tag) => have.has(tag.toLowerCase()))) {
+      return false;
+    }
+  }
+
+  const needle = String(query.q ?? "").trim().toLowerCase();
+  if (!needle) {
+    return true;
+  }
+
+  const haystack = [contact.name, contact.email, contact.phone, contact.city, contact.region, contact.source, ...contact.tags]
+    .join(" ")
+    .toLowerCase();
+  return haystack.includes(needle);
+}
+
+export async function listContacts(viewer: CrmViewer, kindOrQuery?: ContactKind | ContactQuery) {
   await hydrateCrm();
-  const visible = visibleToViewer(viewer).slice().sort((left, right) => {
-    const byDate = String(right.createdAt).localeCompare(String(left.createdAt));
-    return byDate || left.name.localeCompare(right.name);
-  });
-  return kind ? visible.filter((contact) => contact.kind === kind) : visible;
+  const query: ContactQuery = typeof kindOrQuery === "string" ? { kind: kindOrQuery } : (kindOrQuery ?? {});
+  return visibleToViewer(viewer)
+    .filter((contact) => matchesQuery(contact, query))
+    .slice()
+    .sort((left, right) => {
+      const byDate = String(right.createdAt).localeCompare(String(left.createdAt));
+      return byDate || left.name.localeCompare(right.name);
+    });
 }
 
 export async function listLeads(viewer: CrmViewer) {
@@ -281,6 +340,102 @@ export async function listPartnerMapPins(viewer: CrmViewer): Promise<PartnerMapP
       lat: partner.lat,
       lng: partner.lng,
     }));
+}
+
+function toMapPin(contact: ContactRecord): ContactMapPin | null {
+  if (typeof contact.lat !== "number" || typeof contact.lng !== "number") {
+    return null;
+  }
+
+  return {
+    id: contact.id,
+    name: contact.name,
+    region: contact.region ?? contact.city,
+    address: contact.address,
+    photoUrl: contact.photoUrl,
+    lat: contact.lat,
+    lng: contact.lng,
+    kind: contact.kind,
+    tags: contact.tags,
+  };
+}
+
+export async function listContactMapPins(viewer: CrmViewer, query?: ContactQuery): Promise<ContactMapPin[]> {
+  const contacts = await listContacts(viewer, query);
+  const pins: ContactMapPin[] = [];
+  let lookups = 0;
+
+  for (const contact of contacts) {
+    const existing = toMapPin(contact);
+    if (existing) {
+      pins.push(existing);
+      continue;
+    }
+
+    const lookup = [contact.address, contact.city, contact.region].filter(Boolean).join(", ");
+    if (!lookup || lookups >= 8) {
+      continue;
+    }
+
+    lookups += 1;
+    const coords = await geocodeAddress(lookup);
+    if (!coords) {
+      continue;
+    }
+
+    const next = { ...contact, lat: coords.lat, lng: coords.lng };
+    await persistContact(next);
+    const pin = toMapPin(next);
+    if (pin) {
+      pins.push(pin);
+    }
+  }
+
+  return pins;
+}
+
+export async function listTagIndex(viewer: CrmViewer) {
+  const [contacts, remote] = await Promise.all([listContacts(viewer), listGhlLocationTags()]);
+  const counts = new Map<string, number>();
+
+  for (const contact of contacts) {
+    for (const tag of uniqueTags(contact.tags)) {
+      counts.set(tag, (counts.get(tag) ?? 0) + 1);
+    }
+  }
+
+  const catalog = uniqueTags([
+    ...TAG_GROUPS.flatMap((group) => group.tags),
+    ...remote,
+    ...counts.keys(),
+  ]);
+
+  return catalog.map((tag) => ({ tag, count: counts.get(tag) ?? 0 }));
+}
+
+export async function setContactTags(viewer: CrmViewer, contactId: string, tags: string[]) {
+  const contact = await getContact(viewer, contactId);
+  if (!contact) {
+    return { ok: false as const, error: "Contact not found." };
+  }
+
+  const nextTags = uniqueTags(tags);
+  const current = uniqueTags(contact.tags);
+  const added = nextTags.filter((tag) => !current.some((item) => item.toLowerCase() === tag.toLowerCase()));
+  const removed = current.filter((tag) => !nextTags.some((item) => item.toLowerCase() === tag.toLowerCase()));
+
+  await persistContact({ ...contact, tags: nextTags });
+
+  if (contact.ghlContactId) {
+    if (added.length) {
+      await addGhlContactTags(contact.ghlContactId, added);
+    }
+    if (removed.length) {
+      await removeGhlContactTags(contact.ghlContactId, removed);
+    }
+  }
+
+  return { ok: true as const, tags: nextTags };
 }
 
 export async function listViewerMetrics(viewer: CrmViewer): Promise<DashboardMetric[]> {

@@ -172,6 +172,7 @@ export type ContactRecord = {
   photoUrl?: string;
   lat?: number;
   lng?: number;
+  ghlContactId?: string;
   activeContacts?: number;
   winRate?: string;
   createdAt: string;
@@ -195,4 +196,9 @@ export type PartnerMapPin = {
   photoUrl?: string;
   lat: number;
   lng: number;
+};
+
+export type ContactMapPin = PartnerMapPin & {
+  kind: ContactKind;
+  tags: string[];
 };
