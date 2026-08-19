@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { authenticateUser, createUser, ensureSeedUsers, requestPasswordReset, resetPasswordWithToken } from "@/lib/auth-store";
+import { upsertContact } from "@/lib/crm-store";
 import { syncContactToGhl } from "@/lib/ghl";
 import { sessionCookieName } from "@/lib/session";
 import { forgotPasswordSchema, loginSchema, registerSchema, resetPasswordSchema } from "@/lib/validations";
@@ -52,6 +53,30 @@ export async function registerAccount(
     const user = await createUser({
       ...account,
       role: "member",
+    });
+    await upsertContact({
+      id: `user-${user.id}`,
+      kind: "contact",
+      name: parsed.data.name,
+      email: parsed.data.email,
+      phone: "",
+      dateOfBirth: parsed.data.dateOfBirth,
+      address: parsed.data.address,
+      city: "",
+      tags: [
+        "Registration",
+        ...parsed.data.memberships.map((item) => (item === "jes" ? "JES Member" : "Spartans")),
+      ],
+      bestDescribesYou: parsed.data.bestDescribesYou,
+      programInterest: "",
+      status: "new",
+      source: "Website registration",
+      photoUrl: parsed.data.facebookPhotoUrl || undefined,
+      facebookProfileUrl: parsed.data.facebookProfileUrl || undefined,
+      createdAt: new Date().toISOString().slice(0, 10),
+      syncedFromGhl: false,
+      standardFields: [],
+      customFields: [],
     });
     await setSessionCookie(user.id, true);
     await syncContactToGhl({

@@ -5,6 +5,7 @@ import { ContactAvatar } from "@/components/dashboard/contact-avatar";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { MacosWindow } from "@/components/dashboard/macos-window";
 import { AddressMap } from "@/components/maps/address-map";
+import { contactIdentityFields } from "@/lib/contact-fields";
 import { getContact, listAssignedContacts } from "@/lib/crm-store";
 import { getGoogleMapsConfig } from "@/lib/maps";
 import { requireRoles } from "@/lib/session";
@@ -16,23 +17,25 @@ export default async function ContactDashboardPage({
 }) {
   const user = await requireRoles(["admin", "partner"]);
   const { id } = await params;
-  const contact = getContact(user, id);
+  const contact = await getContact(user, id);
 
   if (!contact) {
     notFound();
   }
 
-  const assigned = contact.kind === "partner" ? listAssignedContacts(user, contact.name) : [];
+  const assigned = contact.kind === "partner" ? await listAssignedContacts(user, contact.name) : [];
   const mapsConfig = await getGoogleMapsConfig();
   const isPartner = contact.kind === "partner";
+  const standardFields = contactIdentityFields(contact);
+  const customFields = contact.customFields ?? [];
 
   return (
     <DashboardShell
       title={contact.name}
       description={
         isPartner
-          ? "Partner dashboard with coverage, assigned contacts, and location."
-          : "Detailed contact dashboard with profile, assignment, and location."
+          ? "Partner dashboard with coverage, assigned contacts, and mirrored GoHighLevel fields."
+          : "Contact dashboard with the JDC Elite Society standard and custom field mirror."
       }
     >
       <div className="dashboard-widget-grid">
@@ -43,9 +46,9 @@ export default async function ContactDashboardPage({
               <p className="macos-kicker">{isPartner ? "Partner" : "Contact"}</p>
               <h2 className="dashboard-profile-name">{contact.name}</h2>
               <p className="dashboard-metric-copy">
-                {contact.email} · {contact.phone}
+                {contact.email || "No email"} · {contact.phone || "No phone"}
               </p>
-              <p className="dashboard-metric-copy">{contact.address}</p>
+              <p className="dashboard-metric-copy">{contact.address || "No address on file"}</p>
             </div>
           </div>
           <dl className="dashboard-meta-grid">
@@ -55,16 +58,22 @@ export default async function ContactDashboardPage({
             </div>
             <div>
               <dt>Describes</dt>
-              <dd>{contact.bestDescribesYou}</dd>
+              <dd>{contact.bestDescribesYou || "—"}</dd>
             </div>
             <div>
               <dt>Program</dt>
-              <dd>{contact.programInterest}</dd>
+              <dd>{contact.programInterest || "—"}</dd>
             </div>
             <div>
               <dt>{isPartner ? "Region" : "Assigned partner"}</dt>
-              <dd>{isPartner ? contact.region : (contact.assignedPartner ?? "Unassigned")}</dd>
+              <dd>{isPartner ? contact.region || "—" : (contact.assignedPartner ?? "Unassigned")}</dd>
             </div>
+            {contact.ghlId ? (
+              <div>
+                <dt>GHL ID</dt>
+                <dd>{contact.ghlId}</dd>
+              </div>
+            ) : null}
           </dl>
         </MacosWindow>
 
@@ -98,7 +107,7 @@ export default async function ContactDashboardPage({
             <article className="dashboard-metric-card">
               <p className="macos-kicker">Tags</p>
               <div className="mt-3 flex flex-wrap gap-2">
-                {contact.tags.map((tag) => (
+                {(contact.tags.length ? contact.tags : ["Untagged"]).map((tag) => (
                   <span key={tag} className="dashboard-chip">
                     {tag}
                   </span>
@@ -107,6 +116,40 @@ export default async function ContactDashboardPage({
             </article>
           </>
         )}
+
+        <MacosWindow title="Standard fields" className="dashboard-span-2">
+          {standardFields.length === 0 ? (
+            <p className="macos-lead" style={{ textAlign: "left" }}>
+              No standard fields on this contact.
+            </p>
+          ) : (
+            <dl className="dashboard-meta-grid is-wide">
+              {standardFields.map((field) => (
+                <div key={`${field.key}-${field.label}`}>
+                  <dt>{field.label}</dt>
+                  <dd>{field.value}</dd>
+                </div>
+              ))}
+            </dl>
+          )}
+        </MacosWindow>
+
+        <MacosWindow title="Custom fields" className="dashboard-span-2">
+          {customFields.length === 0 ? (
+            <p className="macos-lead" style={{ textAlign: "left" }}>
+              No custom fields on this JDC Elite Society contact yet.
+            </p>
+          ) : (
+            <dl className="dashboard-meta-grid is-wide">
+              {customFields.map((field) => (
+                <div key={field.id}>
+                  <dt>{field.label}</dt>
+                  <dd>{field.value || "—"}</dd>
+                </div>
+              ))}
+            </dl>
+          )}
+        </MacosWindow>
 
         <MacosWindow title="Location" className={isPartner ? "dashboard-span-2" : undefined}>
           <AddressMap address={contact.address} embedKey={mapsConfig.embedKey} />
@@ -135,7 +178,8 @@ export default async function ContactDashboardPage({
         ) : (
           <MacosWindow title="Follow-up">
             <p className="macos-lead" style={{ textAlign: "left" }}>
-              {contact.bestDescribesYou} interested in {contact.programInterest}.
+              {(contact.bestDescribesYou || "Contact") +
+                (contact.programInterest ? ` interested in ${contact.programInterest}.` : ".")}
             </p>
             <div className="macos-actions">
               <Link href="/dashboard/contacts" className="macos-btn macos-btn-secondary">

@@ -48,9 +48,9 @@ export default async function DashboardPage() {
   }
 
   if (user.role === "partner") {
-    const contacts = listContacts(user, "contact");
-    const metrics = listViewerMetrics(user);
-    const pins = listPartnerMapPins(user);
+    const contacts = await listContacts(user, "contact");
+    const metrics = await listViewerMetrics(user);
+    const pins = await listPartnerMapPins(user);
 
     return (
       <DashboardShell
@@ -102,9 +102,9 @@ export default async function DashboardPage() {
     );
   }
 
-  const contacts = listContacts(user);
-  const partners = listContacts(user, "partner");
-  const pins = listPartnerMapPins(user);
+  const contacts = await listContacts(user);
+  const partners = await listContacts(user, "partner");
+  const pins = await listPartnerMapPins(user);
 
   return (
     <DashboardShell
@@ -160,7 +160,7 @@ export default async function DashboardPage() {
 
         <MacosWindow title="Integrations">
           <p className="macos-lead" style={{ textAlign: "left" }}>
-            Review Google Maps and Cloudflare R2 configuration.
+            Review Google Maps, Cloudflare R2, and the JDC Elite Society GoHighLevel contact mirror.
           </p>
           <div className="macos-actions">
             <Link href="/dashboard/integrations" className="macos-btn macos-btn-secondary">
