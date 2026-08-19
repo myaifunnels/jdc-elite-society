@@ -1805,6 +1805,49 @@ html.dark .auth-screen-centered,
   color: var(--foreground);
 }
 
+.macos-window.is-signin {
+  width: min(24rem, 100%);
+}
+
+.auth-page {
+  display: flex;
+  min-height: 100dvh;
+  flex-direction: column;
+}
+
+.auth-page-main {
+  display: grid;
+  flex: 1;
+  place-items: center;
+  padding: 2rem 1rem 3rem;
+  background:
+    radial-gradient(ellipse at 18% 12%, color-mix(in srgb, var(--brand) 18%, transparent), transparent 36%),
+    linear-gradient(180deg, color-mix(in srgb, var(--surface) 70%, transparent), transparent);
+}
+
+.auth-form-login {
+  grid-template-columns: 1fr;
+}
+
+.auth-form-login .auth-row,
+.auth-form-login .auth-error,
+.auth-form-login .auth-success,
+.auth-form-login .macos-actions,
+.auth-form-login .macos-lead {
+  grid-column: 1 / -1;
+}
+
+.auth-success {
+  margin: 0;
+  color: #15803d;
+  font-size: 0.84rem;
+  line-height: 1.45;
+}
+
+.dark .auth-success {
+  color: #86efac;
+}
+
 .macos-titlebar {
   display: grid;
   place-items: center;

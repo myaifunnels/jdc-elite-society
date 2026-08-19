@@ -2,16 +2,16 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
 import { AuthPageShell } from "@/components/auth/auth-page-shell";
-import { AuthPanel } from "@/components/auth/auth-panel";
+import { ForgotPasswordForm } from "@/components/auth/forgot-password-form";
 import { getResolvedBrandingSettings } from "@/lib/branding-store";
 import { getSessionUser } from "@/lib/session";
 
 export const metadata: Metadata = {
-  title: "Register",
-  description: "Create a Coach JDC account as a member or partner and open the dashboard that matches your role.",
+  title: "Forgot password",
+  description: "Request a Coach JDC password reset link.",
 };
 
-export default async function RegisterPage() {
+export default async function ForgotPasswordPage() {
   const user = await getSessionUser();
 
   if (user) {
@@ -22,7 +22,7 @@ export default async function RegisterPage() {
 
   return (
     <AuthPageShell>
-      <AuthPanel branding={branding} mode="register" />
+      <ForgotPasswordForm branding={branding} />
     </AuthPageShell>
   );
 }

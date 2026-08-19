@@ -329,3 +329,53 @@ export async function authenticateUser(email: string, password: string) {
   const valid = await verifyPassword(password, user.passwordHash);
   return valid ? publicUser(user) : null;
 }
+
+export async function requestPasswordReset(email: string) {
+  await ensureSeedUsers();
+  const user = await findUserByEmail(email);
+
+  if (!user) {
+    await hashPassword(`${email}:missing`);
+    return;
+  }
+
+  const { createPasswordResetToken } = await import("@/lib/password-reset");
+  const { sendPasswordResetEmail } = await import("@/lib/mail");
+  const { siteUrl } = await import("@/lib/site");
+  const token = await createPasswordResetToken(getPool(), user.id);
+  await sendPasswordResetEmail(user.email, `${siteUrl}/reset-password?token=${encodeURIComponent(token)}`);
+}
+
+export async function resetPasswordWithToken(token: string, password: string) {
+  const { consumePasswordResetToken } = await import("@/lib/password-reset");
+  const userId = await consumePasswordResetToken(getPool(), token);
+
+  if (!userId) {
+    return false;
+  }
+
+  await updateUserPasswordHash(userId, await hashPassword(password));
+  return true;
+}
+
+async function updateUserPasswordHash(id: string, passwordHash: string) {
+  const memoryIndex = memoryUsers.findIndex((user) => user.id === id);
+  if (memoryIndex >= 0) {
+    memoryUsers[memoryIndex] = {
+      ...memoryUsers[memoryIndex],
+      passwordHash,
+    };
+  }
+
+  const client = getPool();
+  if (!client) {
+    return;
+  }
+
+  try {
+    await ensureTable(client);
+    await client.query("UPDATE site_users SET password_hash = $2 WHERE id = $1", [id, passwordHash]);
+  } catch (error) {
+    console.error("Failed to update password", error);
+  }
+}
