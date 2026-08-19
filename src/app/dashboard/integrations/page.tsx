@@ -6,10 +6,13 @@ import {
   R2IntegrationForm,
 } from "@/components/dashboard/integration-forms";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
+import { GhlMirrorButton } from "@/components/dashboard/ghl-mirror-button";
 import { AddressMap } from "@/components/maps/address-map";
+import { getGhlSyncState } from "@/lib/crm-store";
 import { isGhlReady, isMapsReady, isR2Ready, maskSecret } from "@/lib/integrations";
 import { getResolvedIntegrationSettings } from "@/lib/integrations-store";
 import { requireRoles } from "@/lib/session";
+import { siteUrl } from "@/lib/site";
 
 export default async function IntegrationsPage() {
   await requireRoles(["admin"]);
@@ -18,11 +21,14 @@ export default async function IntegrationsPage() {
   const mapsReady = isMapsReady(settings);
   const r2Ready = isR2Ready(settings);
   const ghlReady = isGhlReady(settings);
+  const syncState = await getGhlSyncState();
+  const webhookUrl = `${siteUrl}/api/integrations/ghl/webhook?secret=${encodeURIComponent(syncState.webhookSecret)}`;
+  const syncUrl = `${siteUrl}/api/integrations/ghl/sync?secret=${encodeURIComponent(syncState.webhookSecret)}`;
 
   return (
     <DashboardShell
       title="Integrations"
-      description="Paste Google Maps and Cloudflare R2 credentials here. The dashboards will use them immediately."
+      description="Paste Google Maps, Cloudflare R2, and GoHighLevel credentials. The JDC Elite Society contact roster mirrors that subaccount."
     >
       <div className="grid gap-6">
         <div className="grid gap-6 xl:grid-cols-2">
@@ -106,8 +112,9 @@ export default async function IntegrationsPage() {
             <div>
               <p className="text-sm font-semibold">GoHighLevel — JDC Elite Society</p>
               <p className="mt-2 text-sm text-[var(--muted)]">
-                Registrations and inquiry leads sync into the JDC Elite Society subaccount. Use a Private Integration
-                token with Contacts write access and that location&apos;s ID.
+                Mirror contacts from the AiFunnels GHL JDC Elite Society subaccount, including every standard and
+                custom field. Use a Private Integration token with Contacts read/write and Custom Fields read on that
+                location.
               </p>
             </div>
             <span
@@ -118,10 +125,35 @@ export default async function IntegrationsPage() {
               {ghlReady ? "Connected" : "Pending token"}
             </span>
           </div>
-          <div className="mt-6 text-sm text-[var(--muted)]">
-            Location: <code>{settings.ghlLocationId || "not set"}</code>
+          <div className="mt-6 grid gap-2 text-sm text-[var(--muted)]">
+            <p>
+              Location: <code>{settings.ghlLocationId || "not set"}</code>
+            </p>
+            <p>
+              Last mirror:{" "}
+              <code>{syncState.lastSyncedAt ? new Date(syncState.lastSyncedAt).toLocaleString() : "not synced"}</code>
+            </p>
+            <p>
+              Mirrored contacts: <code>{String(syncState.contactCount)}</code>
+            </p>
+            {syncState.lastError ? (
+              <p className="text-red-500">
+                Last error: <code>{syncState.lastError}</code>
+              </p>
+            ) : null}
+            <p>
+              Webhook URL: <code className="break-all">{ghlReady ? webhookUrl : "save the token first"}</code>
+            </p>
+            <p>
+              Cron sync URL: <code className="break-all">{ghlReady ? syncUrl : "save the token first"}</code>
+            </p>
           </div>
           <GhlIntegrationForm configured={ghlReady} locationId={settings.ghlLocationId} />
+          {ghlReady ? (
+            <div className="mt-6">
+              <GhlMirrorButton />
+            </div>
+          ) : null}
         </section>
 
         <AddressMap address="Makati City, Metro Manila" embedKey={settings.googleMapsEmbedKey} />

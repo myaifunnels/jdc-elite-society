@@ -16,7 +16,7 @@ export async function POST(request: Request) {
   }
 
   const audience = parsed.data.bestDescribesYou?.trim() || "Not specified";
-  const lead = createLead({
+  const lead = await createLead({
     ...parsed.data,
     bestDescribesYou: audience,
     tags: Array.from(

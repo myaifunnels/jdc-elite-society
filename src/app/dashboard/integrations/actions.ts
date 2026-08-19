@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 
+import { mirrorGhlContacts } from "@/lib/ghl";
 import { isGhlReady, isMapsReady, isR2Ready } from "@/lib/integrations";
 import { getResolvedIntegrationSettings, saveIntegrationSettings } from "@/lib/integrations-store";
 import { requireSessionUser } from "@/lib/session";
@@ -103,7 +104,41 @@ export async function saveGhlIntegration(
   }
 
   await saveIntegrationSettings(incoming);
+  const mirrored = await mirrorGhlContacts({ force: true });
   revalidatePath("/dashboard/integrations");
+  revalidatePath("/dashboard/contacts");
+  revalidatePath("/dashboard");
 
-  return { success: "GoHighLevel JDC Elite Society subaccount saved." };
+  if (!mirrored.ok) {
+    return {
+      success: "GoHighLevel JDC Elite Society subaccount saved.",
+      error: mirrored.error || "Contacts could not be mirrored yet. Check the Private Integration scopes and try again.",
+    };
+  }
+
+  return {
+    success: `GoHighLevel JDC Elite Society subaccount saved. Mirrored ${mirrored.count} contacts.`,
+  };
+}
+
+export async function mirrorGhlContactsNow(
+  _prevState: IntegrationFormState,
+  _formData: FormData,
+): Promise<IntegrationFormState> {
+  const user = await requireSessionUser();
+
+  if (user.role !== "admin") {
+    return { error: "Only admins can mirror GoHighLevel contacts." };
+  }
+
+  const mirrored = await mirrorGhlContacts({ force: true });
+  revalidatePath("/dashboard/integrations");
+  revalidatePath("/dashboard/contacts");
+  revalidatePath("/dashboard");
+
+  if (!mirrored.ok) {
+    return { error: mirrored.error || "Could not mirror JDC Elite Society contacts." };
+  }
+
+  return { success: `Mirrored ${mirrored.count} contacts from the JDC Elite Society subaccount.` };
 }
