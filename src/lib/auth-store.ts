@@ -40,6 +40,7 @@ function publicUser(user: AuthUserRecord): AuthUser {
     email: user.email,
     role: user.role,
     memberships: user.memberships,
+    affiliateAccess: user.affiliateAccess,
     bestDescribesYou: user.bestDescribesYou,
     dateOfBirth: user.dateOfBirth,
     address: user.address,
@@ -55,6 +56,7 @@ function mapRow(row: Record<string, unknown>): AuthUserRecord {
     name: String(row.name ?? ""),
     email: String(row.email ?? "").toLowerCase(),
     role: row.role === "admin" || row.role === "partner" || row.role === "member" ? row.role : "member",
+    affiliateAccess: row.affiliate_access === true || row.affiliate_access === "t" || row.affiliate_access === "true",
     memberships: parseMemberships(row.memberships),
     bestDescribesYou: String(row.best_describes_you ?? ""),
     dateOfBirth: String(row.date_of_birth ?? ""),
@@ -104,6 +106,10 @@ async function ensureTable(client: Pool) {
   await client.query(`
     ALTER TABLE site_users
     ADD COLUMN IF NOT EXISTS memberships TEXT NOT NULL DEFAULT ''
+  `);
+  await client.query(`
+    ALTER TABLE site_users
+    ADD COLUMN IF NOT EXISTS affiliate_access BOOLEAN NOT NULL DEFAULT FALSE
   `);
   tableReady = true;
 }
@@ -264,6 +270,7 @@ export async function createUser(input: {
     name: input.name.trim(),
     email,
     role: input.role,
+    affiliateAccess: false,
     memberships: parseMemberships(input.memberships ?? []),
     bestDescribesYou: input.bestDescribesYou ?? "",
     dateOfBirth: input.dateOfBirth ?? "",
@@ -284,9 +291,10 @@ export async function createUser(input: {
         `
         INSERT INTO site_users (
           id, name, email, role, password_hash, created_at, best_describes_you,
-          date_of_birth, address, facebook_profile_url, facebook_photo_url, memberships
+          date_of_birth, address, facebook_profile_url, facebook_photo_url, memberships,
+          affiliate_access
         )
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
         `,
         [
           user.id,
@@ -301,6 +309,7 @@ export async function createUser(input: {
           user.facebookProfileUrl,
           user.facebookPhotoUrl,
           serializeMemberships(user.memberships),
+          user.affiliateAccess,
         ],
       );
     } catch (error) {
@@ -356,6 +365,50 @@ export async function resetPasswordWithToken(token: string, password: string) {
 
   await updateUserPasswordHash(userId, await hashPassword(password));
   return true;
+}
+
+export async function listPublicUsers() {
+  await ensureSeedUsers();
+  const client = getPool();
+
+  if (!client) {
+    return memoryUsers.map(publicUser);
+  }
+
+  try {
+    await ensureTable(client);
+    const result = await client.query("SELECT * FROM site_users ORDER BY created_at DESC");
+    return result.rows.map((row) => publicUser(mapRow(row)));
+  } catch (error) {
+    console.error("Failed to list users", error);
+    return memoryUsers.map(publicUser);
+  }
+}
+
+export async function setAffiliateAccess(id: string, affiliateAccess: boolean) {
+  const memoryIndex = memoryUsers.findIndex((user) => user.id === id);
+  if (memoryIndex >= 0) {
+    memoryUsers[memoryIndex] = {
+      ...memoryUsers[memoryIndex],
+      affiliateAccess,
+    };
+  }
+
+  const client = getPool();
+  if (!client) {
+    const user = memoryUsers.find((item) => item.id === id);
+    return user ? publicUser(user) : null;
+  }
+
+  try {
+    await ensureTable(client);
+    await client.query("UPDATE site_users SET affiliate_access = $2 WHERE id = $1", [id, affiliateAccess]);
+    return getPublicUserById(id);
+  } catch (error) {
+    console.error("Failed to update affiliate access", error);
+    const user = memoryUsers.find((item) => item.id === id);
+    return user ? publicUser(user) : null;
+  }
 }
 
 async function updateUserPasswordHash(id: string, passwordHash: string) {

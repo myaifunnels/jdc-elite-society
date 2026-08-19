@@ -2955,3 +2955,14 @@ html:not(.dark) .dashboard-desktop {
   font-family: inherit;
 }
 
+.macos-select {
+  min-height: 2.2rem;
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--surface) 70%, white 8%);
+  padding: 0 0.75rem;
+  color: var(--foreground);
+}
+
+

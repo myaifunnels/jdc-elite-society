@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useId, useState } from "react";
-import { BookOpen, LayoutDashboard, LogOut, Menu, Plug, Settings2, Users, X } from "lucide-react";
+import { BookOpen, Handshake, LayoutDashboard, LogOut, Menu, Plug, Settings2, Users, X } from "lucide-react";
 
 import { logout } from "@/app/login/actions";
 import { SiteLogo } from "@/components/branding/site-logo";
@@ -32,6 +32,16 @@ const navByRole: Record<
   ],
 };
 
+function navItems(role: DashboardRole, affiliateAccess: boolean) {
+  const base = navByRole[role];
+  if (!affiliateAccess && role !== "admin") {
+    return base;
+  }
+
+  const partnership = { href: "/dashboard/partnership", label: "Partnership", icon: Handshake };
+  return [base[0], partnership, ...base.slice(1)];
+}
+
 function isActivePath(pathname: string, href: string) {
   if (href === "/dashboard") {
     return pathname === "/dashboard";
@@ -45,6 +55,7 @@ function SidebarPanel({
   userName,
   membershipLabel,
   branding,
+  affiliateAccess,
   titleId,
   onNavigate,
   showClose = false,
@@ -53,6 +64,7 @@ function SidebarPanel({
   userName: string;
   membershipLabel: string;
   branding: BrandingSettings;
+  affiliateAccess: boolean;
   titleId: string;
   onNavigate?: () => void;
   showClose?: boolean;
@@ -85,7 +97,7 @@ function SidebarPanel({
       </div>
 
       <nav aria-label="Dashboard" className="mt-3 grid gap-1 px-2">
-        {navByRole[role].map((item) => {
+        {navItems(role, affiliateAccess).map((item) => {
           const Icon = item.icon;
           const active = isActivePath(pathname, item.href);
 
@@ -135,11 +147,13 @@ export function DashboardSidebar({
   userName,
   membershipLabel,
   branding,
+  affiliateAccess,
 }: {
   role: DashboardRole;
   userName: string;
   membershipLabel: string;
   branding: BrandingSettings;
+  affiliateAccess: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const titleId = useId();
@@ -220,6 +234,7 @@ export function DashboardSidebar({
           userName={userName}
           membershipLabel={membershipLabel}
           branding={branding}
+          affiliateAccess={affiliateAccess}
           titleId={titleId}
           onNavigate={close}
           showClose
@@ -235,6 +250,7 @@ export function DashboardSidebar({
           userName={userName}
           membershipLabel={membershipLabel}
           branding={branding}
+          affiliateAccess={affiliateAccess}
           titleId={`${titleId}-desktop`}
         />
       </aside>

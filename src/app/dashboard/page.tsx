@@ -7,6 +7,8 @@ import { PartnersMap } from "@/components/dashboard/partners-map";
 import { dashboardMetrics } from "@/data/crm";
 import { programs } from "@/data/programs";
 import { listContacts, listPartnerMapPins, listViewerMetrics } from "@/lib/crm-store";
+import { adminPartnershipSnapshot } from "@/lib/affiliate-store";
+import { formatManilaDate, formatPhp } from "@/lib/pay-cycle";
 import { membershipLabel } from "@/lib/membership";
 import { requireSessionUser } from "@/lib/session";
 
@@ -42,6 +44,19 @@ export default async function DashboardPage() {
               <p className="dashboard-metric-copy">{program.shortDescription}</p>
             </Link>
           ))}
+
+          {user.affiliateAccess ? (
+            <MacosWindow title="Partnership Program" className="dashboard-span-2">
+              <p className="macos-lead" style={{ textAlign: "left" }}>
+                You have invite-only partner access. 20% is recorded by the team and released on the 15th and 30th.
+              </p>
+              <div className="macos-actions">
+                <Link href="/dashboard/partnership" className="macos-btn macos-btn-primary">
+                  Open Partnership
+                </Link>
+              </div>
+            </MacosWindow>
+          ) : null}
         </div>
       </DashboardShell>
     );
@@ -89,6 +104,19 @@ export default async function DashboardPage() {
             </Link>
           </MacosWindow>
 
+          {user.affiliateAccess ? (
+            <MacosWindow title="Partnership Program" className="dashboard-span-2">
+              <p className="macos-lead" style={{ textAlign: "left" }}>
+                Separate from CRM coverage: your 20% partnership link, tree, and 15th/30th payouts live here.
+              </p>
+              <div className="macos-actions">
+                <Link href="/dashboard/partnership" className="macos-btn macos-btn-primary">
+                  Open Partnership
+                </Link>
+              </div>
+            </MacosWindow>
+          ) : null}
+
           {pins.length > 0 ? (
             <MacosWindow title="Your coverage" className="dashboard-span-2" bodyClassName="partners-map-body">
               <p className="macos-lead" style={{ textAlign: "left" }}>
@@ -105,11 +133,12 @@ export default async function DashboardPage() {
   const contacts = listContacts(user);
   const partners = listContacts(user, "partner");
   const pins = listPartnerMapPins(user);
+  const partnership = await adminPartnershipSnapshot();
 
   return (
     <DashboardShell
       title="Dashboard"
-      description="Full admin access: contacts, partner coverage, integrations, and site settings."
+      description="Full admin access: contacts, partner coverage, the Partnership Program, integrations, and site settings."
     >
       <div className="dashboard-widget-grid">
         {dashboardMetrics.map((metric) => (
@@ -156,6 +185,21 @@ export default async function DashboardPage() {
               </span>
             </Link>
           ))}
+        </MacosWindow>
+
+        <MacosWindow title="Partnership Program">
+          <p className="macos-lead" style={{ textAlign: "left" }}>
+            Invite-only 20% program. Next payday {formatManilaDate(partnership.payday)}. {formatPhp(partnership.pendingPayout)}{" "}
+            waiting in that cycle. {partnership.activeAffiliates} active affiliates.
+          </p>
+          <div className="macos-actions">
+            <Link href="/dashboard/partnership" className="macos-btn macos-btn-primary">
+              Open Partnership
+            </Link>
+            <Link href="/dashboard/partnership/admin" className="macos-btn macos-btn-secondary">
+              Grant access
+            </Link>
+          </div>
         </MacosWindow>
 
         <MacosWindow title="Integrations">

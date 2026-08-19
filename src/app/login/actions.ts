@@ -4,6 +4,8 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { authenticateUser, createUser, ensureSeedUsers, requestPasswordReset, resetPasswordWithToken } from "@/lib/auth-store";
+import { AFFILIATE_COOKIE, normalizeAffiliateCode } from "@/lib/affiliate";
+import { getProfileByCode, recordAttribution } from "@/lib/affiliate-store";
 import { syncContactToGhl } from "@/lib/ghl";
 import { sessionCookieName } from "@/lib/session";
 import { forgotPasswordSchema, loginSchema, registerSchema, resetPasswordSchema } from "@/lib/validations";
@@ -54,6 +56,19 @@ export async function registerAccount(
       role: "member",
     });
     await setSessionCookie(user.id, true);
+    const cookieStore = await cookies();
+    const referralCode = normalizeAffiliateCode(cookieStore.get(AFFILIATE_COOKIE)?.value ?? "");
+    const affiliate = referralCode ? await getProfileByCode(referralCode) : null;
+    const extraTags = affiliate ? [`affiliate:${affiliate.code}`] : [];
+    if (affiliate) {
+      await recordAttribution({
+        kind: "registration",
+        code: affiliate.code,
+        email: parsed.data.email,
+        name: parsed.data.name,
+        userId: user.id,
+      });
+    }
     await syncContactToGhl({
       name: parsed.data.name,
       email: parsed.data.email,
@@ -62,10 +77,11 @@ export async function registerAccount(
       bestDescribesYou: parsed.data.bestDescribesYou,
       facebookProfileUrl: parsed.data.facebookProfileUrl,
       facebookPhotoUrl: parsed.data.facebookPhotoUrl,
-      source: "Website registration",
+      source: affiliate ? `Website registration · ${affiliate.code}` : "Website registration",
       tags: [
         "Registration",
         ...parsed.data.memberships.map((item) => (item === "jes" ? "JES Member" : "Spartans")),
+        ...extraTags,
       ],
     });
   } catch (error) {
