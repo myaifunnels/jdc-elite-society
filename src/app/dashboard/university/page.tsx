@@ -1,11 +1,9 @@
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
-import { UniversityCourseGrid } from "@/components/dashboard/university-course-grid";
-import { listUniversityCourses } from "@/lib/ghl-courses";
+import { UniversityCommunityEmbed } from "@/components/dashboard/university-community-embed";
 import { requireSessionUser } from "@/lib/session";
 
 export default async function UniversityPage() {
   const user = await requireSessionUser();
-  const courses = await listUniversityCourses();
   const unlocked = user.accountStatus === "verified";
   const verifyHref = user.role === "member" ? "/dashboard/profile" : "/dashboard";
 
@@ -14,11 +12,13 @@ export default async function UniversityPage() {
       title="University"
       description={
         unlocked
-          ? "Membership courses and lesson videos from the JDC Elite Society subaccount in AiFunnels GHL."
-          : "See the membership courses waiting for you. Unlock the videos by verifying your account."
+          ? "The JDC Elite Society membership community, embedded from community.coachjdc.org."
+          : "University opens after your account is verified."
       }
     >
-      <UniversityCourseGrid courses={courses} unlocked={unlocked} verifyHref={verifyHref} />
+      <div className="dashboard-widget-grid">
+        <UniversityCommunityEmbed unlocked={unlocked} verifyHref={verifyHref} />
+      </div>
     </DashboardShell>
   );
 }

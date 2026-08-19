@@ -59,7 +59,7 @@ export default async function DashboardPage() {
 
             <MacosWindow title="University" className="dashboard-span-2">
               <p className="macos-lead" style={{ textAlign: "left" }}>
-                Life and Money Mastery, Exclusive Mentoring, and the JDC Mastermind sessions from the JDC Elite Society membership.
+                The membership community lives in University: community.coachjdc.org, inside this workspace.
               </p>
               <div className="macos-actions">
                 <Link href="/dashboard/university" className="macos-btn macos-btn-primary">
@@ -87,9 +87,9 @@ export default async function DashboardPage() {
   }
 
   if (user.role === "partner") {
-    const contacts = listContacts(user, "contact");
-    const metrics = listViewerMetrics(user);
-    const pins = listPartnerMapPins(user);
+    const contacts = await listContacts(user, "contact");
+    const metrics = await listViewerMetrics(user);
+    const pins = await listPartnerMapPins(user);
 
     return (
       <DashboardShell
@@ -130,7 +130,7 @@ export default async function DashboardPage() {
 
           <MacosWindow title="University">
             <p className="macos-lead" style={{ textAlign: "left" }}>
-              Membership courses from the JDC Elite Society GHL subaccount.
+              The JDC Elite Society community at community.coachjdc.org.
             </p>
             <div className="macos-actions">
               <Link href="/dashboard/university" className="macos-btn macos-btn-primary">
@@ -165,9 +165,9 @@ export default async function DashboardPage() {
     );
   }
 
-  const contacts = listContacts(user);
-  const partners = listContacts(user, "partner");
-  const pins = listPartnerMapPins(user);
+  const contacts = await listContacts(user);
+  const partners = await listContacts(user, "partner");
+  const pins = await listPartnerMapPins(user);
   const partnership = await adminPartnershipSnapshot();
 
   return (
@@ -210,7 +210,7 @@ export default async function DashboardPage() {
 
         <MacosWindow title="University">
           <p className="macos-lead" style={{ textAlign: "left" }}>
-            Membership courses migrated from the JDC Elite Society subaccount in AiFunnels GHL.
+            The JDC Elite Society community at community.coachjdc.org.
           </p>
           <div className="macos-actions">
             <Link href="/dashboard/university" className="macos-btn macos-btn-primary">

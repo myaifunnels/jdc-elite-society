@@ -3143,6 +3143,35 @@ html:not(.dark) .dashboard-desktop {
   padding: 1.1rem 1.15rem 1.5rem;
 }
 
+.university-community-window {
+  min-height: calc(100vh - 11rem);
+}
+
+.university-community-frame-wrap {
+  min-height: calc(100vh - 13rem);
+  background: #0b1220;
+}
+
+.university-community-frame {
+  display: block;
+  width: 100%;
+  height: calc(100vh - 15rem);
+  min-height: 36rem;
+  border: 0;
+}
+
+.university-community-open {
+  margin: 0;
+  padding: 0.45rem 1.15rem 0.7rem;
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.university-community-open a {
+  color: var(--brand);
+  font-weight: 700;
+}
+
 .dashboard-widget-grid {
   display: grid;
   gap: 0.9rem;

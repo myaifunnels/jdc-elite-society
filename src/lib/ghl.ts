@@ -94,3 +94,135 @@ export async function syncContactToGhl(input: GhlContactInput) {
     return { skipped: false as const, ok: false as const };
   }
 }
+
+export type GhlRemoteContact = {
+  id: string;
+  firstName?: string;
+  lastName?: string;
+  name?: string;
+  email?: string;
+  phone?: string;
+  address1?: string;
+  city?: string;
+  state?: string;
+  country?: string;
+  website?: string;
+  source?: string;
+  dateAdded?: string;
+  tags?: string[];
+  type?: string;
+  assignedTo?: string;
+  profilePhoto?: string;
+  customFields?: Array<{ id?: string; key?: string; field_value?: string; value?: string }>;
+};
+
+function ghlHeaders(token: string, json = false) {
+  return {
+    Authorization: `Bearer ${token}`,
+    Version: "2021-07-28",
+    Accept: "application/json",
+    ...(json ? { "Content-Type": "application/json" } : {}),
+  };
+}
+
+function asContactList(payload: unknown): GhlRemoteContact[] {
+  if (!payload || typeof payload !== "object") {
+    return [];
+  }
+
+  const record = payload as Record<string, unknown>;
+  const bags = [record.contacts, record.contact, record.data, record.items];
+  const list = bags.find((item) => Array.isArray(item));
+  if (Array.isArray(list)) {
+    return list as GhlRemoteContact[];
+  }
+
+  const nested = record.contacts;
+  if (nested && typeof nested === "object" && Array.isArray((nested as { contacts?: unknown }).contacts)) {
+    return (nested as { contacts: GhlRemoteContact[] }).contacts;
+  }
+
+  return [];
+}
+
+export async function listGhlLocationContacts() {
+  const settings = await getResolvedIntegrationSettings();
+  const token = settings.ghlApiKey;
+  const locationId = settings.ghlLocationId;
+
+  if (!token || !locationId) {
+    return { skipped: true as const, contacts: [] as GhlRemoteContact[] };
+  }
+
+  const contacts: GhlRemoteContact[] = [];
+  const seen = new Set<string>();
+
+  const addPage = (page: GhlRemoteContact[]) => {
+    for (const contact of page) {
+      const id = String(contact.id ?? "").trim();
+      if (!id || seen.has(id)) {
+        continue;
+      }
+      seen.add(id);
+      contacts.push(contact);
+    }
+    return page.length;
+  };
+
+  try {
+    for (let page = 1; page <= 20; page += 1) {
+      const response = await fetch("https://services.leadconnectorhq.com/contacts/search", {
+        method: "POST",
+        headers: ghlHeaders(token, true),
+        cache: "no-store",
+        body: JSON.stringify({
+          locationId,
+          page,
+          pageLimit: 100,
+        }),
+      });
+
+      if (!response.ok) {
+        break;
+      }
+
+      const payload = (await response.json()) as unknown;
+      const count = addPage(asContactList(payload));
+      if (count < 100) {
+        return { skipped: false as const, contacts };
+      }
+    }
+
+    if (contacts.length > 0) {
+      return { skipped: false as const, contacts };
+    }
+
+    let startAfterId = "";
+    for (let page = 0; page < 20; page += 1) {
+      const query = new URLSearchParams({ locationId, limit: "100" });
+      if (startAfterId) {
+        query.set("startAfterId", startAfterId);
+      }
+      const response = await fetch(`https://services.leadconnectorhq.com/contacts/?${query.toString()}`, {
+        headers: ghlHeaders(token),
+        cache: "no-store",
+      });
+      if (!response.ok) {
+        break;
+      }
+      const payload = (await response.json()) as unknown;
+      const pageContacts = asContactList(payload);
+      addPage(pageContacts);
+      const last = pageContacts[pageContacts.length - 1];
+      if (!last?.id || pageContacts.length < 100) {
+        break;
+      }
+      startAfterId = String(last.id);
+    }
+
+    return { skipped: false as const, contacts };
+  } catch (error) {
+    console.error("GHL contact list failed", error);
+    return { skipped: false as const, contacts };
+  }
+}

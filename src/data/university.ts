@@ -1,3 +1,5 @@
+export const UNIVERSITY_COMMUNITY_URL = "https://community.coachjdc.org";
+
 export type UniversityLesson = {
   title: string;
   summary: string;

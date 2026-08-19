@@ -17,7 +17,7 @@ export default async function ContactsPage({
   const { kind: rawKind } = await searchParams;
   const kind: ContactKind | undefined =
     user.role === "admin" && (rawKind === "partner" || rawKind === "contact") ? rawKind : user.role === "partner" ? "contact" : undefined;
-  const contacts = listContacts(user, kind);
+  const contacts = await listContacts(user, kind);
 
   const filters =
     user.role === "admin"
@@ -33,7 +33,7 @@ export default async function ContactsPage({
       title={user.role === "admin" ? "Contacts" : "My contacts"}
       description={
         user.role === "admin"
-          ? "Partners and contacts live in one roster. Open any row to see the detailed dashboard."
+          ? "JDC Elite Society contacts from AiFunnels GHL, plus partners. Open any row for the detailed dashboard."
           : "Only the people assigned to you. You cannot open another partner's book."
       }
     >
@@ -60,32 +60,43 @@ export default async function ContactsPage({
                 <th>Name</th>
                 <th>Type</th>
                 <th>Location</th>
+                <th>Source</th>
                 <th>Status</th>
                 <th />
               </tr>
             </thead>
             <tbody>
-              {contacts.map((contact) => (
-                <tr key={contact.id}>
-                  <td>
-                    <div className="dashboard-contact-row is-plain">
-                      <ContactAvatar name={contact.name} photoUrl={contact.photoUrl} size="sm" />
-                      <span>
-                        <strong>{contact.name}</strong>
-                        <em>{contact.email}</em>
-                      </span>
-                    </div>
-                  </td>
-                  <td className="capitalize">{contact.kind}</td>
-                  <td>{contact.region ?? contact.city}</td>
-                  <td className="capitalize">{contact.status}</td>
-                  <td>
-                    <Link href={`/dashboard/contacts/${contact.id}`} className="macos-btn macos-btn-secondary">
-                      Dashboard
-                    </Link>
+              {contacts.length === 0 ? (
+                <tr>
+                  <td colSpan={6}>
+                    No contacts yet. Connect the JDC Elite Society GHL location in Integrations if this roster should
+                    be pulling from AiFunnels.
                   </td>
                 </tr>
-              ))}
+              ) : (
+                contacts.map((contact) => (
+                  <tr key={contact.id}>
+                    <td>
+                      <div className="dashboard-contact-row is-plain">
+                        <ContactAvatar name={contact.name} photoUrl={contact.photoUrl} size="sm" />
+                        <span>
+                          <strong>{contact.name}</strong>
+                          <em>{contact.email}</em>
+                        </span>
+                      </div>
+                    </td>
+                    <td className="capitalize">{contact.kind}</td>
+                    <td>{contact.region ?? contact.city}</td>
+                    <td>{contact.source}</td>
+                    <td className="capitalize">{contact.status}</td>
+                    <td>
+                      <Link href={`/dashboard/contacts/${contact.id}`} className="macos-btn macos-btn-secondary">
+                        Dashboard
+                      </Link>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

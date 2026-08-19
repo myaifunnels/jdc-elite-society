@@ -24,7 +24,7 @@ export async function POST(request: Request) {
 
   const audience = parsed.data.bestDescribesYou?.trim() || "Not specified";
   const extraTags = affiliate ? [`affiliate:${affiliate.code}`] : [];
-  const lead = createLead({
+  const lead = await createLead({
     ...parsed.data,
     bestDescribesYou: audience,
     tags: Array.from(
