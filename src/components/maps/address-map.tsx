@@ -1,13 +1,16 @@
 type AddressMapProps = {
   address: string;
+  lat?: number;
+  lng?: number;
   embedKey?: string;
 };
 
-export function AddressMap({ address, embedKey }: AddressMapProps) {
+export function AddressMap({ address, lat, lng, embedKey }: AddressMapProps) {
   const trimmed = address.trim();
   const resolvedKey = embedKey || process.env.NEXT_PUBLIC_GOOGLE_MAPS_EMBED_KEY || "";
+  const hasCoords = typeof lat === "number" && typeof lng === "number";
 
-  if (!trimmed) {
+  if (!trimmed && !hasCoords) {
     return (
       <div className="card-surface rounded-3xl p-6 text-sm text-[var(--muted)]">
         Add an address to preview the Google Maps lookup link for this contact or inquiry.
@@ -15,8 +18,10 @@ export function AddressMap({ address, embedKey }: AddressMapProps) {
     );
   }
 
-  const query = encodeURIComponent(trimmed);
-  const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${query}`;
+  const query = hasCoords ? `${lat},${lng}` : encodeURIComponent(trimmed);
+  const mapsUrl = hasCoords
+    ? `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`
+    : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(trimmed)}`;
   const embedUrl = resolvedKey
     ? `https://www.google.com/maps/embed/v1/place?key=${resolvedKey}&q=${query}`
     : null;
@@ -40,7 +45,7 @@ export function AddressMap({ address, embedKey }: AddressMapProps) {
       <div className="flex items-center justify-between gap-4 p-4 text-sm">
         <div>
           <p className="font-semibold">Google Maps integration</p>
-          <p className="text-[var(--muted)]">{trimmed}</p>
+          <p className="text-[var(--muted)]">{trimmed || `${lat}, ${lng}`}</p>
         </div>
 
         <a

@@ -14,13 +14,18 @@ type AddressAutocompleteProps = {
   mapsKey?: string;
   onChange?: (value: string) => void;
   onBlur?: () => void;
+  onLocationChange?: (coords: Coords) => void;
 };
 
 type Suggestion = {
   id: string;
   label: string;
   detail?: string;
+  lat?: number;
+  lng?: number;
 };
+
+type Coords = { lat?: number; lng?: number };
 
 const emptySubscribe = () => () => undefined;
 
@@ -32,6 +37,7 @@ export function AddressAutocomplete({
   className,
   onChange,
   onBlur,
+  onLocationChange,
 }: AddressAutocompleteProps) {
   const listId = useId();
   const rootRef = useRef<HTMLDivElement>(null);
@@ -43,6 +49,7 @@ export function AddressAutocomplete({
   const [loading, setLoading] = useState(false);
   const [hits, setHits] = useState<Suggestion[]>([]);
   const [active, setActive] = useState(0);
+  const [coords, setCoords] = useState<Coords>({});
   const [menu, setMenu] = useState({ top: 0, left: 0, width: 280 });
 
   function placeMenu() {
@@ -124,15 +131,17 @@ export function AddressAutocomplete({
     };
   }, [listId, open]);
 
-  function setAddress(next: string) {
+  function setAddress(next: string, nextCoords: Coords = {}) {
     if (valueProp === undefined) {
       setInnerValue(next);
     }
+    setCoords(nextCoords);
     onChange?.(next);
+    onLocationChange?.(nextCoords);
   }
 
   function choose(item: Suggestion) {
-    setAddress(item.label);
+    setAddress(item.label, { lat: item.lat, lng: item.lng });
     setHits([]);
     setOpen(false);
   }
@@ -218,6 +227,8 @@ export function AddressAutocomplete({
           }
         }}
       />
+      {typeof coords.lat === "number" ? <input type="hidden" name="addressLat" value={coords.lat} /> : null}
+      {typeof coords.lng === "number" ? <input type="hidden" name="addressLng" value={coords.lng} /> : null}
       {menuNode}
     </div>
   );

@@ -39,6 +39,8 @@ export function InquiryForm({
       dateOfBirth: "",
       address: "",
       city: "",
+      lat: undefined,
+      lng: undefined,
       tags: defaultProgram ? `${defaultProgram}, Website` : "Website, Warm lead",
       programInterest: defaultProgram ?? programs[0].title,
       assignedPartner: "",
@@ -52,6 +54,7 @@ export function InquiryForm({
     control,
     formState: { errors, isSubmitting },
     reset,
+    setValue,
   } = useForm<LeadInput>({
     resolver: zodResolver(leadSchema),
     defaultValues,
@@ -171,6 +174,10 @@ export function InquiryForm({
                   placeholder=" "
                   onChange={field.onChange}
                   onBlur={field.onBlur}
+                  onLocationChange={(coords) => {
+                    setValue("lat", coords.lat);
+                    setValue("lng", coords.lng);
+                  }}
                 />
               )}
             />

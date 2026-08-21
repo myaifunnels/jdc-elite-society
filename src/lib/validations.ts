@@ -22,6 +22,8 @@ export const leadSchema = z.object({
   bestDescribesYou: z.string().optional(),
   programInterest: z.string().min(2, "Select a program."),
   assignedPartner: z.string().optional(),
+  lat: z.number().optional(),
+  lng: z.number().optional(),
 });
 
 export type LeadInput = z.infer<typeof leadSchema>;

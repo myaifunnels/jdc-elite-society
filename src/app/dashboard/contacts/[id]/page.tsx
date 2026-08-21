@@ -194,7 +194,12 @@ export default async function ContactDashboardPage({
         </MacosWindow>
 
         <MacosWindow title="Location" className={isPartner ? "dashboard-span-2" : undefined}>
-          <AddressMap address={contact.address} embedKey={mapsConfig.embedKey} />
+          <AddressMap
+            address={contact.address}
+            lat={contact.lat}
+            lng={contact.lng}
+            embedKey={mapsConfig.embedKey}
+          />
         </MacosWindow>
 
         {isPartner ? (

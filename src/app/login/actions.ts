@@ -21,6 +21,7 @@ import {
 } from "@/lib/auth-store";
 import { storeProfilePhoto } from "@/lib/r2-upload";
 import { formatInternationalPhone } from "@/lib/countries";
+import { upsertContactFromAccount } from "@/lib/crm-store";
 import { syncContactToGhl } from "@/lib/ghl";
 import { requireCapability, requireSessionUser, sessionCookieName, impersonatorCookieName } from "@/lib/session";
 import {
@@ -220,6 +221,24 @@ export async function completeAccountProfile(
       facebookProfileUrl: parsed.data.facebookProfileUrl,
       facebookPhotoUrl: photoUrl,
     });
+    const lat = Number(formData.get("addressLat"));
+    const lng = Number(formData.get("addressLng"));
+    await upsertContactFromAccount({
+      email: user.email,
+      name: user.name,
+      phone: user.phone,
+      address: parsed.data.address,
+      photoUrl,
+      bestDescribesYou: audience,
+      programInterest: user.company,
+      lat: Number.isFinite(lat) ? lat : undefined,
+      lng: Number.isFinite(lng) ? lng : undefined,
+      source: "Account profile",
+      tags: [
+        "Profile complete",
+        ...parsed.data.memberships.map((item) => (item === "jes" ? "JES Member" : "Spartans")),
+      ],
+    });
     await syncContactToGhl({
       name: user.name,
       email: user.email,
@@ -244,6 +263,7 @@ export async function completeAccountProfile(
 
   revalidatePath("/dashboard");
   revalidatePath("/dashboard/profile");
+  revalidatePath("/dashboard/contacts");
   redirect("/dashboard");
 }
 

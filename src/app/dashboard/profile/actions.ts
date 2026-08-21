@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { AuthFormState } from "@/app/login/actions";
 import { updateOwnAccount } from "@/lib/auth-store";
 import { formatInternationalPhone } from "@/lib/countries";
+import { upsertContactFromAccount } from "@/lib/crm-store";
 import { syncContactToGhl } from "@/lib/ghl";
 import { storeProfilePhoto } from "@/lib/r2-upload";
 import { requireSessionUser } from "@/lib/session";
@@ -69,6 +70,22 @@ export async function updateOwnAccountProfile(
       newPassword: parsed.data.newPassword || undefined,
     });
 
+    const lat = Number(formData.get("addressLat"));
+    const lng = Number(formData.get("addressLng"));
+    await upsertContactFromAccount({
+      email: user.email,
+      name: parsed.data.name,
+      phone: parsed.data.phone,
+      address: parsed.data.address,
+      photoUrl,
+      bestDescribesYou: audience,
+      programInterest: parsed.data.company,
+      lat: Number.isFinite(lat) ? lat : undefined,
+      lng: Number.isFinite(lng) ? lng : undefined,
+      source: "Account profile",
+      tags: ["Profile complete"],
+    });
+
     await syncContactToGhl({
       name: parsed.data.name,
       email: user.email,
@@ -93,5 +110,6 @@ export async function updateOwnAccountProfile(
 
   revalidatePath("/dashboard");
   revalidatePath("/dashboard/profile");
+  revalidatePath("/dashboard/contacts");
   return { success: "Your account is saved." };
 }

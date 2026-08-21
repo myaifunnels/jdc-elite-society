@@ -125,6 +125,14 @@ async function persistContact(contact: ContactRecord) {
   }
 }
 
+function sameText(left?: string, right?: string) {
+  return (left ?? "").toLowerCase().replace(/\s+/g, " ").trim() === (right ?? "").toLowerCase().replace(/\s+/g, " ").trim();
+}
+
+function lookupAddress(contact: Pick<ContactRecord, "address" | "city" | "region">) {
+  return [contact.address, contact.city, contact.region].filter(Boolean).join(", ");
+}
+
 function upsertLocal(incoming: ContactRecord) {
   const email = incoming.email.toLowerCase();
   const index = memoryRecords.findIndex(
@@ -136,15 +144,27 @@ function upsertLocal(incoming: ContactRecord) {
 
   if (index >= 0) {
     const current = memoryRecords[index];
+    const incomingAddress = incoming.address?.trim() || "";
+    const incomingCity = incoming.city?.trim() || "";
+    const nextAddress =
+      incomingAddress.length >= (current.address?.trim().length ?? 0) ? incomingAddress || current.address : current.address;
+    const nextCity =
+      incomingCity.length >= (current.city?.trim().length ?? 0) ? incomingCity || current.city : current.city;
+    const addressChanged = !sameText(
+      [nextAddress, nextCity, incoming.region || current.region].filter(Boolean).join(", "),
+      lookupAddress(current),
+    );
     memoryRecords[index] = {
       ...current,
       ...incoming,
       id: current.id,
       kind: current.kind === "partner" ? "partner" : incoming.kind,
+      address: nextAddress,
+      city: nextCity,
       assignedPartner: incoming.assignedPartner || current.assignedPartner,
       photoUrl: incoming.photoUrl || current.photoUrl,
-      lat: incoming.lat ?? current.lat,
-      lng: incoming.lng ?? current.lng,
+      lat: incoming.lat ?? (addressChanged ? undefined : current.lat),
+      lng: incoming.lng ?? (addressChanged ? undefined : current.lng),
       ghlContactId: incoming.ghlContactId || current.ghlContactId,
       tags: incoming.ghlContactId ? uniqueTags(incoming.tags) : uniqueTags([...(incoming.tags ?? []), ...current.tags]),
     };
@@ -152,6 +172,25 @@ function upsertLocal(incoming: ContactRecord) {
   }
 
   memoryRecords.push(incoming);
+}
+
+async function withCoordinates(
+  contact: ContactRecord,
+  coords?: { lat?: number; lng?: number } | null,
+): Promise<ContactRecord> {
+  const lat = coords?.lat ?? contact.lat;
+  const lng = coords?.lng ?? contact.lng;
+  if (typeof lat === "number" && typeof lng === "number") {
+    return { ...contact, lat, lng };
+  }
+
+  const lookup = lookupAddress(contact);
+  if (!lookup) {
+    return { ...contact, lat: undefined, lng: undefined };
+  }
+
+  const found = await geocodeAddress(lookup);
+  return { ...contact, lat: found?.lat, lng: found?.lng };
 }
 
 function customField(contact: GhlRemoteContact, keys: string[]) {
@@ -412,7 +451,20 @@ export async function listLeads(viewer: CrmViewer) {
 
 export async function getContact(viewer: CrmViewer, id: string) {
   await hydrateCrm();
-  return visibleToViewer(viewer).find((contact) => contact.id === id) ?? null;
+  const contact = visibleToViewer(viewer).find((item) => item.id === id) ?? null;
+  if (!contact) {
+    return null;
+  }
+  if (typeof contact.lat === "number" && typeof contact.lng === "number") {
+    return contact;
+  }
+  if (!lookupAddress(contact)) {
+    return contact;
+  }
+
+  const next = await withCoordinates(contact);
+  await persistContact(next);
+  return visibleToViewer(viewer).find((item) => item.id === id) ?? next;
 }
 
 export async function listAssignedContacts(viewer: CrmViewer, partnerName: string) {
@@ -469,18 +521,13 @@ export async function listContactMapPins(viewer: CrmViewer, query?: ContactQuery
       continue;
     }
 
-    const lookup = [contact.address, contact.city, contact.region].filter(Boolean).join(", ");
-    if (!lookup || lookups >= 8) {
+    const lookup = lookupAddress(contact);
+    if (!lookup || lookups >= 40) {
       continue;
     }
 
     lookups += 1;
-    const coords = await geocodeAddress(lookup);
-    if (!coords) {
-      continue;
-    }
-
-    const next = { ...contact, lat: coords.lat, lng: coords.lng };
+    const next = await withCoordinates(contact);
     await persistContact(next);
     const pin = toMapPin(next);
     if (pin) {
@@ -606,6 +653,8 @@ export async function createLead(
         status: existing.status,
         source: existing.source,
         tags: uniqueTags([...(existing.tags ?? []), ...(payload.tags ?? [])]),
+        lat: payload.lat,
+        lng: payload.lng,
       }
     : {
         id: `contact-${Date.now()}`,
@@ -616,6 +665,57 @@ export async function createLead(
         ...payload,
       };
 
-  await persistContact(lead);
+  await persistContact(await withCoordinates(lead));
   return lead;
+}
+
+export async function upsertContactFromAccount(input: {
+  email: string;
+  name: string;
+  phone?: string;
+  address: string;
+  city?: string;
+  photoUrl?: string;
+  bestDescribesYou?: string;
+  programInterest?: string;
+  lat?: number;
+  lng?: number;
+  source?: string;
+  tags?: string[];
+}) {
+  await hydrateCrm();
+  const existing = await findContactByEmailOrPhone(input.email, input.phone ?? "");
+  const next: ContactRecord = existing
+    ? {
+        ...existing,
+        name: input.name || existing.name,
+        phone: input.phone || existing.phone,
+        address: input.address,
+        city: input.city || existing.city,
+        photoUrl: input.photoUrl || existing.photoUrl,
+        bestDescribesYou: input.bestDescribesYou || existing.bestDescribesYou,
+        programInterest: input.programInterest || existing.programInterest,
+        tags: uniqueTags([...(existing.tags ?? []), ...(input.tags ?? [])]),
+        lat: input.lat,
+        lng: input.lng,
+      }
+    : {
+        id: `contact-${Date.now()}`,
+        kind: "contact",
+        createdAt: new Date().toISOString().slice(0, 10),
+        status: "new",
+        source: input.source ?? "Account profile",
+        name: input.name,
+        email: input.email,
+        phone: input.phone ?? "",
+        dateOfBirth: "",
+        address: input.address,
+        city: input.city ?? "",
+        tags: uniqueTags(input.tags ?? ["Profile complete"]),
+        bestDescribesYou: input.bestDescribesYou || "Not specified",
+        programInterest: input.programInterest || "JDC Elite Society",
+        photoUrl: input.photoUrl,
+      };
+
+  await persistContact(await withCoordinates(next, { lat: input.lat, lng: input.lng }));
 }

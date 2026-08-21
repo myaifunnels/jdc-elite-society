@@ -105,18 +105,36 @@ export async function geocodeAddress(address: string): Promise<Coords | null> {
     return cached;
   }
 
+  const headers = {
+    Accept: "application/json",
+    "User-Agent": "CoachJDC/1.0 (https://coachjdc.org)",
+  };
+
   try {
+    const photonUrl = new URL("https://photon.komoot.io/api/");
+    photonUrl.searchParams.set("q", query);
+    photonUrl.searchParams.set("limit", "1");
+    photonUrl.searchParams.set("lang", "en");
+    const photonResponse = await fetch(photonUrl, { headers, cache: "no-store" });
+    if (photonResponse.ok) {
+      const photon = (await photonResponse.json()) as {
+        features?: Array<{ geometry?: { coordinates?: [number, number] } }>;
+      };
+      const point = photon.features?.[0]?.geometry?.coordinates;
+      const lng = point?.[0];
+      const lat = point?.[1];
+      if (typeof lat === "number" && typeof lng === "number" && Number.isFinite(lat) && Number.isFinite(lng)) {
+        const coords = { lat, lng };
+        await writeCache(query, coords);
+        return coords;
+      }
+    }
+
     const url = new URL("https://nominatim.openstreetmap.org/search");
     url.searchParams.set("format", "jsonv2");
     url.searchParams.set("limit", "1");
     url.searchParams.set("q", query);
-    const response = await fetch(url, {
-      headers: {
-        Accept: "application/json",
-        "User-Agent": "CoachJDC/1.0 (https://coachjdc.org)",
-      },
-      cache: "no-store",
-    });
+    const response = await fetch(url, { headers, cache: "no-store" });
     if (!response.ok) {
       await writeCache(query, null);
       return null;
