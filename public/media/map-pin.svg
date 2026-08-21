@@ -1,15 +1,15 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 96" fill="none">
   <defs>
     <radialGradient id="pinBody" cx="34%" cy="22%" r="78%">
-      <stop offset="0%" stop-color="#ff9b8a"/>
-      <stop offset="38%" stop-color="#ef6b58"/>
-      <stop offset="72%" stop-color="#d94c3d"/>
-      <stop offset="100%" stop-color="#b53a30"/>
+      <stop offset="0%" stop-color="#4da3ff"/>
+      <stop offset="38%" stop-color="#007bff"/>
+      <stop offset="72%" stop-color="#0055dd"/>
+      <stop offset="100%" stop-color="#0022aa"/>
     </radialGradient>
     <radialGradient id="pinRim" cx="38%" cy="30%" r="70%">
-      <stop offset="0%" stop-color="#ffc2b6"/>
-      <stop offset="55%" stop-color="#e85d4c"/>
-      <stop offset="100%" stop-color="#9e3228"/>
+      <stop offset="0%" stop-color="#9ecbff"/>
+      <stop offset="55%" stop-color="#007bff"/>
+      <stop offset="100%" stop-color="#001a80"/>
     </radialGradient>
   </defs>
   <path

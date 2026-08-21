@@ -757,7 +757,11 @@ export async function listPartnerMapPins(viewer: CrmViewer): Promise<PartnerMapP
   }));
 }
 
-function toMapPin(contact: ContactRecord): ContactMapPin | null {
+function pinPhotoUrl(contact: ContactRecord, photosByEmail?: Map<string, string>) {
+  return contact.photoUrl?.trim() || photosByEmail?.get(contact.email.toLowerCase()) || undefined;
+}
+
+function toMapPin(contact: ContactRecord, photosByEmail?: Map<string, string>): ContactMapPin | null {
   const located = withMapLocation(contact);
   if (typeof located.lat !== "number" || typeof located.lng !== "number") {
     return null;
@@ -768,7 +772,7 @@ function toMapPin(contact: ContactRecord): ContactMapPin | null {
     name: located.name,
     region: located.region ?? located.city,
     address: located.address,
-    photoUrl: located.photoUrl,
+    photoUrl: pinPhotoUrl(located, photosByEmail),
     lat: located.lat,
     lng: located.lng,
     kind: located.kind,
@@ -786,12 +790,20 @@ export async function listContactMapPins(
   }
 
   const contacts = await listContacts(viewer, query);
+  const { listAllUsers } = await import("@/lib/auth-store");
+  const users = await listAllUsers();
+  const photosByEmail = new Map(
+    users.flatMap((user) => {
+      const photo = user.facebookPhotoUrl?.trim();
+      return photo ? [[user.email.toLowerCase(), photo] as const] : [];
+    }),
+  );
   const pins: ContactMapPin[] = [];
   let lookups = 0;
   const geocode = options?.geocode === true;
 
   for (const contact of contacts) {
-    const existing = toMapPin(contact);
+    const existing = toMapPin(contact, photosByEmail);
     if (existing) {
       pins.push(existing);
       continue;
@@ -809,7 +821,7 @@ export async function listContactMapPins(
     lookups += 1;
     const next = await withCoordinates(contact);
     await persistContact(next);
-    const pin = toMapPin(next);
+    const pin = toMapPin(next, photosByEmail);
     if (pin) {
       pins.push(pin);
     }
