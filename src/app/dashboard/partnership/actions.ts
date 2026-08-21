@@ -3,10 +3,10 @@
 import { revalidatePath } from "next/cache";
 
 import { isSafeAssetUrl } from "@/lib/branding";
-import { getPublicUserById, listPublicUsers, setAffiliateAccess, setAffiliatePrograms } from "@/lib/auth-store";
+import { getPublicUserById, setAffiliateAccess, setAffiliatePrograms } from "@/lib/auth-store";
 import { getContactByEmail, setContactAffiliateTag } from "@/lib/crm-store";
 import {
-  approvePendingPartnershipRecords,
+  approveAllPartnerships,
   markCyclePaid,
   recordSale,
   savePayoutMethod,
@@ -15,7 +15,6 @@ import {
   upsertProfile,
   voidSale,
   wouldCreateSponsorCycle,
-  listProfiles,
 } from "@/lib/affiliate-store";
 import { hasAffiliateWorkspace, parseAffiliatePrograms, type AffiliateProgramId } from "@/lib/affiliate";
 import { DEFAULT_COMMISSION_RATE } from "@/lib/pay-cycle";
@@ -83,6 +82,18 @@ export async function grantAffiliateAccess(
   await syncUserProgramsToContact(userId, programs);
   revalidatePartnership();
   return { success: "Partnership access granted. They will see the campaigns that match their tags." };
+}
+
+export async function approveAllPartnershipsAction(): Promise<PartnershipFormState> {
+  await requireCapability("partnership.admin");
+  const summary = await approveAllPartnerships({
+    includePausedWithPrograms: true,
+    includeContactTags: true,
+  });
+  revalidatePartnership();
+  return {
+    success: `Approved partnerships: ${summary.partnersActivated} activated, ${summary.partnersCreated} created, ${summary.salesApproved} sales approved. Payouts were not marked paid.`,
+  };
 }
 
 export async function updateAffiliateProfile(
@@ -301,77 +312,4 @@ export async function ensureOwnAffiliateProfile() {
       ? ["pioneer", "jdc-partner"]
       : user.affiliatePrograms;
   return upsertProfile({ userId: user.id, programs, status: "active" });
-}
-
-export async function approveAllPartnerships(): Promise<PartnershipFormState> {
-  await requireCapability("partnership.admin");
-  const { listContacts } = await import("@/lib/crm-store");
-  const [users, profiles, contacts, pending] = await Promise.all([
-    listPublicUsers(),
-    listProfiles(),
-    listContacts({ role: "admin", name: "Admin", email: "", seeAllContacts: true }),
-    approvePendingPartnershipRecords(),
-  ]);
-
-  const ids = new Set<string>();
-
-  for (const profile of profiles) {
-    if (profile.status === "paused" && profile.programs.length === 0) {
-      continue;
-    }
-    ids.add(profile.userId);
-  }
-
-  for (const user of users) {
-    if (user.role === "admin") {
-      continue;
-    }
-    if (user.role === "partner" || user.affiliateAccess || user.affiliatePrograms.length > 0) {
-      ids.add(user.id);
-    }
-  }
-
-  for (const contact of contacts) {
-    const tagged = parseAffiliatePrograms(contact.tags);
-    if (tagged.length === 0) {
-      continue;
-    }
-    const account = users.find((item) => item.email.toLowerCase() === contact.email.toLowerCase());
-    if (account && account.role !== "admin") {
-      ids.add(account.id);
-    }
-  }
-
-  let partners = 0;
-  for (const userId of ids) {
-    const account = users.find((item) => item.id === userId) ?? (await getPublicUserById(userId));
-    if (!account || account.role === "admin") {
-      continue;
-    }
-    const profile = profiles.find((item) => item.userId === userId);
-    const contact = contacts.find((item) => item.email.toLowerCase() === account.email.toLowerCase());
-    const programs = parseAffiliatePrograms([
-      ...account.affiliatePrograms,
-      ...(profile?.programs ?? []),
-      ...(contact?.tags ?? []),
-    ]);
-    const next = programs.length > 0 ? programs : (["pioneer"] as AffiliateProgramId[]);
-    await setAffiliatePrograms(userId, next);
-    await upsertProfile({
-      userId,
-      status: "active",
-      programs: next,
-      commissionRate: profile?.commissionRate,
-    });
-    partners += 1;
-  }
-
-  revalidatePartnership();
-  return {
-    success: `Approved ${partners} partner${partners === 1 ? "" : "s"}. Invited profiles activated: ${pending.profiles}. Pending sales approved: ${pending.sales}.`,
-  };
-}
-
-export async function approveAllPartnershipsAction() {
-  return approveAllPartnerships();
 }

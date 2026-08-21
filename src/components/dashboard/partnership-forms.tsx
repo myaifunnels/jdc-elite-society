@@ -21,6 +21,33 @@ import { formatPhp } from "@/lib/pay-cycle";
 
 const initial: PartnershipFormState = {};
 
+export function ApproveAllPartnershipsForm({
+  invitedCount,
+  pendingSalesCount,
+}: {
+  invitedCount: number;
+  pendingSalesCount: number;
+}) {
+  const [state, action, pending] = useActionState(approveAllPartnershipsAction, initial);
+
+  return (
+    <form action={action} className="grid gap-3">
+      <p className="text-sm text-[var(--muted)]">
+        Activates invited partners and anyone tagged pioneer or jdc-partner. Empty programs default to Pioneer.
+        Revoked partners (paused with no programs) stay revoked. Pending sales are approved; payouts stay unpaid.
+      </p>
+      <p className="text-sm">
+        Invited now: {invitedCount}. Pending sales: {pendingSalesCount}.
+      </p>
+      {state.error ? <p className="text-sm text-red-500">{state.error}</p> : null}
+      {state.success ? <p className="text-sm text-emerald-400">{state.success}</p> : null}
+      <button type="submit" disabled={pending} className="macos-btn macos-btn-primary pressable w-fit disabled:opacity-70">
+        {pending ? "Approving…" : "Approve all partnerships"}
+      </button>
+    </form>
+  );
+}
+
 export function GrantAccessForm({
   users,
   profiles,
@@ -75,20 +102,6 @@ export function GrantAccessForm({
       {state.success ? <p className="text-sm text-emerald-400">{state.success}</p> : null}
       <button type="submit" disabled={pending} className="macos-btn macos-btn-primary pressable w-fit disabled:opacity-70">
         {pending ? "Granting…" : "Grant campaign access"}
-      </button>
-    </form>
-  );
-}
-
-export function ApproveAllPartnershipsForm() {
-  const [state, action, pending] = useActionState(approveAllPartnershipsAction, initial);
-
-  return (
-    <form action={action} className="grid gap-3">
-      {state.error ? <p className="text-sm text-red-500">{state.error}</p> : null}
-      {state.success ? <p className="text-sm text-emerald-400">{state.success}</p> : null}
-      <button type="submit" disabled={pending} className="macos-btn macos-btn-primary pressable w-fit disabled:opacity-70">
-        {pending ? "Approving…" : "Approve all partnerships"}
       </button>
     </form>
   );

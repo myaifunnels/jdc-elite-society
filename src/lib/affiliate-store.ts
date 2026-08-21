@@ -51,6 +51,7 @@ const memory = {
 let pool: Pool | null | undefined;
 let tableReady = false;
 let seeded = false;
+let partnershipsBackfilled = false;
 
 function getPool() {
   const connectionString = process.env.DATABASE_URL;
@@ -332,37 +333,50 @@ async function ensureSeed() {
   const client = getPool();
   memory.campaigns = defaultCampaigns.map((item) => ({ ...item }));
 
-  if (!client) {
-    return;
+  if (client) {
+    try {
+      await ensureTable(client);
+      for (const campaign of defaultCampaigns) {
+        await client.query(
+          `
+          INSERT INTO affiliate_campaigns (id, slug, title, description, destination_path, active, required_program)
+          VALUES ($1, $2, $3, $4, $5, $6, $7)
+          ON CONFLICT (slug) DO UPDATE SET
+            title = EXCLUDED.title,
+            description = EXCLUDED.description,
+            destination_path = EXCLUDED.destination_path,
+            required_program = EXCLUDED.required_program,
+            active = TRUE
+          `,
+          [
+            campaign.id,
+            campaign.slug,
+            campaign.title,
+            campaign.description,
+            campaign.destinationPath,
+            campaign.active,
+            campaign.requiredProgram,
+          ],
+        );
+      }
+    } catch (error) {
+      console.error("Failed to seed affiliate campaigns", error);
+    }
   }
 
+  await backfillApprovedPartnerships();
+}
+
+async function backfillApprovedPartnerships() {
+  if (partnershipsBackfilled) {
+    return;
+  }
+  partnershipsBackfilled = true;
   try {
-    await ensureTable(client);
-    for (const campaign of defaultCampaigns) {
-      await client.query(
-        `
-        INSERT INTO affiliate_campaigns (id, slug, title, description, destination_path, active, required_program)
-        VALUES ($1, $2, $3, $4, $5, $6, $7)
-        ON CONFLICT (slug) DO UPDATE SET
-          title = EXCLUDED.title,
-          description = EXCLUDED.description,
-          destination_path = EXCLUDED.destination_path,
-          required_program = EXCLUDED.required_program,
-          active = TRUE
-        `,
-        [
-          campaign.id,
-          campaign.slug,
-          campaign.title,
-          campaign.description,
-          campaign.destinationPath,
-          campaign.active,
-          campaign.requiredProgram,
-        ],
-      );
-    }
+    await approveAllPartnerships({ includePausedWithPrograms: false, includeContactTags: false });
   } catch (error) {
-    console.error("Failed to seed affiliate campaigns", error);
+    partnershipsBackfilled = false;
+    console.error("Failed to backfill approved partnerships", error);
   }
 }
 
@@ -474,35 +488,6 @@ export async function upsertProfile(input: {
   );
 
   return next;
-}
-
-export async function approvePendingPartnershipRecords() {
-  for (const profile of memory.profiles) {
-    if (profile.status === "invited") {
-      profile.status = "active";
-    }
-  }
-  for (const sale of memory.sales) {
-    if (sale.status === "pending") {
-      sale.status = "approved";
-    }
-  }
-
-  return withStore(
-    async (client) => {
-      const profiles = await client.query(
-        `UPDATE affiliate_profiles SET status = 'active' WHERE status = 'invited' RETURNING user_id`,
-      );
-      const sales = await client.query(
-        `UPDATE affiliate_sales SET status = 'approved' WHERE status = 'pending' RETURNING id`,
-      );
-      return { profiles: profiles.rowCount ?? 0, sales: sales.rowCount ?? 0 };
-    },
-    () => ({
-      profiles: memory.profiles.filter((item) => item.status === "invited").length,
-      sales: memory.sales.filter((item) => item.status === "pending").length,
-    }),
-  );
 }
 
 export async function wouldCreateSponsorCycle(userId: string, sponsorId: string) {
@@ -692,6 +677,193 @@ export async function voidSale(id: string) {
     () => sale,
   );
   return sale;
+}
+
+export type PartnershipApprovalOptions = {
+  includePausedWithPrograms?: boolean;
+  includeContactTags?: boolean;
+};
+
+export type PartnershipApprovalSummary = {
+  partnersActivated: number;
+  partnersCreated: number;
+  salesApproved: number;
+};
+
+function isRevokedPartner(profile: AffiliateProfile | undefined, programs: AffiliateProgramId[]) {
+  return Boolean(profile && profile.status === "paused" && profile.programs.length === 0 && programs.length === 0);
+}
+
+async function contactProgramsByEmail() {
+  const { listContacts } = await import("@/lib/crm-store");
+  const contacts = await listContacts({
+    role: "admin",
+    name: "Partnership admin",
+    email: "",
+    seeAllContacts: true,
+  });
+  const byEmail = new Map<string, AffiliateProgramId[]>();
+  for (const contact of contacts) {
+    const programs = parseAffiliatePrograms(contact.tags);
+    if (programs.length === 0) {
+      continue;
+    }
+    byEmail.set(contact.email.trim().toLowerCase(), programs);
+  }
+  return byEmail;
+}
+
+export async function approvePendingSales() {
+  const sales = await listSales();
+  let salesApproved = 0;
+  for (const sale of sales) {
+    if (sale.status !== "pending") {
+      continue;
+    }
+    sale.status = "approved";
+    const index = memory.sales.findIndex((item) => item.id === sale.id);
+    if (index >= 0) {
+      memory.sales[index] = sale;
+    }
+    salesApproved += 1;
+  }
+
+  await withStore(
+    async (client) => {
+      await client.query("UPDATE affiliate_sales SET status = 'approved' WHERE status = 'pending'");
+      return salesApproved;
+    },
+    () => salesApproved,
+  );
+
+  return salesApproved;
+}
+
+export async function approveAllPartnerships(
+  options: PartnershipApprovalOptions = {},
+): Promise<PartnershipApprovalSummary> {
+  const includePausedWithPrograms = options.includePausedWithPrograms ?? true;
+  const includeContactTags = options.includeContactTags ?? true;
+
+  let invitedActivated = 0;
+  for (const profile of memory.profiles) {
+    if (profile.status !== "invited") {
+      continue;
+    }
+    profile.status = "active";
+    if (profile.programs.length === 0) {
+      profile.programs = ["pioneer"];
+    }
+    invitedActivated += 1;
+  }
+  invitedActivated = await withStore(
+    async (client) => {
+      const result = await client.query(
+        `
+        UPDATE affiliate_profiles
+        SET status = 'active',
+            programs = CASE WHEN TRIM(programs) = '' THEN 'pioneer' ELSE programs END
+        WHERE status = 'invited'
+        RETURNING user_id
+        `,
+      );
+      return result.rowCount ?? 0;
+    },
+    () => invitedActivated,
+  );
+
+  const { listPublicUsers, setAffiliatePrograms } = await import("@/lib/auth-store");
+  const users = await listPublicUsers();
+  const profiles = await listProfiles();
+  const profileByUser = new Map(profiles.map((item) => [item.userId, item]));
+  let taggedByEmail = new Map<string, AffiliateProgramId[]>();
+
+  if (includeContactTags) {
+    try {
+      taggedByEmail = await contactProgramsByEmail();
+    } catch (error) {
+      console.error("Could not load contact tags for partnership approval", error);
+    }
+  }
+
+  let partnersActivated = invitedActivated;
+  let partnersCreated = 0;
+  const seen = new Set<string>();
+
+  for (const user of users) {
+    seen.add(user.id);
+    const profile = profileByUser.get(user.id);
+    const fromContact = taggedByEmail.get(user.email.trim().toLowerCase()) ?? [];
+    const programs = parseAffiliatePrograms([
+      ...(profile?.programs ?? []),
+      ...(user.affiliatePrograms ?? []),
+      ...fromContact,
+    ]);
+
+    if (isRevokedPartner(profile, programs)) {
+      continue;
+    }
+    if (profile?.status === "paused" && profile.programs.length > 0 && !includePausedWithPrograms && fromContact.length === 0) {
+      continue;
+    }
+
+    const hasPartnership =
+      Boolean(profile) || user.affiliateAccess || programs.length > 0 || user.role === "partner";
+    if (!hasPartnership) {
+      continue;
+    }
+    if (!profile && user.role === "admin" && programs.length === 0 && !user.affiliateAccess) {
+      continue;
+    }
+
+    const nextPrograms = programs.length > 0 ? programs : (["pioneer"] as AffiliateProgramId[]);
+    const needsProfile = !profile;
+    const needsActivation = profile?.status !== "active";
+    const needsPrograms =
+      serializeAffiliatePrograms(profile?.programs ?? []) !== serializeAffiliatePrograms(nextPrograms);
+    const needsAccess = !user.affiliateAccess || serializeAffiliatePrograms(user.affiliatePrograms) !== serializeAffiliatePrograms(nextPrograms);
+
+    if (!needsProfile && !needsActivation && !needsPrograms && !needsAccess) {
+      continue;
+    }
+
+    await setAffiliatePrograms(user.id, nextPrograms);
+    await upsertProfile({
+      userId: user.id,
+      programs: nextPrograms,
+      status: "active",
+    });
+    if (needsProfile) {
+      partnersCreated += 1;
+    } else if (needsActivation) {
+      partnersActivated += 1;
+    }
+  }
+
+  for (const profile of profiles) {
+    if (seen.has(profile.userId)) {
+      continue;
+    }
+    if (isRevokedPartner(profile, profile.programs)) {
+      continue;
+    }
+    if (profile.status === "paused" && profile.programs.length > 0 && !includePausedWithPrograms) {
+      continue;
+    }
+    const nextPrograms = profile.programs.length > 0 ? profile.programs : (["pioneer"] as AffiliateProgramId[]);
+    if (profile.status === "active" && serializeAffiliatePrograms(profile.programs) === serializeAffiliatePrograms(nextPrograms)) {
+      continue;
+    }
+    await upsertProfile({
+      userId: profile.userId,
+      programs: nextPrograms,
+      status: "active",
+    });
+    partnersActivated += 1;
+  }
+
+  const salesApproved = await approvePendingSales();
+  return { partnersActivated, partnersCreated, salesApproved };
 }
 
 export async function listPayouts(affiliateUserId?: string) {

@@ -1,4 +1,3 @@
-import { approveAllPartnerships } from "@/app/dashboard/partnership/actions";
 import { MacosWindow } from "@/components/dashboard/macos-window";
 import {
   ApproveAllPartnershipsForm,
@@ -24,7 +23,6 @@ import { requireCapability } from "@/lib/session";
 
 export default async function PartnershipAdminPage() {
   await requireCapability("partnership.admin");
-  const approval = await approveAllPartnerships();
   const users = await listPublicUsers();
   const profiles = await listProfiles();
   const payday = nextPayDate();
@@ -32,8 +30,11 @@ export default async function PartnershipAdminPage() {
   const thisQueue = await cycleQueue(payday);
   const nextQueue = await cycleQueue(following);
   const unpaid = await unpaidApprovedSales();
-  const recentSales = (await listSales()).slice(0, 12);
+  const allSales = await listSales();
+  const recentSales = allSales.slice(0, 12);
   const campaigns = await listCampaigns(false);
+  const invitedCount = profiles.filter((profile) => profile.status === "invited").length;
+  const pendingSalesCount = allSales.filter((sale) => sale.status === "pending").length;
 
   async function queueRows(scheduled: string, grouped: Awaited<ReturnType<typeof cycleQueue>>) {
     return Promise.all(
@@ -53,11 +54,10 @@ export default async function PartnershipAdminPage() {
       <MacosWindow title="Approve all" className="dashboard-span-2">
         <p className="macos-lead" style={{ textAlign: "left" }}>
           Activate invited partners, keep their Pioneer / jdc-partner campaigns, and approve pending sales. Revoked
-          partners with no programs stay paused. Opening this page also runs that approval.
+          partners with no programs stay paused. Deploy also activates invited profiles automatically.
         </p>
-        {approval.success ? <p className="mt-3 text-sm text-emerald-400">{approval.success}</p> : null}
         <div className="mt-4">
-          <ApproveAllPartnershipsForm />
+          <ApproveAllPartnershipsForm invitedCount={invitedCount} pendingSalesCount={pendingSalesCount} />
         </div>
       </MacosWindow>
 
