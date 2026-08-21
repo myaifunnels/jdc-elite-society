@@ -8,9 +8,12 @@ import { cn } from "@/lib/utils";
 type AddressAutocompleteProps = {
   name?: string;
   defaultValue?: string;
+  value?: string;
   placeholder?: string;
   className?: string;
   mapsKey?: string;
+  onChange?: (value: string) => void;
+  onBlur?: () => void;
 };
 
 type Suggestion = {
@@ -24,14 +27,18 @@ const emptySubscribe = () => () => undefined;
 export function AddressAutocomplete({
   name = "address",
   defaultValue = "",
+  value: valueProp,
   placeholder = "Street, city, province or country",
   className,
+  onChange,
+  onBlur,
 }: AddressAutocompleteProps) {
   const listId = useId();
   const rootRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const isClient = useSyncExternalStore(emptySubscribe, () => true, () => false);
-  const [value, setValue] = useState(defaultValue);
+  const [innerValue, setInnerValue] = useState(defaultValue);
+  const value = valueProp ?? innerValue;
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [hits, setHits] = useState<Suggestion[]>([]);
@@ -117,11 +124,17 @@ export function AddressAutocomplete({
     };
   }, [listId, open]);
 
+  function setAddress(next: string) {
+    if (valueProp === undefined) {
+      setInnerValue(next);
+    }
+    onChange?.(next);
+  }
+
   function choose(item: Suggestion) {
-    setValue(item.label);
+    setAddress(item.label);
     setHits([]);
     setOpen(false);
-    queueMicrotask(() => inputRef.current?.dispatchEvent(new Event("input", { bubbles: true })));
   }
 
   const showMenu = open && value.trim().length >= 3;
@@ -178,9 +191,10 @@ export function AddressAutocomplete({
           setOpen(true);
           placeMenu();
         }}
+        onBlur={onBlur}
         onChange={(event) => {
           const next = event.target.value;
-          setValue(next);
+          setAddress(next);
           setOpen(true);
           if (next.trim().length < 3) {
             setHits([]);

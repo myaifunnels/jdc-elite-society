@@ -3461,6 +3461,11 @@ html:not(.dark) .dashboard-desktop {
   width: 100%;
 }
 
+.float-field .address-suggest,
+.float-field .address-suggest input {
+  min-height: 3.35rem;
+}
+
 .address-suggest-menu {
   position: fixed;
   z-index: 80;

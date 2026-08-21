@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useForm, useWatch } from "react-hook-form";
+import { Controller, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 
+import { AddressAutocomplete } from "@/components/forms/address-autocomplete";
 import { FloatField } from "@/components/forms/float-field";
 import { programs } from "@/data/programs";
 import { siteContent } from "@/data/site-content";
@@ -160,7 +161,19 @@ export function InquiryForm({
         <div className="mt-4 grid gap-4">
           <input type="hidden" {...register("tags")} />
           <FloatField label="Enter your address" error={errors.address?.message}>
-            <input {...register("address")} placeholder=" " autoComplete="street-address" />
+            <Controller
+              name="address"
+              control={control}
+              render={({ field }) => (
+                <AddressAutocomplete
+                  name={field.name}
+                  value={field.value}
+                  placeholder=" "
+                  onChange={field.onChange}
+                  onBlur={field.onBlur}
+                />
+              )}
+            />
           </FloatField>
         </div>
 
