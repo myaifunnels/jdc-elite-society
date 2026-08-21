@@ -63,7 +63,7 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
 
                 <div className="mt-8 flex flex-wrap gap-4">
                   <Link
-                    href={program.slug === "jdc-mastermind" ? "/programs?program=jdc-mastermind#mastermind-form" : `/contact?program=${encodeURIComponent(program.title)}`}
+                    href={program.slug === "jdc-mastermind" ? "/elite" : `/contact?program=${encodeURIComponent(program.title)}`}
                     className="rounded-full bg-[var(--brand)] px-6 py-3 font-semibold text-white transition hover:bg-[var(--brand-dark)]"
                   >
                     {program.ctaLabel}

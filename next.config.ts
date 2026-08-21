@@ -12,6 +12,14 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "images.unsplash.com",
       },
+      {
+        protocol: "https",
+        hostname: "vibe.filesafe.space",
+      },
+      {
+        protocol: "https",
+        hostname: "assets.cdn.filesafe.space",
+      },
     ],
   },
 };

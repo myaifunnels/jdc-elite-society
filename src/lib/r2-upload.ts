@@ -6,6 +6,7 @@ import { getResolvedIntegrationSettings } from "@/lib/integrations-store";
 const MAX_BYTES = 5 * 1024 * 1024;
 const DATA_URL_MAX_BYTES = 350_000;
 const allowedTypes = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
+const receiptTypes = new Set([...allowedTypes, "application/pdf"]);
 
 function hmac(key: Buffer | string, data: string) {
   return createHmac("sha256", key).update(data, "utf8").digest();
@@ -19,6 +20,7 @@ function extensionFor(type: string) {
   if (type === "image/png") return "png";
   if (type === "image/webp") return "webp";
   if (type === "image/gif") return "gif";
+  if (type === "application/pdf") return "pdf";
   return "jpg";
 }
 
@@ -85,6 +87,35 @@ export async function storeProfilePhoto(file: File, userId: string) {
 
   if (body.length > DATA_URL_MAX_BYTES) {
     throw new Error("Use a smaller photo, or connect Cloudflare R2 so we can store larger pictures.");
+  }
+
+  return `data:${file.type};base64,${body.toString("base64")}`;
+}
+
+export async function storePaymentReceipt(file: File, email: string) {
+  if (!file.size) {
+    throw new Error("I-upload ang iyong resibo.");
+  }
+
+  if (!receiptTypes.has(file.type)) {
+    throw new Error("Upload a JPG, PNG, WEBP, or PDF receipt.");
+  }
+
+  if (file.size > MAX_BYTES) {
+    throw new Error("Keep the receipt under 5 MB.");
+  }
+
+  const body = Buffer.from(await file.arrayBuffer());
+  const settings = await getResolvedIntegrationSettings();
+  const safeEmail = email.toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 48);
+
+  if (isR2Ready(settings)) {
+    const key = `receipts/mastermind/${safeEmail}/${Date.now()}.${extensionFor(file.type)}`;
+    return putR2Object(settings, key, body, file.type);
+  }
+
+  if (body.length > DATA_URL_MAX_BYTES) {
+    throw new Error("Use a smaller receipt, or connect Cloudflare R2 so we can store larger files.");
   }
 
   return `data:${file.type};base64,${body.toString("base64")}`;
