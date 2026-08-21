@@ -99,24 +99,27 @@ export async function deleteUserAction(
   }
 
   const userId = String(formData.get("userId") ?? "").trim();
-  if (!userId) {
+  const email = String(formData.get("email") ?? "").trim().toLowerCase();
+  const nextPath = String(formData.get("redirectTo") ?? "/dashboard/contacts").trim();
+  const redirectTo = nextPath.startsWith("/dashboard") ? nextPath : "/dashboard/contacts";
+
+  const target = userId ? await getPublicUserById(userId) : email ? await findUserByEmail(email) : null;
+  const contactEmail = target?.email || email;
+  if (!contactEmail) {
     return { error: "Missing account." };
   }
-  if (userId === actor.id) {
+  if (target?.id === actor.id) {
     return { error: "You can't delete the account you're signed in with." };
   }
 
-  const target = await getPublicUserById(userId);
-  if (!target) {
-    return { error: "Account not found." };
-  }
-
   try {
-    await hideAndRemoveContactByEmail(target.email);
-    await deleteUserAccess(target.id);
-    await deletePasswordResetsForUser(target.id);
-    await removeProfileForUser(target.id);
-    await deleteUser(target.id);
+    await hideAndRemoveContactByEmail(contactEmail);
+    if (target) {
+      await deleteUserAccess(target.id);
+      await deletePasswordResetsForUser(target.id);
+      await removeProfileForUser(target.id);
+      await deleteUser(target.id);
+    }
   } catch (error) {
     return { error: error instanceof Error ? error.message : "I couldn't delete this account." };
   }
@@ -125,5 +128,5 @@ export async function deleteUserAction(
   revalidatePath("/dashboard/contacts");
   revalidatePath("/dashboard/registrations");
   revalidatePath("/dashboard");
-  redirect("/dashboard/access");
+  redirect(redirectTo);
 }

@@ -109,6 +109,11 @@ async function loadPersistedContacts() {
     for (const row of hidden.rows) {
       hiddenEmails.add(String(row.email ?? "").toLowerCase());
     }
+    for (let index = memoryRecords.length - 1; index >= 0; index -= 1) {
+      if (isHiddenEmail(memoryRecords[index].email)) {
+        memoryRecords.splice(index, 1);
+      }
+    }
     const result = await client.query("SELECT payload FROM crm_contacts");
     for (const row of result.rows) {
       const contact = asContact(row.payload);

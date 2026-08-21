@@ -88,6 +88,16 @@ export default async function ContactDashboardPage({
                 {contact.phone ? ` · ${contact.phone}` : ""}
               </p>
               <p className="dashboard-metric-copy">{contact.address || location || "No address yet"}</p>
+              {user.role === "admin" && portalUser?.id !== user.id ? (
+                <div className="macos-actions" style={{ marginTop: "0.75rem" }}>
+                  <DeleteUserButton
+                    userId={portalUser?.id}
+                    email={contact.email}
+                    name={contact.name}
+                    redirectTo="/dashboard/contacts"
+                  />
+                </div>
+              ) : null}
             </div>
           </div>
           <dl className="dashboard-meta-grid is-wide">
@@ -203,7 +213,12 @@ export default async function ContactDashboardPage({
                   />
                 ) : null}
                 {user.role === "admin" && portalUser.id !== user.id ? (
-                  <DeleteUserButton userId={portalUser.id} name={contact.name} />
+                  <DeleteUserButton
+                    userId={portalUser.id}
+                    email={contact.email}
+                    name={contact.name}
+                    redirectTo="/dashboard/contacts"
+                  />
                 ) : null}
               </div>
             </>
@@ -226,6 +241,9 @@ export default async function ContactDashboardPage({
                       Grant Contact portal access
                     </button>
                   </form>
+                ) : null}
+                {user.role === "admin" ? (
+                  <DeleteUserButton email={contact.email} name={contact.name} redirectTo="/dashboard/contacts" />
                 ) : null}
               </div>
             </>
