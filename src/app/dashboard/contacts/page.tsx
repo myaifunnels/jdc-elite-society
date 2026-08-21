@@ -7,9 +7,11 @@ import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { DeleteUserButton } from "@/components/dashboard/delete-user-button";
 import { MacosWindow } from "@/components/dashboard/macos-window";
 import { OpenUserDashboardButton } from "@/components/dashboard/open-user-dashboard-button";
+import { Pagination } from "@/components/dashboard/pagination";
 import { hasAccess } from "@/lib/access";
 import { listAllUsers } from "@/lib/auth-store";
-import { listContactMapPins, listContacts, listTagIndex } from "@/lib/crm-store";
+import { CONTACTS_PAGE_SIZE, listContactMapPins, listContacts, listTagIndex } from "@/lib/crm-store";
+import { parsePage, paginate } from "@/lib/pagination";
 import { requireCapability } from "@/lib/session";
 import { uniqueTags } from "@/lib/tags";
 import { ContactKind } from "@/lib/types";
@@ -21,7 +23,7 @@ function asList(value?: string | string[]) {
   return uniqueTags((Array.isArray(value) ? value : value ? [value] : []).flatMap((item) => item.split(",")));
 }
 
-function contactsHref(params: { view?: View; kind?: string; q?: string; tags?: string[] }) {
+function contactsHref(params: { view?: View; kind?: string; q?: string; tags?: string[]; page?: number }) {
   const search = new URLSearchParams();
   if (params.view && params.view !== "dashboard") {
     search.set("view", params.view);
@@ -35,6 +37,9 @@ function contactsHref(params: { view?: View; kind?: string; q?: string; tags?: s
   for (const tag of params.tags ?? []) {
     search.append("tag", tag);
   }
+  if (params.page && params.page > 1) {
+    search.set("page", String(params.page));
+  }
   const query = search.toString();
   return query ? `/dashboard/contacts?${query}` : "/dashboard/contacts";
 }
@@ -42,7 +47,7 @@ function contactsHref(params: { view?: View; kind?: string; q?: string; tags?: s
 export default async function ContactsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ kind?: string; view?: string; tag?: string | string[]; q?: string }>;
+  searchParams: Promise<{ kind?: string; view?: string; tag?: string | string[]; q?: string; page?: string }>;
 }) {
   const { user, access } = await requireCapability("contacts.view");
   const viewer = { ...user, seeAllContacts: hasAccess(access, "contacts.all") };
@@ -56,17 +61,23 @@ export default async function ContactsPage({
         : "contact";
   const selectedTags = asList(raw.tag);
   const query = { kind, tags: selectedTags, q: raw.q };
-  const [contacts, allContacts, tags, pins] = await Promise.all([
-    listContacts(viewer, query),
-    listContacts(viewer, { kind }),
-    listTagIndex(viewer),
-    listContactMapPins(viewer, query),
-  ]);
-  const users = user.role === "admin" ? await listAllUsers() : [];
+  const page = parsePage(raw.page);
+
+  const matching = await listContacts(viewer, query);
+  const allForKind =
+    raw.q || selectedTags.length ? await listContacts(viewer, { kind }) : matching;
+  const paged = paginate(matching, page, CONTACTS_PAGE_SIZE);
+  const tags = await listTagIndex(viewer);
+  const pins =
+    view === "roster"
+      ? []
+      : await listContactMapPins(viewer, query, { geocode: view === "map" });
+  const users = view === "roster" && user.role === "admin" ? await listAllUsers() : [];
   const usersByEmail = new Map(users.map((item) => [item.email.toLowerCase(), item]));
 
-  const ghlCount = allContacts.filter((contact) => contact.ghlContactId || contact.source.includes("GHL")).length;
-  const followUp = allContacts.filter((contact) => contact.status === "follow-up" || contact.status === "qualified");
+  const ghlCount = allForKind.filter((contact) => contact.ghlContactId || contact.source.includes("GHL")).length;
+  const followUp = allForKind.filter((contact) => contact.status === "follow-up" || contact.status === "qualified");
+  const rosterBase = contactsHref({ view, kind, q: raw.q, tags: selectedTags });
 
   const views = [
     { id: "dashboard" as const, label: "Dashboard" },
@@ -134,7 +145,7 @@ export default async function ContactsPage({
             <div className="contacts-metric-row">
               <article className="dashboard-metric-card">
                 <p className="macos-kicker">Roster</p>
-                <p className="dashboard-metric-value">{allContacts.length}</p>
+                <p className="dashboard-metric-value">{allForKind.length}</p>
                 <p className="dashboard-metric-copy">People in this view</p>
               </article>
               <article className="dashboard-metric-card">
@@ -144,7 +155,7 @@ export default async function ContactsPage({
               </article>
               <article className="dashboard-metric-card">
                 <p className="macos-kicker">Matching</p>
-                <p className="dashboard-metric-value">{contacts.length}</p>
+                <p className="dashboard-metric-value">{matching.length}</p>
                 <p className="dashboard-metric-copy">Results for this search</p>
               </article>
               <article className="dashboard-metric-card">
@@ -155,18 +166,23 @@ export default async function ContactsPage({
             </div>
 
             <div className="dashboard-contact-list">
-              {contacts.slice(0, 8).map((contact) => (
+              {matching.slice(0, 8).map((contact) => (
                 <Link key={contact.id} href={`/dashboard/contacts/${contact.id}`} className="dashboard-contact-row">
                   <ContactAvatar name={contact.name} photoUrl={contact.photoUrl} />
                   <span>
                     <strong>{contact.name}</strong>
                     <em>
-                      {contact.email} · {contact.city || contact.status}
+                      {contact.email} · {contact.city || contact.address || contact.status}
                     </em>
                   </span>
                 </Link>
               ))}
             </div>
+            {matching.length > 8 ? (
+              <Link href={contactsHref({ view: "roster", kind, q: raw.q, tags: selectedTags })} className="macos-btn macos-btn-secondary self-start">
+                View all {matching.length} in roster
+              </Link>
+            ) : null}
 
             <ContactsMap pins={pins} />
           </>
@@ -175,75 +191,78 @@ export default async function ContactsPage({
         {view === "map" ? <ContactsMap pins={pins} tall /> : null}
 
         {view === "roster" ? (
-          <div className="overflow-x-auto">
-            <table className="dashboard-table">
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Type</th>
-                  <th>Location</th>
-                  <th>Status</th>
-                  {user.role === "admin" ? <th>Portal</th> : null}
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {contacts.length === 0 ? (
+          <>
+            <div className="overflow-x-auto">
+              <table className="dashboard-table">
+                <thead>
                   <tr>
-                    <td colSpan={user.role === "admin" ? 6 : 5}>No contacts match those filters.</td>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Location</th>
+                    <th>Status</th>
+                    {user.role === "admin" ? <th>Portal</th> : null}
+                    <th>Actions</th>
                   </tr>
-                ) : (
-                  contacts.map((contact) => {
-                    const portal = usersByEmail.get(contact.email.toLowerCase());
-                    return (
-                      <tr key={contact.id}>
-                        <td>
-                          <div className="dashboard-contact-row is-plain">
-                            <ContactAvatar name={contact.name} photoUrl={contact.photoUrl} size="sm" />
-                            <span>
-                              <strong>{contact.name}</strong>
-                              <em>{contact.email}</em>
-                            </span>
-                          </div>
-                        </td>
-                        <td className="capitalize">{contact.kind}</td>
-                        <td>{contact.region ?? contact.city}</td>
-                        <td className="capitalize">{contact.status}</td>
-                        {user.role === "admin" ? (
-                          <td className="capitalize">
-                            {portal
-                              ? portal.role
-                              : contact.ghlContactId || contact.source.toLowerCase().includes("ghl")
-                                ? "Contact"
-                                : "No login"}
+                </thead>
+                <tbody>
+                  {paged.items.length === 0 ? (
+                    <tr>
+                      <td colSpan={user.role === "admin" ? 6 : 5}>No contacts match those filters.</td>
+                    </tr>
+                  ) : (
+                    paged.items.map((contact) => {
+                      const portal = usersByEmail.get(contact.email.toLowerCase());
+                      return (
+                        <tr key={contact.id}>
+                          <td>
+                            <div className="dashboard-contact-row is-plain">
+                              <ContactAvatar name={contact.name} photoUrl={contact.photoUrl} size="sm" />
+                              <span>
+                                <strong>{contact.name}</strong>
+                                <em>{contact.email}</em>
+                              </span>
+                            </div>
                           </td>
-                        ) : null}
-                        <td>
-                          <div className="contact-row-actions">
-                            <Link href={`/dashboard/contacts/${contact.id}`} className="macos-btn macos-btn-secondary">
-                              Contact
-                            </Link>
-                            {user.role === "admin" && portal?.role !== "admin" && contact.email ? (
-                              <OpenUserDashboardButton
-                                userId={portal?.id}
-                                email={contact.email}
-                                name={contact.name}
-                                phone={contact.phone}
-                                label="User dashboard"
-                              />
-                            ) : null}
-                            {user.role === "admin" && portal && portal.id !== user.id ? (
-                              <DeleteUserButton userId={portal.id} name={contact.name} />
-                            ) : null}
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })
-                )}
-              </tbody>
-            </table>
-          </div>
+                          <td className="capitalize">{contact.kind}</td>
+                          <td>{contact.region ?? contact.city ?? contact.address}</td>
+                          <td className="capitalize">{contact.status}</td>
+                          {user.role === "admin" ? (
+                            <td className="capitalize">
+                              {portal
+                                ? portal.role
+                                : contact.ghlContactId || contact.source.toLowerCase().includes("ghl")
+                                  ? "Contact"
+                                  : "No login"}
+                            </td>
+                          ) : null}
+                          <td>
+                            <div className="contact-row-actions">
+                              <Link href={`/dashboard/contacts/${contact.id}`} className="macos-btn macos-btn-secondary">
+                                Contact
+                              </Link>
+                              {user.role === "admin" && portal?.role !== "admin" && contact.email ? (
+                                <OpenUserDashboardButton
+                                  userId={portal?.id}
+                                  email={contact.email}
+                                  name={contact.name}
+                                  phone={contact.phone}
+                                  label="User dashboard"
+                                />
+                              ) : null}
+                              {user.role === "admin" && portal && portal.id !== user.id ? (
+                                <DeleteUserButton userId={portal.id} name={contact.name} />
+                              ) : null}
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
+            <Pagination page={paged.page} pages={paged.pages} total={paged.total} hrefBase={rosterBase} noun="contacts" />
+          </>
         ) : null}
       </MacosWindow>
     </DashboardShell>

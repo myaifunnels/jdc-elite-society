@@ -3,15 +3,22 @@ import { ContactAvatar } from "@/components/dashboard/contact-avatar";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { DeleteUserButton } from "@/components/dashboard/delete-user-button";
 import { MacosWindow } from "@/components/dashboard/macos-window";
+import { Pagination } from "@/components/dashboard/pagination";
 import { VerifyPaymentButton } from "@/components/dashboard/verify-payment-button";
 import { listMemberRegistrations } from "@/lib/auth-store";
 import { membershipLabel } from "@/lib/membership";
+import { parsePage, paginate } from "@/lib/pagination";
 import { requireCapability } from "@/lib/session";
 
-export default async function RegistrationsPage() {
+export default async function RegistrationsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string }>;
+}) {
   const { user: actor } = await requireCapability("registrations");
   const members = await listMemberRegistrations();
   const pendingCount = members.filter((member) => !member.paymentVerified).length;
+  const paged = paginate(members, parsePage((await searchParams).page), 20);
 
   return (
     <DashboardShell
@@ -27,30 +34,39 @@ export default async function RegistrationsPage() {
             No member registrations yet.
           </p>
         ) : (
-          members.map((member) => (
-            <article key={member.id} className="registration-row">
-              <ContactAvatar name={member.name} photoUrl={member.facebookPhotoUrl} size="lg" />
-              <div>
-                <strong>{member.name}</strong>
-                <em>
-                  {member.email} · {member.phone} · {member.company || "No company"}
-                </em>
-                <p>
-                  Profile {member.profileComplete ? "complete" : "incomplete"} · Payment{" "}
-                  {member.paymentVerified ? "verified" : "pending"} · {membershipLabel(member.memberships)} ·{" "}
-                  {member.accountStatus}
-                </p>
-              </div>
-              {member.paymentVerified ? (
-                <span className="status-pill is-verified">Verified payment</span>
-              ) : (
-                <VerifyPaymentButton userId={member.id} />
-              )}
-              {actor.role === "admin" && member.id !== actor.id ? (
-                <DeleteUserButton userId={member.id} name={member.name} />
-              ) : null}
-            </article>
-          ))
+          <>
+            {paged.items.map((member) => (
+              <article key={member.id} className="registration-row">
+                <ContactAvatar name={member.name} photoUrl={member.facebookPhotoUrl} size="lg" />
+                <div>
+                  <strong>{member.name}</strong>
+                  <em>
+                    {member.email} · {member.phone} · {member.company || "No company"}
+                  </em>
+                  <p>
+                    Profile {member.profileComplete ? "complete" : "incomplete"} · Payment{" "}
+                    {member.paymentVerified ? "verified" : "pending"} · {membershipLabel(member.memberships)} ·{" "}
+                    {member.accountStatus}
+                  </p>
+                </div>
+                {member.paymentVerified ? (
+                  <span className="status-pill is-verified">Verified payment</span>
+                ) : (
+                  <VerifyPaymentButton userId={member.id} />
+                )}
+                {actor.role === "admin" && member.id !== actor.id ? (
+                  <DeleteUserButton userId={member.id} name={member.name} />
+                ) : null}
+              </article>
+            ))}
+            <Pagination
+              page={paged.page}
+              pages={paged.pages}
+              total={paged.total}
+              hrefBase="/dashboard/registrations"
+              noun="registrations"
+            />
+          </>
         )}
       </MacosWindow>
     </DashboardShell>

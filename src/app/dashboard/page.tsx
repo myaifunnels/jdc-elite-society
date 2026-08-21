@@ -7,7 +7,7 @@ import { MacosWindow } from "@/components/dashboard/macos-window";
 import { PartnersMap } from "@/components/dashboard/partners-map";
 import { dashboardMetrics } from "@/data/crm";
 import { PendingMemberHome } from "@/components/dashboard/pending-member-home";
-import { listContacts, listPartnerMapPins, listViewerMetrics } from "@/lib/crm-store";
+import { listContactsPaged, listPartnerMapPins, listViewerMetrics } from "@/lib/crm-store";
 import { adminPartnershipSnapshot } from "@/lib/affiliate-store";
 import { formatManilaDate, formatPhp } from "@/lib/pay-cycle";
 import { hasAccess } from "@/lib/access";
@@ -56,9 +56,11 @@ export default async function DashboardPage() {
 
   if (hasAccess(access, "contacts.view") && !hasAccess(access, "registrations")) {
     const viewer = { ...user, seeAllContacts: hasAccess(access, "contacts.all") };
-    const contacts = await listContacts(viewer, "contact");
-    const metrics = await listViewerMetrics(viewer);
-    const pins = await listPartnerMapPins(viewer);
+    const [contacts, metrics, pins] = await Promise.all([
+      listContactsPaged(viewer, "contact", 1, 8),
+      listViewerMetrics(viewer),
+      listPartnerMapPins(viewer),
+    ]);
 
     return (
       <DashboardShell
@@ -86,12 +88,12 @@ export default async function DashboardPage() {
           </MacosWindow>
 
           <MacosWindow title="Your contacts" className="dashboard-span-2" bodyClassName="dashboard-contact-list">
-            {contacts.length === 0 ? (
+            {contacts.total === 0 ? (
               <p className="macos-lead" style={{ textAlign: "left" }}>
                 No contacts are assigned to you yet.
               </p>
             ) : (
-              contacts.map((contact) => (
+              contacts.items.map((contact) => (
                 <Link key={contact.id} href={`/dashboard/contacts/${contact.id}`} className="dashboard-contact-row">
                   <ContactAvatar name={contact.name} photoUrl={contact.photoUrl} />
                   <span>
@@ -135,10 +137,12 @@ export default async function DashboardPage() {
   }
 
   const viewer = { ...user, seeAllContacts: hasAccess(access, "contacts.all") };
-  const contacts = await listContacts(viewer);
-  const partners = await listContacts(viewer, "partner");
-  const pins = await listPartnerMapPins(viewer);
-  const partnership = await adminPartnershipSnapshot();
+  const [contacts, partners, pins, partnership] = await Promise.all([
+    listContactsPaged(viewer, undefined, 1, 8),
+    listContactsPaged(viewer, "partner", 1, 8),
+    listPartnerMapPins(viewer),
+    adminPartnershipSnapshot(),
+  ]);
 
   return (
     <DashboardShell
@@ -162,7 +166,7 @@ export default async function DashboardPage() {
         </MacosWindow>
 
         <MacosWindow title="Contacts" bodyClassName="dashboard-contact-list">
-          {contacts.slice(0, 6).map((contact) => (
+          {contacts.items.map((contact) => (
             <Link key={contact.id} href={`/dashboard/contacts/${contact.id}`} className="dashboard-contact-row">
               <ContactAvatar name={contact.name} photoUrl={contact.photoUrl} />
               <span>
@@ -190,7 +194,7 @@ export default async function DashboardPage() {
         </MacosWindow>
 
         <MacosWindow title="Partners" bodyClassName="dashboard-contact-list">
-          {partners.map((partner) => (
+          {partners.items.map((partner) => (
             <Link key={partner.id} href={`/dashboard/contacts/${partner.id}`} className="dashboard-contact-row">
               <ContactAvatar name={partner.name} photoUrl={partner.photoUrl} />
               <span>

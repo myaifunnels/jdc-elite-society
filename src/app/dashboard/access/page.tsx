@@ -4,22 +4,26 @@ import { RoleDefaultsForm } from "@/components/dashboard/access-forms";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { DeleteUserButton } from "@/components/dashboard/delete-user-button";
 import { MacosWindow } from "@/components/dashboard/macos-window";
-import { ACCESS_ROLES, overrideCount } from "@/lib/access";
-import { getRoleDefaults, resolveAccessById } from "@/lib/access-store";
+import { Pagination } from "@/components/dashboard/pagination";
+import { ACCESS_ROLES } from "@/lib/access";
+import { getRoleDefaults } from "@/lib/access-store";
 import { listAllUsers } from "@/lib/auth-store";
+import { parsePage, paginate } from "@/lib/pagination";
 import { requireCapability } from "@/lib/session";
 import { saveRoleDefaultAction } from "@/app/dashboard/access/actions";
 
-export default async function AccessPage() {
+export default async function AccessPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string }>;
+}) {
   const { user: actor } = await requireCapability("access");
-  const [defaults, users] = await Promise.all([getRoleDefaults(), listAllUsers()]);
-
-  const people = await Promise.all(
-    users.map(async (user) => {
-      const access = await resolveAccessById(user.id, user.role);
-      return { user, access };
-    }),
-  );
+  const [{ page: pageParam }, defaults, users] = await Promise.all([
+    searchParams,
+    getRoleDefaults(),
+    listAllUsers(),
+  ]);
+  const paged = paginate(users, parsePage(pageParam), 25);
 
   return (
     <DashboardShell
@@ -43,19 +47,19 @@ export default async function AccessPage() {
                 <tr>
                   <th>Name</th>
                   <th>Role</th>
-                  <th>Overrides</th>
+                  <th>Status</th>
                   <th />
                 </tr>
               </thead>
               <tbody>
-                {people.map(({ user, access }) => (
+                {paged.items.map((user) => (
                   <tr key={user.id}>
                     <td>
                       <strong>{user.name}</strong>
                       <div className="text-xs text-[var(--muted)]">{user.email}</div>
                     </td>
-                    <td className="capitalize">{access.role}</td>
-                    <td>{overrideCount(access.overrides) || "Defaults"}</td>
+                    <td className="capitalize">{user.role}</td>
+                    <td className="capitalize">{user.accountStatus}</td>
                     <td>
                       <div className="contact-row-actions">
                         <Link href={`/dashboard/access/${user.id}`} className="macos-btn macos-btn-secondary">
@@ -71,6 +75,7 @@ export default async function AccessPage() {
               </tbody>
             </table>
           </div>
+          <Pagination page={paged.page} pages={paged.pages} total={paged.total} hrefBase="/dashboard/access" noun="accounts" />
         </MacosWindow>
       </div>
     </DashboardShell>

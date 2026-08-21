@@ -29,10 +29,15 @@ export type CrmViewer = Pick<AuthUser, "role" | "name" | "email"> & {
 const memoryRecords: ContactRecord[] = [...contactSeed];
 const hiddenEmails = new Set<string>();
 const GHL_SYNC_MS = 60_000;
+const TAG_CACHE_MS = 5 * 60 * 1000;
+export const CONTACTS_PAGE_SIZE = 25;
 let lastGhlSyncAt = 0;
 let lastAddressSyncAt = 0;
+let lastTagFetchAt = 0;
+let cachedRemoteTags: string[] = [];
 let tableReady = false;
-let portalsBackfilled = false;
+let crmLoaded = false;
+let ghlSyncing = false;
 let pool: Pool | null | undefined;
 
 function getPool() {
@@ -88,8 +93,12 @@ function asContact(value: unknown): ContactRecord | null {
 }
 
 async function loadPersistedContacts() {
+  if (crmLoaded) {
+    return;
+  }
   const client = getPool();
   if (!client) {
+    crmLoaded = true;
     return;
   }
 
@@ -107,6 +116,7 @@ async function loadPersistedContacts() {
         upsertLocal(contact);
       }
     }
+    crmLoaded = true;
   } catch (error) {
     console.error("Failed to load CRM contacts", error);
   }
@@ -302,45 +312,6 @@ async function syncGhlContacts() {
     const mapped = fromGhlContact(item);
     if (mapped && !isHiddenEmail(mapped.email)) {
       await persistContact(mapped);
-      await ensurePortalUserForContact({
-        name: mapped.name,
-        email: mapped.email,
-        phone: mapped.phone,
-        bestDescribesYou: mapped.bestDescribesYou,
-        dateOfBirth: mapped.dateOfBirth,
-        address: mapped.address,
-        facebookPhotoUrl: mapped.photoUrl,
-        company: mapped.programInterest,
-      }).catch((error) => {
-        console.error("Failed to provision GHL contact portal", mapped.email, error);
-      });
-    }
-  }
-}
-
-async function provisionGhlPortals() {
-  if (portalsBackfilled) {
-    return;
-  }
-  portalsBackfilled = true;
-  const contacts = memoryRecords.filter(
-    (contact) =>
-      !isHiddenEmail(contact.email) && (contact.ghlContactId || contact.source.toLowerCase().includes("ghl")),
-  );
-  for (const contact of contacts) {
-    try {
-      await ensurePortalUserForContact({
-        name: contact.name,
-        email: contact.email,
-        phone: contact.phone,
-        bestDescribesYou: contact.bestDescribesYou,
-        dateOfBirth: contact.dateOfBirth,
-        address: contact.address,
-        facebookPhotoUrl: contact.photoUrl,
-        company: contact.programInterest,
-      });
-    } catch (error) {
-      console.error("Failed to provision GHL contact portal", contact.email, error);
     }
   }
 }
@@ -392,11 +363,21 @@ async function applyAccountAddressesToContacts() {
   }
 }
 
+async function syncGhlInBackground() {
+  if (ghlSyncing || Date.now() - lastGhlSyncAt < GHL_SYNC_MS) {
+    return;
+  }
+  ghlSyncing = true;
+  try {
+    await syncGhlContacts();
+  } finally {
+    ghlSyncing = false;
+  }
+}
+
 async function hydrateCrm() {
   await loadPersistedContacts();
-  await syncGhlContacts();
-  await provisionGhlPortals();
-  await applyAccountAddressesToContacts();
+  void syncGhlInBackground();
 }
 
 function isOwnPartnerRecord(contact: ContactRecord, viewer: CrmViewer) {
@@ -476,6 +457,34 @@ export async function listContacts(viewer: CrmViewer, kindOrQuery?: ContactKind 
     });
 }
 
+export type PagedContacts = {
+  items: ContactRecord[];
+  total: number;
+  page: number;
+  pages: number;
+  pageSize: number;
+};
+
+export async function listContactsPaged(
+  viewer: CrmViewer,
+  query: ContactKind | ContactQuery | undefined,
+  page = 1,
+  pageSize = CONTACTS_PAGE_SIZE,
+): Promise<PagedContacts> {
+  const all = await listContacts(viewer, query);
+  const total = all.length;
+  const pages = Math.max(1, Math.ceil(total / pageSize));
+  const safePage = Math.min(Math.max(1, page), pages);
+  const start = (safePage - 1) * pageSize;
+  return {
+    items: all.slice(start, start + pageSize),
+    total,
+    page: safePage,
+    pages,
+    pageSize,
+  };
+}
+
 export type ContactSuggestion = {
   id: string;
   name: string;
@@ -527,6 +536,22 @@ export async function getContact(viewer: CrmViewer, id: string) {
   if (!contact) {
     return null;
   }
+
+  if (contact.ghlContactId) {
+    await ensurePortalUserForContact({
+      name: contact.name,
+      email: contact.email,
+      phone: contact.phone,
+      bestDescribesYou: contact.bestDescribesYou,
+      dateOfBirth: contact.dateOfBirth,
+      address: contact.address,
+      facebookPhotoUrl: contact.photoUrl,
+      company: contact.programInterest,
+    }).catch((error) => {
+      console.error("Failed to provision GHL contact portal", contact.email, error);
+    });
+  }
+
   if (typeof contact.lat === "number" && typeof contact.lng === "number") {
     return contact;
   }
@@ -548,7 +573,7 @@ export async function listAssignedContacts(viewer: CrmViewer, partnerName: strin
 }
 
 export async function listPartnerMapPins(viewer: CrmViewer): Promise<PartnerMapPin[]> {
-  return (await listContactMapPins(viewer, { kind: "partner" })).map((pin) => ({
+  return (await listContactMapPins(viewer, { kind: "partner" }, { geocode: false })).map((pin) => ({
     id: pin.id,
     name: pin.name,
     region: pin.region,
@@ -577,10 +602,19 @@ function toMapPin(contact: ContactRecord): ContactMapPin | null {
   };
 }
 
-export async function listContactMapPins(viewer: CrmViewer, query?: ContactQuery): Promise<ContactMapPin[]> {
+export async function listContactMapPins(
+  viewer: CrmViewer,
+  query?: ContactQuery,
+  options?: { geocode?: boolean },
+): Promise<ContactMapPin[]> {
+  if (options?.geocode) {
+    await applyAccountAddressesToContacts();
+  }
+
   const contacts = await listContacts(viewer, query);
   const pins: ContactMapPin[] = [];
   let lookups = 0;
+  const geocode = options?.geocode === true;
 
   for (const contact of contacts) {
     const existing = toMapPin(contact);
@@ -589,8 +623,12 @@ export async function listContactMapPins(viewer: CrmViewer, query?: ContactQuery
       continue;
     }
 
+    if (!geocode) {
+      continue;
+    }
+
     const lookup = lookupAddress(contact);
-    if (!lookup || lookups >= 250) {
+    if (!lookup || lookups >= 40) {
       continue;
     }
 
@@ -606,8 +644,17 @@ export async function listContactMapPins(viewer: CrmViewer, query?: ContactQuery
   return pins;
 }
 
+async function listGhlTagsCached() {
+  if (Date.now() - lastTagFetchAt < TAG_CACHE_MS) {
+    return cachedRemoteTags;
+  }
+  lastTagFetchAt = Date.now();
+  cachedRemoteTags = await listGhlLocationTags();
+  return cachedRemoteTags;
+}
+
 export async function listTagIndex(viewer: CrmViewer) {
-  const [contacts, remote] = await Promise.all([listContacts(viewer), listGhlLocationTags()]);
+  const [contacts, remote] = await Promise.all([listContacts(viewer), listGhlTagsCached()]);
   const counts = new Map<string, number>();
 
   for (const contact of contacts) {
