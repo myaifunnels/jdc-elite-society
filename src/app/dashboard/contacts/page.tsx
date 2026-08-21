@@ -4,6 +4,7 @@ import { ContactAvatar } from "@/components/dashboard/contact-avatar";
 import { ContactsMap } from "@/components/dashboard/contacts-map";
 import { ContactsSearch } from "@/components/dashboard/contacts-search";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
+import { DeleteUserButton } from "@/components/dashboard/delete-user-button";
 import { MacosWindow } from "@/components/dashboard/macos-window";
 import { OpenUserDashboardButton } from "@/components/dashboard/open-user-dashboard-button";
 import { hasAccess } from "@/lib/access";
@@ -230,6 +231,9 @@ export default async function ContactsPage({
                                 phone={contact.phone}
                                 label="User dashboard"
                               />
+                            ) : null}
+                            {user.role === "admin" && portal && portal.id !== user.id ? (
+                              <DeleteUserButton userId={portal.id} name={contact.name} />
                             ) : null}
                           </div>
                         </td>

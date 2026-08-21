@@ -808,6 +808,38 @@ export async function updateUserRole(userId: string, role: DashboardRole) {
   return publicUser(next);
 }
 
+export async function deleteUser(userId: string) {
+  const user = await findUserById(userId);
+  if (!user) {
+    throw new Error("Account not found.");
+  }
+
+  if (user.role === "admin") {
+    const admins = (await listAllUsers()).filter((item) => item.role === "admin");
+    if (admins.length <= 1) {
+      throw new Error("Keep at least one admin account.");
+    }
+  }
+
+  const memoryIndex = memoryUsers.findIndex((item) => item.id === userId);
+  if (memoryIndex >= 0) {
+    memoryUsers.splice(memoryIndex, 1);
+  }
+
+  const client = getPool();
+  if (client) {
+    try {
+      await ensureTable(client);
+      await client.query("DELETE FROM site_users WHERE id = $1", [userId]);
+    } catch (error) {
+      console.error("Failed to delete user", error);
+      throw new Error("I couldn't delete this account just now.");
+    }
+  }
+
+  return publicUser(user);
+}
+
 async function persistUserUpdate(user: AuthUserRecord) {
   const memoryIndex = memoryUsers.findIndex((item) => item.id === user.id);
   if (memoryIndex >= 0) {

@@ -199,6 +199,21 @@ export async function saveUserAccess(userId: string, role: AccessRole, overrides
   return record;
 }
 
+export async function deleteUserAccess(userId: string) {
+  memoryUserAccess.delete(userId);
+  const client = getPool();
+  if (!client) {
+    return;
+  }
+
+  try {
+    await ensureTable(client);
+    await client.query("DELETE FROM access_user_overrides WHERE user_id = $1", [userId]);
+  } catch (error) {
+    console.error("Failed to delete user access", error);
+  }
+}
+
 export async function resolveAccess(
   user: Pick<AuthUser, "id" | "role" | "affiliateAccess" | "affiliatePrograms">,
 ): Promise<AccessProfile> {

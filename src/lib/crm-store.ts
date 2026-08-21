@@ -27,8 +27,10 @@ export type CrmViewer = Pick<AuthUser, "role" | "name" | "email"> & {
 };
 
 const memoryRecords: ContactRecord[] = [...contactSeed];
+const hiddenEmails = new Set<string>();
 const GHL_SYNC_MS = 60_000;
 let lastGhlSyncAt = 0;
+let lastAddressSyncAt = 0;
 let tableReady = false;
 let portalsBackfilled = false;
 let pool: Pool | null | undefined;
@@ -63,6 +65,12 @@ async function ensureTable(client: Pool) {
       updated_at TIMESTAMPTZ DEFAULT NOW()
     )
   `);
+  await client.query(`
+    CREATE TABLE IF NOT EXISTS crm_hidden_contacts (
+      email TEXT PRIMARY KEY,
+      hidden_at TIMESTAMPTZ DEFAULT NOW()
+    )
+  `);
   tableReady = true;
 }
 
@@ -87,10 +95,15 @@ async function loadPersistedContacts() {
 
   try {
     await ensureTable(client);
+    const hidden = await client.query("SELECT email FROM crm_hidden_contacts");
+    hiddenEmails.clear();
+    for (const row of hidden.rows) {
+      hiddenEmails.add(String(row.email ?? "").toLowerCase());
+    }
     const result = await client.query("SELECT payload FROM crm_contacts");
     for (const row of result.rows) {
       const contact = asContact(row.payload);
-      if (contact) {
+      if (contact && !isHiddenEmail(contact.email)) {
         upsertLocal(contact);
       }
     }
@@ -99,7 +112,14 @@ async function loadPersistedContacts() {
   }
 }
 
+function isHiddenEmail(email?: string) {
+  return hiddenEmails.has((email ?? "").trim().toLowerCase());
+}
+
 async function persistContact(contact: ContactRecord) {
+  if (isHiddenEmail(contact.email)) {
+    return;
+  }
   upsertLocal(contact);
   const client = getPool();
   if (!client) {
@@ -280,7 +300,7 @@ async function syncGhlContacts() {
 
   for (const item of remote.contacts) {
     const mapped = fromGhlContact(item);
-    if (mapped) {
+    if (mapped && !isHiddenEmail(mapped.email)) {
       await persistContact(mapped);
       await ensurePortalUserForContact({
         name: mapped.name,
@@ -303,7 +323,10 @@ async function provisionGhlPortals() {
     return;
   }
   portalsBackfilled = true;
-  const contacts = memoryRecords.filter((contact) => contact.ghlContactId || contact.source.toLowerCase().includes("ghl"));
+  const contacts = memoryRecords.filter(
+    (contact) =>
+      !isHiddenEmail(contact.email) && (contact.ghlContactId || contact.source.toLowerCase().includes("ghl")),
+  );
   for (const contact of contacts) {
     try {
       await ensurePortalUserForContact({
@@ -322,10 +345,58 @@ async function provisionGhlPortals() {
   }
 }
 
+async function applyAccountAddressesToContacts() {
+  if (Date.now() - lastAddressSyncAt < 20_000) {
+    return;
+  }
+  lastAddressSyncAt = Date.now();
+  const { listAllUsers } = await import("@/lib/auth-store");
+  const users = await listAllUsers();
+  for (const user of users) {
+    if (isHiddenEmail(user.email) || !user.address?.trim()) {
+      continue;
+    }
+    const existing = memoryRecords.find(
+      (record) => emailsMatch(record.email, user.email) || phonesMatch(record.phone, user.phone),
+    );
+    const next: ContactRecord = existing
+      ? {
+          ...existing,
+          name: user.name || existing.name,
+          phone: user.phone || existing.phone,
+          address: user.address,
+          photoUrl: user.facebookPhotoUrl || existing.photoUrl,
+          bestDescribesYou: user.bestDescribesYou || existing.bestDescribesYou,
+          programInterest: user.company || existing.programInterest,
+          lat: sameText(user.address, existing.address) ? existing.lat : undefined,
+          lng: sameText(user.address, existing.address) ? existing.lng : undefined,
+        }
+      : {
+          id: `contact-${user.id}`,
+          kind: user.role === "partner" ? "partner" : "contact",
+          createdAt: user.createdAt?.slice(0, 10) || new Date().toISOString().slice(0, 10),
+          status: "new",
+          source: "Account profile",
+          name: user.name,
+          email: user.email,
+          phone: user.phone ?? "",
+          dateOfBirth: user.dateOfBirth ?? "",
+          address: user.address,
+          city: "",
+          tags: uniqueTags(["Profile complete"]),
+          bestDescribesYou: user.bestDescribesYou || "Not specified",
+          programInterest: user.company || "JDC Elite Society",
+          photoUrl: user.facebookPhotoUrl,
+        };
+    await persistContact(await withCoordinates(next));
+  }
+}
+
 async function hydrateCrm() {
   await loadPersistedContacts();
   await syncGhlContacts();
   await provisionGhlPortals();
+  await applyAccountAddressesToContacts();
 }
 
 function isOwnPartnerRecord(contact: ContactRecord, viewer: CrmViewer) {
@@ -340,12 +411,13 @@ function isAssignedToViewer(contact: ContactRecord, viewer: CrmViewer) {
 }
 
 function visibleToViewer(viewer: CrmViewer) {
+  const records = memoryRecords.filter((contact) => !isHiddenEmail(contact.email));
   if (viewer.seeAllContacts || viewer.role === "admin") {
-    return memoryRecords;
+    return records;
   }
 
   if (viewer.role === "partner") {
-    return memoryRecords.filter((contact) => isOwnPartnerRecord(contact, viewer) || isAssignedToViewer(contact, viewer));
+    return records.filter((contact) => isOwnPartnerRecord(contact, viewer) || isAssignedToViewer(contact, viewer));
   }
 
   return [];
@@ -476,19 +548,15 @@ export async function listAssignedContacts(viewer: CrmViewer, partnerName: strin
 }
 
 export async function listPartnerMapPins(viewer: CrmViewer): Promise<PartnerMapPin[]> {
-  return (await listContacts(viewer, "partner"))
-    .filter((partner): partner is ContactRecord & { lat: number; lng: number } => {
-      return typeof partner.lat === "number" && typeof partner.lng === "number";
-    })
-    .map((partner) => ({
-      id: partner.id,
-      name: partner.name,
-      region: partner.region ?? partner.city,
-      address: partner.address,
-      photoUrl: partner.photoUrl,
-      lat: partner.lat,
-      lng: partner.lng,
-    }));
+  return (await listContactMapPins(viewer, { kind: "partner" })).map((pin) => ({
+    id: pin.id,
+    name: pin.name,
+    region: pin.region,
+    address: pin.address,
+    photoUrl: pin.photoUrl,
+    lat: pin.lat,
+    lng: pin.lng,
+  }));
 }
 
 function toMapPin(contact: ContactRecord): ContactMapPin | null {
@@ -642,6 +710,7 @@ export async function createLead(
     source?: string;
   },
 ) {
+  await unhideContactEmail(payload.email);
   const existing = await findContactByEmailOrPhone(payload.email, payload.phone);
   const lead: ContactRecord = existing
     ? {
@@ -683,6 +752,9 @@ export async function upsertContactFromAccount(input: {
   source?: string;
   tags?: string[];
 }) {
+  if (isHiddenEmail(input.email)) {
+    return;
+  }
   await hydrateCrm();
   const existing = await findContactByEmailOrPhone(input.email, input.phone ?? "");
   const next: ContactRecord = existing
@@ -718,4 +790,57 @@ export async function upsertContactFromAccount(input: {
       };
 
   await persistContact(await withCoordinates(next, { lat: input.lat, lng: input.lng }));
+}
+
+export async function hideAndRemoveContactByEmail(email: string) {
+  const key = email.trim().toLowerCase();
+  if (!key) {
+    return;
+  }
+
+  hiddenEmails.add(key);
+  lastAddressSyncAt = 0;
+  for (let index = memoryRecords.length - 1; index >= 0; index -= 1) {
+    if (memoryRecords[index].email.toLowerCase() === key) {
+      memoryRecords.splice(index, 1);
+    }
+  }
+
+  const client = getPool();
+  if (!client) {
+    return;
+  }
+
+  try {
+    await ensureTable(client);
+    await client.query(
+      `
+      INSERT INTO crm_hidden_contacts (email, hidden_at)
+      VALUES ($1, NOW())
+      ON CONFLICT (email) DO NOTHING
+      `,
+      [key],
+    );
+    await client.query("DELETE FROM crm_contacts WHERE lower(email) = $1", [key]);
+  } catch (error) {
+    console.error("Failed to hide CRM contact", error);
+  }
+}
+
+export async function unhideContactEmail(email: string) {
+  const key = email.trim().toLowerCase();
+  if (!key) {
+    return;
+  }
+  hiddenEmails.delete(key);
+  const client = getPool();
+  if (!client) {
+    return;
+  }
+  try {
+    await ensureTable(client);
+    await client.query("DELETE FROM crm_hidden_contacts WHERE email = $1", [key]);
+  } catch (error) {
+    console.error("Failed to unhide CRM contact", error);
+  }
 }

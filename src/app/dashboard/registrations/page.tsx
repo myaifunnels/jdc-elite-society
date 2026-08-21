@@ -1,6 +1,7 @@
 import { ApproveAllRegistrationsForm } from "@/components/dashboard/approve-all-registrations-form";
 import { ContactAvatar } from "@/components/dashboard/contact-avatar";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
+import { DeleteUserButton } from "@/components/dashboard/delete-user-button";
 import { MacosWindow } from "@/components/dashboard/macos-window";
 import { VerifyPaymentButton } from "@/components/dashboard/verify-payment-button";
 import { listMemberRegistrations } from "@/lib/auth-store";
@@ -8,7 +9,7 @@ import { membershipLabel } from "@/lib/membership";
 import { requireCapability } from "@/lib/session";
 
 export default async function RegistrationsPage() {
-  await requireCapability("registrations");
+  const { user: actor } = await requireCapability("registrations");
   const members = await listMemberRegistrations();
   const pendingCount = members.filter((member) => !member.paymentVerified).length;
 
@@ -45,6 +46,9 @@ export default async function RegistrationsPage() {
               ) : (
                 <VerifyPaymentButton userId={member.id} />
               )}
+              {actor.role === "admin" && member.id !== actor.id ? (
+                <DeleteUserButton userId={member.id} name={member.name} />
+              ) : null}
             </article>
           ))
         )}

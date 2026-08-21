@@ -2,10 +2,14 @@
 
 import { randomBytes } from "node:crypto";
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 
 import { AccessMap, AccessOverride, CAPABILITIES, parseAccessRole } from "@/lib/access";
-import { saveRoleDefaults, saveUserAccess } from "@/lib/access-store";
-import { createUser, findUserByEmail, updateUserRole } from "@/lib/auth-store";
+import { deleteUserAccess, saveRoleDefaults, saveUserAccess } from "@/lib/access-store";
+import { removeProfileForUser } from "@/lib/affiliate-store";
+import { createUser, deleteUser, findUserByEmail, getPublicUserById, updateUserRole } from "@/lib/auth-store";
+import { hideAndRemoveContactByEmail, unhideContactEmail } from "@/lib/crm-store";
+import { deletePasswordResetsForUser } from "@/lib/password-reset";
 import { requireCapability } from "@/lib/session";
 
 function mapFromForm(formData: FormData, prefix: string): AccessMap {
@@ -60,6 +64,7 @@ export async function grantContactPortalAction(formData: FormData) {
   }
 
   const existing = await findUserByEmail(email);
+  await unhideContactEmail(email);
   if (existing) {
     await updateUserRole(existing.id, "contact");
     await saveUserAccess(existing.id, "contact", {});
@@ -78,4 +83,47 @@ export async function grantContactPortalAction(formData: FormData) {
 
   revalidatePath("/dashboard/access");
   revalidatePath("/dashboard/contacts");
+}
+
+export type DeleteUserState = {
+  error?: string;
+};
+
+export async function deleteUserAction(
+  _prevState: DeleteUserState,
+  formData: FormData,
+): Promise<DeleteUserState> {
+  const { user: actor } = await requireCapability("access");
+  if (actor.role !== "admin") {
+    return { error: "Only admin can delete accounts." };
+  }
+
+  const userId = String(formData.get("userId") ?? "").trim();
+  if (!userId) {
+    return { error: "Missing account." };
+  }
+  if (userId === actor.id) {
+    return { error: "You can't delete the account you're signed in with." };
+  }
+
+  const target = await getPublicUserById(userId);
+  if (!target) {
+    return { error: "Account not found." };
+  }
+
+  try {
+    await hideAndRemoveContactByEmail(target.email);
+    await deleteUserAccess(target.id);
+    await deletePasswordResetsForUser(target.id);
+    await removeProfileForUser(target.id);
+    await deleteUser(target.id);
+  } catch (error) {
+    return { error: error instanceof Error ? error.message : "I couldn't delete this account." };
+  }
+
+  revalidatePath("/dashboard/access");
+  revalidatePath("/dashboard/contacts");
+  revalidatePath("/dashboard/registrations");
+  revalidatePath("/dashboard");
+  redirect("/dashboard/access");
 }

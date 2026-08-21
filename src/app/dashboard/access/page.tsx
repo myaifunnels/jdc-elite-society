@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { RoleDefaultsForm } from "@/components/dashboard/access-forms";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
+import { DeleteUserButton } from "@/components/dashboard/delete-user-button";
 import { MacosWindow } from "@/components/dashboard/macos-window";
 import { ACCESS_ROLES, overrideCount } from "@/lib/access";
 import { getRoleDefaults, resolveAccessById } from "@/lib/access-store";
@@ -10,7 +11,7 @@ import { requireCapability } from "@/lib/session";
 import { saveRoleDefaultAction } from "@/app/dashboard/access/actions";
 
 export default async function AccessPage() {
-  await requireCapability("access");
+  const { user: actor } = await requireCapability("access");
   const [defaults, users] = await Promise.all([getRoleDefaults(), listAllUsers()]);
 
   const people = await Promise.all(
@@ -56,9 +57,14 @@ export default async function AccessPage() {
                     <td className="capitalize">{access.role}</td>
                     <td>{overrideCount(access.overrides) || "Defaults"}</td>
                     <td>
-                      <Link href={`/dashboard/access/${user.id}`} className="macos-btn macos-btn-secondary">
-                        Configure
-                      </Link>
+                      <div className="contact-row-actions">
+                        <Link href={`/dashboard/access/${user.id}`} className="macos-btn macos-btn-secondary">
+                          Configure
+                        </Link>
+                        {actor.role === "admin" && user.id !== actor.id ? (
+                          <DeleteUserButton userId={user.id} name={user.name} />
+                        ) : null}
+                      </div>
                     </td>
                   </tr>
                 ))}

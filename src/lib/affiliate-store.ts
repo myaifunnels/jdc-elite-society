@@ -490,6 +490,17 @@ export async function upsertProfile(input: {
   return next;
 }
 
+export async function removeProfileForUser(userId: string) {
+  memory.profiles = memory.profiles.filter((item) => item.userId !== userId);
+  await withStore(
+    async (client) => {
+      await client.query("DELETE FROM affiliate_profiles WHERE user_id = $1", [userId]);
+      return true;
+    },
+    () => true,
+  );
+}
+
 export async function wouldCreateSponsorCycle(userId: string, sponsorId: string) {
   if (!sponsorId || sponsorId === userId) {
     return sponsorId === userId;

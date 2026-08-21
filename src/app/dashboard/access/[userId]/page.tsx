@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import { UserAccessForm } from "@/components/dashboard/access-forms";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
+import { DeleteUserButton } from "@/components/dashboard/delete-user-button";
 import { MacosWindow } from "@/components/dashboard/macos-window";
 import { saveUserAccessAction } from "@/app/dashboard/access/actions";
 import { getRoleDefaults, resolveAccessById } from "@/lib/access-store";
@@ -14,7 +15,7 @@ export default async function UserAccessPage({
 }: {
   params: Promise<{ userId: string }>;
 }) {
-  await requireCapability("access");
+  const { user: actor } = await requireCapability("access");
   const { userId } = await params;
   const user = await getPublicUserById(userId);
   if (!user) {
@@ -43,6 +44,9 @@ export default async function UserAccessPage({
           <Link href="/dashboard/access" className="macos-btn macos-btn-secondary">
             Back to Access
           </Link>
+          {actor.role === "admin" && user.id !== actor.id ? (
+            <DeleteUserButton userId={user.id} name={user.name} />
+          ) : null}
         </div>
       </MacosWindow>
     </DashboardShell>

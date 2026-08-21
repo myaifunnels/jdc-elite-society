@@ -118,3 +118,30 @@ export async function consumePasswordResetToken(client: Pool | null, token: stri
 
   return record.userId;
 }
+
+export async function deletePasswordResetsForUser(userId: string) {
+  for (let index = memoryResets.length - 1; index >= 0; index -= 1) {
+    if (memoryResets[index].userId === userId) {
+      memoryResets.splice(index, 1);
+    }
+  }
+
+  const connectionString = process.env.DATABASE_URL;
+  if (!connectionString) {
+    return;
+  }
+
+  const { Pool } = await import("pg");
+  const client = new Pool({
+    connectionString,
+    ssl: connectionString.includes("localhost") ? undefined : { rejectUnauthorized: false },
+  });
+  try {
+    await ensureResetTable(client);
+    await client.query("DELETE FROM password_reset_tokens WHERE user_id = $1", [userId]);
+  } catch (error) {
+    console.error("Failed to delete password reset tokens", error);
+  } finally {
+    await client.end().catch(() => undefined);
+  }
+}
