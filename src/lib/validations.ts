@@ -138,6 +138,22 @@ export const resetPasswordSchema = z
     path: ["confirmPassword"],
   });
 
+export const elitePaymentMethods = ["BPI Bank", "GCash"] as const;
+
+export const eliteCheckoutSchema = z.object({
+  fullName: z.string().min(2, "Kailangan ang iyong buong pangalan."),
+  email: z.email("Hindi wastong email format."),
+  mobile: z
+    .string()
+    .min(1, "Kailangan ang iyong mobile number.")
+    .refine((value) => /^09\d{2}\s?\d{3}\s?\d{4}$/.test(value.replace(/-/g, "")), {
+      message: "Format: 09XX XXX XXXX",
+    }),
+  paymentMethod: z.enum(elitePaymentMethods, { message: "Pumili ng payment method." }),
+  couponCode: z.string().optional().default(""),
+});
+
+export type EliteCheckoutInput = z.infer<typeof eliteCheckoutSchema>;
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
 export type CompleteProfileInput = z.infer<typeof completeProfileSchema>;

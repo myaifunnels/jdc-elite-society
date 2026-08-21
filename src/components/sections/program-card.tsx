@@ -37,7 +37,7 @@ export function ProgramCard({ program }: { program: Program }) {
           <Link
             href={
               program.slug === "jdc-mastermind"
-                ? "/programs?program=jdc-mastermind#mastermind-form"
+                ? "/elite"
                 : `/contact?program=${encodeURIComponent(program.title)}`
             }
             className="button-secondary pressable rounded-full px-4 py-2 font-medium"

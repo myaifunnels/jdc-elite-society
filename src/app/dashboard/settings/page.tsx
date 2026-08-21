@@ -25,6 +25,7 @@ export default async function SettingsPage() {
             <p className="text-sm font-semibold">Environment checklist</p>
             <ul className="mt-5 grid gap-3 text-sm text-[var(--muted)]">
               <li>• Primary domain: `https://coachjdc.org`</li>
+              <li>• Mastermind offer: `https://elite.coachjdc.org` and `/elite`</li>
               <li>• `DATABASE_URL` so saved Google Maps and R2 credentials persist across deploys</li>
               <li>• Optional env fallbacks: `NEXT_PUBLIC_GOOGLE_MAPS_EMBED_KEY` and R2 secrets</li>
               <li>• Preferred: paste Maps and R2 credentials in Admin Integrations</li>

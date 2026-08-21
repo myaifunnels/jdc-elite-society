@@ -57,8 +57,11 @@ export function ProgramsBoard({ initialSlug = ALL_TAB }: { initialSlug?: string 
             <p className="eyebrow text-xs">JDC Mastermind</p>
             <h2 className="mt-2 text-3xl font-semibold tracking-[-0.03em]">Ask about the Mastermind</h2>
             <p className="mt-3 text-[var(--muted)]">
-              This form lives on the Programs tab. Tell me where you are and I&apos;ll review whether the room is the right next step.
+              Open enrollment for the current Mastermind offer is on the dedicated checkout page. Use this form only if you need a question answered first.
             </p>
+            <a href="/elite" className="button-primary pressable mt-4 inline-flex rounded-full px-5 py-3 font-semibold">
+              Open the JDC Mastermind offer
+            </a>
           </div>
           <InquiryForm defaultProgram={mastermind.title} showIntro={false} />
         </section>

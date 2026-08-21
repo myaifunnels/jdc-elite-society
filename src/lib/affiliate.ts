@@ -32,7 +32,7 @@ export const PRODUCT_CAMPAIGNS: ProductCampaign[] = [
     shortTitle: "Mastermind Events",
     description:
       "Coach-only campaign for contacts tagged jdc-partner. Additional 20% on successful purchases of the Elite Society Portal with Mastermind Sessions 1 and 2.",
-    destinationPath: "/programs/jdc-mastermind",
+    destinationPath: "/elite",
     requiredProgram: "jdc-partner",
     commissionRate: 0.2,
   },
