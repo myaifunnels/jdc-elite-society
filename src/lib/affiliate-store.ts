@@ -210,6 +210,12 @@ async function ensureTable(client: Pool) {
     ADD COLUMN IF NOT EXISTS programs TEXT NOT NULL DEFAULT ''
   `);
   await client.query(`
+    UPDATE affiliate_profiles SET status = 'active' WHERE status = 'invited'
+  `);
+  await client.query(`
+    UPDATE affiliate_sales SET status = 'approved' WHERE status = 'pending'
+  `);
+  await client.query(`
     CREATE TABLE IF NOT EXISTS affiliate_payout_methods (
       user_id TEXT PRIMARY KEY,
       method TEXT NOT NULL,
@@ -468,6 +474,35 @@ export async function upsertProfile(input: {
   );
 
   return next;
+}
+
+export async function approvePendingPartnershipRecords() {
+  for (const profile of memory.profiles) {
+    if (profile.status === "invited") {
+      profile.status = "active";
+    }
+  }
+  for (const sale of memory.sales) {
+    if (sale.status === "pending") {
+      sale.status = "approved";
+    }
+  }
+
+  return withStore(
+    async (client) => {
+      const profiles = await client.query(
+        `UPDATE affiliate_profiles SET status = 'active' WHERE status = 'invited' RETURNING user_id`,
+      );
+      const sales = await client.query(
+        `UPDATE affiliate_sales SET status = 'approved' WHERE status = 'pending' RETURNING id`,
+      );
+      return { profiles: profiles.rowCount ?? 0, sales: sales.rowCount ?? 0 };
+    },
+    () => ({
+      profiles: memory.profiles.filter((item) => item.status === "invited").length,
+      sales: memory.sales.filter((item) => item.status === "pending").length,
+    }),
+  );
 }
 
 export async function wouldCreateSponsorCycle(userId: string, sponsorId: string) {

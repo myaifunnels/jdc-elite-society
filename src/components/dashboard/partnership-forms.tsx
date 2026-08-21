@@ -7,6 +7,7 @@ import {
   saveAffiliateCampaign,
   saveAffiliateMaterial,
   saveAffiliatePayoutMethod,
+  approveAllPartnershipsAction,
   grantAffiliateAccess,
   markAffiliateCyclePaid,
   recordAffiliateSale,
@@ -74,6 +75,20 @@ export function GrantAccessForm({
       {state.success ? <p className="text-sm text-emerald-400">{state.success}</p> : null}
       <button type="submit" disabled={pending} className="macos-btn macos-btn-primary pressable w-fit disabled:opacity-70">
         {pending ? "Granting…" : "Grant campaign access"}
+      </button>
+    </form>
+  );
+}
+
+export function ApproveAllPartnershipsForm() {
+  const [state, action, pending] = useActionState(approveAllPartnershipsAction, initial);
+
+  return (
+    <form action={action} className="grid gap-3">
+      {state.error ? <p className="text-sm text-red-500">{state.error}</p> : null}
+      {state.success ? <p className="text-sm text-emerald-400">{state.success}</p> : null}
+      <button type="submit" disabled={pending} className="macos-btn macos-btn-primary pressable w-fit disabled:opacity-70">
+        {pending ? "Approving…" : "Approve all partnerships"}
       </button>
     </form>
   );

@@ -1,5 +1,7 @@
+import { approveAllPartnerships } from "@/app/dashboard/partnership/actions";
 import { MacosWindow } from "@/components/dashboard/macos-window";
 import {
+  ApproveAllPartnershipsForm,
   CampaignForm,
   GrantAccessForm,
   MarkPaidForm,
@@ -22,6 +24,7 @@ import { requireCapability } from "@/lib/session";
 
 export default async function PartnershipAdminPage() {
   await requireCapability("partnership.admin");
+  const approval = await approveAllPartnerships();
   const users = await listPublicUsers();
   const profiles = await listProfiles();
   const payday = nextPayDate();
@@ -47,6 +50,17 @@ export default async function PartnershipAdminPage() {
 
   return (
     <div className="dashboard-widget-grid">
+      <MacosWindow title="Approve all" className="dashboard-span-2">
+        <p className="macos-lead" style={{ textAlign: "left" }}>
+          Activate invited partners, keep their Pioneer / jdc-partner campaigns, and approve pending sales. Revoked
+          partners with no programs stay paused. Opening this page also runs that approval.
+        </p>
+        {approval.success ? <p className="mt-3 text-sm text-emerald-400">{approval.success}</p> : null}
+        <div className="mt-4">
+          <ApproveAllPartnershipsForm />
+        </div>
+      </MacosWindow>
+
       <MacosWindow title="Grant access" className="dashboard-span-2">
         <p className="macos-lead" style={{ textAlign: "left" }}>
           Tag a contact pioneer for the Foundation Course campaign. Tag jdc-partner (coaches only) to unlock the extra
