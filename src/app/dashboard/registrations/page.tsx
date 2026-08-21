@@ -1,3 +1,4 @@
+import { ApproveAllRegistrationsForm } from "@/components/dashboard/approve-all-registrations-form";
 import { ContactAvatar } from "@/components/dashboard/contact-avatar";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { MacosWindow } from "@/components/dashboard/macos-window";
@@ -9,12 +10,16 @@ import { requireCapability } from "@/lib/session";
 export default async function RegistrationsPage() {
   await requireCapability("registrations");
   const members = await listMemberRegistrations();
+  const pendingCount = members.filter((member) => !member.paymentVerified).length;
 
   return (
     <DashboardShell
       title="Registrations"
       description="Verify registration and payment after the member completes their account profile."
     >
+      <MacosWindow title="Approve all" className="dashboard-span-2">
+        <ApproveAllRegistrationsForm pendingCount={pendingCount} />
+      </MacosWindow>
       <MacosWindow title="Member registrations" bodyClassName="dashboard-contact-list">
         {members.length === 0 ? (
           <p className="macos-lead" style={{ textAlign: "left" }}>

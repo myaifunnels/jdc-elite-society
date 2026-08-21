@@ -726,6 +726,31 @@ export async function setMemberPaymentVerified(userId: string, verified = true) 
   return publicUser(next);
 }
 
+export async function approveAllMemberRegistrations() {
+  const members = await listMemberRegistrations();
+  const pending = members.filter(
+    (user) => (user.role === "member" || user.role === "contact") && !user.paymentVerified,
+  );
+
+  let paymentVerified = 0;
+  let accountsVerified = 0;
+
+  for (const user of pending) {
+    const next = await setMemberPaymentVerified(user.id, true);
+    paymentVerified += 1;
+    if (next.accountStatus === "verified") {
+      accountsVerified += 1;
+    }
+  }
+
+  return {
+    pendingFound: pending.length,
+    paymentVerified,
+    accountsVerified,
+    stillPendingProfile: paymentVerified - accountsVerified,
+  };
+}
+
 export async function listMemberRegistrations() {
   await ensureSeedUsers();
   const client = getPool();
