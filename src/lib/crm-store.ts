@@ -522,7 +522,7 @@ export async function listContactMapPins(viewer: CrmViewer, query?: ContactQuery
     }
 
     const lookup = lookupAddress(contact);
-    if (!lookup || lookups >= 40) {
+    if (!lookup || lookups >= 250) {
       continue;
     }
 
