@@ -1,4 +1,20 @@
 import { ContactRecord, DashboardMetric } from "@/lib/types";
+import { MAP_PLACEHOLDER_TAG, pickPlaceholderAddress } from "@/lib/placeholder-addresses";
+
+function seededContact(
+  contact: ContactRecord,
+): ContactRecord {
+  const place = pickPlaceholderAddress(contact.id);
+  return {
+    ...contact,
+    address: place.address,
+    city: place.city,
+    region: place.region,
+    lat: place.lat,
+    lng: place.lng,
+    tags: [...contact.tags, MAP_PLACEHOLDER_TAG],
+  };
+}
 
 export const contactSeed: ContactRecord[] = [
   {
@@ -68,7 +84,7 @@ export const contactSeed: ContactRecord[] = [
     winRate: "18%",
     createdAt: "2026-06-08",
   },
-  {
+  seededContact({
     id: "contact-1001",
     kind: "contact",
     name: "Maria Santos",
@@ -89,8 +105,8 @@ export const contactSeed: ContactRecord[] = [
     lat: 14.5548,
     lng: 121.018,
     createdAt: "2026-08-17",
-  },
-  {
+  }),
+  seededContact({
     id: "contact-1002",
     kind: "contact",
     name: "John Villanueva",
@@ -109,8 +125,8 @@ export const contactSeed: ContactRecord[] = [
     lat: 25.2867,
     lng: 51.526,
     createdAt: "2026-08-15",
-  },
-  {
+  }),
+  seededContact({
     id: "contact-1003",
     kind: "contact",
     name: "Paolo Reyes",
@@ -131,7 +147,7 @@ export const contactSeed: ContactRecord[] = [
     lat: 10.317,
     lng: 123.8905,
     createdAt: "2026-08-18",
-  },
+  }),
 ];
 
 export const leadSeed = contactSeed.filter((contact) => contact.kind === "contact");

@@ -13,6 +13,14 @@ import {
 import { ensurePortalUserForContact } from "@/lib/auth-store";
 import { TAG_GROUPS, uniqueTags } from "@/lib/tags";
 import {
+  ADDRESS_CONFIRMED_TAG,
+  MAP_PLACEHOLDER_TAG,
+  hasAddressTag,
+  isSamePlaceholderAddress,
+  pickPlaceholderAddress,
+  shouldUsePlaceholderAddress,
+} from "@/lib/placeholder-addresses";
+import {
   AuthUser,
   ContactKind,
   ContactMapPin,
@@ -322,6 +330,7 @@ async function syncGhlContacts() {
       await persistContact(mapped);
     }
   }
+  await applyPlaceholderAddresses();
 }
 
 async function applyAccountAddressesToContacts() {
@@ -473,6 +482,40 @@ async function hydrateCrm() {
   await loadPersistedContacts();
   void syncGhlInBackground();
   await hydrateRegistrantsIntoCrm();
+  await applyPlaceholderAddresses();
+}
+
+export function contactNeedsAddressConfirm(contact?: { tags?: string[] } | null) {
+  return !hasAddressTag(contact?.tags, ADDRESS_CONFIRMED_TAG);
+}
+
+async function applyPlaceholderAddresses() {
+  for (const record of [...memoryRecords]) {
+    if (!shouldUsePlaceholderAddress(record)) {
+      continue;
+    }
+    const place = pickPlaceholderAddress(record.id || record.email);
+    const already =
+      sameText(record.address, place.address) &&
+      record.lat === place.lat &&
+      record.lng === place.lng &&
+      hasAddressTag(record.tags, MAP_PLACEHOLDER_TAG);
+    if (already) {
+      continue;
+    }
+    await persistContact({
+      ...record,
+      address: place.address,
+      city: place.city,
+      region: place.region,
+      lat: place.lat,
+      lng: place.lng,
+      tags: uniqueTags([
+        ...(record.tags ?? []).filter((tag) => tag.toLowerCase() !== ADDRESS_CONFIRMED_TAG.toLowerCase()),
+        MAP_PLACEHOLDER_TAG,
+      ]),
+    });
+  }
 }
 
 export async function contactIdsByEmail() {
@@ -914,6 +957,17 @@ export async function upsertContactFromAccount(input: {
   }
   await hydrateCrm();
   const existing = await findContactByEmailOrPhone(input.email, input.phone ?? "");
+  const nextId = existing?.id ?? `contact-${Date.now()}`;
+  const confirmed = Boolean(input.address.trim()) && !isSamePlaceholderAddress(nextId, input.address);
+  const nextTags = uniqueTags([
+    ...(existing?.tags ?? []).filter(
+      (tag) =>
+        tag.toLowerCase() !== MAP_PLACEHOLDER_TAG.toLowerCase() &&
+        tag.toLowerCase() !== ADDRESS_CONFIRMED_TAG.toLowerCase(),
+    ),
+    ...(input.tags ?? []),
+    confirmed ? ADDRESS_CONFIRMED_TAG : MAP_PLACEHOLDER_TAG,
+  ]);
   const next: ContactRecord = existing
     ? {
         ...existing,
@@ -924,12 +978,12 @@ export async function upsertContactFromAccount(input: {
         photoUrl: input.photoUrl || existing.photoUrl,
         bestDescribesYou: input.bestDescribesYou || existing.bestDescribesYou,
         programInterest: input.programInterest || existing.programInterest,
-        tags: uniqueTags([...(existing.tags ?? []), ...(input.tags ?? [])]),
+        tags: nextTags,
         lat: input.lat,
         lng: input.lng,
       }
     : {
-        id: `contact-${Date.now()}`,
+        id: nextId,
         kind: "contact",
         createdAt: new Date().toISOString().slice(0, 10),
         status: "new",
@@ -940,7 +994,7 @@ export async function upsertContactFromAccount(input: {
         dateOfBirth: "",
         address: input.address,
         city: input.city ?? "",
-        tags: uniqueTags(input.tags ?? ["Profile complete"]),
+        tags: nextTags,
         bestDescribesYou: input.bestDescribesYou || "Not specified",
         programInterest: input.programInterest || "JDC Elite Society",
         photoUrl: input.photoUrl,

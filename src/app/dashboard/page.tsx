@@ -2,12 +2,13 @@ import Link from "next/link";
 
 import { AccountProfileDashboard } from "@/components/dashboard/account-profile-dashboard";
 import { ContactAvatar } from "@/components/dashboard/contact-avatar";
+import { ContactAddressVerifyNotice } from "@/components/dashboard/contact-address-verify-notice";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { MacosWindow } from "@/components/dashboard/macos-window";
 import { PartnersMap } from "@/components/dashboard/partners-map";
 import { dashboardMetrics } from "@/data/crm";
 import { PendingMemberHome } from "@/components/dashboard/pending-member-home";
-import { listContactsPaged, listPartnerMapPins, listViewerMetrics } from "@/lib/crm-store";
+import { contactNeedsAddressConfirm, getContactByEmail, listContactsPaged, listPartnerMapPins, listViewerMetrics } from "@/lib/crm-store";
 import { adminPartnershipSnapshot } from "@/lib/affiliate-store";
 import { formatManilaDate, formatPhp } from "@/lib/pay-cycle";
 import { hasAccess } from "@/lib/access";
@@ -20,22 +21,31 @@ export default async function DashboardPage() {
 
   if (!hasAccess(access, "contacts.view") && !hasAccess(access, "registrations")) {
     const pending = user.accountStatus !== "verified";
+    const crmContact = user.role === "contact" ? await getContactByEmail(user.email) : null;
+    const needsAddressConfirm = user.role === "contact" && contactNeedsAddressConfirm(crmContact);
 
     return (
       <DashboardShell
         title={`Welcome, ${user.name.split(" ")[0]}`}
         description={
-          pending
-            ? "Edit your account below. The team turns the full member room on after registration and payment."
-            : "Your account, your path, and University — all in one workspace."
+          needsAddressConfirm
+            ? "Change the temporary map address on your account so the team can verify you."
+            : pending
+              ? "Edit your account below. The team turns the full member room on after registration and payment."
+              : "Your account, your path, and University — all in one workspace."
         }
       >
         <div className="account-dash-stack">
+          {needsAddressConfirm ? (
+            <ContactAddressVerifyNotice address={crmContact?.address || user.address} />
+          ) : null}
           {pending ? <PendingMemberHome user={user} compact /> : null}
           <AccountProfileDashboard
             user={user}
             showWorkspaceLinks={!pending}
             showPath={!pending && hasAccess(access, "path")}
+            needsAddressConfirm={needsAddressConfirm}
+            mapAddress={crmContact?.address}
           />
           {!pending && hasAccess(access, "partnership") ? (
             <MacosWindow title="Partnership Program" className="dashboard-span-2">

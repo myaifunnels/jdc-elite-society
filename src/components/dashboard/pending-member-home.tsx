@@ -27,9 +27,13 @@ export function PendingMemberHome({
                 : `${firstName}, finish your profile and the wait gets fun.`}
             </h2>
             <p>
-              {user.profileComplete
-                ? "The team is reviewing your registration and payment. You can still edit your account below anytime."
-                : "Put your face on the account, tell us who you are, and we start the verification clock."}
+              {user.role === "contact"
+                ? user.profileComplete
+                  ? "One more step: change the temporary map address on your account to the place you actually live. That is how we verify a Contact seat."
+                  : "Finish your profile, then change the temporary map address to your real home or OFW address so we can verify you."
+                : user.profileComplete
+                  ? "The team is reviewing your registration and payment. You can still edit your account below anytime."
+                  : "Put your face on the account, tell us who you are, and we start the verification clock."}
             </p>
           </div>
         </div>

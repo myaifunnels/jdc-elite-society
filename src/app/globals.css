@@ -2066,6 +2066,13 @@ html.dark .auth-screen-centered,
   color: var(--foreground);
 }
 
+.auth-field-hint {
+  font-size: 0.72rem;
+  font-weight: 500;
+  font-style: normal;
+  color: var(--muted);
+}
+
 .auth-input-wrap {
   display: flex;
   align-items: center;

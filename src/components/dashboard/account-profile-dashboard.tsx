@@ -35,10 +35,14 @@ export function AccountProfileDashboard({
   user,
   showWorkspaceLinks = false,
   showPath = false,
+  needsAddressConfirm = false,
+  mapAddress,
 }: {
   user: AuthUser;
   showWorkspaceLinks?: boolean;
   showPath?: boolean;
+  needsAddressConfirm?: boolean;
+  mapAddress?: string;
 }) {
   const audience = useMemo(() => splitAudienceValue(user.bestDescribesYou ?? ""), [user.bestDescribesYou]);
   const [state, formAction, pending] = useActionState(updateOwnAccountProfile, initialState);
@@ -81,9 +85,11 @@ export function AccountProfileDashboard({
           <p className="macos-kicker">{verified ? "Your account" : "Finish and stay ready"}</p>
           <h2>{verified ? `${firstName}, this is your room.` : `${firstName}, make this yours.`}</h2>
           <p>
-            {verified
-              ? "Update your photo, details, and password anytime. This is the card the team and community see."
-              : "Edit everything here. A complete profile is the first step toward an active member room."}
+            {user.role === "contact" && needsAddressConfirm
+              ? "Replace the temporary map address with your real location. Saving that address is how we verify a Contact account."
+              : verified
+                ? "Update your photo, details, and password anytime. This is the card the team and community see."
+                : "Edit everything here. A complete profile is the first step toward an active member room."}
           </p>
         </div>
         <div className="account-dash-status">
@@ -219,10 +225,15 @@ export function AccountProfileDashboard({
                 <span className="auth-input-wrap">
                   <AddressAutocomplete
                     name="address"
-                    defaultValue={user.address ?? ""}
+                    defaultValue={user.address || mapAddress || ""}
                     placeholder="Street, city, province or country"
                   />
                 </span>
+                {user.role === "contact" && needsAddressConfirm ? (
+                  <em className="auth-field-hint">
+                    This may still be a temporary pin. Change it to your real address, then save, so we can verify you.
+                  </em>
+                ) : null}
               </label>
               <label className="auth-field md:col-span-2">
                 <span>Facebook profile URL</span>
