@@ -51,11 +51,11 @@ export function ContactsMap({
         attribution: "&copy; OpenStreetMap",
       }).addTo(map);
 
-      const icon = mapPinIconOptions();
       pins.forEach((pin) => {
+        const hasPhoto = Boolean(pin.photoUrl?.trim());
         const marker = L.marker([pin.lat, pin.lng], {
           icon: L.divIcon({
-            ...icon,
+            ...mapPinIconOptions(hasPhoto),
             html: mapPinHtml({
               name: pin.name,
               photoUrl: pin.photoUrl,

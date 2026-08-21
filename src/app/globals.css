@@ -3862,35 +3862,41 @@ html:not(.dark) .dashboard-desktop {
 .partner-map-pin {
   display: grid;
   place-items: center;
-  width: 36px;
-  height: 36px;
   overflow: hidden;
-  border: 2px solid #fff;
-  border-radius: 999px;
-  background: #fff;
-  box-shadow: 0 6px 12px rgba(15, 23, 42, 0.28);
   box-sizing: border-box;
 }
 
-.partner-map-pin img,
-.leaflet-container .partner-map-pin img {
+.partner-map-pin.has-photo {
+  width: 22px;
+  height: 22px;
+  border: 2px solid #fff;
+  border-radius: 999px;
+  background: #fff;
+  box-shadow: 0 3px 8px rgba(15, 23, 42, 0.28);
+}
+
+.partner-map-pin.has-photo img,
+.leaflet-container .partner-map-pin.has-photo img {
   display: block;
-  width: 36px !important;
-  height: 36px !important;
+  width: 22px !important;
+  height: 22px !important;
   max-width: none !important;
   object-fit: cover;
   object-position: center;
 }
 
-.partner-map-pin.is-default {
-  color: #fff;
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.02em;
+.partner-map-pin.is-marker {
+  width: 16px;
+  height: 24px;
+  overflow: visible;
+  background: transparent;
 }
 
-.partner-map-pin.is-default span {
-  line-height: 1;
+.partner-map-pin.is-marker svg {
+  display: block;
+  width: 16px;
+  height: 24px;
+  filter: drop-shadow(0 2px 3px rgba(15, 23, 42, 0.35));
 }
 
 .partner-map-popup strong,

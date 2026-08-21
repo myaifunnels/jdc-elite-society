@@ -45,11 +45,11 @@ export function PartnersMap({ partners }: { partners: PartnerMapPin[] }) {
         attribution: "&copy; OpenStreetMap",
       }).addTo(map);
 
-      const icon = mapPinIconOptions();
       partners.forEach((partner) => {
+        const hasPhoto = Boolean(partner.photoUrl?.trim());
         const marker = L.marker([partner.lat, partner.lng], {
           icon: L.divIcon({
-            ...icon,
+            ...mapPinIconOptions(hasPhoto),
             html: mapPinHtml({
               name: partner.name,
               photoUrl: partner.photoUrl,

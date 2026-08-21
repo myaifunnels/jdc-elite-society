@@ -57,15 +57,32 @@ function hashSeed(value: string) {
   return hash >>> 0;
 }
 
+function nearestPlace(lat: number, lng: number) {
+  let best = PLACEHOLDERS[0];
+  let bestDistance = Number.POSITIVE_INFINITY;
+  for (const place of PLACEHOLDERS) {
+    const distance = (place.lat - lat) ** 2 + (place.lng - lng) ** 2;
+    if (distance < bestDistance) {
+      best = place;
+      bestDistance = distance;
+    }
+  }
+  return best;
+}
+
 export function pickPlaceholderAddress(seed: string): PlaceholderAddress {
-  const hash = hashSeed(seed || "contact");
-  const place = PLACEHOLDERS[hash % PLACEHOLDERS.length];
-  const latJitter = ((hash % 21) - 10) * 0.0035;
-  const lngJitter = ((Math.floor(hash / 21) % 21) - 10) * 0.0035;
+  const key = seed || "contact";
+  const latHash = hashSeed(key);
+  const lngHash = hashSeed(`${key}:lng`);
+  const lat = 6.05 + (latHash % 12_500) / 12_500 * 12.4;
+  const lng = 117.95 + (lngHash % 10_000) / 10_000 * 8.4;
+  const place = nearestPlace(lat, lng);
   return {
-    ...place,
-    lat: Number((place.lat + latJitter).toFixed(5)),
-    lng: Number((place.lng + lngJitter).toFixed(5)),
+    address: place.address,
+    city: place.city,
+    region: place.region,
+    lat: Number(lat.toFixed(5)),
+    lng: Number(lng.toFixed(5)),
   };
 }
 
