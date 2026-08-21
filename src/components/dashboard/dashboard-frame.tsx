@@ -1,5 +1,9 @@
+import { Suspense } from "react";
+
 import { DashboardSidebar } from "@/components/dashboard/dashboard-sidebar";
 import { ImpersonationBanner } from "@/components/dashboard/impersonation-banner";
+import { MacosBootScreen } from "@/components/dashboard/macos-boot-screen";
+import { MacosRouteProgress } from "@/components/dashboard/macos-route-progress";
 import { AccessMap } from "@/lib/access";
 import { BrandingSettings } from "@/lib/branding";
 import { membershipLabel } from "@/lib/membership";
@@ -23,7 +27,11 @@ export function DashboardFrame({
       <a href="#dashboard-main" className="skip-link">
         Skip to dashboard content
       </a>
+      <Suspense fallback={null}>
+        <MacosBootScreen name={user.name} photoUrl={user.facebookPhotoUrl} />
+      </Suspense>
       <div className="dashboard-app">
+        <MacosRouteProgress />
         <DashboardSidebar
           role={user.role}
           userName={user.name}

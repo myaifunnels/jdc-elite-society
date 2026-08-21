@@ -151,7 +151,7 @@ export async function registerAccount(
     );
   }
 
-  redirect("/dashboard");
+  redirect("/dashboard?welcome=1");
 }
 
 export async function loginAccount(
@@ -178,7 +178,7 @@ export async function loginAccount(
   if (!user.passwordSet || isTemporaryMemberPassword(parsed.data.password)) {
     redirect("/account/password");
   }
-  redirect("/dashboard");
+  redirect("/dashboard?welcome=1");
 }
 
 export async function completeAccountProfile(
@@ -340,7 +340,7 @@ export async function changeSignedInPassword(
   }
 
   await setUserPassword(user.id, password);
-  redirect("/dashboard");
+  redirect("/dashboard?welcome=1");
 }
 
 export async function logout() {

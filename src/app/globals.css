@@ -2859,6 +2859,7 @@ html:not(.dark) .dashboard-desktop {
 }
 
 .dashboard-app {
+  position: relative;
   display: flex;
   flex-direction: column;
   height: 100dvh;
@@ -4094,6 +4095,196 @@ html:not(.dark) .dashboard-desktop {
 
   .sticky-contact-panel {
     width: 100%;
+  }
+}
+
+.macos-boot {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  place-items: center;
+  padding: 1.25rem;
+}
+
+.macos-boot-wallpaper {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(120% 80% at 50% -10%, #4a6088, transparent 52%),
+    linear-gradient(180deg, #1c2333 0%, #0b1018 100%);
+}
+
+html:not(.dark) .macos-boot-wallpaper {
+  background:
+    radial-gradient(120% 80% at 50% -10%, #9eb4d8, transparent 55%),
+    linear-gradient(180deg, #6d7c94 0%, #2d3544 100%);
+}
+
+.macos-boot-card {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 0.55rem;
+  width: min(22rem, 100%);
+  padding: 2rem 1.6rem 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 22px;
+  background: color-mix(in srgb, #10151f 72%, transparent);
+  box-shadow: 0 40px 90px rgba(0, 0, 0, 0.35);
+  color: white;
+  text-align: center;
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  animation: macos-boot-in 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.macos-boot-kicker {
+  margin: 0.35rem 0 0;
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.macos-boot-card h2 {
+  margin: 0;
+  font-size: 1.45rem;
+  letter-spacing: -0.04em;
+}
+
+.macos-boot-card p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.92rem;
+}
+
+.macos-boot-track {
+  width: 100%;
+  height: 6px;
+  margin: 0.55rem 0 0.35rem;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.macos-boot-track span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #7aa2ff, #ffffff);
+}
+
+.macos-boot.is-leaving {
+  animation: macos-boot-out 0.42s ease forwards;
+}
+
+.macos-spinner {
+  position: relative;
+  display: inline-block;
+}
+
+.macos-spinner span {
+  position: absolute;
+  left: 47%;
+  top: 8%;
+  width: 6%;
+  height: 22%;
+  border-radius: 999px;
+  background: currentColor;
+  transform-origin: 50% 190%;
+  animation: macos-spinner-tick 1s linear infinite;
+}
+
+.macos-spinner span:nth-child(1) { animation-delay: -0.916s; }
+.macos-spinner span:nth-child(2) { animation-delay: -0.833s; }
+.macos-spinner span:nth-child(3) { animation-delay: -0.75s; }
+.macos-spinner span:nth-child(4) { animation-delay: -0.666s; }
+.macos-spinner span:nth-child(5) { animation-delay: -0.583s; }
+.macos-spinner span:nth-child(6) { animation-delay: -0.5s; }
+.macos-spinner span:nth-child(7) { animation-delay: -0.416s; }
+.macos-spinner span:nth-child(8) { animation-delay: -0.333s; }
+.macos-spinner span:nth-child(9) { animation-delay: -0.25s; }
+.macos-spinner span:nth-child(10) { animation-delay: -0.166s; }
+.macos-spinner span:nth-child(11) { animation-delay: -0.083s; }
+.macos-spinner span:nth-child(12) { animation-delay: 0s; }
+
+.macos-route-progress {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 6;
+  height: 3px;
+  overflow: hidden;
+  pointer-events: none;
+  opacity: 0;
+}
+
+.macos-route-progress.is-on {
+  opacity: 1;
+}
+
+.macos-route-progress span {
+  display: block;
+  height: 100%;
+  width: 40%;
+  border-radius: 999px;
+  background: #0a84ff;
+  transform: translateX(-120%);
+}
+
+.macos-route-progress.is-on span {
+  animation: macos-route-bar 0.72s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.macos-route-loading {
+  display: grid;
+  place-items: center;
+  gap: 0.75rem;
+  min-height: 18rem;
+  color: var(--muted);
+}
+
+.macos-route-loading p {
+  margin: 0;
+  font-size: 0.88rem;
+}
+
+@keyframes macos-boot-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes macos-boot-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes macos-spinner-tick {
+  0% { opacity: 1; }
+  100% { opacity: 0.12; }
+}
+
+@keyframes macos-route-bar {
+  0% { transform: translateX(-120%); }
+  100% { transform: translateX(280%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .macos-boot-card,
+  .macos-boot.is-leaving,
+  .macos-spinner span,
+  .macos-route-progress.is-on span {
+    animation: none;
   }
 }
 
