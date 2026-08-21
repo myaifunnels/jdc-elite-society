@@ -3885,16 +3885,21 @@ html:not(.dark) .dashboard-desktop {
 }
 
 .partner-map-pin.is-marker {
-  width: 16px;
-  height: 24px;
+  width: 18px;
+  height: 26px;
   overflow: visible;
   background: transparent;
 }
 
-.partner-map-pin.is-marker svg {
+.partner-map-pin.is-marker img,
+.leaflet-container .partner-map-pin.is-marker img {
   display: block;
-  width: 16px;
-  height: 24px;
+  width: 18px !important;
+  height: 26px !important;
+  max-width: none !important;
+  object-fit: contain;
+  filter: none;
+  box-shadow: none;
 }
 
 .partner-map-popup strong,

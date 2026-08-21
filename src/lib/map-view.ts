@@ -1,8 +1,8 @@
 import type { Map as LeafletMap } from "leaflet";
 
 export const MAP_PHOTO_PIN_SIZE = 22;
-export const MAP_MARKER_WIDTH = 16;
-export const MAP_MARKER_HEIGHT = 24;
+export const MAP_MARKER_WIDTH = 18;
+export const MAP_MARKER_HEIGHT = 26;
 export const MAP_PIN_SIZE = MAP_PHOTO_PIN_SIZE;
 
 export const PHILIPPINES_BOUNDS: [[number, number], [number, number]] = [
@@ -25,8 +25,7 @@ export function mapPinHtml(input: { name: string; photoUrl?: string; accent?: st
     return `<span class="partner-map-pin has-photo"><img src="${escapeMapHtml(photo)}" alt="" width="${size}" height="${size}" /></span>`;
   }
 
-  const accent = input.accent || "#007aff";
-  return `<span class="partner-map-pin is-marker" title="${escapeMapHtml(input.name)}"><svg viewBox="0 0 24 36" width="${MAP_MARKER_WIDTH}" height="${MAP_MARKER_HEIGHT}" aria-hidden="true"><path fill="${escapeMapHtml(accent)}" stroke="#fff" stroke-width="1.5" d="M12 1.4C6.3 1.4 1.7 6 1.7 11.7 1.7 20.8 12 34.6 12 34.6S22.3 20.8 22.3 11.7C22.3 6 17.7 1.4 12 1.4z"/><circle cx="12" cy="11.7" r="4.1" fill="#fff"/></svg></span>`;
+  return `<span class="partner-map-pin is-marker" title="${escapeMapHtml(input.name)}"><img src="/media/map-pin.svg" alt="" width="${MAP_MARKER_WIDTH}" height="${MAP_MARKER_HEIGHT}" /></span>`;
 }
 
 export function mapPinIconOptions(hasPhoto = false) {
