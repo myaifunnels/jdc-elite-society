@@ -3454,6 +3454,27 @@ html:not(.dark) .dashboard-desktop {
   box-shadow: 0 18px 40px rgba(15, 23, 42, 0.16);
 }
 
+.address-suggest {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+}
+
+.address-suggest-menu {
+  position: fixed;
+  z-index: 80;
+  display: grid;
+  gap: 0.15rem;
+  max-height: min(22rem, 50vh);
+  overflow: auto;
+  padding: 0.45rem;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--surface) 96%, white 8%);
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.18);
+}
+
 .contact-search-label,
 .contact-search-note {
   margin: 0;
