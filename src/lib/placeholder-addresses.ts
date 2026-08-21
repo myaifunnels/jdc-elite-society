@@ -46,6 +46,22 @@ const PLACEHOLDERS: PlaceholderAddress[] = [
   { address: "17 Tomas Oppus St, Maasin City, Southern Leyte", city: "Maasin", region: "Southern Leyte", lat: 10.1336, lng: 124.8447 },
   { address: "50 Roxas Ave, Koronadal City, South Cotabato", city: "Koronadal", region: "South Cotabato", lat: 6.5004, lng: 124.8431 },
   { address: "8 National Hwy, Santiago City, Isabela", city: "Santiago", region: "Isabela", lat: 16.6877, lng: 121.5488 },
+  { address: "10 Plaza Maestro, Vigan City, Ilocos Sur", city: "Vigan", region: "Ilocos Sur", lat: 17.5748, lng: 120.3869 },
+  { address: "5 MacArthur Hwy, Tarlac City, Tarlac", city: "Tarlac City", region: "Tarlac", lat: 15.4755, lng: 120.5963 },
+  { address: "21 Friendship Hwy, Angeles City, Pampanga", city: "Angeles", region: "Pampanga", lat: 15.145, lng: 120.5887 },
+  { address: "14 Paseo del Congreso, Malolos, Bulacan", city: "Malolos", region: "Bulacan", lat: 14.8443, lng: 120.8103 },
+  { address: "9 Aguinaldo Hwy, Imus, Cavite", city: "Imus", region: "Cavite", lat: 14.4297, lng: 120.9367 },
+  { address: "18 CM Recto Ave, Lipa City, Batangas", city: "Lipa", region: "Batangas", lat: 13.9411, lng: 121.1631 },
+  { address: "7 Maharlika Hwy, San Pablo City, Laguna", city: "San Pablo", region: "Laguna", lat: 14.0683, lng: 121.325 },
+  { address: "12 Rizal St, Iriga City, Camarines Sur", city: "Iriga", region: "Camarines Sur", lat: 13.4203, lng: 123.4115 },
+  { address: "4 Capitol Rd, Malaybalay City, Bukidnon", city: "Malaybalay", region: "Bukidnon", lat: 8.1575, lng: 125.1278 },
+  { address: "16 Sayre Hwy, Valencia City, Bukidnon", city: "Valencia", region: "Bukidnon", lat: 7.9064, lng: 125.0942 },
+  { address: "11 Quezon Blvd, Kidapawan City, Cotabato", city: "Kidapawan", region: "Cotabato", lat: 7.0083, lng: 125.0894 },
+  { address: "6 Pioneer Ave, Tagum City, Davao del Norte", city: "Tagum", region: "Davao del Norte", lat: 7.4478, lng: 125.8078 },
+  { address: "22 Rizal Ave, Digos City, Davao del Sur", city: "Digos", region: "Davao del Sur", lat: 6.7497, lng: 125.3572 },
+  { address: "8 Bonifacio St, Ilagan City, Isabela", city: "Ilagan", region: "Isabela", lat: 17.1487, lng: 121.8892 },
+  { address: "15 Magsaysay Ave, Bacoor, Cavite", city: "Bacoor", region: "Cavite", lat: 14.459, lng: 120.9645 },
+  { address: "3 Maharlika Hwy, Gapan City, Nueva Ecija", city: "Gapan", region: "Nueva Ecija", lat: 15.3072, lng: 120.9464 },
 ];
 
 function hashSeed(value: string) {
@@ -57,32 +73,19 @@ function hashSeed(value: string) {
   return hash >>> 0;
 }
 
-function nearestPlace(lat: number, lng: number) {
-  let best = PLACEHOLDERS[0];
-  let bestDistance = Number.POSITIVE_INFINITY;
-  for (const place of PLACEHOLDERS) {
-    const distance = (place.lat - lat) ** 2 + (place.lng - lng) ** 2;
-    if (distance < bestDistance) {
-      best = place;
-      bestDistance = distance;
-    }
-  }
-  return best;
-}
-
 export function pickPlaceholderAddress(seed: string): PlaceholderAddress {
   const key = seed || "contact";
-  const latHash = hashSeed(key);
-  const lngHash = hashSeed(`${key}:lng`);
-  const lat = 6.05 + (latHash % 12_500) / 12_500 * 12.4;
-  const lng = 117.95 + (lngHash % 10_000) / 10_000 * 8.4;
-  const place = nearestPlace(lat, lng);
+  const cityHash = hashSeed(key);
+  const offsetHash = hashSeed(`${key}:offset`);
+  const place = PLACEHOLDERS[cityHash % PLACEHOLDERS.length];
+  const angle = ((offsetHash % 360) * Math.PI) / 180;
+  const radius = 0.0018 + (offsetHash % 7) * 0.00045;
   return {
     address: place.address,
     city: place.city,
     region: place.region,
-    lat: Number(lat.toFixed(5)),
-    lng: Number(lng.toFixed(5)),
+    lat: Number((place.lat + Math.cos(angle) * radius).toFixed(5)),
+    lng: Number((place.lng + Math.sin(angle) * radius).toFixed(5)),
   };
 }
 
