@@ -207,13 +207,13 @@ export default async function DashboardPage() {
           ))}
         </MacosWindow>
 
-        <MacosWindow title="Registrations">
+        <MacosWindow title="Registrants">
           <p className="macos-lead" style={{ textAlign: "left" }}>
-            Verify member registration and payment after they complete their account profile.
+            Member and contact sign-ups live on the Contacts workspace. Verify payment after they finish their profile.
           </p>
           <div className="macos-actions">
-            <Link href="/dashboard/registrations" className="macos-btn macos-btn-primary">
-              Open registrations
+            <Link href="/dashboard/contacts?view=registrants" className="macos-btn macos-btn-primary">
+              Open registrants
             </Link>
           </div>
         </MacosWindow>

@@ -5,7 +5,6 @@ import { usePathname } from "next/navigation";
 import { useEffect, useId, useState } from "react";
 import {
   BookOpen,
-  ClipboardList,
   GraduationCap,
   Handshake,
   LayoutDashboard,
@@ -39,7 +38,6 @@ const navCatalog: Array<{
   { href: "/dashboard/profile", label: "Account", icon: UserRound, capability: "profile" },
   { href: "/dashboard/path", label: "My path", icon: BookOpen, capability: "path" },
   { href: "/dashboard/contacts", label: "Contacts", icon: Users, capability: "contacts.view" },
-  { href: "/dashboard/registrations", label: "Registrations", icon: ClipboardList, capability: "registrations" },
   { href: "/dashboard/partnership", label: "Partnership", icon: Handshake, capability: "partnership" },
   { href: "/dashboard/access", label: "Access", icon: Shield, capability: "access" },
   { href: "/dashboard/integrations", label: "Integrations", icon: Plug, capability: "integrations" },
@@ -47,7 +45,12 @@ const navCatalog: Array<{
 ];
 
 function navItems(access: AccessMap) {
-  return navCatalog.filter((item) => access[item.capability]);
+  return navCatalog.filter((item) => {
+    if (item.href === "/dashboard/contacts") {
+      return access["contacts.view"] || access.registrations;
+    }
+    return access[item.capability];
+  });
 }
 
 function isActivePath(pathname: string, href: string) {

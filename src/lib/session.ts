@@ -149,6 +149,17 @@ export async function requireCapability(capability: Capability) {
   return { user, access };
 }
 
+export async function requireAnyCapability(...capabilities: Capability[]) {
+  const user = await requireSessionUser();
+  const access = await resolveAccess(user);
+
+  if (!capabilities.some((capability) => hasAccess(access, capability))) {
+    redirect("/dashboard");
+  }
+
+  return { user, access };
+}
+
 export async function requireAffiliateAccess() {
   const { user } = await requireCapability("partnership");
   if (!hasAffiliateWorkspace(user) && user.role !== "admin") {

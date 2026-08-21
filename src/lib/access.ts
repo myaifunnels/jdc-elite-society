@@ -35,7 +35,7 @@ export const CAPABILITIES: Array<{ id: Capability; label: string; detail: string
   { id: "contacts.view", label: "Contacts", detail: "Open the contacts workspace." },
   { id: "contacts.all", label: "All contacts", detail: "See the full roster, not only assigned people." },
   { id: "contacts.tags", label: "Edit tags", detail: "Add and remove GHL-synced tags." },
-  { id: "registrations", label: "Registrations", detail: "Verify member sign-ups and payment." },
+  { id: "registrations", label: "Registrants", detail: "Verify member sign-ups and payment on the Contacts registrants tab." },
   { id: "integrations", label: "Integrations", detail: "GHL, Maps, and R2 credentials." },
   { id: "settings", label: "Site settings", detail: "Branding and design system." },
   { id: "access", label: "Access control", detail: "Change roles and permission defaults." },

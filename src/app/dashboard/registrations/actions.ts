@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 
 import { AuthFormState } from "@/app/login/actions";
 import { approveAllMemberRegistrations } from "@/lib/auth-store";
+import { invalidateRegistrantCrmSync } from "@/lib/crm-store";
 import { requireCapability } from "@/lib/session";
 
 export async function approveAllMemberRegistrationsAction(): Promise<AuthFormState> {
@@ -11,8 +12,10 @@ export async function approveAllMemberRegistrationsAction(): Promise<AuthFormSta
 
   try {
     const summary = await approveAllMemberRegistrations();
+    invalidateRegistrantCrmSync();
     revalidatePath("/dashboard");
     revalidatePath("/dashboard/registrations");
+    revalidatePath("/dashboard/contacts");
 
     if (summary.paymentVerified === 0) {
       return { success: "No pending member or contact registrations to approve." };

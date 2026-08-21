@@ -14,7 +14,7 @@ export async function GET(request: Request) {
   }
 
   const access = await resolveAccess(user);
-  if (!hasAccess(access, "contacts.view")) {
+  if (!hasAccess(access, "contacts.view") && !hasAccess(access, "registrations")) {
     return NextResponse.json({ error: "Not allowed." }, { status: 403 });
   }
 

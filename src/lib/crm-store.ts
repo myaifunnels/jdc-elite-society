@@ -29,9 +29,12 @@ export type CrmViewer = Pick<AuthUser, "role" | "name" | "email"> & {
 const memoryRecords: ContactRecord[] = [...contactSeed];
 const hiddenEmails = new Set<string>();
 const GHL_SYNC_MS = 60_000;
+const REGISTRANT_HYDRATE_MS = 60_000;
 const TAG_CACHE_MS = 5 * 60 * 1000;
 export const CONTACTS_PAGE_SIZE = 25;
 let lastGhlSyncAt = 0;
+let lastRegistrantHydrateAt = 0;
+let registrantHydrating = false;
 let lastAddressSyncAt = 0;
 let lastTagFetchAt = 0;
 let cachedRemoteTags: string[] = [];
@@ -380,9 +383,111 @@ async function syncGhlInBackground() {
   }
 }
 
+async function hydrateRegistrantsIntoCrm() {
+  if (registrantHydrating || Date.now() - lastRegistrantHydrateAt < REGISTRANT_HYDRATE_MS) {
+    return;
+  }
+  registrantHydrating = true;
+  try {
+    const { listMemberRegistrations } = await import("@/lib/auth-store");
+    const members = await listMemberRegistrations();
+    for (const user of members) {
+      if (isHiddenEmail(user.email)) {
+        continue;
+      }
+      const existing = memoryRecords.find(
+        (record) => emailsMatch(record.email, user.email) || phonesMatch(record.phone, user.phone),
+      );
+      const paymentTag = user.paymentVerified ? "Payment verified" : "Payment pending";
+      const profileTag = user.profileComplete ? "Profile complete" : "Profile incomplete";
+      const nextTags = uniqueTags([
+        ...(existing?.tags ?? []),
+        "Registrant",
+        paymentTag,
+        profileTag,
+      ]).filter((tag) => {
+        if (user.paymentVerified && tag.toLowerCase() === "payment pending") {
+          return false;
+        }
+        if (!user.paymentVerified && tag.toLowerCase() === "payment verified") {
+          return false;
+        }
+        if (user.profileComplete && tag.toLowerCase() === "profile incomplete") {
+          return false;
+        }
+        if (!user.profileComplete && tag.toLowerCase() === "profile complete") {
+          return false;
+        }
+        return true;
+      });
+      if (existing) {
+        const next = {
+          ...existing,
+          name: user.name || existing.name,
+          phone: user.phone || existing.phone,
+          address: user.address || existing.address,
+          photoUrl: existing.photoUrl || user.facebookPhotoUrl,
+          dateOfBirth: existing.dateOfBirth || user.dateOfBirth || "",
+          bestDescribesYou: existing.bestDescribesYou || user.bestDescribesYou || "Not specified",
+          tags: nextTags,
+        };
+        const unchanged =
+          next.name === existing.name &&
+          next.phone === existing.phone &&
+          next.address === existing.address &&
+          next.photoUrl === existing.photoUrl &&
+          next.dateOfBirth === existing.dateOfBirth &&
+          next.tags.join("|") === existing.tags.join("|");
+        if (!unchanged) {
+          await persistContact(next);
+        }
+      } else {
+        await persistContact({
+          id: `contact-reg-${user.id}`,
+          kind: "contact",
+          createdAt: (user.createdAt || new Date().toISOString()).slice(0, 10),
+          status: user.paymentVerified ? "qualified" : "new",
+          source: "Member registration",
+          name: user.name,
+          email: user.email,
+          phone: user.phone ?? "",
+          dateOfBirth: user.dateOfBirth ?? "",
+          address: user.address ?? "",
+          city: "",
+          tags: nextTags,
+          bestDescribesYou: user.bestDescribesYou || "Not specified",
+          programInterest: "JDC Elite Society",
+          photoUrl: user.facebookPhotoUrl,
+        });
+      }
+    }
+    lastRegistrantHydrateAt = Date.now();
+  } catch (error) {
+    console.error("Failed to hydrate registrants into CRM", error);
+  } finally {
+    registrantHydrating = false;
+  }
+}
+
 async function hydrateCrm() {
   await loadPersistedContacts();
   void syncGhlInBackground();
+  await hydrateRegistrantsIntoCrm();
+}
+
+export async function contactIdsByEmail() {
+  await hydrateCrm();
+  const map = new Map<string, string>();
+  for (const record of memoryRecords) {
+    if (record.email) {
+      map.set(record.email.toLowerCase(), record.id);
+    }
+  }
+  return map;
+}
+
+export function invalidateRegistrantCrmSync() {
+  lastRegistrantHydrateAt = 0;
 }
 
 function isOwnPartnerRecord(contact: ContactRecord, viewer: CrmViewer) {

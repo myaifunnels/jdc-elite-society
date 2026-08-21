@@ -5,10 +5,9 @@ import { useRouter } from "next/navigation";
 import { useEffect, useId, useMemo, useRef, useState, useTransition } from "react";
 
 import { ContactAvatar } from "@/components/dashboard/contact-avatar";
+import { contactsHref, type ContactsView } from "@/lib/contacts-href";
 import { uniqueTags } from "@/lib/tags";
 import { cn } from "@/lib/utils";
-
-type View = "dashboard" | "roster" | "map";
 
 type Suggestion = {
   id: string;
@@ -22,36 +21,20 @@ type Suggestion = {
 
 type TagOption = { tag: string; count: number };
 
-function contactsHref(params: { view?: View; kind?: string; q?: string; tags?: string[] }) {
-  const search = new URLSearchParams();
-  if (params.view && params.view !== "dashboard") {
-    search.set("view", params.view);
-  }
-  if (params.kind) {
-    search.set("kind", params.kind);
-  }
-  if (params.q) {
-    search.set("q", params.q);
-  }
-  for (const tag of params.tags ?? []) {
-    search.append("tag", tag);
-  }
-  const query = search.toString();
-  return query ? `/dashboard/contacts?${query}` : "/dashboard/contacts";
-}
-
 export function ContactsSearch({
   view,
   kind,
   q,
   selectedTags,
   tags,
+  hideTags = false,
 }: {
-  view: View;
+  view: ContactsView;
   kind?: string;
   q?: string;
   selectedTags: string[];
   tags: TagOption[];
+  hideTags?: boolean;
 }) {
   const router = useRouter();
   const listId = useId();
@@ -71,7 +54,7 @@ export function ContactsSearch({
 
   useEffect(() => {
     const needle = query.trim();
-    if (!needle) {
+    if (!needle || hideTags) {
       return;
     }
 
@@ -111,7 +94,7 @@ export function ContactsSearch({
       controller.abort();
       window.clearTimeout(timer);
     };
-  }, [query, kind, selectedTags]);
+  }, [query, kind, selectedTags, hideTags]);
 
   useEffect(() => {
     function onPointerDown(event: PointerEvent) {
@@ -166,7 +149,7 @@ export function ContactsSearch({
             aria-expanded={open}
             aria-controls={listId}
             aria-autocomplete="list"
-            placeholder="Search name, email, city, or phone"
+            placeholder={hideTags ? "Search registrants by name, email, or phone" : "Search name, email, city, or phone"}
             onFocus={() => setOpen(true)}
             onChange={(event) => {
               setQuery(event.target.value);
@@ -193,7 +176,7 @@ export function ContactsSearch({
           </button>
         </form>
 
-        {open ? (
+        {open && !hideTags ? (
           <div id={listId} className="contact-search-menu" role="listbox">
             {loading ? <p className="contact-search-note">Searching…</p> : null}
             {!loading && needle && options.length === 0 ? (
@@ -247,6 +230,7 @@ export function ContactsSearch({
         ) : null}
       </div>
 
+      {hideTags ? null : (
       <label className="contact-tag-filter">
         <span>Tag</span>
         <select
@@ -269,7 +253,9 @@ export function ContactsSearch({
         </select>
       </label>
 
-      {selectedTags.length ? (
+      )}
+
+      {hideTags ? null : selectedTags.length ? (
         <div className="contact-active-tags">
           {selectedTags.map((tag) => (
             <Link

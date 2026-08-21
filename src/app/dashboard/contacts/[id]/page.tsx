@@ -10,6 +10,7 @@ import { DeleteUserButton } from "@/components/dashboard/delete-user-button";
 import { MacosWindow } from "@/components/dashboard/macos-window";
 import { OpenUserDashboardButton } from "@/components/dashboard/open-user-dashboard-button";
 import { Pagination } from "@/components/dashboard/pagination";
+import { VerifyPaymentButton } from "@/components/dashboard/verify-payment-button";
 import { AddressMap } from "@/components/maps/address-map";
 import { hasAccess } from "@/lib/access";
 import { findUserByEmail } from "@/lib/auth-store";
@@ -17,7 +18,7 @@ import { getContact, listAssignedContacts, listTagIndex } from "@/lib/crm-store"
 import { getGoogleMapsConfig } from "@/lib/maps";
 import { membershipLabel } from "@/lib/membership";
 import { parsePage, paginate } from "@/lib/pagination";
-import { requireCapability } from "@/lib/session";
+import { requireAnyCapability } from "@/lib/session";
 
 function Field({ label, value, href }: { label: string; value?: string | null; href?: string }) {
   const text = value?.trim();
@@ -48,7 +49,7 @@ export default async function ContactDashboardPage({
   params: Promise<{ id: string }>;
   searchParams: Promise<{ page?: string }>;
 }) {
-  const { user, access } = await requireCapability("contacts.view");
+  const { user, access } = await requireAnyCapability("contacts.view", "registrations");
   const viewer = { ...user, seeAllContacts: hasAccess(access, "contacts.all") };
   const { id } = await params;
   const contact = await getContact(viewer, id);
@@ -124,6 +125,14 @@ export default async function ContactDashboardPage({
               value={portalUser ? membershipLabel(portalUser.memberships) : undefined}
             />
             <Field label="Company" value={portalUser?.company} />
+            <Field
+              label="Registration"
+              value={
+                portalUser && (portalUser.role === "member" || portalUser.role === "contact")
+                  ? `${portalUser.paymentVerified ? "Payment verified" : "Payment pending"} · Profile ${portalUser.profileComplete ? "complete" : "incomplete"}`
+                  : undefined
+              }
+            />
           </dl>
         </MacosWindow>
 
@@ -166,6 +175,28 @@ export default async function ContactDashboardPage({
             </article>
           </>
         )}
+
+        {portalUser &&
+        (portalUser.role === "member" || portalUser.role === "contact") &&
+        hasAccess(access, "registrations") ? (
+          <MacosWindow title="Registration" className="dashboard-span-2">
+            <p className="macos-lead" style={{ textAlign: "left" }}>
+              Profile {portalUser.profileComplete ? "complete" : "incomplete"} · Payment{" "}
+              {portalUser.paymentVerified ? "verified" : "pending"} · {portalUser.accountStatus} ·{" "}
+              {membershipLabel(portalUser.memberships)}
+            </p>
+            <div className="macos-actions">
+              {portalUser.paymentVerified ? (
+                <span className="status-pill is-verified">Verified payment</span>
+              ) : (
+                <VerifyPaymentButton userId={portalUser.id} />
+              )}
+              <Link href="/dashboard/contacts?view=registrants" className="macos-btn macos-btn-secondary">
+                All registrants
+              </Link>
+            </div>
+          </MacosWindow>
+        ) : null}
 
         <MacosWindow title="Tags" className="dashboard-span-2">
           <p className="macos-lead" style={{ textAlign: "left" }}>

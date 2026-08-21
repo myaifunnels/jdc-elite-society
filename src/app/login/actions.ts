@@ -21,7 +21,7 @@ import {
 } from "@/lib/auth-store";
 import { storeProfilePhoto } from "@/lib/r2-upload";
 import { formatInternationalPhone } from "@/lib/countries";
-import { upsertContactFromAccount } from "@/lib/crm-store";
+import { invalidateRegistrantCrmSync, upsertContactFromAccount } from "@/lib/crm-store";
 import { syncContactToGhl } from "@/lib/ghl";
 import { requireCapability, requireSessionUser, sessionCookieName, impersonatorCookieName } from "@/lib/session";
 import {
@@ -280,6 +280,7 @@ export async function verifyMemberPayment(
 
   try {
     await setMemberPaymentVerified(userId, true);
+    invalidateRegistrantCrmSync();
   } catch (error) {
     return {
       error: error instanceof Error ? error.message : "I couldn't verify this registration.",
@@ -288,6 +289,7 @@ export async function verifyMemberPayment(
 
   revalidatePath("/dashboard");
   revalidatePath("/dashboard/registrations");
+  revalidatePath("/dashboard/contacts");
   return { success: "Payment verified." };
 }
 

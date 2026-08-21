@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { ApproveAllRegistrationsForm } from "@/components/dashboard/approve-all-registrations-form";
 import { ContactAvatar } from "@/components/dashboard/contact-avatar";
 import { ContactsMap } from "@/components/dashboard/contacts-map";
 import { ContactsSearch } from "@/components/dashboard/contacts-search";
@@ -8,51 +9,46 @@ import { DeleteUserButton } from "@/components/dashboard/delete-user-button";
 import { MacosWindow } from "@/components/dashboard/macos-window";
 import { OpenUserDashboardButton } from "@/components/dashboard/open-user-dashboard-button";
 import { Pagination } from "@/components/dashboard/pagination";
+import { VerifyPaymentButton } from "@/components/dashboard/verify-payment-button";
 import { hasAccess } from "@/lib/access";
-import { listAllUsers } from "@/lib/auth-store";
-import { CONTACTS_PAGE_SIZE, listContactMapPins, listContacts, listTagIndex } from "@/lib/crm-store";
+import { listAllUsers, listMemberRegistrations } from "@/lib/auth-store";
+import { contactsHref, parseContactsView } from "@/lib/contacts-href";
+import { CONTACTS_PAGE_SIZE, contactIdsByEmail, listContactMapPins, listContacts, listTagIndex } from "@/lib/crm-store";
+import { membershipLabel } from "@/lib/membership";
 import { parsePage, paginate } from "@/lib/pagination";
-import { requireCapability } from "@/lib/session";
+import { requireAnyCapability } from "@/lib/session";
 import { uniqueTags } from "@/lib/tags";
 import { ContactKind } from "@/lib/types";
 import { cn } from "@/lib/utils";
-
-type View = "dashboard" | "roster" | "map";
 
 function asList(value?: string | string[]) {
   return uniqueTags((Array.isArray(value) ? value : value ? [value] : []).flatMap((item) => item.split(",")));
 }
 
-function contactsHref(params: { view?: View; kind?: string; q?: string; tags?: string[]; page?: number }) {
-  const search = new URLSearchParams();
-  if (params.view && params.view !== "dashboard") {
-    search.set("view", params.view);
-  }
-  if (params.kind) {
-    search.set("kind", params.kind);
-  }
-  if (params.q) {
-    search.set("q", params.q);
-  }
-  for (const tag of params.tags ?? []) {
-    search.append("tag", tag);
-  }
-  if (params.page && params.page > 1) {
-    search.set("page", String(params.page));
-  }
-  const query = search.toString();
-  return query ? `/dashboard/contacts?${query}` : "/dashboard/contacts";
-}
-
 export default async function ContactsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ kind?: string; view?: string; tag?: string | string[]; q?: string; page?: string }>;
+  searchParams: Promise<{
+    kind?: string;
+    view?: string;
+    tag?: string | string[];
+    q?: string;
+    page?: string;
+    status?: string;
+  }>;
 }) {
-  const { user, access } = await requireCapability("contacts.view");
+  const { user, access } = await requireAnyCapability("contacts.view", "registrations");
+  const canSeeContacts = hasAccess(access, "contacts.view");
+  const canSeeRegistrants = hasAccess(access, "registrations");
   const viewer = { ...user, seeAllContacts: hasAccess(access, "contacts.all") };
   const raw = await searchParams;
-  const view: View = raw.view === "roster" || raw.view === "map" ? raw.view : "dashboard";
+  const requested = parseContactsView(raw.view);
+  const view =
+    requested === "registrants" && !canSeeRegistrants
+      ? "dashboard"
+      : !canSeeContacts && canSeeRegistrants
+        ? "registrants"
+        : requested;
   const kind: ContactKind | undefined =
     hasAccess(access, "contacts.all") && (raw.kind === "partner" || raw.kind === "contact")
       ? raw.kind
@@ -62,29 +58,57 @@ export default async function ContactsPage({
   const selectedTags = asList(raw.tag);
   const query = { kind, tags: selectedTags, q: raw.q };
   const page = parsePage(raw.page);
+  const registrantStatus = raw.status === "pending" || raw.status === "verified" ? raw.status : "all";
 
-  const matching = await listContacts(viewer, query);
+  const matching = view === "registrants" || !canSeeContacts ? [] : await listContacts(viewer, query);
   const allForKind =
-    raw.q || selectedTags.length ? await listContacts(viewer, { kind }) : matching;
+    view === "registrants" || !canSeeContacts
+      ? []
+      : raw.q || selectedTags.length
+        ? await listContacts(viewer, { kind })
+        : matching;
   const paged = paginate(matching, page, CONTACTS_PAGE_SIZE);
-  const tags = await listTagIndex(viewer);
+  const tags = view === "registrants" || !canSeeContacts ? [] : await listTagIndex(viewer);
   const pins =
-    view === "roster"
+    view === "roster" || view === "registrants" || !canSeeContacts
       ? []
       : await listContactMapPins(viewer, query, { geocode: view === "map" });
   const users = view === "roster" && user.role === "admin" ? await listAllUsers() : [];
   const usersByEmail = new Map(users.map((item) => [item.email.toLowerCase(), item]));
 
+  const registrants =
+    canSeeRegistrants && (view === "registrants" || view === "dashboard") ? await listMemberRegistrations() : [];
+  const registrantNeedle = String(raw.q ?? "").trim().toLowerCase();
+  const filteredRegistrants = registrants.filter((member) => {
+    if (registrantStatus === "pending" && member.paymentVerified) {
+      return false;
+    }
+    if (registrantStatus === "verified" && !member.paymentVerified) {
+      return false;
+    }
+    if (!registrantNeedle) {
+      return true;
+    }
+    return [member.name, member.email, member.phone, member.company]
+      .join(" ")
+      .toLowerCase()
+      .includes(registrantNeedle);
+  });
+  const pendingCount = registrants.filter((member) => !member.paymentVerified).length;
+  const pagedRegistrants = paginate(filteredRegistrants, page, 20);
+  const idsByEmail = view === "registrants" ? await contactIdsByEmail() : new Map<string, string>();
+
   const ghlCount = allForKind.filter((contact) => contact.ghlContactId || contact.source.includes("GHL")).length;
   const followUp = allForKind.filter((contact) => contact.status === "follow-up" || contact.status === "qualified");
-  const rosterBase = contactsHref({ view, kind, q: raw.q, tags: selectedTags });
+  const rosterBase = contactsHref({ view, kind, q: raw.q, tags: selectedTags, status: registrantStatus });
 
   const views = [
-    { id: "dashboard" as const, label: "Dashboard" },
-    { id: "roster" as const, label: "Roster" },
-    { id: "map" as const, label: "Map" },
+    ...(canSeeContacts ? [{ id: "dashboard" as const, label: "Dashboard" }] : []),
+    ...(canSeeContacts ? [{ id: "roster" as const, label: "Roster" }] : []),
+    ...(canSeeContacts ? [{ id: "map" as const, label: "Map" }] : []),
+    ...(canSeeRegistrants ? [{ id: "registrants" as const, label: "Registrants" }] : []),
   ];
-  const kinds = hasAccess(access, "contacts.all")
+  const kinds = hasAccess(access, "contacts.all") && view !== "registrants"
     ? [
         { href: contactsHref({ view, q: raw.q, tags: selectedTags }), label: "All", active: !kind },
         {
@@ -102,30 +126,48 @@ export default async function ContactsPage({
 
   return (
     <DashboardShell
-      title={hasAccess(access, "contacts.all") ? "Contacts" : "My contacts"}
+      title={hasAccess(access, "contacts.all") ? "Contacts" : canSeeContacts ? "My contacts" : "Registrants"}
       description={
         hasAccess(access, "contacts.all")
-          ? "Search the Elite Society roster. Filter by tag when you need it. Open a user’s dashboard to see what they see."
-          : "Search the people assigned to you. Filter by tag when you need it."
+          ? "Search the Elite Society roster, map, and registrants. Open a user’s dashboard to see what they see."
+          : canSeeContacts
+            ? "Search the people assigned to you. Filter by tag when you need it."
+            : "Verify member sign-ups and payment after they complete their account profile."
       }
     >
       <MacosWindow
-        title={view === "map" ? "Contact map" : view === "roster" ? "Contact roster" : "Contacts dashboard"}
+        title={
+          view === "map"
+            ? "Contact map"
+            : view === "roster"
+              ? "Contact roster"
+              : view === "registrants"
+                ? "Registrants"
+                : "Contacts dashboard"
+        }
         className="dashboard-span-2"
         toolbar={
-          <div className="macos-toolbar contacts-toolbar">
-            <div className="macos-segment" style={{ gridTemplateColumns: "1fr 1fr 1fr", width: "min(24rem, 100%)" }}>
-              {views.map((item) => (
-                <Link
-                  key={item.id}
-                  href={contactsHref({ view: item.id, kind, q: raw.q, tags: selectedTags })}
-                  className={cn(view === item.id && "is-active")}
-                >
-                  {item.label}
-                </Link>
-              ))}
+          views.length > 1 ? (
+            <div className="macos-toolbar contacts-toolbar">
+              <div
+                className="macos-segment"
+                style={{
+                  gridTemplateColumns: `repeat(${views.length}, 1fr)`,
+                  width: "min(32rem, 100%)",
+                }}
+              >
+                {views.map((item) => (
+                  <Link
+                    key={item.id}
+                    href={contactsHref({ view: item.id, kind, q: raw.q, tags: selectedTags })}
+                    className={cn(view === item.id && "is-active")}
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+              </div>
             </div>
-          </div>
+          ) : undefined
         }
       >
         {kinds.length ? (
@@ -138,7 +180,83 @@ export default async function ContactsPage({
           </div>
         ) : null}
 
-        <ContactsSearch view={view} kind={kind} q={raw.q} selectedTags={selectedTags} tags={tags} />
+        {view === "registrants" ? (
+          <>
+            <div className="macos-segment" style={{ gridTemplateColumns: "1fr 1fr 1fr", width: "min(24rem, 100%)" }}>
+              <Link
+                href={contactsHref({ view: "registrants", q: raw.q })}
+                className={cn(registrantStatus === "all" && "is-active")}
+              >
+                All
+              </Link>
+              <Link
+                href={contactsHref({ view: "registrants", q: raw.q, status: "pending" })}
+                className={cn(registrantStatus === "pending" && "is-active")}
+              >
+                Pending
+              </Link>
+              <Link
+                href={contactsHref({ view: "registrants", q: raw.q, status: "verified" })}
+                className={cn(registrantStatus === "verified" && "is-active")}
+              >
+                Verified
+              </Link>
+            </div>
+            <ContactsSearch view="registrants" q={raw.q} selectedTags={[]} tags={[]} hideTags />
+            <ApproveAllRegistrationsForm pendingCount={pendingCount} />
+            {filteredRegistrants.length === 0 ? (
+              <p className="macos-lead" style={{ textAlign: "left" }}>
+                No member or contact registrations match this view.
+              </p>
+            ) : (
+              <>
+                {pagedRegistrants.items.map((member) => {
+                  const contactId = idsByEmail.get(member.email.toLowerCase());
+                  return (
+                    <article key={member.id} className="registration-row">
+                      <ContactAvatar name={member.name} photoUrl={member.facebookPhotoUrl} size="lg" />
+                      <div>
+                        <strong>{member.name}</strong>
+                        <em>
+                          {member.email} · {member.phone} · {member.company || "No company"}
+                        </em>
+                        <p>
+                          Profile {member.profileComplete ? "complete" : "incomplete"} · Payment{" "}
+                          {member.paymentVerified ? "verified" : "pending"} · {membershipLabel(member.memberships)} ·{" "}
+                          {member.accountStatus}
+                        </p>
+                      </div>
+                      {member.paymentVerified ? (
+                        <span className="status-pill is-verified">Verified payment</span>
+                      ) : (
+                        <VerifyPaymentButton userId={member.id} />
+                      )}
+                      {contactId ? (
+                        <Link href={`/dashboard/contacts/${contactId}`} className="macos-btn macos-btn-secondary">
+                          Contact
+                        </Link>
+                      ) : null}
+                      {user.role === "admin" && member.id !== user.id ? (
+                        <DeleteUserButton userId={member.id} name={member.name} redirectTo="/dashboard/contacts?view=registrants" />
+                      ) : null}
+                    </article>
+                  );
+                })}
+                <Pagination
+                  page={pagedRegistrants.page}
+                  pages={pagedRegistrants.pages}
+                  total={pagedRegistrants.total}
+                  hrefBase={rosterBase}
+                  noun="registrants"
+                />
+              </>
+            )}
+          </>
+        ) : null}
+
+        {view !== "registrants" ? (
+          <ContactsSearch view={view} kind={kind} q={raw.q} selectedTags={selectedTags} tags={tags} />
+        ) : null}
 
         {view === "dashboard" ? (
           <>
@@ -158,11 +276,19 @@ export default async function ContactsPage({
                 <p className="dashboard-metric-value">{matching.length}</p>
                 <p className="dashboard-metric-copy">Results for this search</p>
               </article>
-              <article className="dashboard-metric-card">
-                <p className="macos-kicker">Follow-up</p>
-                <p className="dashboard-metric-value">{followUp.length}</p>
-                <p className="dashboard-metric-copy">Qualified or waiting</p>
-              </article>
+              {canSeeRegistrants ? (
+                <article className="dashboard-metric-card">
+                  <p className="macos-kicker">Pending registrants</p>
+                  <p className="dashboard-metric-value">{pendingCount}</p>
+                  <p className="dashboard-metric-copy">Waiting on payment verification</p>
+                </article>
+              ) : (
+                <article className="dashboard-metric-card">
+                  <p className="macos-kicker">Follow-up</p>
+                  <p className="dashboard-metric-value">{followUp.length}</p>
+                  <p className="dashboard-metric-copy">Qualified or waiting</p>
+                </article>
+              )}
             </div>
 
             <div className="dashboard-contact-list">
@@ -181,6 +307,11 @@ export default async function ContactsPage({
             {matching.length > 8 ? (
               <Link href={contactsHref({ view: "roster", kind, q: raw.q, tags: selectedTags })} className="macos-btn macos-btn-secondary self-start">
                 View all {matching.length} in roster
+              </Link>
+            ) : null}
+            {canSeeRegistrants && pendingCount > 0 ? (
+              <Link href={contactsHref({ view: "registrants", status: "pending" })} className="macos-btn macos-btn-secondary self-start">
+                Review {pendingCount} pending registrant{pendingCount === 1 ? "" : "s"}
               </Link>
             ) : null}
 
