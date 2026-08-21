@@ -59,7 +59,18 @@ function hashSeed(value: string) {
 
 export function pickPlaceholderAddress(seed: string): PlaceholderAddress {
   const hash = hashSeed(seed || "contact");
-  return PLACEHOLDERS[hash % PLACEHOLDERS.length];
+  const place = PLACEHOLDERS[hash % PLACEHOLDERS.length];
+  const latJitter = ((hash % 21) - 10) * 0.0035;
+  const lngJitter = ((Math.floor(hash / 21) % 21) - 10) * 0.0035;
+  return {
+    ...place,
+    lat: Number((place.lat + latJitter).toFixed(5)),
+    lng: Number((place.lng + lngJitter).toFixed(5)),
+  };
+}
+
+export function applyPlaceholderLocation<T extends { id?: string; email?: string }>(contact: T): PlaceholderAddress {
+  return pickPlaceholderAddress(String(contact.id || contact.email || "contact"));
 }
 
 export function hasAddressTag(tags: string[] | undefined, tag: string) {

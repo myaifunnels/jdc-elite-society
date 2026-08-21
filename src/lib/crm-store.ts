@@ -17,7 +17,7 @@ import {
   MAP_PLACEHOLDER_TAG,
   hasAddressTag,
   isSamePlaceholderAddress,
-  pickPlaceholderAddress,
+  applyPlaceholderLocation,
   shouldUsePlaceholderAddress,
 } from "@/lib/placeholder-addresses";
 import {
@@ -146,7 +146,8 @@ async function persistContact(contact: ContactRecord) {
   if (isHiddenEmail(contact.email)) {
     return;
   }
-  upsertLocal(contact);
+  const next = withMapLocation(contact);
+  upsertLocal(next);
   const client = getPool();
   if (!client) {
     return;
@@ -164,7 +165,7 @@ async function persistContact(contact: ContactRecord) {
         payload = EXCLUDED.payload,
         updated_at = NOW()
       `,
-      [contact.id, contact.email.toLowerCase(), contact.kind, JSON.stringify(contact)],
+      [next.id, next.email.toLowerCase(), next.kind, JSON.stringify(next)],
     );
   } catch (error) {
     console.error("Failed to persist CRM contact", error);
@@ -177,6 +178,25 @@ function sameText(left?: string, right?: string) {
 
 function lookupAddress(contact: Pick<ContactRecord, "address" | "city" | "region">) {
   return [contact.address, contact.city, contact.region].filter(Boolean).join(", ");
+}
+
+function withMapLocation(contact: ContactRecord): ContactRecord {
+  if (!shouldUsePlaceholderAddress(contact)) {
+    return contact;
+  }
+  const place = applyPlaceholderLocation(contact);
+  return {
+    ...contact,
+    address: place.address,
+    city: place.city,
+    region: place.region,
+    lat: place.lat,
+    lng: place.lng,
+    tags: uniqueTags([
+      ...(contact.tags ?? []).filter((tag) => tag.toLowerCase() !== ADDRESS_CONFIRMED_TAG.toLowerCase()),
+      MAP_PLACEHOLDER_TAG,
+    ]),
+  };
 }
 
 function upsertLocal(incoming: ContactRecord) {
@@ -192,10 +212,17 @@ function upsertLocal(incoming: ContactRecord) {
     const current = memoryRecords[index];
     const incomingAddress = incoming.address?.trim() || "";
     const incomingCity = incoming.city?.trim() || "";
-    const nextAddress =
-      incomingAddress.length >= (current.address?.trim().length ?? 0) ? incomingAddress || current.address : current.address;
-    const nextCity =
-      incomingCity.length >= (current.city?.trim().length ?? 0) ? incomingCity || current.city : current.city;
+    const forceIncomingAddress = incoming.kind === "contact";
+    const nextAddress = forceIncomingAddress
+      ? incomingAddress || current.address
+      : incomingAddress.length >= (current.address?.trim().length ?? 0)
+        ? incomingAddress || current.address
+        : current.address;
+    const nextCity = forceIncomingAddress
+      ? incomingCity || current.city
+      : incomingCity.length >= (current.city?.trim().length ?? 0)
+        ? incomingCity || current.city
+        : current.city;
     const addressChanged = !sameText(
       [nextAddress, nextCity, incoming.region || current.region].filter(Boolean).join(", "),
       lookupAddress(current),
@@ -207,6 +234,7 @@ function upsertLocal(incoming: ContactRecord) {
       kind: current.kind === "partner" ? "partner" : incoming.kind,
       address: nextAddress,
       city: nextCity,
+      region: forceIncomingAddress ? incoming.region || current.region : incoming.region || current.region,
       assignedPartner: incoming.assignedPartner || current.assignedPartner,
       photoUrl: incoming.photoUrl || current.photoUrl,
       lat: incoming.lat ?? (addressChanged ? undefined : current.lat),
@@ -494,27 +522,16 @@ async function applyPlaceholderAddresses() {
     if (!shouldUsePlaceholderAddress(record)) {
       continue;
     }
-    const place = pickPlaceholderAddress(record.id || record.email);
-    const already =
-      sameText(record.address, place.address) &&
-      record.lat === place.lat &&
-      record.lng === place.lng &&
-      hasAddressTag(record.tags, MAP_PLACEHOLDER_TAG);
-    if (already) {
+    const located = withMapLocation(record);
+    if (
+      sameText(located.address, record.address) &&
+      located.lat === record.lat &&
+      located.lng === record.lng &&
+      hasAddressTag(record.tags, MAP_PLACEHOLDER_TAG)
+    ) {
       continue;
     }
-    await persistContact({
-      ...record,
-      address: place.address,
-      city: place.city,
-      region: place.region,
-      lat: place.lat,
-      lng: place.lng,
-      tags: uniqueTags([
-        ...(record.tags ?? []).filter((tag) => tag.toLowerCase() !== ADDRESS_CONFIRMED_TAG.toLowerCase()),
-        MAP_PLACEHOLDER_TAG,
-      ]),
-    });
+    await persistContact(located);
   }
 }
 
@@ -602,6 +619,7 @@ export async function listContacts(viewer: CrmViewer, kindOrQuery?: ContactKind 
   await hydrateCrm();
   const query: ContactQuery = typeof kindOrQuery === "string" ? { kind: kindOrQuery } : (kindOrQuery ?? {});
   return visibleToViewer(viewer)
+    .map(withMapLocation)
     .filter((contact) => matchesQuery(contact, query))
     .slice()
     .sort((left, right) => {
@@ -690,31 +708,33 @@ export async function getContact(viewer: CrmViewer, id: string) {
     return null;
   }
 
-  if (contact.ghlContactId) {
+  const located = withMapLocation(contact);
+
+  if (located.ghlContactId) {
     await ensurePortalUserForContact({
-      name: contact.name,
-      email: contact.email,
-      phone: contact.phone,
-      bestDescribesYou: contact.bestDescribesYou,
-      dateOfBirth: contact.dateOfBirth,
-      address: contact.address,
-      facebookPhotoUrl: contact.photoUrl,
-      company: contact.programInterest,
+      name: located.name,
+      email: located.email,
+      phone: located.phone,
+      bestDescribesYou: located.bestDescribesYou,
+      dateOfBirth: located.dateOfBirth,
+      address: located.address,
+      facebookPhotoUrl: located.photoUrl,
+      company: located.programInterest,
     }).catch((error) => {
-      console.error("Failed to provision GHL contact portal", contact.email, error);
+      console.error("Failed to provision GHL contact portal", located.email, error);
     });
   }
 
-  if (typeof contact.lat === "number" && typeof contact.lng === "number") {
-    return contact;
+  if (typeof located.lat === "number" && typeof located.lng === "number") {
+    return located;
   }
-  if (!lookupAddress(contact)) {
-    return contact;
+  if (!lookupAddress(located) || shouldUsePlaceholderAddress(located)) {
+    return located;
   }
 
-  const next = await withCoordinates(contact);
+  const next = await withCoordinates(located);
   await persistContact(next);
-  return visibleToViewer(viewer).find((item) => item.id === id) ?? next;
+  return withMapLocation(visibleToViewer(viewer).find((item) => item.id === id) ?? next);
 }
 
 export async function listAssignedContacts(viewer: CrmViewer, partnerName: string) {
@@ -738,20 +758,21 @@ export async function listPartnerMapPins(viewer: CrmViewer): Promise<PartnerMapP
 }
 
 function toMapPin(contact: ContactRecord): ContactMapPin | null {
-  if (typeof contact.lat !== "number" || typeof contact.lng !== "number") {
+  const located = withMapLocation(contact);
+  if (typeof located.lat !== "number" || typeof located.lng !== "number") {
     return null;
   }
 
   return {
-    id: contact.id,
-    name: contact.name,
-    region: contact.region ?? contact.city,
-    address: contact.address,
-    photoUrl: contact.photoUrl,
-    lat: contact.lat,
-    lng: contact.lng,
-    kind: contact.kind,
-    tags: contact.tags,
+    id: located.id,
+    name: located.name,
+    region: located.region ?? located.city,
+    address: located.address,
+    photoUrl: located.photoUrl,
+    lat: located.lat,
+    lng: located.lng,
+    kind: located.kind,
+    tags: located.tags,
   };
 }
 
@@ -776,7 +797,7 @@ export async function listContactMapPins(
       continue;
     }
 
-    if (!geocode) {
+    if (!geocode || shouldUsePlaceholderAddress(contact)) {
       continue;
     }
 
@@ -885,7 +906,8 @@ export async function findContactByEmailOrPhone(email: string, phone: string) {
 
 export async function getContactByEmail(email: string) {
   await loadPersistedContacts();
-  return memoryRecords.find((record) => emailsMatch(record.email, email)) ?? null;
+  const record = memoryRecords.find((item) => emailsMatch(item.email, email)) ?? null;
+  return record ? withMapLocation(record) : null;
 }
 
 export async function setContactAffiliateTag(

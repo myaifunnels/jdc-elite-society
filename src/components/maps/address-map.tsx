@@ -18,10 +18,10 @@ export function AddressMap({ address, lat, lng, embedKey }: AddressMapProps) {
     );
   }
 
-  const query = hasCoords ? `${lat},${lng}` : encodeURIComponent(trimmed);
-  const mapsUrl = hasCoords
-    ? `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`
-    : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(trimmed)}`;
+  const query = trimmed ? encodeURIComponent(trimmed) : `${lat},${lng}`;
+  const mapsUrl = trimmed
+    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(trimmed)}`
+    : `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
   const embedUrl = resolvedKey
     ? `https://www.google.com/maps/embed/v1/place?key=${resolvedKey}&q=${query}`
     : null;

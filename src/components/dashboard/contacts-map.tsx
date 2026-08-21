@@ -68,7 +68,8 @@ export function ContactsMap({
         marker.bindPopup(
           `<div class="partner-map-popup">
             <strong>${escapeHtml(pin.name)}</strong>
-            <p>${escapeHtml(pin.address || pin.region || pin.kind)}</p>
+            <p>${escapeHtml(pin.address || [pin.region, pin.kind].filter(Boolean).join(" · "))}</p>
+            <p>${escapeHtml([pin.region, pin.kind === "partner" ? "Partner" : "Contact"].filter(Boolean).join(" · "))}</p>
             <a href="/dashboard/contacts/${encodeURIComponent(pin.id)}">Open contact</a>
           </div>`,
         );
@@ -106,7 +107,7 @@ export function ContactsMap({
         {pins.map((pin) => (
           <li key={pin.id}>
             <Link href={`/dashboard/contacts/${pin.id}`}>{pin.name}</Link>
-            <span>{pin.region || pin.kind}</span>
+            <span>{pin.address || pin.region || pin.kind}</span>
           </li>
         ))}
       </ul>
