@@ -3697,7 +3697,8 @@ html:not(.dark) .dashboard-desktop {
   color: #0b4ea2;
 }
 
-.tag-chip.is-program {
+.tag-chip.is-program,
+.tag-chip.is-offer {
   background: color-mix(in srgb, #34c759 16%, var(--surface));
   color: #0d6b32;
 }

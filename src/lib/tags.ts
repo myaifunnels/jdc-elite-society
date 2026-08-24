@@ -1,4 +1,4 @@
-export type TagGroupId = "audience" | "program" | "stage" | "membership" | "ghl" | "custom";
+export type TagGroupId = "audience" | "program" | "stage" | "membership" | "offer" | "ghl" | "custom";
 
 export type TagGroup = {
   id: TagGroupId;
@@ -26,14 +26,47 @@ export const TAG_GROUPS: TagGroup[] = [
   {
     id: "stage",
     label: "Stage",
-    tags: ["New", "Qualified", "Follow-up", "Won", "Active", "Ramping"],
+    tags: ["New", "Qualified", "Follow-up", "Won", "Active", "Ramping", "Payment pending", "Payment verified"],
   },
   {
     id: "membership",
     label: "Membership",
     tags: ["JDC Elite Society", "University", "Website", "Inquiry", "Registration", "pioneer", "jdc-partner"],
   },
+  {
+    id: "offer",
+    label: "Offer",
+    tags: [
+      "jdc-mastermind",
+      "webinar-paid",
+      "Elite offer",
+      "Mastermind checkout",
+      "spartans-coupon",
+      "BPI Bank",
+      "GCash",
+    ],
+  },
 ];
+
+export function mastermindCheckoutTags(input: {
+  paymentMethod: string;
+  priceLabel: string;
+  couponApplied: boolean;
+  extra?: string[];
+}) {
+  return uniqueTags([
+    "JDC Mastermind",
+    "jdc-mastermind",
+    "webinar-paid",
+    "Elite offer",
+    "Mastermind checkout",
+    "Payment pending",
+    input.paymentMethod,
+    input.priceLabel,
+    input.couponApplied ? "spartans-coupon" : "",
+    ...(input.extra ?? []),
+  ]);
+}
 
 export function normalizeTag(value: string) {
   return value.replace(/\s+/g, " ").trim().slice(0, 48);

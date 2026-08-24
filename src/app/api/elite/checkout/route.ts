@@ -6,7 +6,10 @@ import { AFFILIATE_CAMPAIGN_COOKIE, AFFILIATE_COOKIE, normalizeAffiliateCode } f
 import { getProfileByCode, recordAttribution } from "@/lib/affiliate-store";
 import { createLead } from "@/lib/crm-store";
 import { syncContactToGhl } from "@/lib/ghl";
+import { toE164Phone } from "@/lib/identity";
+import { notifyMastermindPurchase } from "@/lib/notify";
 import { storePaymentReceipt } from "@/lib/r2-upload";
+import { mastermindCheckoutTags } from "@/lib/tags";
 import { eliteCheckoutSchema } from "@/lib/validations";
 
 const couponCode = mastermindOffer.couponCode;
@@ -25,6 +28,7 @@ async function upsertFunnelContact(input: {
   receiptUrl: string;
   priceLabel: string;
   spartans: boolean;
+  tags: string[];
 }) {
   await fetch("https://api.myaifunnels.com/contacts/upsert", {
     method: "POST",
@@ -36,7 +40,7 @@ async function upsertFunnelContact(input: {
         firstName: input.fullName,
         email: input.email,
         phone: input.mobile,
-        tags: ["jdc-mastermind", "webinar-paid", ...(input.spartans ? ["spartans-coupon"] : [])],
+        tags: input.tags,
         customField: {
           "Payment Method": input.paymentMethod,
           "Receipt File": input.receiptName,
@@ -72,6 +76,7 @@ export async function POST(request: Request) {
   const spartans = appliedCoupon(parsed.data.couponCode);
   const price = spartans ? mastermindOffer.couponPrice : mastermindOffer.offerPrice;
   const priceLabel = `PHP ${price.toLocaleString("en-PH")}`;
+  const mobile = toE164Phone(parsed.data.mobile);
 
   let receiptUrl = "";
   try {
@@ -91,20 +96,17 @@ export async function POST(request: Request) {
     ? [`affiliate:${affiliate.code}`, campaignSlug ? `campaign:${campaignSlug}` : ""].filter(Boolean)
     : [];
 
-  const tags = [
-    "jdc-mastermind",
-    "webinar-paid",
-    "Elite offer",
-    parsed.data.paymentMethod,
+  const tags = mastermindCheckoutTags({
+    paymentMethod: parsed.data.paymentMethod,
     priceLabel,
-    ...(spartans ? ["spartans-coupon"] : []),
-    ...extraTags,
-  ];
+    couponApplied: spartans,
+    extra: extraTags,
+  });
 
   const lead = await createLead({
     name: parsed.data.fullName,
     email: parsed.data.email,
-    phone: parsed.data.mobile,
+    phone: mobile || parsed.data.mobile,
     dateOfBirth: "",
     address: "",
     city: "",
@@ -125,10 +127,10 @@ export async function POST(request: Request) {
     });
   }
 
-  await syncContactToGhl({
+  const ghl = await syncContactToGhl({
     name: parsed.data.fullName,
     email: parsed.data.email,
-    phone: parsed.data.mobile,
+    phone: mobile || parsed.data.mobile,
     source: affiliate ? `Mastermind offer · ${affiliate.code}` : "Mastermind offer",
     tags,
   });
@@ -136,14 +138,36 @@ export async function POST(request: Request) {
   await upsertFunnelContact({
     fullName: parsed.data.fullName,
     email: parsed.data.email,
-    mobile: parsed.data.mobile,
+    mobile: mobile || parsed.data.mobile,
     paymentMethod: parsed.data.paymentMethod,
     couponCode: parsed.data.couponCode || "None",
     receiptName: receipt.name,
     receiptUrl,
     priceLabel,
     spartans,
+    tags,
   });
 
-  return NextResponse.json({ ok: true, leadId: lead.id, price: priceLabel });
+  try {
+    await notifyMastermindPurchase({
+      name: parsed.data.fullName,
+      email: parsed.data.email,
+      phone: mobile || parsed.data.mobile,
+      paymentMethod: parsed.data.paymentMethod,
+      priceLabel,
+      couponCode: parsed.data.couponCode || "None",
+      receiptUrl,
+      tags,
+    });
+  } catch (error) {
+    console.error("Mastermind notifications failed", error);
+  }
+
+  return NextResponse.json({
+    ok: true,
+    leadId: lead.id,
+    price: priceLabel,
+    tags,
+    ghlContactId: ghl.contactId ?? null,
+  });
 }

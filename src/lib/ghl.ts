@@ -29,7 +29,7 @@ export async function syncContactToGhl(input: GhlContactInput) {
   const locationId = settings.ghlLocationId;
 
   if (!token || !locationId) {
-    return { skipped: true as const };
+    return { skipped: true as const, contactId: undefined };
   }
 
   const { firstName, lastName } = splitName(input.name);
@@ -85,10 +85,17 @@ export async function syncContactToGhl(input: GhlContactInput) {
     if (!response.ok) {
       const detail = await response.text();
       console.error("GHL contact sync failed", response.status, detail);
+      const existing = await lookupGhlContact(input.email, input.phone);
+      if (existing?.id) {
+        await addGhlContactTags(existing.id, tags);
+        return { skipped: false as const, ok: true as const, contactId: existing.id };
+      }
       return { skipped: false as const, ok: false as const };
     }
 
-    return { skipped: false as const, ok: true as const };
+    const payload = (await response.json()) as { contact?: { id?: string }; id?: string };
+    const contactId = String(payload.contact?.id ?? payload.id ?? "").trim();
+    return { skipped: false as const, ok: true as const, contactId: contactId || undefined };
   } catch (error) {
     console.error("GHL contact sync error", error);
     return { skipped: false as const, ok: false as const };
@@ -303,6 +310,62 @@ export async function removeGhlContactTags(contactId: string, tags: string[]) {
     return { skipped: false as const, ok: true as const };
   } catch (error) {
     console.error("GHL remove tags error", error);
+    return { skipped: false as const, ok: false as const };
+  }
+}
+
+export async function lookupGhlContact(email?: string, phone?: string) {
+  const settings = await getResolvedIntegrationSettings();
+  const token = settings.ghlApiKey;
+  const locationId = settings.ghlLocationId;
+  if (!token || !locationId || (!email && !phone)) {
+    return null;
+  }
+
+  const query = new URLSearchParams({ locationId });
+  if (email) query.set("email", email);
+  if (phone) query.set("phone", phone);
+
+  try {
+    const response = await fetch(`https://services.leadconnectorhq.com/contacts/lookup?${query.toString()}`, {
+      headers: ghlHeaders(token),
+      cache: "no-store",
+    });
+    if (!response.ok) {
+      return null;
+    }
+    const payload = (await response.json()) as { contact?: GhlRemoteContact; contacts?: GhlRemoteContact[] };
+    return payload.contact ?? payload.contacts?.[0] ?? null;
+  } catch (error) {
+    console.error("GHL contact lookup failed", error);
+    return null;
+  }
+}
+
+export async function sendGhlSms(contactId: string, message: string) {
+  const settings = await getResolvedIntegrationSettings();
+  const token = settings.ghlApiKey;
+  if (!token || !contactId || !message.trim()) {
+    return { skipped: true as const, ok: false as const };
+  }
+
+  try {
+    const response = await fetch("https://services.leadconnectorhq.com/conversations/messages", {
+      method: "POST",
+      headers: ghlHeaders(token, true),
+      body: JSON.stringify({
+        type: "SMS",
+        contactId,
+        message,
+      }),
+    });
+    if (!response.ok) {
+      console.error("GHL SMS failed", response.status, await response.text());
+      return { skipped: false as const, ok: false as const };
+    }
+    return { skipped: false as const, ok: true as const };
+  } catch (error) {
+    console.error("GHL SMS error", error);
     return { skipped: false as const, ok: false as const };
   }
 }

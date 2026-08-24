@@ -24,3 +24,23 @@ export function phonesMatch(left: string, right: string) {
 export function emailsMatch(left: string, right: string) {
   return Boolean(left && right && normalizeEmail(left) === normalizeEmail(right));
 }
+
+export function toE164Phone(value: string, defaultCountry = "63") {
+  const digits = normalizePhoneDigits(value);
+  if (!digits) {
+    return "";
+  }
+  if (value.trim().startsWith("+") && digits.length >= 10) {
+    return `+${digits}`;
+  }
+  if (digits.startsWith(defaultCountry) && digits.length >= 11) {
+    return `+${digits}`;
+  }
+  if (digits.startsWith("0") && digits.length >= 10) {
+    return `+${defaultCountry}${digits.replace(/^0+/, "")}`;
+  }
+  if (digits.length === 10) {
+    return `+${defaultCountry}${digits}`;
+  }
+  return `+${digits}`;
+}
