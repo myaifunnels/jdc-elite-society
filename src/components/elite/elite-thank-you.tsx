@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import Link from "next/link";
 
 import { mastermindOffer } from "@/data/mastermind-offer";
 
@@ -75,6 +76,13 @@ export function EliteThankYou() {
             </li>
           </ul>
         </div>
+        <Link href="/dashboard" className="elite-cta elite-cta-lg elite-thanks-dashboard-link">
+          <span>
+            <strong>Open my JDC dashboard</strong>
+            <small>Your account is ready while payment verification is in progress</small>
+          </span>
+          <span aria-hidden="true">→</span>
+        </Link>
         <p>
           Please watch your inbox, including the spam and promotions folders. We aim to verify every payment as soon as
           possible. If you need help, email {mastermindOffer.support.email} or call {mastermindOffer.support.phone}.

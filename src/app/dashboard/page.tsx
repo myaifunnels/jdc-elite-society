@@ -228,6 +228,17 @@ export default async function DashboardPage() {
           </div>
         </MacosWindow>
 
+        <MacosWindow title="Mastermind payments">
+          <p className="macos-lead" style={{ textAlign: "left" }}>
+            Review checkout receipts and approve confirmed payments from the dedicated verification queue.
+          </p>
+          <div className="macos-actions">
+            <Link href="/dashboard/payments" className="macos-btn macos-btn-primary">
+              Review payments
+            </Link>
+          </div>
+        </MacosWindow>
+
         <MacosWindow title="Partnership Program">
           <p className="macos-lead" style={{ textAlign: "left" }}>
             Invite-only 20% program. Next payday {formatManilaDate(partnership.payday)}. {formatPhp(partnership.pendingPayout)}{" "}

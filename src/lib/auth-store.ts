@@ -493,6 +493,11 @@ export async function createUser(input: {
       );
     } catch (error) {
       console.error("Failed to persist user", error);
+      const memoryIndex = memoryUsers.findIndex((item) => item.id === user.id);
+      if (memoryIndex >= 0) {
+        memoryUsers.splice(memoryIndex, 1);
+      }
+      throw new Error("I couldn't create this account just now. Please try again.");
     }
   }
 

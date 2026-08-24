@@ -28,6 +28,8 @@ export function EliteCheckoutForm() {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [mobile, setMobile] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("");
   const [couponCode, setCouponCode] = useState("");
   const [couponApplied, setCouponApplied] = useState(false);
@@ -61,6 +63,9 @@ export function EliteCheckoutForm() {
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) next.email = "Hindi wastong email format";
     if (!mobile.trim()) next.mobile = "Kailangan ang iyong mobile number";
     else if (!/^09\d{2}\s?\d{3}\s?\d{4}$/.test(mobile.replace(/-/g, ""))) next.mobile = "Format: 09XX XXX XXXX";
+    if (password.length < 8) next.password = "Use at least 8 characters";
+    if (!confirmPassword) next.confirmPassword = "Confirm your password";
+    else if (password !== confirmPassword) next.confirmPassword = "Passwords do not match";
     setErrors(next);
     return Object.keys(next).length === 0;
   }
@@ -98,6 +103,8 @@ export function EliteCheckoutForm() {
     form.set("fullName", fullName.trim());
     form.set("email", email.trim());
     form.set("mobile", mobile.trim());
+    form.set("password", password);
+    form.set("confirmPassword", confirmPassword);
     form.set("paymentMethod", paymentMethod);
     form.set("couponCode", couponCode.trim());
     form.set("receipt", receipt);
@@ -188,6 +195,33 @@ export function EliteCheckoutForm() {
               />
               {errors.mobile ? <p className="error">{errors.mobile}</p> : null}
             </div>
+            <div className="elite-field">
+              <label>
+                Create Password <span>*</span>
+              </label>
+              <input
+                type="password"
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                autoComplete="new-password"
+                minLength={8}
+              />
+              <small className="elite-field-hint">This password opens your private JDC dashboard.</small>
+              {errors.password ? <p className="error">{errors.password}</p> : null}
+            </div>
+            <div className="elite-field">
+              <label>
+                Confirm Password <span>*</span>
+              </label>
+              <input
+                type="password"
+                value={confirmPassword}
+                onChange={(event) => setConfirmPassword(event.target.value)}
+                autoComplete="new-password"
+                minLength={8}
+              />
+              {errors.confirmPassword ? <p className="error">{errors.confirmPassword}</p> : null}
+            </div>
           </>
         ) : null}
 
@@ -254,11 +288,12 @@ export function EliteCheckoutForm() {
               <div><dt>Name</dt><dd>{fullName}</dd></div>
               <div><dt>Email</dt><dd>{email}</dd></div>
               <div><dt>Mobile</dt><dd>{mobile}</dd></div>
+              <div><dt>Dashboard</dt><dd>Account ready after submission</dd></div>
               <div><dt>Payment</dt><dd>{paymentMethod}</dd></div>
               <div><dt>Receipt</dt><dd>{receipt?.name}</dd></div>
               <div><dt>Total</dt><dd>{formatPhp(price)}</dd></div>
             </dl>
-            <p className="elite-review-note">Payment details are reviewed manually. Access is sent after verification.</p>
+            <p className="elite-review-note">Your dashboard opens immediately. Mastermind access unlocks after payment verification.</p>
           </div>
         ) : null}
       </div>

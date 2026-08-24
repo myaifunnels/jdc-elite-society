@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useId, useState } from "react";
 import {
   BookOpen,
+  CreditCard,
   GraduationCap,
   Handshake,
   LayoutDashboard,
@@ -38,6 +39,7 @@ const navCatalog: Array<{
   { href: "/dashboard/profile", label: "Account", icon: UserRound, capability: "profile" },
   { href: "/dashboard/path", label: "My path", icon: BookOpen, capability: "path" },
   { href: "/dashboard/contacts", label: "Contacts", icon: Users, capability: "contacts.view" },
+  { href: "/dashboard/payments", label: "Payments", icon: CreditCard, capability: "registrations" },
   { href: "/dashboard/partnership", label: "Partnership", icon: Handshake, capability: "partnership" },
   { href: "/dashboard/access", label: "Access", icon: Shield, capability: "access" },
   { href: "/dashboard/integrations", label: "Integrations", icon: Plug, capability: "integrations" },

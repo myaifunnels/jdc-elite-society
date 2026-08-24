@@ -4,11 +4,14 @@ import { NextResponse } from "next/server";
 import { mastermindOffer } from "@/data/mastermind-offer";
 import { AFFILIATE_CAMPAIGN_COOKIE, AFFILIATE_COOKIE, normalizeAffiliateCode } from "@/lib/affiliate";
 import { getProfileByCode, recordAttribution } from "@/lib/affiliate-store";
+import { createUser, deleteUser, ensureSeedUsers, findUserByEmailOrPhone } from "@/lib/auth-store";
 import { createLead } from "@/lib/crm-store";
+import { createEliteCheckoutOrder } from "@/lib/elite-checkout-store";
 import { syncContactToGhl } from "@/lib/ghl";
 import { toE164Phone } from "@/lib/identity";
 import { notifyMastermindPurchase } from "@/lib/notify";
 import { storePaymentReceipt } from "@/lib/r2-upload";
+import { sessionCookieName } from "@/lib/session";
 import { mastermindCheckoutTags } from "@/lib/tags";
 import { eliteCheckoutSchema } from "@/lib/validations";
 
@@ -59,6 +62,8 @@ export async function POST(request: Request) {
     fullName: String(form.get("fullName") ?? "").trim(),
     email: String(form.get("email") ?? "").trim(),
     mobile: String(form.get("mobile") ?? "").trim(),
+    password: String(form.get("password") ?? ""),
+    confirmPassword: String(form.get("confirmPassword") ?? ""),
     paymentMethod: String(form.get("paymentMethod") ?? "").trim(),
     couponCode: String(form.get("couponCode") ?? "").trim(),
   });
@@ -77,6 +82,15 @@ export async function POST(request: Request) {
   const price = spartans ? mastermindOffer.couponPrice : mastermindOffer.offerPrice;
   const priceLabel = `PHP ${price.toLocaleString("en-PH")}`;
   const mobile = toE164Phone(parsed.data.mobile);
+
+  await ensureSeedUsers();
+  const existing = await findUserByEmailOrPhone(parsed.data.email, mobile || parsed.data.mobile);
+  if (existing) {
+    return NextResponse.json(
+      { error: "An account with this email or mobile number already exists. Sign in or use another account." },
+      { status: 409 },
+    );
+  }
 
   let receiptUrl = "";
   try {
@@ -103,37 +117,98 @@ export async function POST(request: Request) {
     extra: extraTags,
   });
 
-  const lead = await createLead({
-    name: parsed.data.fullName,
-    email: parsed.data.email,
-    phone: mobile || parsed.data.mobile,
-    dateOfBirth: "",
-    address: "",
-    city: "",
-    tags,
-    bestDescribesYou: "JDC Mastermind buyer",
-    programInterest: "JDC Mastermind",
-    photoUrl: receiptUrl,
-    source: affiliate ? `Mastermind offer · ${affiliate.code}` : "Mastermind offer",
-  });
-
-  if (affiliate) {
-    await recordAttribution({
-      kind: "inquiry",
-      code: affiliate.code,
-      campaignSlug,
-      email: parsed.data.email,
+  let user;
+  try {
+    user = await createUser({
       name: parsed.data.fullName,
+      email: parsed.data.email,
+      password: parsed.data.password,
+      role: "member",
+      phone: mobile || parsed.data.mobile,
+      phoneCountry: "PH",
+      company: "JDC Mastermind",
+      profileComplete: false,
+      paymentVerified: false,
+      passwordSet: true,
     });
+  } catch (error) {
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "I couldn't create your JDC account." },
+      { status: 400 },
+    );
   }
 
-  const ghl = await syncContactToGhl({
-    name: parsed.data.fullName,
-    email: parsed.data.email,
-    phone: mobile || parsed.data.mobile,
-    source: affiliate ? `Mastermind offer · ${affiliate.code}` : "Mastermind offer",
-    tags,
-  });
+  try {
+    await createEliteCheckoutOrder({
+      userId: user.id,
+      fullName: parsed.data.fullName,
+      email: parsed.data.email,
+      mobile: mobile || parsed.data.mobile,
+      paymentMethod: parsed.data.paymentMethod,
+      couponCode: parsed.data.couponCode,
+      price,
+      receiptName: receipt.name,
+      receiptUrl,
+    });
+  } catch (error) {
+    try {
+      await deleteUser(user.id);
+    } catch (rollbackError) {
+      console.error("Failed to roll back Mastermind account", rollbackError);
+    }
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "I couldn't save your payment submission." },
+      { status: 400 },
+    );
+  }
+
+  let leadId: string | null = null;
+  try {
+    const lead = await createLead({
+      name: parsed.data.fullName,
+      email: parsed.data.email,
+      phone: mobile || parsed.data.mobile,
+      dateOfBirth: "",
+      address: "",
+      city: "",
+      tags,
+      bestDescribesYou: "JDC Mastermind buyer",
+      programInterest: "JDC Mastermind",
+      photoUrl: receiptUrl,
+      source: affiliate ? `Mastermind offer · ${affiliate.code}` : "Mastermind offer",
+    });
+    leadId = lead.id;
+  } catch (error) {
+    console.error("Mastermind CRM lead sync failed", error);
+  }
+
+  if (affiliate) {
+    try {
+      await recordAttribution({
+        kind: "inquiry",
+        code: affiliate.code,
+        campaignSlug,
+        email: parsed.data.email,
+        name: parsed.data.fullName,
+      });
+    } catch (error) {
+      console.error("Mastermind affiliate attribution failed", error);
+    }
+  }
+
+  let ghlContactId: string | null = null;
+  try {
+    const ghl = await syncContactToGhl({
+      name: parsed.data.fullName,
+      email: parsed.data.email,
+      phone: mobile || parsed.data.mobile,
+      source: affiliate ? `Mastermind offer · ${affiliate.code}` : "Mastermind offer",
+      tags,
+    });
+    ghlContactId = ghl.contactId ?? null;
+  } catch (error) {
+    console.error("Mastermind GHL sync failed", error);
+  }
 
   await upsertFunnelContact({
     fullName: parsed.data.fullName,
@@ -163,11 +238,20 @@ export async function POST(request: Request) {
     console.error("Mastermind notifications failed", error);
   }
 
-  return NextResponse.json({
+  const response = NextResponse.json({
     ok: true,
-    leadId: lead.id,
+    userId: user.id,
+    leadId,
     price: priceLabel,
     tags,
-    ghlContactId: ghl.contactId ?? null,
+    ghlContactId,
   });
+  response.cookies.set(sessionCookieName, user.id, {
+    httpOnly: true,
+    sameSite: "lax",
+    path: "/",
+    secure: process.env.NODE_ENV === "production",
+    maxAge: 60 * 60 * 24 * 30,
+  });
+  return response;
 }

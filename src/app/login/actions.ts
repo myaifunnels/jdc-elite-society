@@ -23,6 +23,7 @@ import { storeProfilePhoto } from "@/lib/r2-upload";
 import { formatInternationalPhone } from "@/lib/countries";
 import { invalidateRegistrantCrmSync, upsertContactFromAccount } from "@/lib/crm-store";
 import { syncContactToGhl } from "@/lib/ghl";
+import { approveEliteCheckoutOrdersForUser } from "@/lib/elite-checkout-store";
 import { requireCapability, requireSessionUser, sessionCookieName, impersonatorCookieName } from "@/lib/session";
 import {
   completeProfileSchema,
@@ -271,7 +272,7 @@ export async function verifyMemberPayment(
   _prevState: AuthFormState,
   formData: FormData,
 ): Promise<AuthFormState> {
-  await requireCapability("registrations");
+  const { user: reviewer } = await requireCapability("registrations");
   const userId = String(formData.get("userId") ?? "");
 
   if (!userId) {
@@ -280,6 +281,7 @@ export async function verifyMemberPayment(
 
   try {
     await setMemberPaymentVerified(userId, true);
+    await approveEliteCheckoutOrdersForUser(userId, reviewer.id);
     invalidateRegistrantCrmSync();
   } catch (error) {
     return {
@@ -290,6 +292,7 @@ export async function verifyMemberPayment(
   revalidatePath("/dashboard");
   revalidatePath("/dashboard/registrations");
   revalidatePath("/dashboard/contacts");
+  revalidatePath("/dashboard/payments");
   return { success: "Payment verified." };
 }
 
