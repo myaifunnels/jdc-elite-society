@@ -26,7 +26,7 @@ export const metadata: Metadata = {
   },
   description: mastermindOffer.description,
   openGraph: {
-    title: "JDC Mastermind — Full Access (SPARTANS: PHP 1,500)",
+    title: "JDC Mastermind | Full Access (SPARTANS: PHP 1,500)",
     description: mastermindOffer.description,
     url: eliteSiteUrl,
     images: [{ url: mastermindOffer.ogImage }],
@@ -34,7 +34,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "JDC Mastermind — Full Access (SPARTANS: PHP 1,500)",
+    title: "JDC Mastermind | Full Access (SPARTANS: PHP 1,500)",
     description: mastermindOffer.description,
     images: [mastermindOffer.ogImage],
   },

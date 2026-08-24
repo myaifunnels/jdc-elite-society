@@ -54,15 +54,6 @@ export function EliteOfferPage() {
 
   return (
     <div ref={rootRef} className="elite-offer" data-motion-ready="false">
-      <div className="elite-shell elite-nav">
-        <a href="#top">
-          <img src={mastermindOffer.logo} alt="JDC Elite Society" className="elite-logo" />
-        </a>
-        <a href="#payment" className="elite-cta" onClick={scrollToPayment}>
-          Get full access
-        </a>
-      </div>
-
       <section className="elite-hero" id="top">
         <video className="elite-hero-video" autoPlay muted loop playsInline preload="auto">
           <source src={mastermindOffer.heroVideo} type="video/mp4" />
@@ -77,7 +68,7 @@ export function EliteOfferPage() {
           </h1>
           <p className="elite-sub">
             Hindi ka kulang sa sipag. Kulang ka sa sistemang magbibigay ng direksyon sa sipag mo. Build the mindset,
-            discipline, and leadership system that turns your next move into measurable progress—with Coach JDC and a
+            discipline, and leadership system that turns your next move into measurable progress with Coach JDC and a
             community that expects you to follow through.
           </p>
           <a href="#payment" className="elite-cta elite-cta-lg" onClick={scrollToPayment}>
@@ -129,7 +120,7 @@ export function EliteOfferPage() {
       <section className="elite-section elite-reveal">
         <div className="elite-shell">
           <p className="elite-kicker elite-center">THE EXPERIENCE</p>
-          <h2>Built for action—not passive watching.</h2>
+          <h2>Built for action. Made for follow-through.</h2>
           <p className="elite-quote">Two sessions. One committed community. A standard you can carry for life.</p>
           <div className="elite-grid-2">
             {mastermindOffer.sessions.map((session) => (
@@ -202,7 +193,7 @@ export function EliteOfferPage() {
             ))}
           </div>
           <p className="elite-center" style={{ marginTop: "1.5rem" }}>
-            {mastermindOffer.memberCount}+ members are already inside—OFWs, employees, and entrepreneurs who decided
+            {mastermindOffer.memberCount}+ members are already inside. OFWs, employees, and entrepreneurs who decided
             that “someday” was no longer a strategy.
           </p>
           <p className="elite-center">
@@ -213,27 +204,37 @@ export function EliteOfferPage() {
         </div>
       </section>
 
-      <section className="elite-section elite-reveal">
+      <section className="elite-section elite-reveal" id="coach">
         <div className="elite-shell elite-about">
-          <img src={mastermindOffer.coachImage} alt="Coach Jayson Dela Cruz Background" />
-          <div>
-            <p className="elite-kicker">ABOUT YOUR COACH</p>
-            <p className="elite-display" style={{ fontSize: "1.15rem" }}>
-              A BUSINESS COACH & COMMUNITY BUILDER
+          <div className="elite-coach-portrait">
+            <img src={mastermindOffer.coachImage} alt="Coach Jayson Dela Cruz" />
+            <div className="elite-coach-caption">
+              <strong>Coach Jayson Dela Cruz</strong>
+              <span>Founder, JDC Elite Society</span>
+            </div>
+          </div>
+          <div className="elite-coach-copy">
+            <p className="elite-kicker">MEET COACH JDC</p>
+            <h2>Standards before motivation.</h2>
+            <p className="elite-coach-lead">
+              Coach Jayson Dela Cruz helps ambitious Filipinos turn hard work into a clear, disciplined path forward.
             </p>
-            <h2 className="elite-display">COACH JDC</h2>
             <p>
-              For nearly two decades, Coach Jayson Dela Cruz has helped Filipinos turn ambition into a practical plan—
-              from OFWs preparing for life after the contract to employees and first-time entrepreneurs building a new
-              source of income.
+              His work speaks to OFWs preparing for life after the contract, employees ready to build a new source of
+              income, and entrepreneurs determined to lead with more intention. The philosophy is simple: clarity sets
+              the direction, discipline creates momentum, and execution changes the result.
             </p>
-            <p>
-              His philosophy is simple: success is not an accident. It is what happens when clear direction meets
-              disciplined execution—and when you stop negotiating with the commitments that matter most.
-            </p>
-            <p>Mga framework na nilikha ni Coach JDC:</p>
+            <blockquote>
+              Your life changes when your standards become stronger than your excuses.
+            </blockquote>
+            <div className="elite-coach-principles" aria-label="Coach JDC principles">
+              <span>Clarity</span>
+              <span>Discipline</span>
+              <span>Execution</span>
+            </div>
+            <p className="elite-framework-label">Signature frameworks inside the Mastermind</p>
             <IncludeList items={mastermindOffer.frameworks} />
-            <a href="#payment" className="elite-cta elite-cta-lg" onClick={scrollToPayment} style={{ marginTop: "1.25rem" }}>
+            <a href="#payment" className="elite-cta elite-cta-lg" onClick={scrollToPayment}>
               Learn with Coach JDC
             </a>
           </div>
@@ -282,7 +283,7 @@ export function EliteOfferPage() {
           <p className="elite-kicker">THE DECISION IS SMALL. THE STANDARD ISN&apos;T.</p>
           <h2 className="elite-display">
             <span>Your future does not need</span>
-            <span style={{ color: "var(--elite-electric)" }}>another “someday.”</span>
+            <span style={{ color: "var(--elite-blue-soft)" }}>another “someday.”</span>
           </h2>
           <p className="elite-sub" style={{ marginInline: "auto" }}>
             You already know how to work hard. Now give that effort direction. Build the discipline, leadership, and
@@ -297,40 +298,6 @@ export function EliteOfferPage() {
           </p>
         </div>
       </section>
-
-      <footer className="elite-footer">
-        <div className="elite-shell elite-footer-grid">
-          <div>
-            <img src={mastermindOffer.logo} alt="JDC Elite Society" className="elite-logo" />
-            <p>JDC Mastermind · Full access to two sessions, community, and lifetime replays.</p>
-          </div>
-          <div>
-            <h3>QUICK LINKS</h3>
-            <a href="https://coachjdc.org/elite">JOIN ELITE SOCIETY →</a>
-            <a href="https://coachjdc.org/programs">1-ON-1 COACHING →</a>
-            <a href={mastermindOffer.communityUrl}>COMMUNITY →</a>
-            <a href="https://coachjdc.org/dashboard/partnership">JDC PARTNERSHIP PROGRAM →</a>
-            <a href={mastermindOffer.androidApp}>DOWNLOAD APP ON ANDROID →</a>
-            <a href={mastermindOffer.iosApp}>DOWNLOAD APP ON iPHONE →</a>
-          </div>
-          <div>
-            <h3>CONNECT</h3>
-            <a href={`mailto:${mastermindOffer.support.email}`}>{mastermindOffer.support.email}</a>
-            <a href={`tel:${mastermindOffer.support.tel}`}>{mastermindOffer.support.phone}</a>
-            <a href="https://facebook.com/jaysondelacruzofficial">Facebook</a>
-            <a href="https://instagram.com/jaysondc01">Instagram</a>
-            <a href="https://tiktok.com/@jaysondelacruzofficial">TikTok</a>
-            <a href="https://youtube.com/@JaysonDelaCruzOfficial">YouTube</a>
-          </div>
-        </div>
-        <div className="elite-shell elite-legal">
-          <p>
-            This website is not part of Facebook or Facebook Inc. Additionally, this site is not endorsed by Facebook in
-            any way. Facebook is a trademark of Facebook, Inc.
-          </p>
-          <p>Copyright 2026. JDC. All Rights Reserved.</p>
-        </div>
-      </footer>
 
       <div className="elite-sticky-mobile" hidden={!sticky} style={{ display: sticky ? undefined : "none" }}>
         <a href="#payment" className="elite-cta" onClick={scrollToPayment}>

@@ -4,7 +4,7 @@ import { EliteThankYou } from "@/components/elite/elite-thank-you";
 
 export const metadata: Metadata = {
   title: {
-    absolute: "Salamat — JDC Mastermind",
+    absolute: "Salamat | JDC Mastermind",
   },
   robots: { index: false, follow: false },
 };

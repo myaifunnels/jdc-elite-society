@@ -28,7 +28,7 @@ export function EliteThankYou() {
           <br />
           NATANGGAP NA NAMIN ANG IYONG PAYMENT.
         </h1>
-        <h2 className="elite-display" style={{ color: "var(--elite-gold)", fontSize: "1.4rem", marginTop: "1rem" }}>
+        <h2 className="elite-display" style={{ color: "var(--elite-blue-soft)", fontSize: "1.4rem", marginTop: "1rem" }}>
           Ikaw ay opisyal na miyembro ng JDC Mastermind.
         </h2>
         <div style={{ position: "relative", cursor: "pointer" }} onClick={toggle}>
@@ -63,7 +63,7 @@ export function EliteThankYou() {
           </ul>
         </div>
         <p>
-          I-check ang iyong inbox — kasama na ang spam/promotions folder. Kung wala pa pagkatapos ng 24 oras,
+          I-check ang iyong inbox, kasama na ang spam/promotions folder. Kung wala pa pagkatapos ng 24 oras,
           mag-message sa amin sa {mastermindOffer.support.email} o {mastermindOffer.support.phone}.
         </p>
         <p style={{ marginTop: "1.5rem" }}>
@@ -73,7 +73,7 @@ export function EliteThankYou() {
         <p className="elite-display" style={{ marginTop: "2rem", fontSize: "1.25rem" }}>
           Welcome to JDC Mastermind.
         </p>
-        <p>— Coach JDC at ang JDC Elite Society Team</p>
+        <p>Coach JDC at ang JDC Elite Society Team</p>
       </div>
     </div>
   );
