@@ -153,9 +153,9 @@ body:has(.elite-offer) {
 }
 
 .elite-hero-copy { position: relative; z-index: 1; max-width: 1040px; }
-.elite-identity-headline { max-width: 930px; font-family: var(--font-display), Georgia, serif; font-size: clamp(2.3rem, 4.15vw, 3.85rem); font-weight: 500; letter-spacing: -0.032em; line-height: 1.04; text-wrap: balance; }
-.elite-headline-lead { display: block; max-width: 24ch; color: rgba(245, 247, 255, 0.92); }
-.elite-headline-shift { display: block; margin-top: 0.32em; color: #f7f9ff; }
+.elite-identity-headline { max-width: 990px; font-family: var(--font-display), Georgia, serif; font-size: clamp(2.3rem, 3.65vw, 3.2rem); font-weight: 500; letter-spacing: -0.032em; line-height: 1.04; text-wrap: balance; }
+.elite-headline-line { display: block; color: rgba(245, 247, 255, 0.92); }
+.elite-headline-shift { display: block; margin-top: 0.24em; color: #f7f9ff; }
 .elite-headline-shift em { position: relative; display: inline-block; z-index: 0; color: #8fc8ff; font-family: var(--font-display), Georgia, serif; font-style: italic; font-weight: 500; white-space: nowrap; }
 .elite-headline-shift em::after { position: absolute; z-index: -1; right: -0.04em; bottom: -0.06em; left: 0.03em; height: 0.13em; border-radius: 999px 40% 999px 35%; background: linear-gradient(90deg, rgba(23, 105, 255, 0.15), rgba(87, 165, 255, 0.72) 46%, rgba(119, 221, 255, 0.24)); content: ""; opacity: 0.9; transform: rotate(-1.2deg); }
 .elite-hero-positioning { max-width: 880px; color: #d0d7e5; font-size: clamp(1rem, 1.55vw, 1.2rem); }
@@ -403,7 +403,7 @@ body:has(.elite-offer) {
   .elite-hero-scrim { background: linear-gradient(0deg, #02040a 4%, rgba(2, 4, 10, 0.68) 52%, rgba(2, 4, 10, 0.12) 100%), linear-gradient(90deg, rgba(2, 4, 10, 0.58), transparent); }
   .elite-hero-orb { top: 12%; right: -15rem; opacity: 0.46; }
   .elite-identity-headline { max-width: 18ch; font-size: clamp(1.95rem, 7.8vw, 2.65rem); letter-spacing: -0.03em; line-height: 1.06; }
-  .elite-headline-lead { max-width: 18ch; }
+  .elite-headline-line { max-width: 18ch; }
   .elite-headline-shift em { white-space: normal; }
   .elite-hero-actions { display: grid; }
   .elite-hero-actions .elite-cta { width: 100%; min-width: 0; }

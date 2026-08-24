@@ -84,14 +84,15 @@ export function EliteOfferPage() {
     <div ref={rootRef} className="elite-offer" data-motion-ready="false">
       <section className="elite-hero" id="top">
         <video className="elite-hero-video" autoPlay muted loop playsInline preload="auto">
-          <source src={mastermindOffer.heroVideo} type="video/mp4" />
+          <source src={mastermindOffer.heroVideo} />
         </video>
         <div className="elite-hero-scrim" />
         <div className="elite-hero-orb" aria-hidden="true" />
         <div className="elite-shell elite-hero-copy">
           <p className="elite-kicker">PREMIUM COACHING · MENTORSHIP · COMMUNITY</p>
           <h1 className="elite-display elite-identity-headline">
-            <span className="elite-headline-lead">Stop Building Your Network Marketing Business Like a Beginner.</span>
+            <span className="elite-headline-line">Stop Building Your Network</span>
+            <span className="elite-headline-line">Marketing Business Like a Beginner.</span>
             <span className="elite-headline-shift">
               Start Building <em>Like a Professional.</em>
             </span>
