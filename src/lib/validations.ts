@@ -154,6 +154,7 @@ export const eliteCheckoutSchema = z
     confirmPassword: z.string().min(1, "Confirm your password."),
     paymentMethod: z.enum(elitePaymentMethods, { message: "Pumili ng payment method." }),
     couponCode: z.string().optional().default(""),
+    coachingHours: z.number().int().min(0).max(10),
   })
   .refine((value) => value.password === value.confirmPassword, {
     message: "Passwords do not match.",

@@ -10,6 +10,8 @@ export type EliteCheckoutOrder = {
   mobile: string;
   paymentMethod: string;
   couponCode: string;
+  basePrice: number;
+  coachingHours: number;
   price: number;
   receiptName: string;
   receiptUrl: string;
@@ -47,6 +49,8 @@ async function ensureTable(client: Pool) {
       mobile TEXT NOT NULL,
       payment_method TEXT NOT NULL,
       coupon_code TEXT NOT NULL DEFAULT '',
+      base_price INTEGER NOT NULL DEFAULT 0,
+      coaching_hours INTEGER NOT NULL DEFAULT 0,
       price INTEGER NOT NULL,
       receipt_name TEXT NOT NULL,
       receipt_url TEXT NOT NULL,
@@ -56,6 +60,8 @@ async function ensureTable(client: Pool) {
       approved_by TEXT NOT NULL DEFAULT ''
     )
   `);
+  await client.query(`ALTER TABLE elite_checkout_orders ADD COLUMN IF NOT EXISTS base_price INTEGER NOT NULL DEFAULT 0`);
+  await client.query(`ALTER TABLE elite_checkout_orders ADD COLUMN IF NOT EXISTS coaching_hours INTEGER NOT NULL DEFAULT 0`);
   await client.query(`
     CREATE INDEX IF NOT EXISTS elite_checkout_orders_status_created_idx
     ON elite_checkout_orders (status, created_at DESC)
@@ -72,6 +78,8 @@ function mapRow(row: Record<string, unknown>): EliteCheckoutOrder {
     mobile: String(row.mobile),
     paymentMethod: String(row.payment_method),
     couponCode: String(row.coupon_code ?? ""),
+    basePrice: Number(row.base_price || row.price),
+    coachingHours: Number(row.coaching_hours ?? 0),
     price: Number(row.price),
     receiptName: String(row.receipt_name),
     receiptUrl: String(row.receipt_url),
@@ -103,8 +111,8 @@ export async function createEliteCheckoutOrder(
         `
         INSERT INTO elite_checkout_orders (
           id, user_id, full_name, email, mobile, payment_method, coupon_code,
-          price, receipt_name, receipt_url, status, created_at, approved_by
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+          base_price, coaching_hours, price, receipt_name, receipt_url, status, created_at, approved_by
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
         `,
         [
           order.id,
@@ -114,6 +122,8 @@ export async function createEliteCheckoutOrder(
           order.mobile,
           order.paymentMethod,
           order.couponCode,
+          order.basePrice,
+          order.coachingHours,
           order.price,
           order.receiptName,
           order.receiptUrl,
@@ -139,6 +149,18 @@ export async function listEliteCheckoutOrders() {
   await ensureTable(client);
   const result = await client.query(
     "SELECT * FROM elite_checkout_orders ORDER BY CASE WHEN status = 'pending' THEN 0 ELSE 1 END, created_at DESC",
+  );
+  return result.rows.map(mapRow);
+}
+
+export async function listEliteCheckoutOrdersForUser(userId: string) {
+  const client = getPool();
+  if (!client) return memoryOrders.filter((order) => order.userId === userId);
+
+  await ensureTable(client);
+  const result = await client.query(
+    "SELECT * FROM elite_checkout_orders WHERE user_id = $1 ORDER BY created_at DESC",
+    [userId],
   );
   return result.rows.map(mapRow);
 }

@@ -31,6 +31,7 @@ export function EliteCheckoutForm() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("");
+  const [coachingHours, setCoachingHours] = useState(0);
   const [couponCode, setCouponCode] = useState("");
   const [couponApplied, setCouponApplied] = useState(false);
   const [couponError, setCouponError] = useState("");
@@ -39,7 +40,10 @@ export function EliteCheckoutForm() {
   const [serverError, setServerError] = useState("");
   const [pending, setPending] = useState(false);
 
-  const price = couponApplied ? mastermindOffer.couponPrice : mastermindOffer.offerPrice;
+  const couponEligible = couponCode.trim().toUpperCase() === mastermindOffer.couponCode;
+  const basePrice = couponEligible ? mastermindOffer.couponPrice : mastermindOffer.offerPrice;
+  const coachingTotal = coachingHours * mastermindOffer.coachingPricePerHour;
+  const price = basePrice + coachingTotal;
 
   const receiptLabel = useMemo(() => {
     if (!receipt) return "Upload your receipt · JPG, PNG, PDF · Max 5MB";
@@ -107,6 +111,7 @@ export function EliteCheckoutForm() {
     form.set("confirmPassword", confirmPassword);
     form.set("paymentMethod", paymentMethod);
     form.set("couponCode", couponCode.trim());
+    form.set("coachingHours", String(coachingHours));
     form.set("receipt", receipt);
 
     try {
@@ -227,6 +232,51 @@ export function EliteCheckoutForm() {
 
         {step === 2 ? (
           <>
+            <div className={`elite-order-bump ${coachingHours > 0 ? "is-selected" : ""}`}>
+              <div className="elite-order-bump-head">
+                <span className="elite-order-bump-icon" aria-hidden="true">✦</span>
+                <div>
+                  <small>PRIVATE COACHING UPGRADE</small>
+                  <strong>Work 1-on-1 with Coach Jayson Dela Cruz</strong>
+                </div>
+                <span className="elite-order-bump-price">{formatPhp(mastermindOffer.coachingPricePerHour)} / hour</span>
+              </div>
+              <p>
+                Add a focused online coaching session for personalized strategy, clarity, and direct guidance on your
+                next business move.
+              </p>
+              <button
+                type="button"
+                className="elite-order-bump-toggle"
+                aria-pressed={coachingHours > 0}
+                onClick={() => setCoachingHours((current) => (current > 0 ? 0 : 1))}
+              >
+                <span aria-hidden="true">{coachingHours > 0 ? "✓" : "+"}</span>
+                {coachingHours > 0 ? "Private coaching added" : "Yes, add private coaching"}
+              </button>
+              {coachingHours > 0 ? (
+                <>
+                  <div className="elite-order-bump-hours">
+                    <label htmlFor="coaching-hours">How many coaching hours?</label>
+                    <select
+                      id="coaching-hours"
+                      value={coachingHours}
+                      onChange={(event) => setCoachingHours(Number(event.target.value))}
+                    >
+                      {Array.from({ length: 10 }, (_, index) => index + 1).map((hours) => (
+                        <option key={hours} value={hours}>
+                          {hours} hour{hours === 1 ? "" : "s"} · {formatPhp(hours * mastermindOffer.coachingPricePerHour)}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="elite-order-bump-total">
+                    <span>Updated order total</span>
+                    <strong>{formatPhp(price)}</strong>
+                  </div>
+                </>
+              ) : null}
+            </div>
             <div className="elite-field">
               <label>
                 Payment Method <span>*</span>
@@ -290,8 +340,14 @@ export function EliteCheckoutForm() {
               <div><dt>Mobile</dt><dd>{mobile}</dd></div>
               <div><dt>Dashboard</dt><dd>Account ready after submission</dd></div>
               <div><dt>Payment</dt><dd>{paymentMethod}</dd></div>
+              <div>
+                <dt>Session</dt>
+                <dd>{coachingHours > 0 ? `${coachingHours} hour${coachingHours === 1 ? "" : "s"} with Coach Jayson` : "Not added"}</dd>
+              </div>
               <div><dt>Receipt</dt><dd>{receipt?.name}</dd></div>
-              <div><dt>Total</dt><dd>{formatPhp(price)}</dd></div>
+              <div><dt>Mastermind</dt><dd>{formatPhp(basePrice)}</dd></div>
+              {coachingHours > 0 ? <div><dt>Coaching</dt><dd>{formatPhp(coachingTotal)}</dd></div> : null}
+              <div className="elite-review-total"><dt>Total</dt><dd>{formatPhp(price)}</dd></div>
             </dl>
             <p className="elite-review-note">Your dashboard opens immediately. Mastermind access unlocks after payment verification.</p>
           </div>

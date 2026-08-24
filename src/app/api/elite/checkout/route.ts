@@ -31,6 +31,7 @@ async function upsertFunnelContact(input: {
   receiptUrl: string;
   priceLabel: string;
   spartans: boolean;
+  coachingHours: number;
   tags: string[];
 }) {
   await fetch("https://api.myaifunnels.com/contacts/upsert", {
@@ -50,6 +51,7 @@ async function upsertFunnelContact(input: {
           "Receipt URL": input.receiptUrl,
           "Coupon Code": input.couponCode || "None",
           "Final Price": input.priceLabel,
+          "Private Coaching Hours": String(input.coachingHours),
         },
       },
     }),
@@ -66,6 +68,7 @@ export async function POST(request: Request) {
     confirmPassword: String(form.get("confirmPassword") ?? ""),
     paymentMethod: String(form.get("paymentMethod") ?? "").trim(),
     couponCode: String(form.get("couponCode") ?? "").trim(),
+    coachingHours: Number(form.get("coachingHours") ?? 0),
   });
 
   if (!parsed.success) {
@@ -79,7 +82,8 @@ export async function POST(request: Request) {
   }
 
   const spartans = appliedCoupon(parsed.data.couponCode);
-  const price = spartans ? mastermindOffer.couponPrice : mastermindOffer.offerPrice;
+  const basePrice = spartans ? mastermindOffer.couponPrice : mastermindOffer.offerPrice;
+  const price = basePrice + parsed.data.coachingHours * mastermindOffer.coachingPricePerHour;
   const priceLabel = `PHP ${price.toLocaleString("en-PH")}`;
   const mobile = toE164Phone(parsed.data.mobile);
 
@@ -114,7 +118,11 @@ export async function POST(request: Request) {
     paymentMethod: parsed.data.paymentMethod,
     priceLabel,
     couponApplied: spartans,
-    extra: extraTags,
+    extra: [
+      ...extraTags,
+      parsed.data.coachingHours > 0 ? "1-on-1 Coaching" : "",
+      parsed.data.coachingHours > 0 ? `Coaching: ${parsed.data.coachingHours} hour${parsed.data.coachingHours === 1 ? "" : "s"}` : "",
+    ],
   });
 
   let user;
@@ -146,6 +154,8 @@ export async function POST(request: Request) {
       mobile: mobile || parsed.data.mobile,
       paymentMethod: parsed.data.paymentMethod,
       couponCode: parsed.data.couponCode,
+      basePrice,
+      coachingHours: parsed.data.coachingHours,
       price,
       receiptName: receipt.name,
       receiptUrl,
@@ -220,6 +230,7 @@ export async function POST(request: Request) {
     receiptUrl,
     priceLabel,
     spartans,
+    coachingHours: parsed.data.coachingHours,
     tags,
   });
 

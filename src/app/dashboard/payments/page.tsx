@@ -20,8 +20,15 @@ function PaymentRow({ order }: { order: EliteCheckoutOrder }) {
         <strong>{order.fullName}</strong>
         <em>{order.email} · {order.mobile}</em>
         <p>{order.paymentMethod} · {formatPhp(order.price)} · {submittedAt(order.createdAt)}</p>
+        <p>
+          Category: {order.coachingHours > 0 ? "Mastermind + 1-on-1 Coaching" : "Mastermind only"}
+          {order.coachingHours > 0 ? ` · ${order.coachingHours} coaching hour${order.coachingHours === 1 ? "" : "s"}` : ""}
+        </p>
         {order.couponCode ? <p>Coupon: {order.couponCode}</p> : null}
       </div>
+      <span className="status-pill">
+        {order.coachingHours > 0 ? "Coaching order" : "Mastermind"}
+      </span>
       <a className="macos-btn macos-btn-secondary" href={order.receiptUrl} target="_blank" rel="noreferrer">
         View receipt
       </a>

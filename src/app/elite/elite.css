@@ -275,6 +275,24 @@ body:has(.elite-offer) {
 .elite-coupon button { border: 1px solid rgba(143, 200, 255, 0.22); border-radius: 14px; background: rgba(23, 105, 255, 0.1); color: var(--elite-blue-soft); cursor: pointer; font-family: inherit; font-size: 0.74rem; font-weight: 760; letter-spacing: 0.08em; padding: 0 1rem; transition: transform 160ms var(--elite-ease-out), background-color 160ms ease; }
 .elite-coupon button:active { transform: scale(0.97); }
 .elite-coupon-success { margin-top: 0.4rem; color: var(--elite-success); font-size: 0.8rem; }
+.elite-order-bump { margin-bottom: 1.25rem; padding: 1.1rem; border: 1px solid rgba(143, 200, 255, 0.2); border-radius: 20px; background: linear-gradient(145deg, rgba(23, 105, 255, 0.09), rgba(255, 255, 255, 0.02)); box-shadow: inset 0 1px rgba(255, 255, 255, 0.04); transition: border-color 180ms ease, background-color 180ms ease, box-shadow 180ms ease; }
+.elite-order-bump.is-selected { border-color: rgba(96, 216, 157, 0.48); background: linear-gradient(145deg, rgba(23, 105, 255, 0.13), rgba(96, 216, 157, 0.06)); box-shadow: 0 0 30px rgba(23, 105, 255, 0.09), inset 0 1px rgba(255, 255, 255, 0.06); }
+.elite-order-bump-head { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 0.75rem; }
+.elite-order-bump-head small, .elite-order-bump-head strong { display: block; }
+.elite-order-bump-head small { color: var(--elite-blue-soft); font-size: 0.6rem; font-weight: 800; letter-spacing: 0.12em; }
+.elite-order-bump-head strong { margin-top: 0.22rem; color: var(--elite-text); font-size: 0.88rem; line-height: 1.35; }
+.elite-order-bump-icon { display: grid; width: 36px; height: 36px; place-items: center; border: 1px solid rgba(143, 200, 255, 0.24); border-radius: 12px; background: rgba(23, 105, 255, 0.12); color: var(--elite-blue-soft); }
+.elite-order-bump-price { color: var(--elite-text); font-size: 0.75rem; font-weight: 750; white-space: nowrap; }
+.elite-order-bump > p { margin: 0.8rem 0; color: var(--elite-muted); font-size: 0.78rem; line-height: 1.55; }
+.elite-order-bump-toggle { display: flex; width: 100%; min-height: 44px; align-items: center; justify-content: center; gap: 0.55rem; border: 1px solid rgba(143, 200, 255, 0.22); border-radius: 13px; background: rgba(23, 105, 255, 0.11); color: #eaf3ff; cursor: pointer; font-family: inherit; font-size: 0.78rem; font-weight: 760; transition: transform 160ms var(--elite-ease-out), background-color 160ms ease; }
+.elite-order-bump-toggle:active { transform: scale(0.985); }
+.elite-order-bump.is-selected .elite-order-bump-toggle { border-color: rgba(96, 216, 157, 0.34); background: rgba(96, 216, 157, 0.1); }
+.elite-order-bump-hours { display: grid; grid-template-columns: 1fr minmax(150px, 0.8fr); align-items: center; gap: 0.75rem; margin-top: 0.8rem; }
+.elite-order-bump-hours label { margin: 0; }
+.elite-order-bump-total { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-top: 0.8rem; padding-top: 0.8rem; border-top: 1px solid rgba(143, 200, 255, 0.14); color: var(--elite-muted); font-size: 0.75rem; }
+.elite-order-bump-total strong { color: var(--elite-blue-soft); font-size: 1rem; }
+.elite-review dl .elite-review-total { margin-top: 0.2rem; border-bottom: 0; }
+.elite-review-total dt, .elite-review-total dd { color: var(--elite-blue-soft); font-size: 0.92rem; font-weight: 800; }
 .elite-form-progress { position: relative; display: grid; grid-template-columns: repeat(3, 1fr); margin: 0 0 1.8rem; }
 .elite-form-progress::before { position: absolute; z-index: 0; top: 15px; right: 16%; left: 16%; height: 1px; background: var(--elite-line); content: ""; }
 .elite-form-progress > div { position: relative; z-index: 1; display: grid; justify-items: center; gap: 0.45rem; color: var(--elite-muted); }
@@ -418,6 +436,9 @@ body:has(.elite-offer) {
   .elite-checkout-hero h1, .elite-checkout-hero > .elite-shell > .elite-sub { text-align: left; }
   .elite-checkout-hero > .elite-shell > .elite-sub { margin-inline: 0; }
   .elite-form-secure { display: none; }
+  .elite-order-bump-head { grid-template-columns: auto 1fr; }
+  .elite-order-bump-price { grid-column: 2; }
+  .elite-order-bump-hours { grid-template-columns: 1fr; }
 }
 
 @media (prefers-reduced-motion: reduce) {

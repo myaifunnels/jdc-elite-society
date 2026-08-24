@@ -50,10 +50,10 @@ export function EliteCheckoutPage() {
                   <s>{formatPhp(mastermindOffer.listPrice)}</s>
                 </div>
                 <div className="elite-order-total is-final">
-                  <span>Today&apos;s investment</span>
+                  <span>Mastermind starts at</span>
                   <strong>{formatPhp(mastermindOffer.offerPrice)}</strong>
                 </div>
-                <p className="elite-order-note">One-time payment. No recurring fees.</p>
+                <p className="elite-order-note">Optional private coaching is calculated inside the form.</p>
               </div>
 
               <div className="elite-glass elite-payment-card">

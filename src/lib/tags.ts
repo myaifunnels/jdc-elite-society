@@ -41,6 +41,7 @@ export const TAG_GROUPS: TagGroup[] = [
       "webinar-paid",
       "Elite offer",
       "Mastermind checkout",
+      "1-on-1 Coaching",
       "spartans-coupon",
       "BPI Bank",
       "GCash",

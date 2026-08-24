@@ -14,6 +14,7 @@ import { formatManilaDate, formatPhp } from "@/lib/pay-cycle";
 import { hasAccess } from "@/lib/access";
 import { resolveAccess } from "@/lib/access-store";
 import { requireSessionUser } from "@/lib/session";
+import { listEliteCheckoutOrdersForUser } from "@/lib/elite-checkout-store";
 
 export default async function DashboardPage() {
   const user = await requireSessionUser();
@@ -21,7 +22,11 @@ export default async function DashboardPage() {
 
   if (!hasAccess(access, "contacts.view") && !hasAccess(access, "registrations")) {
     const pending = user.accountStatus !== "verified";
-    const crmContact = user.role === "contact" ? await getContactByEmail(user.email) : null;
+    const [crmContact, checkoutOrders] = await Promise.all([
+      user.role === "contact" ? getContactByEmail(user.email) : Promise.resolve(null),
+      listEliteCheckoutOrdersForUser(user.id),
+    ]);
+    const checkoutOrder = checkoutOrders[0];
     const needsAddressConfirm = user.role === "contact" && contactNeedsAddressConfirm(crmContact);
 
     return (
@@ -40,6 +45,36 @@ export default async function DashboardPage() {
             <ContactAddressVerifyNotice address={crmContact?.address || user.address} />
           ) : null}
           {pending ? <PendingMemberHome user={user} compact /> : null}
+          {checkoutOrder ? (
+            <MacosWindow title="Your Mastermind order" className="dashboard-span-2">
+              <dl className="registration-meta checkout-order-meta">
+                <div>
+                  <dt>Order</dt>
+                  <dd>JDC Mastermind{checkoutOrder.coachingHours > 0 ? " + Private Coaching" : ""}</dd>
+                </div>
+                <div>
+                  <dt>Private coaching</dt>
+                  <dd>
+                    {checkoutOrder.coachingHours > 0
+                      ? `${checkoutOrder.coachingHours} hour${checkoutOrder.coachingHours === 1 ? "" : "s"} with Coach Jayson Dela Cruz`
+                      : "Not included"}
+                  </dd>
+                </div>
+                <div>
+                  <dt>Payment method</dt>
+                  <dd>{checkoutOrder.paymentMethod}</dd>
+                </div>
+                <div>
+                  <dt>Order total</dt>
+                  <dd>{formatPhp(checkoutOrder.price)}</dd>
+                </div>
+                <div>
+                  <dt>Status</dt>
+                  <dd>{checkoutOrder.status === "approved" ? "Payment approved" : "Verification in progress"}</dd>
+                </div>
+              </dl>
+            </MacosWindow>
+          ) : null}
           <AccountProfileDashboard
             user={user}
             showWorkspaceLinks={!pending}

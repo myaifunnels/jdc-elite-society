@@ -2416,6 +2416,17 @@ html.dark .auth-screen-centered,
   margin: 0;
 }
 
+.checkout-order-meta {
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+}
+
+.checkout-order-meta div {
+  padding: 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--surface-elevated) 76%, transparent);
+}
+
 .status-pill {
   display: inline-flex;
   align-items: center;
@@ -4397,4 +4408,3 @@ html:not(.dark) .macos-boot-wallpaper {
     animation: none;
   }
 }
-
