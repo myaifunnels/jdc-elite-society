@@ -118,10 +118,15 @@ export function EliteCheckoutForm() {
   }
 
   return (
-    <form className="elite-form elite-glass" onSubmit={onSubmit}>
-      <p className="elite-kicker" style={{ textAlign: "left" }}>
-        COMPLETE YOUR ACCESS
-      </p>
+    <form className="elite-form elite-form-premium" onSubmit={onSubmit}>
+      <div className="elite-form-brandbar">
+        <span className="elite-form-monogram">JDC</span>
+        <span className="elite-form-brandcopy">
+          <strong>Mastermind Application</strong>
+          <small>Private enrollment · Secure submission</small>
+        </span>
+        <span className="elite-form-secure"><i /> Secure</span>
+      </div>
       <div style={{ display: "flex", justifyContent: "space-between", gap: "1rem", marginBottom: "1.25rem" }}>
         <div>
           <strong className="elite-display" style={{ fontSize: "1rem" }}>
@@ -144,6 +149,14 @@ export function EliteCheckoutForm() {
             </div>
           );
         })}
+      </div>
+
+      <div className="elite-form-step-heading">
+        <div>
+          <span>STEP {step} OF 3</span>
+          <strong>{step === 1 ? "Tell us about you" : step === 2 ? "Confirm your payment" : "Review your application"}</strong>
+        </div>
+        <small>{step === 1 ? "About 1 minute" : step === 2 ? "Receipt required" : "Final check"}</small>
       </div>
 
       <div className="elite-form-step" key={step}>

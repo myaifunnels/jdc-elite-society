@@ -89,22 +89,30 @@ export function EliteOfferPage() {
         <div className="elite-hero-scrim" />
         <div className="elite-hero-orb" aria-hidden="true" />
         <div className="elite-shell elite-hero-copy">
-          <p className="elite-kicker">JDC MASTERMIND · LIFETIME ACCESS</p>
-          <h1 className="elite-display">
-            <span>Stop collecting advice.</span>
-            <span className="elite-hero-title">Start building your next chapter.</span>
+          <p className="elite-kicker">PREMIUM COACHING · MENTORSHIP · COMMUNITY</p>
+          <h1 className="elite-display elite-identity-headline">
+            <span>Stop Building Your Network Marketing Business Like a Beginner.</span>
+            <span>Start Building Like a Professional.</span>
           </h1>
-          <p className="elite-sub">
-            Hindi ka kulang sa sipag. Kulang ka sa sistemang magbibigay ng direksyon sa sipag mo. Build the mindset,
-            discipline, and leadership system that turns your next move into measurable progress with Coach JDC and a
-            community that expects you to follow through.
+          <p className="elite-sub elite-hero-positioning">
+            JDC Mastermind is a premium coaching and mentorship environment for serious network marketers,
+            entrepreneurs, aspiring leaders, and OFWs who want to develop the skills, systems, consistency, and
+            leadership required to build a business, not just chase the next sale.
           </p>
-          <EliteCtaLink
-            title="Build my next chapter"
-            subtext="Get lifetime access to JDC Mastermind"
-            className="elite-cta-lg"
-          />
-          <p className="elite-warn">One payment · Lifetime replay access · Watch on any device</p>
+          <div className="elite-hero-actions">
+            <EliteCtaLink
+              title="Apply for JDC Mastermind"
+              subtext="Begin your professional growth path"
+              className="elite-cta-lg"
+            />
+            <EliteCtaLink
+              href="#offer"
+              title="See how it works"
+              subtext="Explore the coaching, systems, and community"
+              className="elite-cta-lg elite-cta-secondary"
+            />
+          </div>
+          <p className="elite-warn">For serious builders ready to develop competence, consistency, and leadership.</p>
           <div className="elite-stats">
             <span><strong>{mastermindOffer.memberCount}+</strong> members inside</span>
             <span><strong>2</strong> focused sessions</span>
