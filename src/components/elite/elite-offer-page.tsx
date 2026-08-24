@@ -91,8 +91,10 @@ export function EliteOfferPage() {
         <div className="elite-shell elite-hero-copy">
           <p className="elite-kicker">PREMIUM COACHING · MENTORSHIP · COMMUNITY</p>
           <h1 className="elite-display elite-identity-headline">
-            <span>Stop Building Your Network Marketing Business Like a Beginner.</span>
-            <span>Start Building Like a Professional.</span>
+            <span className="elite-headline-lead">Stop Building Your Network Marketing Business Like a Beginner.</span>
+            <span className="elite-headline-shift">
+              Start Building <em>Like a Professional.</em>
+            </span>
           </h1>
           <p className="elite-sub elite-hero-positioning">
             JDC Mastermind is a premium coaching and mentorship environment for serious network marketers,
