@@ -1,23 +1,9 @@
 import type { Metadata } from "next";
-import { Lato, Oswald } from "next/font/google";
 import Script from "next/script";
 
 import { mastermindOffer } from "@/data/mastermind-offer";
 import { eliteSiteUrl } from "@/lib/site";
 import "./elite.css";
-
-const oswald = Oswald({
-  variable: "--font-elite-display",
-  subsets: ["latin"],
-  weight: ["400", "600", "700"],
-});
-
-const lato = Lato({
-  variable: "--font-elite-sans",
-  subsets: ["latin"],
-  weight: ["400", "700"],
-  style: ["normal", "italic"],
-});
 
 export const metadata: Metadata = {
   metadataBase: new URL(eliteSiteUrl),
@@ -42,7 +28,7 @@ export const metadata: Metadata = {
 
 export default function EliteLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className={`${oswald.variable} ${lato.variable}`}>
+    <div>
       {children}
       <Script
         src="https://widgets.leadconnectorhq.com/loader.js"
