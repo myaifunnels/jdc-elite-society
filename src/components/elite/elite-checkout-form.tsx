@@ -14,6 +14,14 @@ function Check({ className = "" }: { className?: string }) {
   );
 }
 
+function ArrowIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M5 12h13M13 6l6 6-6 6" />
+    </svg>
+  );
+}
+
 export function EliteCheckoutForm() {
   const router = useRouter();
   const [step, setStep] = useState(1);
@@ -250,8 +258,28 @@ export function EliteCheckoutForm() {
             Back
           </button>
         ) : null}
-        <button className="elite-cta elite-cta-lg" type="submit" disabled={pending}>
-          {pending ? "Verifying details..." : step === 1 ? "Continue to payment" : step === 2 ? "Review details" : "Submit for verification"}
+        <button className="elite-cta elite-cta-lg elite-cta-rich" type="submit" disabled={pending}>
+          <span className="elite-cta-copy">
+            <strong>
+              {pending
+                ? "Submitting securely..."
+                : step === 1
+                  ? "Continue to payment"
+                  : step === 2
+                    ? "Review my details"
+                    : "Submit for verification"}
+            </strong>
+            <small>
+              {step === 1
+                ? "Next: choose payment and upload receipt"
+                : step === 2
+                  ? "Confirm everything before submitting"
+                  : "We will verify your payment as soon as possible"}
+            </small>
+          </span>
+          <span className="elite-cta-icon">
+            <ArrowIcon />
+          </span>
         </button>
       </div>
     </form>

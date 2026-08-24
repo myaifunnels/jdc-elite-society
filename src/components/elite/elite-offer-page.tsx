@@ -3,13 +3,41 @@
 /* eslint-disable @next/next/no-img-element */
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 
-import { EliteCheckoutForm, IncludeList, PaymentInstructions } from "@/components/elite/elite-checkout-form";
+import { IncludeList } from "@/components/elite/elite-checkout-form";
 import { formatPhp, mastermindOffer } from "@/data/mastermind-offer";
 
-function scrollToPayment(event?: React.MouseEvent) {
-  event?.preventDefault();
-  document.getElementById("payment")?.scrollIntoView({ behavior: "smooth" });
+function ArrowIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M5 12h13M13 6l6 6-6 6" />
+    </svg>
+  );
+}
+
+function EliteCtaLink({
+  href = "/elite/checkout",
+  title,
+  subtext,
+  className = "",
+}: {
+  href?: string;
+  title: string;
+  subtext: string;
+  className?: string;
+}) {
+  return (
+    <Link href={href} className={`elite-cta elite-cta-rich ${className}`.trim()}>
+      <span className="elite-cta-copy">
+        <strong>{title}</strong>
+        <small>{subtext}</small>
+      </span>
+      <span className="elite-cta-icon">
+        <ArrowIcon />
+      </span>
+    </Link>
+  );
 }
 
 export function EliteOfferPage() {
@@ -71,9 +99,11 @@ export function EliteOfferPage() {
             discipline, and leadership system that turns your next move into measurable progress with Coach JDC and a
             community that expects you to follow through.
           </p>
-          <a href="#payment" className="elite-cta elite-cta-lg" onClick={scrollToPayment}>
-            Start the Mastermind
-          </a>
+          <EliteCtaLink
+            title="Build my next chapter"
+            subtext="Get lifetime access to JDC Mastermind"
+            className="elite-cta-lg"
+          />
           <p className="elite-warn">One payment · Lifetime replay access · Watch on any device</p>
           <div className="elite-stats">
             <span><strong>{mastermindOffer.memberCount}+</strong> members inside</span>
@@ -83,7 +113,7 @@ export function EliteOfferPage() {
         </div>
       </section>
 
-      <section className="elite-section elite-reveal elite-proof" id="payment">
+      <section className="elite-section elite-reveal elite-proof" id="offer">
         <div className="elite-shell">
           <p className="elite-kicker elite-center">A SMALL INVESTMENT IN A BIGGER STANDARD</p>
           <h2>
@@ -91,8 +121,16 @@ export function EliteOfferPage() {
           </h2>
           <div className="elite-grid-2">
             <div className="elite-glass" style={{ padding: "1.5rem" }}>
-              <p className="elite-kicker">PAYMENT INSTRUCTIONS</p>
-              <PaymentInstructions />
+              <p className="elite-kicker">WHY THIS WORKS</p>
+              <p className="elite-value-lead">Information gives you options. A system gives you momentum.</p>
+              <IncludeList
+                items={[
+                  "A clear path from Foundation to Execution",
+                  "Practical frameworks you can revisit for life",
+                  "A private community built around accountability",
+                  "Direct guidance from Coach JDC",
+                ]}
+              />
             </div>
             <div className="elite-glass" style={{ padding: "1.5rem" }}>
               <p className="elite-kicker">YOUR COMPLETE ACCESS</p>
@@ -109,9 +147,11 @@ export function EliteOfferPage() {
               <p style={{ textAlign: "right", fontStyle: "italic", fontSize: "0.8rem" }}>
                 One-time payment · no recurring fee
               </p>
-              <a href="#checkout" className="elite-cta elite-cta-lg" style={{ width: "100%", marginTop: "1rem" }}>
-                Secure my access
-              </a>
+              <EliteCtaLink
+                title="Secure my lifetime access"
+                subtext="One payment. No recurring fees."
+                className="elite-cta-lg elite-cta-block"
+              />
             </div>
           </div>
         </div>
@@ -164,9 +204,11 @@ export function EliteOfferPage() {
             Lahat ng sessions ay available na sa portal para mapanood mo anytime.
           </p>
           <p className="elite-center">
-            <a href="#payment" className="elite-cta elite-cta-lg" onClick={scrollToPayment}>
-              Get lifetime access
-            </a>
+            <EliteCtaLink
+              title="Turn the roadmap into action"
+              subtext="Join the full JDC Mastermind"
+              className="elite-cta-lg"
+            />
           </p>
         </div>
       </section>
@@ -197,9 +239,11 @@ export function EliteOfferPage() {
             that “someday” was no longer a strategy.
           </p>
           <p className="elite-center">
-            <a href="#payment" className="elite-cta elite-cta-lg" onClick={scrollToPayment}>
-              Join the community
-            </a>
+            <EliteCtaLink
+              title="Take my place inside"
+              subtext={`Join ${mastermindOffer.memberCount}+ growth-minded members`}
+              className="elite-cta-lg"
+            />
           </p>
         </div>
       </section>
@@ -234,46 +278,11 @@ export function EliteOfferPage() {
             </div>
             <p className="elite-framework-label">Signature frameworks inside the Mastermind</p>
             <IncludeList items={mastermindOffer.frameworks} />
-            <a href="#payment" className="elite-cta elite-cta-lg" onClick={scrollToPayment}>
-              Learn with Coach JDC
-            </a>
-          </div>
-        </div>
-      </section>
-
-      <section className="elite-section elite-reveal" id="checkout">
-        <div className="elite-shell">
-          <p className="elite-kicker elite-center">YOUR NEXT MOVE</p>
-          <h2>Give your next chapter a real starting point.</h2>
-          <p className="elite-center">
-            {formatPhp(mastermindOffer.offerPrice)} · JDC Mastermind · Lifetime Access
-          </p>
-          <div className="elite-checkout" style={{ marginTop: "2rem" }}>
-            <div className="elite-glass" style={{ padding: "1.5rem" }}>
-              <p className="elite-kicker">PAYMENT INSTRUCTIONS</p>
-              <PaymentInstructions />
-              <p className="elite-kicker" style={{ marginTop: "1.5rem" }}>
-                OFFER SUMMARY
-              </p>
-              <p>
-                {formatPhp(mastermindOffer.listPrice)} → {formatPhp(mastermindOffer.offerPrice)}
-              </p>
-              <IncludeList items={mastermindOffer.offerSummary} />
-              <p className="elite-kicker" style={{ marginTop: "1.25rem" }}>
-                PAYMENT OPTIONS:
-              </p>
-              <div className="elite-account">
-                BPI Bank
-                <div>{mastermindOffer.payments.bpi.name}</div>
-                <strong>{mastermindOffer.payments.bpi.number}</strong>
-              </div>
-              <div className="elite-account" style={{ marginTop: "0.8rem" }}>
-                GCash
-                <div>{mastermindOffer.payments.gcash.name}</div>
-                <strong>{mastermindOffer.payments.gcash.number}</strong>
-              </div>
-            </div>
-            <EliteCheckoutForm />
+            <EliteCtaLink
+              title="Learn directly from Coach JDC"
+              subtext="Start with the Foundation and Execution sessions"
+              className="elite-cta-lg"
+            />
           </div>
         </div>
       </section>
@@ -289,9 +298,11 @@ export function EliteOfferPage() {
             You already know how to work hard. Now give that effort direction. Build the discipline, leadership, and
             execution system that can keep working long after motivation fades.
           </p>
-          <a href="#payment" className="elite-cta elite-cta-lg" onClick={scrollToPayment}>
-            Start now
-          </a>
+          <EliteCtaLink
+            title="Choose the higher standard"
+            subtext="Continue to the secure payment page"
+            className="elite-cta-lg"
+          />
           <p className="elite-warn">JDC Mastermind · Full sessions · Lifetime access</p>
           <p style={{ fontStyle: "italic", color: "var(--elite-muted)" }}>
             The best time to build the system was earlier. The next best time is the moment you stop postponing it.
@@ -300,9 +311,7 @@ export function EliteOfferPage() {
       </section>
 
       <div className="elite-sticky-mobile" hidden={!sticky} style={{ display: sticky ? undefined : "none" }}>
-        <a href="#payment" className="elite-cta" onClick={scrollToPayment}>
-          Get full access
-        </a>
+        <EliteCtaLink title="Get lifetime access" subtext="Continue to checkout" />
       </div>
 
     </div>

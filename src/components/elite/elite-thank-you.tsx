@@ -21,17 +21,32 @@ export function EliteThankYou() {
   }
 
   return (
-    <div className="elite-offer">
+    <main className="elite-offer elite-thank-you-page">
       <div className="elite-thanks">
-        <h1 className="elite-display" style={{ fontSize: "2.6rem" }}>
-          SALAMAT! 🎉
-          <br />
-          NATANGGAP NA NAMIN ANG IYONG PAYMENT.
-        </h1>
-        <h2 className="elite-display" style={{ color: "var(--elite-blue-soft)", fontSize: "1.4rem", marginTop: "1rem" }}>
-          Ikaw ay opisyal na miyembro ng JDC Mastermind.
-        </h2>
-        <div style={{ position: "relative", cursor: "pointer" }} onClick={toggle}>
+        <div className="elite-thanks-check" aria-hidden="true">✓</div>
+        <p className="elite-kicker">PAYMENT RECEIVED</p>
+        <h1 className="elite-display">We&apos;re verifying your payment now.</h1>
+        <p className="elite-thanks-lead">
+          Salamat. Natanggap na namin ang iyong submission. Our team will review your receipt as soon as possible and
+          send your JDC Mastermind access once the payment is confirmed.
+        </p>
+
+        <div className="elite-verification-status" aria-label="Payment verification progress">
+          <div className="is-complete">
+            <span>✓</span>
+            <div><strong>Payment submitted</strong><small>Complete</small></div>
+          </div>
+          <div className="is-current">
+            <span>2</span>
+            <div><strong>Verification</strong><small>In progress</small></div>
+          </div>
+          <div>
+            <span>3</span>
+            <div><strong>Access delivered</strong><small>Sent after approval</small></div>
+          </div>
+        </div>
+
+        <div className="elite-thanks-video" onClick={toggle}>
           <video
             ref={videoRef}
             controls={playing}
@@ -43,10 +58,8 @@ export function EliteThankYou() {
             <source src={mastermindOffer.thankYouVideo} type="video/mp4" />
           </video>
         </div>
-        <p>
-          Bini-verify namin ang iyong payment ngayon. Sa loob ng 24 oras, makakatanggap ka ng email na may:
-        </p>
-        <div className="elite-glass" style={{ padding: "1.5rem", textAlign: "left", maxWidth: 600, margin: "1.5rem auto" }}>
+        <p className="elite-thanks-expect">Once verified, makakatanggap ka ng email na may:</p>
+        <div className="elite-glass elite-thanks-card">
           <ul className="elite-list">
             <li>
               <span className="elite-dot">✓</span>
@@ -63,18 +76,16 @@ export function EliteThankYou() {
           </ul>
         </div>
         <p>
-          I-check ang iyong inbox, kasama na ang spam/promotions folder. Kung wala pa pagkatapos ng 24 oras,
-          mag-message sa amin sa {mastermindOffer.support.email} o {mastermindOffer.support.phone}.
+          Please watch your inbox, including the spam and promotions folders. We aim to verify every payment as soon as
+          possible. If you need help, email {mastermindOffer.support.email} or call {mastermindOffer.support.phone}.
         </p>
         <p style={{ marginTop: "1.5rem" }}>
           I-join ang aming community:{" "}
           <a href={mastermindOffer.communityUrl}>{mastermindOffer.communityUrl.replace("https://", "")}</a>
         </p>
-        <p className="elite-display" style={{ marginTop: "2rem", fontSize: "1.25rem" }}>
-          Welcome to JDC Mastermind.
-        </p>
-        <p>Coach JDC at ang JDC Elite Society Team</p>
+        <p className="elite-display elite-thanks-signoff">Your next chapter is already in motion.</p>
+        <p>Coach JDC and the JDC Elite Society Team</p>
       </div>
-    </div>
+    </main>
   );
 }
