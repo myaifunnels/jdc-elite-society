@@ -14,6 +14,7 @@ export const mastermindOffer = {
   couponCode: "SPARTANS",
   couponDiscount: 500,
   coachingPricePerHour: 5000,
+  inPersonCoachingPricePerHour: 10000,
   memberCount: 147,
   chatWidgetId: "6a88a07f1f8d51222d5a4b15",
   funnelTrackingId: "tk_05790544d7b7482782736edf17e38d41",

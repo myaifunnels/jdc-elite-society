@@ -32,6 +32,7 @@ async function upsertFunnelContact(input: {
   priceLabel: string;
   spartans: boolean;
   coachingHours: number;
+  coachingMode: string;
   tags: string[];
 }) {
   await fetch("https://api.myaifunnels.com/contacts/upsert", {
@@ -52,6 +53,7 @@ async function upsertFunnelContact(input: {
           "Coupon Code": input.couponCode || "None",
           "Final Price": input.priceLabel,
           "Private Coaching Hours": String(input.coachingHours),
+          "Private Coaching Format": input.coachingMode || "Not added",
         },
       },
     }),
@@ -69,6 +71,7 @@ export async function POST(request: Request) {
     paymentMethod: String(form.get("paymentMethod") ?? "").trim(),
     couponCode: String(form.get("couponCode") ?? "").trim(),
     coachingHours: Number(form.get("coachingHours") ?? 0),
+    coachingMode: String(form.get("coachingMode") ?? ""),
   });
 
   if (!parsed.success) {
@@ -83,7 +86,11 @@ export async function POST(request: Request) {
 
   const spartans = appliedCoupon(parsed.data.couponCode);
   const basePrice = spartans ? mastermindOffer.couponPrice : mastermindOffer.offerPrice;
-  const price = basePrice + parsed.data.coachingHours * mastermindOffer.coachingPricePerHour;
+  const coachingPricePerHour =
+    parsed.data.coachingMode === "in-person"
+      ? mastermindOffer.inPersonCoachingPricePerHour
+      : mastermindOffer.coachingPricePerHour;
+  const price = basePrice + parsed.data.coachingHours * coachingPricePerHour;
   const priceLabel = `PHP ${price.toLocaleString("en-PH")}`;
   const mobile = toE164Phone(parsed.data.mobile);
 
@@ -121,6 +128,9 @@ export async function POST(request: Request) {
     extra: [
       ...extraTags,
       parsed.data.coachingHours > 0 ? "1-on-1 Coaching" : "",
+      parsed.data.coachingHours > 0
+        ? parsed.data.coachingMode === "in-person" ? "In-person Coaching" : "Online Coaching"
+        : "",
       parsed.data.coachingHours > 0 ? `Coaching: ${parsed.data.coachingHours} hour${parsed.data.coachingHours === 1 ? "" : "s"}` : "",
     ],
   });
@@ -156,6 +166,7 @@ export async function POST(request: Request) {
       couponCode: parsed.data.couponCode,
       basePrice,
       coachingHours: parsed.data.coachingHours,
+      coachingMode: parsed.data.coachingMode,
       price,
       receiptName: receipt.name,
       receiptUrl,
@@ -231,6 +242,7 @@ export async function POST(request: Request) {
     priceLabel,
     spartans,
     coachingHours: parsed.data.coachingHours,
+    coachingMode: parsed.data.coachingMode,
     tags,
   });
 

@@ -12,6 +12,7 @@ export type EliteCheckoutOrder = {
   couponCode: string;
   basePrice: number;
   coachingHours: number;
+  coachingMode: "" | "online" | "in-person";
   price: number;
   receiptName: string;
   receiptUrl: string;
@@ -51,6 +52,7 @@ async function ensureTable(client: Pool) {
       coupon_code TEXT NOT NULL DEFAULT '',
       base_price INTEGER NOT NULL DEFAULT 0,
       coaching_hours INTEGER NOT NULL DEFAULT 0,
+      coaching_mode TEXT NOT NULL DEFAULT '',
       price INTEGER NOT NULL,
       receipt_name TEXT NOT NULL,
       receipt_url TEXT NOT NULL,
@@ -62,6 +64,7 @@ async function ensureTable(client: Pool) {
   `);
   await client.query(`ALTER TABLE elite_checkout_orders ADD COLUMN IF NOT EXISTS base_price INTEGER NOT NULL DEFAULT 0`);
   await client.query(`ALTER TABLE elite_checkout_orders ADD COLUMN IF NOT EXISTS coaching_hours INTEGER NOT NULL DEFAULT 0`);
+  await client.query(`ALTER TABLE elite_checkout_orders ADD COLUMN IF NOT EXISTS coaching_mode TEXT NOT NULL DEFAULT ''`);
   await client.query(`
     CREATE INDEX IF NOT EXISTS elite_checkout_orders_status_created_idx
     ON elite_checkout_orders (status, created_at DESC)
@@ -80,6 +83,12 @@ function mapRow(row: Record<string, unknown>): EliteCheckoutOrder {
     couponCode: String(row.coupon_code ?? ""),
     basePrice: Number(row.base_price || row.price),
     coachingHours: Number(row.coaching_hours ?? 0),
+    coachingMode:
+      row.coaching_mode === "in-person"
+        ? "in-person"
+        : Number(row.coaching_hours ?? 0) > 0
+          ? "online"
+          : "",
     price: Number(row.price),
     receiptName: String(row.receipt_name),
     receiptUrl: String(row.receipt_url),
@@ -111,8 +120,8 @@ export async function createEliteCheckoutOrder(
         `
         INSERT INTO elite_checkout_orders (
           id, user_id, full_name, email, mobile, payment_method, coupon_code,
-          base_price, coaching_hours, price, receipt_name, receipt_url, status, created_at, approved_by
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+          base_price, coaching_hours, coaching_mode, price, receipt_name, receipt_url, status, created_at, approved_by
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
         `,
         [
           order.id,
@@ -124,6 +133,7 @@ export async function createEliteCheckoutOrder(
           order.couponCode,
           order.basePrice,
           order.coachingHours,
+          order.coachingMode,
           order.price,
           order.receiptName,
           order.receiptUrl,

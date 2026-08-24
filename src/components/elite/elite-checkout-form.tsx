@@ -32,6 +32,7 @@ export function EliteCheckoutForm() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("");
   const [coachingHours, setCoachingHours] = useState(0);
+  const [coachingMode, setCoachingMode] = useState<"" | "online" | "in-person">("");
   const [couponCode, setCouponCode] = useState("");
   const [couponApplied, setCouponApplied] = useState(false);
   const [couponError, setCouponError] = useState("");
@@ -42,7 +43,11 @@ export function EliteCheckoutForm() {
 
   const couponEligible = couponCode.trim().toUpperCase() === mastermindOffer.couponCode;
   const basePrice = couponEligible ? mastermindOffer.couponPrice : mastermindOffer.offerPrice;
-  const coachingTotal = coachingHours * mastermindOffer.coachingPricePerHour;
+  const coachingPricePerHour =
+    coachingMode === "in-person"
+      ? mastermindOffer.inPersonCoachingPricePerHour
+      : mastermindOffer.coachingPricePerHour;
+  const coachingTotal = coachingHours * coachingPricePerHour;
   const price = basePrice + coachingTotal;
 
   const receiptLabel = useMemo(() => {
@@ -112,6 +117,7 @@ export function EliteCheckoutForm() {
     form.set("paymentMethod", paymentMethod);
     form.set("couponCode", couponCode.trim());
     form.set("coachingHours", String(coachingHours));
+    form.set("coachingMode", coachingMode);
     form.set("receipt", receipt);
 
     try {
@@ -239,7 +245,7 @@ export function EliteCheckoutForm() {
                   <small>PRIVATE COACHING UPGRADE</small>
                   <strong>Work 1-on-1 with Coach Jayson Dela Cruz</strong>
                 </div>
-                <span className="elite-order-bump-price">{formatPhp(mastermindOffer.coachingPricePerHour)} / hour</span>
+                <span className="elite-order-bump-price">From {formatPhp(mastermindOffer.coachingPricePerHour)} / hour</span>
               </div>
               <p>
                 Add a focused online coaching session for personalized strategy, clarity, and direct guidance on your
@@ -249,13 +255,39 @@ export function EliteCheckoutForm() {
                 type="button"
                 className="elite-order-bump-toggle"
                 aria-pressed={coachingHours > 0}
-                onClick={() => setCoachingHours((current) => (current > 0 ? 0 : 1))}
+                onClick={() => {
+                  if (coachingHours > 0) {
+                    setCoachingHours(0);
+                    setCoachingMode("");
+                  } else {
+                    setCoachingHours(1);
+                    setCoachingMode("online");
+                  }
+                }}
               >
                 <span aria-hidden="true">{coachingHours > 0 ? "✓" : "+"}</span>
                 {coachingHours > 0 ? "Private coaching added" : "Yes, add private coaching"}
               </button>
               {coachingHours > 0 ? (
                 <>
+                  <div className="elite-coaching-modes" aria-label="Coaching format">
+                    <button
+                      type="button"
+                      className={coachingMode === "online" ? "is-selected" : ""}
+                      onClick={() => setCoachingMode("online")}
+                    >
+                      <span>Online coaching</span>
+                      <strong>{formatPhp(mastermindOffer.coachingPricePerHour)} / hour</strong>
+                    </button>
+                    <button
+                      type="button"
+                      className={coachingMode === "in-person" ? "is-selected" : ""}
+                      onClick={() => setCoachingMode("in-person")}
+                    >
+                      <span>In-person coaching</span>
+                      <strong>{formatPhp(mastermindOffer.inPersonCoachingPricePerHour)} / hour</strong>
+                    </button>
+                  </div>
                   <div className="elite-order-bump-hours">
                     <label htmlFor="coaching-hours">How many coaching hours?</label>
                     <select
@@ -265,7 +297,7 @@ export function EliteCheckoutForm() {
                     >
                       {Array.from({ length: 10 }, (_, index) => index + 1).map((hours) => (
                         <option key={hours} value={hours}>
-                          {hours} hour{hours === 1 ? "" : "s"} · {formatPhp(hours * mastermindOffer.coachingPricePerHour)}
+                          {hours} hour{hours === 1 ? "" : "s"} · {formatPhp(hours * coachingPricePerHour)}
                         </option>
                       ))}
                     </select>
@@ -342,7 +374,11 @@ export function EliteCheckoutForm() {
               <div><dt>Payment</dt><dd>{paymentMethod}</dd></div>
               <div>
                 <dt>Session</dt>
-                <dd>{coachingHours > 0 ? `${coachingHours} hour${coachingHours === 1 ? "" : "s"} with Coach Jayson` : "Not added"}</dd>
+                <dd>
+                  {coachingHours > 0
+                    ? `${coachingHours} ${coachingMode === "in-person" ? "in-person" : "online"} hour${coachingHours === 1 ? "" : "s"} with Coach Jayson`
+                    : "Not added"}
+                </dd>
               </div>
               <div><dt>Receipt</dt><dd>{receipt?.name}</dd></div>
               <div><dt>Mastermind</dt><dd>{formatPhp(basePrice)}</dd></div>

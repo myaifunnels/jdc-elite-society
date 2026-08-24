@@ -155,10 +155,19 @@ export const eliteCheckoutSchema = z
     paymentMethod: z.enum(elitePaymentMethods, { message: "Pumili ng payment method." }),
     couponCode: z.string().optional().default(""),
     coachingHours: z.number().int().min(0).max(10),
+    coachingMode: z.enum(["", "online", "in-person"]),
   })
   .refine((value) => value.password === value.confirmPassword, {
     message: "Passwords do not match.",
     path: ["confirmPassword"],
+  })
+  .refine((value) => value.coachingHours === 0 || value.coachingMode !== "", {
+    message: "Choose online or in-person coaching.",
+    path: ["coachingMode"],
+  })
+  .refine((value) => value.coachingHours > 0 || value.coachingMode === "", {
+    message: "Choose at least one coaching hour.",
+    path: ["coachingHours"],
   });
 
 export type EliteCheckoutInput = z.infer<typeof eliteCheckoutSchema>;

@@ -56,7 +56,7 @@ export default async function DashboardPage() {
                   <dt>Private coaching</dt>
                   <dd>
                     {checkoutOrder.coachingHours > 0
-                      ? `${checkoutOrder.coachingHours} hour${checkoutOrder.coachingHours === 1 ? "" : "s"} with Coach Jayson Dela Cruz`
+                      ? `${checkoutOrder.coachingHours} ${checkoutOrder.coachingMode === "in-person" ? "in-person" : "online"} hour${checkoutOrder.coachingHours === 1 ? "" : "s"} with Coach Jayson Dela Cruz`
                       : "Not included"}
                   </dd>
                 </div>
