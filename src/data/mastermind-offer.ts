@@ -1,7 +1,7 @@
 export const mastermindOffer = {
   title: "JDC Mastermind — Full Access | PHP 2,000",
   description:
-    "Sumali sa JDC Mastermind para sa full access sa dalawang Mastermind Sessions kasama si Coach JDC plus portal access. Use SPARTANS coupon for PHP 1,500. Para sa OFWs, empleyado, at beginner entrepreneurs.",
+    "Turn hard work into clear, disciplined execution with two focused JDC Mastermind sessions, lifetime replays, and a private accountability community led by Coach JDC.",
   ogImage: "https://vibe.filesafe.space/meta/1780838141047994819/og_image.png",
   logo: "https://vibe.filesafe.space/1780838141047994819/attachments/5738db11-cc5d-4ee5-91d6-b11707063731.png",
   heroVideo: "https://assets.cdn.filesafe.space/Col3j2B7jRDX5y8J5bgN/media/6a7741225a64f2b5679809d5.mp4",
@@ -30,17 +30,17 @@ export const mastermindOffer = {
   androidApp: "https://play.google.com/store/apps/details?id=net.clientclub.app.kollab",
   iosApp: "https://apps.apple.com/us/app/gokollab/id6484272411",
   includes: [
-    "JDC Mastermind — 2 Full Sessions (Foundation & Execution)",
-    "Lifetime Access to All Session Replays",
-    "JDC Elite Society Community Access — community.coachjdc.org",
-    "Accessible via Mobile App — Android & iPhone",
+    "Two complete sessions: Foundation and Execution",
+    "Lifetime access to every session replay",
+    "Private JDC Elite Society accountability community",
+    "Watch anywhere through the Android and iPhone apps",
   ],
   sessions: [
     {
       kicker: "Session 1 · Foundation",
-      title: "JDC Mastermind Session 1",
+      title: "Foundation: decide what you stand for",
       image: "https://vibe.filesafe.space/1780838141047994819/attachments/f5485024-ec42-4296-bed7-4db0c14623f5.jpg",
-      body: "Ang unang session kung saan itatayo natin ang iyong pundasyon — mindset, vision, at direksyon. Full access sa buong session.",
+      body: "Get honest about where you are, define the vision worth working for, and build the standards that make your direction clear.",
       bullets: [
         "Do's and Don'ts — the rules of the game",
         "Selling the Vision — Dream · Passion · Belief · Conviction",
@@ -50,9 +50,9 @@ export const mastermindOffer = {
     },
     {
       kicker: "Session 2 · Execution",
-      title: "JDC Mastermind Session 2",
+      title: "Execution: turn standards into momentum",
       image: "https://vibe.filesafe.space/1780838141047994819/attachments/3e79791e-ce26-46ba-ab78-c8b32e283601.jpg",
-      body: "Ang ikalawang session kung saan i-e-execute na natin ang lahat — systems, leadership, at passive growth. Full access sa buong session.",
+      body: "Translate clarity into repeatable action through practical systems, stronger leadership, and a plan that survives low-motivation days.",
       bullets: [
         "Passive Principles — Grooming Growth · Building Leaders",
         "6-Step Partner Growth System — deep dive",
@@ -64,7 +64,7 @@ export const mastermindOffer = {
       kicker: "Watch anytime, anywhere",
       title: "Lifetime Access to All Sessions",
       image: "https://vibe.filesafe.space/1780838141047994819/attachments/99372c93-30ac-4d60-86a2-a6a73ec22a69.jpg",
-      body: "Lahat ng Mastermind Sessions ay available sa portal. Panoorin mo anytime — sa iyong sariling oras, sa iyong sariling pace.",
+      body: "Revisit the sessions whenever you need a reset. Pause, take notes, and apply each framework at the pace your season allows.",
       bullets: [
         "Session 1 — Foundation · Available Now",
         "Session 2 — Execution · Available Now",
@@ -77,7 +77,7 @@ export const mastermindOffer = {
       kicker: "community.coachjdc.org",
       title: "JDC Elite Society Community",
       image: "https://vibe.filesafe.space/1780838141047994819/attachments/2b57348a-2482-4cc9-90c1-801a9818bc25.jpg",
-      body: "Isang private growth community para sa mga taong seryoso sa paglago. Hindi ito basta group — ito ay isang structured environment na nagpapanatili ng iyong standards.",
+      body: "A private room for people serious about growth. Share wins, ask better questions, and stay visible to people who expect follow-through.",
       bullets: [
         "General · Q&A · Share Your Wins · Updates",
         "Accountability-driven conversations",

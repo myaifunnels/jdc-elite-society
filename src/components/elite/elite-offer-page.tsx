@@ -2,7 +2,7 @@
 
 /* eslint-disable @next/next/no-img-element */
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { EliteCheckoutForm, IncludeList, PaymentInstructions } from "@/components/elite/elite-checkout-form";
 import { formatPhp, mastermindOffer } from "@/data/mastermind-offer";
@@ -14,32 +14,52 @@ function scrollToPayment(event?: React.MouseEvent) {
 
 export function EliteOfferPage() {
   const [sticky, setSticky] = useState(false);
-  const [exitOpen, setExitOpen] = useState(false);
-  const [exitSeen, setExitSeen] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     const onScroll = () => setSticky(window.scrollY > window.innerHeight * 0.8);
-    const onLeave = (event: MouseEvent) => {
-      if (event.clientY <= 0 && !exitSeen) {
-        setExitOpen(true);
-        setExitSeen(true);
-      }
-    };
     window.addEventListener("scroll", onScroll, { passive: true });
-    document.addEventListener("mouseleave", onLeave);
+
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const sections = document.querySelectorAll<HTMLElement>(".elite-reveal");
+    rootRef.current?.setAttribute("data-motion-ready", "true");
+
+    if (window.location.hash) {
+      document.querySelector<HTMLElement>(window.location.hash)?.setAttribute("data-visible", "true");
+    }
+
+    if (reducedMotion || !("IntersectionObserver" in window)) {
+      sections.forEach((section) => section.setAttribute("data-visible", "true"));
+      return () => window.removeEventListener("scroll", onScroll);
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          (entry.target as HTMLElement).setAttribute("data-visible", "true");
+          observer.unobserve(entry.target);
+        });
+      },
+      { rootMargin: "0px 0px -12%", threshold: 0.12 },
+    );
+
+    sections.forEach((section) => observer.observe(section));
+
     return () => {
       window.removeEventListener("scroll", onScroll);
-      document.removeEventListener("mouseleave", onLeave);
+      observer.disconnect();
     };
-  }, [exitSeen]);
+  }, []);
 
   return (
-    <div className="elite-offer">
+    <div ref={rootRef} className="elite-offer" data-motion-ready="false">
       <div className="elite-shell elite-nav">
         <a href="#top">
           <img src={mastermindOffer.logo} alt="JDC Elite Society" className="elite-logo" />
         </a>
         <a href="#payment" className="elite-cta" onClick={scrollToPayment}>
-          JOIN NOW
+          Get full access
         </a>
       </div>
 
@@ -48,37 +68,35 @@ export function EliteOfferPage() {
           <source src={mastermindOffer.heroVideo} type="video/mp4" />
         </video>
         <div className="elite-hero-scrim" />
+        <div className="elite-hero-orb" aria-hidden="true" />
         <div className="elite-shell elite-hero-copy">
-          <p className="elite-kicker">JDC MASTERMIND — NOW OPEN</p>
+          <p className="elite-kicker">JDC MASTERMIND · LIFETIME ACCESS</p>
           <h1 className="elite-display">
-            <span>Get full access to</span>
-            <span className="elite-hero-title">JDC MASTERMIND</span>
+            <span>Stop collecting advice.</span>
+            <span className="elite-hero-title">Start building your next chapter.</span>
           </h1>
-          <p className="elite-kicker" style={{ marginTop: 10 }}>
-            Structure. Discipline. Direction.
-          </p>
           <p className="elite-sub">
-            Kung ikaw ay OFW na nagpaplano ng uwi, empleyado na pagod na sa cycle ng utang at trabaho, o baguhan na
-            entrepreneur na naghahanap ng direksyon — ang JDC Mastermind ang bibigay sa iyo ng structure, standards, at
-            komunidad na itutulak ka pasulong.
+            Hindi ka kulang sa sipag. Kulang ka sa sistemang magbibigay ng direksyon sa sipag mo. Build the mindset,
+            discipline, and leadership system that turns your next move into measurable progress—with Coach JDC and a
+            community that expects you to follow through.
           </p>
           <a href="#payment" className="elite-cta elite-cta-lg" onClick={scrollToPayment}>
-            JOIN NOW
+            Start the Mastermind
           </a>
-          <p className="elite-warn">⚠ JDC Mastermind · Unlimited Lifetime Access</p>
+          <p className="elite-warn">One payment · Lifetime replay access · Watch on any device</p>
           <div className="elite-stats">
-            <span>{mastermindOffer.memberCount} Members</span>
-            <span>{formatPhp(mastermindOffer.listPrice)} Value</span>
-            <span>2 Full Sessions</span>
+            <span><strong>{mastermindOffer.memberCount}+</strong> members inside</span>
+            <span><strong>2</strong> focused sessions</span>
+            <span><strong>Lifetime</strong> access</span>
           </div>
         </div>
       </section>
 
-      <section className="elite-section" id="payment">
+      <section className="elite-section elite-reveal elite-proof" id="payment">
         <div className="elite-shell">
-          <p className="elite-kicker elite-center">LIMITED SLOTS ONLY</p>
+          <p className="elite-kicker elite-center">A SMALL INVESTMENT IN A BIGGER STANDARD</p>
           <h2>
-            GET <em>FULL ACCESS</em>
+            Everything you need to move <em>from stuck to structured.</em>
           </h2>
           <div className="elite-grid-2">
             <div className="elite-glass" style={{ padding: "1.5rem" }}>
@@ -86,36 +104,36 @@ export function EliteOfferPage() {
               <PaymentInstructions />
             </div>
             <div className="elite-glass" style={{ padding: "1.5rem" }}>
-              <p className="elite-kicker">JDC ELITE SOCIETY LEARNING ACCESS</p>
-              <p>Here&apos;s what you get:</p>
+              <p className="elite-kicker">YOUR COMPLETE ACCESS</p>
+              <p>Not another course to collect. A practical operating system you can use immediately.</p>
               <IncludeList items={mastermindOffer.includes} />
               <div style={{ display: "flex", justifyContent: "space-between", marginTop: "1.5rem" }}>
                 <span>Total Value:</span>
                 <span className="elite-strike">{formatPhp(mastermindOffer.listPrice)}</span>
               </div>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "end" }}>
-                <span>Today Only:</span>
+                <span>Your investment:</span>
                 <span className="elite-price">{formatPhp(mastermindOffer.offerPrice)}</span>
               </div>
               <p style={{ textAlign: "right", fontStyle: "italic", fontSize: "0.8rem" }}>
-                Limited time offer · JDC Mastermind
+                One-time payment · no recurring fee
               </p>
               <a href="#checkout" className="elite-cta elite-cta-lg" style={{ width: "100%", marginTop: "1rem" }}>
-                JOIN NOW
+                Secure my access
               </a>
             </div>
           </div>
         </div>
       </section>
 
-      <section className="elite-section">
+      <section className="elite-section elite-reveal">
         <div className="elite-shell">
-          <p className="elite-kicker elite-center">WHAT&apos;S INCLUDED</p>
-          <h2>WHAT YOU GET INSIDE</h2>
-          <p className="elite-quote">&quot;Dalawang sessions. Isang komunidad. Habambuhay na access.&quot;</p>
+          <p className="elite-kicker elite-center">THE EXPERIENCE</p>
+          <h2>Built for action—not passive watching.</h2>
+          <p className="elite-quote">Two sessions. One committed community. A standard you can carry for life.</p>
           <div className="elite-grid-2">
             {mastermindOffer.sessions.map((session) => (
-              <article className="elite-card" key={session.title}>
+              <article className="elite-card elite-reveal-item" key={session.title}>
                 <img src={session.image} alt={session.title} />
                 <p className="meta">{session.kicker}</p>
                 <h3>{session.title}</h3>
@@ -130,17 +148,17 @@ export function EliteOfferPage() {
         </div>
       </section>
 
-      <section className="elite-section">
+      <section className="elite-section elite-reveal">
         <div className="elite-shell">
-          <p className="elite-kicker elite-center">MASTERMIND — NOW OPEN</p>
-          <h2>JDC MASTERMIND — FULL ACCESS</h2>
+          <p className="elite-kicker elite-center">THE ROADMAP</p>
+          <h2>First, build the foundation. Then, execute.</h2>
           <p className="elite-center elite-sub" style={{ marginInline: "auto" }}>
-            Ito ang JDC Mastermind. Kapag sumali ka ngayon, makukuha mo agad ang full access sa dalawang Mastermind
-            Sessions. Panoorin anytime, anywhere.
+            Clarity without execution changes nothing. This two-part path helps you decide what matters, build the
+            discipline to follow through, and lead yourself before you lead anyone else.
           </p>
           <div className="elite-agenda">
             {mastermindOffer.agenda.map((item) => (
-              <article className="elite-glass" key={item.session}>
+              <article className="elite-glass elite-reveal-item" key={item.session}>
                 <p className="elite-badge">{item.session}</p>
                 <h3>{item.title}</h3>
                 <p>Full Mastermind Session</p>
@@ -156,22 +174,23 @@ export function EliteOfferPage() {
           </p>
           <p className="elite-center">
             <a href="#payment" className="elite-cta elite-cta-lg" onClick={scrollToPayment}>
-              JOIN NOW
+              Get lifetime access
             </a>
           </p>
         </div>
       </section>
 
-      <section className="elite-section">
+      <section className="elite-section elite-reveal">
         <div className="elite-shell">
           <p className="elite-kicker elite-center">TESTIMONIALS</p>
-          <h2>Real People. Real Results.</h2>
+          <h2>Real people. Higher standards.</h2>
           <p className="elite-center elite-sub" style={{ marginInline: "auto" }}>
-            Hindi kami nagbebenta ng pangarap. Nagbibigay kami ng structure para marating mo ang iyo.
+            Walang overnight-success promise dito. Real stories from people who chose structure, accountability, and
+            consistent action.
           </p>
           <div className="elite-testimonials">
             {mastermindOffer.testimonials.map((item) => (
-              <figure className="elite-glass" key={item.name}>
+              <figure className="elite-glass elite-reveal-item" key={item.name}>
                 <video controls playsInline preload="metadata">
                   <source src={item.video} />
                 </video>
@@ -183,18 +202,18 @@ export function EliteOfferPage() {
             ))}
           </div>
           <p className="elite-center" style={{ marginTop: "1.5rem" }}>
-            {mastermindOffer.memberCount} miyembro na. Parehong OFW, empleyado, at entrepreneur. Lahat ay nagsimula sa
-            iisang desisyon.
+            {mastermindOffer.memberCount}+ members are already inside—OFWs, employees, and entrepreneurs who decided
+            that “someday” was no longer a strategy.
           </p>
           <p className="elite-center">
             <a href="#payment" className="elite-cta elite-cta-lg" onClick={scrollToPayment}>
-              JOIN NOW
+              Join the community
             </a>
           </p>
         </div>
       </section>
 
-      <section className="elite-section">
+      <section className="elite-section elite-reveal">
         <div className="elite-shell elite-about">
           <img src={mastermindOffer.coachImage} alt="Coach Jayson Dela Cruz Background" />
           <div>
@@ -204,27 +223,27 @@ export function EliteOfferPage() {
             </p>
             <h2 className="elite-display">COACH JDC</h2>
             <p>
-              Para sa halos dalawang dekada, si Coach Jayson Dela Cruz ay isa sa pinaka-influential na Filipino business
-              coaches — nakatulong na sa libu-libong OFWs, empleyado, at mga nagtatayo ng negosyo na maabot ang kanilang
-              mga pangarap.
+              For nearly two decades, Coach Jayson Dela Cruz has helped Filipinos turn ambition into a practical plan—
+              from OFWs preparing for life after the contract to employees and first-time entrepreneurs building a new
+              source of income.
             </p>
             <p>
-              Naniniwala si Coach JDC na ang tunay na tagumpay ay hindi nangyayari nang aksidente. Ito ay resulta ng
-              malinaw na structure, hindi matitinag na disiplina, at tamang direksyon.
+              His philosophy is simple: success is not an accident. It is what happens when clear direction meets
+              disciplined execution—and when you stop negotiating with the commitments that matter most.
             </p>
             <p>Mga framework na nilikha ni Coach JDC:</p>
             <IncludeList items={mastermindOffer.frameworks} />
             <a href="#payment" className="elite-cta elite-cta-lg" onClick={scrollToPayment} style={{ marginTop: "1.25rem" }}>
-              JOIN NOW
+              Learn with Coach JDC
             </a>
           </div>
         </div>
       </section>
 
-      <section className="elite-section" id="checkout">
+      <section className="elite-section elite-reveal" id="checkout">
         <div className="elite-shell">
-          <p className="elite-kicker elite-center">HULING HAKBANG</p>
-          <h2>HANDA KA NA BA? KUMUHA NG FULL ACCESS NGAYON</h2>
+          <p className="elite-kicker elite-center">YOUR NEXT MOVE</p>
+          <h2>Give your next chapter a real starting point.</h2>
           <p className="elite-center">
             {formatPhp(mastermindOffer.offerPrice)} · JDC Mastermind · Lifetime Access
           </p>
@@ -258,23 +277,23 @@ export function EliteOfferPage() {
         </div>
       </section>
 
-      <section className="elite-final">
+      <section className="elite-final elite-reveal">
         <div className="elite-shell">
-          <p className="elite-kicker">ITO NA ANG IYONG SUSUNOD NA HAKBANG.</p>
+          <p className="elite-kicker">THE DECISION IS SMALL. THE STANDARD ISN&apos;T.</p>
           <h2 className="elite-display">
-            <span>HANDA KA NANG</span>
-            <span style={{ color: "var(--elite-electric)" }}>MAG-TRANSFORM?</span>
+            <span>Your future does not need</span>
+            <span style={{ color: "var(--elite-electric)" }}>another “someday.”</span>
           </h2>
           <p className="elite-sub" style={{ marginInline: "auto" }}>
-            Growth doesn&apos;t happen by chance. It happens when you decide to operate at a higher standard. If
-            you&apos;re serious about discipline, leadership, and long-term success — this is your entry point.
+            You already know how to work hard. Now give that effort direction. Build the discipline, leadership, and
+            execution system that can keep working long after motivation fades.
           </p>
           <a href="#payment" className="elite-cta elite-cta-lg" onClick={scrollToPayment}>
-            JOIN NOW
+            Start now
           </a>
-          <p className="elite-warn">⚠ JDC Mastermind · Lifetime Access · Full Sessions</p>
+          <p className="elite-warn">JDC Mastermind · Full sessions · Lifetime access</p>
           <p style={{ fontStyle: "italic", color: "var(--elite-muted)" }}>
-            Kapag punu na ang slots, sarado na ang offer na ito. Huwag hayaang maulit ang &quot;sana noon pa.&quot;
+            The best time to build the system was earlier. The next best time is the moment you stop postponing it.
           </p>
         </div>
       </section>
@@ -315,42 +334,10 @@ export function EliteOfferPage() {
 
       <div className="elite-sticky-mobile" hidden={!sticky} style={{ display: sticky ? undefined : "none" }}>
         <a href="#payment" className="elite-cta" onClick={scrollToPayment}>
-          JOIN NOW
+          Get full access
         </a>
       </div>
 
-      {exitOpen ? (
-        <div className="elite-modal" role="dialog" aria-modal="true">
-          <div className="elite-modal-card elite-glass">
-            <button className="elite-close" type="button" onClick={() => setExitOpen(false)} aria-label="Close">
-              ×
-            </button>
-            <h2 className="elite-display">Aalis ka na ba?</h2>
-            <p className="elite-center">Bago ka umalis — alalahanin mo:</p>
-            <IncludeList
-              items={[
-                `JDC Mastermind — ${formatPhp(mastermindOffer.couponPrice)} lang (SPARTANS coupon)`,
-                "Limited time offer — kapag tapos na, tapos na",
-                `Regular price ay ${formatPhp(mastermindOffer.listPrice)}`,
-              ]}
-            />
-            <a
-              href="#payment"
-              className="elite-cta elite-cta-lg"
-              style={{ width: "100%", marginTop: "1.5rem" }}
-              onClick={(event) => {
-                setExitOpen(false);
-                scrollToPayment(event);
-              }}
-            >
-              JOIN NOW
-            </a>
-            <button className="elite-ghost" type="button" onClick={() => setExitOpen(false)}>
-              Hindi, okay lang mawala ang slot ko.
-            </button>
-          </div>
-        </div>
-      ) : null}
     </div>
   );
 }

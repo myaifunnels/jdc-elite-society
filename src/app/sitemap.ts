@@ -10,7 +10,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ...staticPaths.map((path) => ({
       url: `${siteUrl}${path || "/"}`,
     })),
-    ...programs.map((program) => ({
+    ...programs.filter((program) => program.slug !== "jdc-mastermind").map((program) => ({
       url: `${siteUrl}/programs/${program.slug}`,
     })),
     { url: `${eliteSiteUrl}/` },

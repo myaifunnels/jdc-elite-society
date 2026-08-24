@@ -31,7 +31,7 @@ export function EliteCheckoutForm() {
   const price = couponApplied ? mastermindOffer.couponPrice : mastermindOffer.offerPrice;
 
   const receiptLabel = useMemo(() => {
-    if (!receipt) return "Click to upload · JPG, PNG, PDF · Max 5MB";
+    if (!receipt) return "Upload your receipt · JPG, PNG, PDF · Max 5MB";
     return receipt.name;
   }, [receipt]);
 
@@ -90,7 +90,7 @@ export function EliteCheckoutForm() {
   return (
     <form className="elite-form elite-glass" onSubmit={onSubmit}>
       <p className="elite-kicker" style={{ textAlign: "left" }}>
-        I-SUBMIT ANG IYONG PAYMENT
+        COMPLETE YOUR ACCESS
       </p>
       <div style={{ display: "flex", justifyContent: "space-between", gap: "1rem", marginBottom: "1.25rem" }}>
         <div>
@@ -187,7 +187,7 @@ export function EliteCheckoutForm() {
       {serverError ? <p className="error">{serverError}</p> : null}
 
       <button className="elite-cta elite-cta-lg" type="submit" disabled={pending} style={{ width: "100%" }}>
-        {pending ? "Sine-save..." : "ISUMITE ANG AKING PAYMENT →"}
+        {pending ? "Verifying details..." : "Submit payment for verification"}
       </button>
     </form>
   );
@@ -200,7 +200,7 @@ export function PaymentInstructions() {
       {[
         {
           n: "1",
-          title: "MAGPADALA NG PAYMENT",
+          title: "SEND YOUR PAYMENT",
           body: (
             <>
               <div className="elite-account">
@@ -219,16 +219,16 @@ export function PaymentInstructions() {
         },
         {
           n: "2",
-          title: "KUMUHA NG SCREENSHOT NG IYONG RESIBO",
-          body: <p>I-screenshot ang iyong payment confirmation o resibo pagkatapos ng bayad.</p>,
+          title: "SAVE YOUR RECEIPT",
+          body: <p>Take a clear screenshot of your payment confirmation after the transfer is complete.</p>,
         },
         {
           n: "3",
-          title: "I-UPLOAD AT KUMPIRMAHIN",
+          title: "UPLOAD AND CONFIRM",
           body: (
             <p>
-              Gamitin ang form sa ibaba para i-upload ang iyong payment screenshot. I-double check ang iyong pangalan
-              at email — doon namin ipapadala ang iyong exclusive access.
+              Upload the screenshot below and double-check your name and email. We&apos;ll use those details to verify
+              your payment and send your access.
             </p>
           ),
         },

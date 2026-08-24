@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
@@ -33,6 +33,11 @@ export async function generateMetadata({
 
 export default async function ProgramPage({ params }: ProgramPageProps) {
   const { slug } = await params;
+
+  if (slug === "jdc-mastermind") {
+    permanentRedirect("/elite");
+  }
+
   const program = getProgram(slug);
 
   if (!program) {

@@ -275,7 +275,11 @@ export function HeroBillboard() {
         </div>
         <div className="hero-row-track">
           {programs.slice(0, 4).map((program) => (
-            <Link key={program.slug} href={`/programs/${program.slug}`} className="hero-title-card">
+            <Link
+              key={program.slug}
+              href={program.slug === "jdc-mastermind" ? "/elite" : `/programs/${program.slug}`}
+              className="hero-title-card"
+            >
               <Image
                 src={program.image}
                 alt={program.imageAlt}

@@ -4,6 +4,8 @@ import Link from "next/link";
 import { Program } from "@/lib/types";
 
 export function ProgramCard({ program }: { program: Program }) {
+  const programHref = program.slug === "jdc-mastermind" ? "/elite" : `/programs/${program.slug}`;
+
   return (
     <article className="card-surface interactive-card fade-up overflow-hidden rounded-[2rem]">
       <div className="visual-frame">
@@ -29,7 +31,7 @@ export function ProgramCard({ program }: { program: Program }) {
         </ul>
         <div className="mt-6 flex flex-wrap gap-3">
           <Link
-            href={`/programs/${program.slug}`}
+            href={programHref}
             className="button-primary pressable rounded-full px-4 py-2 font-semibold"
           >
             View this track
