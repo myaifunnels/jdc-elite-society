@@ -4,7 +4,7 @@ export const mastermindOffer = {
     "Turn hard work into clear, disciplined execution with two focused JDC Mastermind sessions, lifetime replays, and a private accountability community led by Coach JDC.",
   ogImage: "https://vibe.filesafe.space/meta/1780838141047994819/og_image.png",
   logo: "https://vibe.filesafe.space/1780838141047994819/attachments/5738db11-cc5d-4ee5-91d6-b11707063731.png",
-  heroVideo: "https://assets.cdn.filesafe.space/Col3j2B7jRDX5y8J5bgN/media/6a7741165a64f2b56797f059.mov",
+  heroVideo: "https://assets.cdn.filesafe.space/Col3j2B7jRDX5y8J5bgN/media/6a8425979f720b54ef08fd2f.mp4",
   thankYouVideo: "https://assets.cdn.filesafe.space/Col3j2B7jRDX5y8J5bgN/media/6a77412a8880872019a0353a.mp4",
   coachImage:
     "https://vibe.filesafe.space/1780838141047994819/attachments/e1a87fc2-c6a0-49a8-9d4c-871266b789d6.png",
