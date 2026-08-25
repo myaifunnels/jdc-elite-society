@@ -26,10 +26,17 @@ export default async function PartnershipLinkPage() {
 
   return (
     <div className="dashboard-widget-grid">
+      <MacosWindow title="Your campaigns" className="dashboard-span-2">
+        <p className="macos-lead" style={{ textAlign: "left" }}>
+          Each campaign has its own affiliate link and QR code. Pioneer promotes the Foundation Course. Coaches tagged
+          jdc-partner also get Mastermind Sessions 1 and 2 at an additional 20%.
+        </p>
+      </MacosWindow>
       {campaigns.map((campaign) => {
         const url = brandedUrl(profile.code, campaign.slug);
         return (
           <MacosWindow key={campaign.slug} title={campaign.shortTitle} className="dashboard-span-2">
+            <p className="macos-kicker">{campaign.requiredProgram === "pioneer" ? "Pioneer" : "jdc-partner"} · 20%</p>
             <p className="macos-lead" style={{ textAlign: "left" }}>
               {campaign.description}
             </p>

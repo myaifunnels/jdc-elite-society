@@ -3372,6 +3372,94 @@ html:not(.dark) .dashboard-desktop {
   width: 100%;
 }
 
+.dashboard-quick-links {
+  display: grid;
+  gap: 0.3rem;
+}
+
+.dashboard-quick-link-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 0.6rem;
+  border-radius: 10px;
+  color: var(--foreground);
+}
+
+.dashboard-quick-link-row:hover {
+  background: color-mix(in srgb, var(--surface) 70%, white 8%);
+}
+
+.dashboard-quick-link-row svg:first-child {
+  flex: 0 0 auto;
+  color: var(--muted);
+}
+
+.dashboard-quick-link-row span {
+  display: grid;
+  min-width: 0;
+  flex: 1;
+  gap: 0.1rem;
+}
+
+.dashboard-quick-link-row strong {
+  font-size: 0.86rem;
+  font-weight: 650;
+}
+
+.dashboard-quick-link-row small {
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 0.74rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dashboard-quick-link-row svg:last-child {
+  flex: 0 0 auto;
+  color: var(--muted);
+}
+
+.dashboard-disclosure {
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--chrome-bright) 22%, transparent);
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--surface-elevated) 72%, transparent);
+}
+
+.dashboard-disclosure summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 2.4rem;
+  padding: 0.7rem 1.05rem;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--chrome-bright) 10%, transparent), transparent 70%), color-mix(in srgb, var(--surface) 62%, transparent);
+  color: color-mix(in srgb, var(--foreground) 82%, var(--muted));
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-weight: 600;
+  list-style: none;
+}
+
+.dashboard-disclosure summary::-webkit-details-marker {
+  display: none;
+}
+
+.dashboard-disclosure summary::after {
+  content: "Show";
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.dashboard-disclosure[open] summary::after {
+  content: "Hide";
+}
+
+.dashboard-disclosure-body {
+  padding: 0.85rem 1.05rem 1.05rem;
+}
+
 .dashboard-span-2 {
   grid-column: 1 / -1;
 }
@@ -4066,6 +4154,17 @@ html:not(.dark) .dashboard-desktop {
 .account-dash-stack {
   display: grid;
   gap: 1rem;
+}
+
+.account-dash-inline-link {
+  padding: 0.2rem 0.1rem;
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+
+.account-dash-inline-link a {
+  color: var(--brand-dark);
+  font-weight: 600;
 }
 
 .account-dash {

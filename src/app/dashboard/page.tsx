@@ -1,3 +1,4 @@
+import { CreditCard, GraduationCap, Handshake, Plug, Users } from "lucide-react";
 import Link from "next/link";
 
 import { AccountProfileDashboard } from "@/components/dashboard/account-profile-dashboard";
@@ -6,6 +7,7 @@ import { ContactAddressVerifyNotice } from "@/components/dashboard/contact-addre
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { MacosWindow } from "@/components/dashboard/macos-window";
 import { PartnersMap } from "@/components/dashboard/partners-map";
+import { QuickLinksCard } from "@/components/dashboard/quick-links-card";
 import { dashboardMetrics } from "@/data/crm";
 import { PendingMemberHome } from "@/components/dashboard/pending-member-home";
 import { contactNeedsAddressConfirm, getContactByEmail, listContactsPaged, listPartnerMapPins, listViewerMetrics } from "@/lib/crm-store";
@@ -83,16 +85,10 @@ export default async function DashboardPage() {
             mapAddress={crmContact?.address}
           />
           {!pending && hasAccess(access, "partnership") ? (
-            <MacosWindow title="Partnership Program" className="dashboard-span-2">
-              <p className="macos-lead" style={{ textAlign: "left" }}>
-                You have invite-only partner access. 20% is recorded by the team and released on the 15th and 30th.
-              </p>
-              <div className="macos-actions">
-                <Link href="/dashboard/partnership" className="macos-btn macos-btn-primary">
-                  Open Partnership
-                </Link>
-              </div>
-            </MacosWindow>
+            <p className="account-dash-inline-link">
+              You have invite-only partner access — 20% recorded and released on the 15th and 30th.{" "}
+              <Link href="/dashboard/partnership">Open Partnership →</Link>
+            </p>
           ) : null}
         </div>
       </DashboardShell>
@@ -121,17 +117,6 @@ export default async function DashboardPage() {
             </article>
           ))}
 
-          <MacosWindow title="Your account">
-            <p className="macos-lead" style={{ textAlign: "left" }}>
-              Update your photo, phone, company, and password. This is the card on your login.
-            </p>
-            <div className="macos-actions">
-              <Link href="/dashboard/profile" className="macos-btn macos-btn-primary">
-                Edit account
-              </Link>
-            </div>
-          </MacosWindow>
-
           <MacosWindow title="Your contacts" className="dashboard-span-2" bodyClassName="dashboard-contact-list">
             {contacts.total === 0 ? (
               <p className="macos-lead" style={{ textAlign: "left" }}>
@@ -155,18 +140,27 @@ export default async function DashboardPage() {
             </Link>
           </MacosWindow>
 
-          {hasAccess(access, "partnership") ? (
-            <MacosWindow title="Partnership Program" className="dashboard-span-2">
-              <p className="macos-lead" style={{ textAlign: "left" }}>
-                Separate from CRM coverage: your 20% partnership link, tree, and 15th/30th payouts live here.
-              </p>
-              <div className="macos-actions">
-                <Link href="/dashboard/partnership" className="macos-btn macos-btn-primary">
-                  Open Partnership
-                </Link>
-              </div>
-            </MacosWindow>
-          ) : null}
+          <QuickLinksCard
+            className="dashboard-span-2"
+            links={[
+              {
+                href: "/dashboard/profile",
+                label: "Your account",
+                description: "Update your photo, phone, company, and password.",
+                icon: Users,
+              },
+              ...(hasAccess(access, "partnership")
+                ? [
+                    {
+                      href: "/dashboard/partnership",
+                      label: "Partnership Program",
+                      description: "Your 20% partnership link, tree, and 15th/30th payouts.",
+                      icon: Handshake,
+                    },
+                  ]
+                : []),
+            ]}
+          />
 
           {pins.length > 0 ? (
             <MacosWindow title="Your coverage" className="dashboard-span-2" bodyClassName="partners-map-body">
@@ -227,17 +221,6 @@ export default async function DashboardPage() {
           </Link>
         </MacosWindow>
 
-        <MacosWindow title="University">
-          <p className="macos-lead" style={{ textAlign: "left" }}>
-            The JDC Elite Society community at community.coachjdc.org.
-          </p>
-          <div className="macos-actions">
-            <Link href="/dashboard/university" className="macos-btn macos-btn-primary">
-              Open University
-            </Link>
-          </div>
-        </MacosWindow>
-
         <MacosWindow title="Partners" bodyClassName="dashboard-contact-list">
           {partners.items.map((partner) => (
             <Link key={partner.id} href={`/dashboard/contacts/${partner.id}`} className="dashboard-contact-row">
@@ -252,53 +235,41 @@ export default async function DashboardPage() {
           ))}
         </MacosWindow>
 
-        <MacosWindow title="Registrants">
-          <p className="macos-lead" style={{ textAlign: "left" }}>
-            Member and contact sign-ups live on the Contacts workspace. Verify payment after they finish their profile.
-          </p>
-          <div className="macos-actions">
-            <Link href="/dashboard/contacts?view=registrants" className="macos-btn macos-btn-primary">
-              Open registrants
-            </Link>
-          </div>
-        </MacosWindow>
-
-        <MacosWindow title="Mastermind payments">
-          <p className="macos-lead" style={{ textAlign: "left" }}>
-            Review checkout receipts and approve confirmed payments from the dedicated verification queue.
-          </p>
-          <div className="macos-actions">
-            <Link href="/dashboard/payments" className="macos-btn macos-btn-primary">
-              Review payments
-            </Link>
-          </div>
-        </MacosWindow>
-
-        <MacosWindow title="Partnership Program">
-          <p className="macos-lead" style={{ textAlign: "left" }}>
-            Invite-only 20% program. Next payday {formatManilaDate(partnership.payday)}. {formatPhp(partnership.pendingPayout)}{" "}
-            waiting in that cycle. {partnership.activeAffiliates} active affiliates.
-          </p>
-          <div className="macos-actions">
-            <Link href="/dashboard/partnership" className="macos-btn macos-btn-primary">
-              Open Partnership
-            </Link>
-            <Link href="/dashboard/partnership/admin" className="macos-btn macos-btn-secondary">
-              Grant access
-            </Link>
-          </div>
-        </MacosWindow>
-
-        <MacosWindow title="Integrations">
-          <p className="macos-lead" style={{ textAlign: "left" }}>
-            Review Google Maps and Cloudflare R2 configuration.
-          </p>
-          <div className="macos-actions">
-            <Link href="/dashboard/integrations" className="macos-btn macos-btn-secondary">
-              Open Integrations
-            </Link>
-          </div>
-        </MacosWindow>
+        <QuickLinksCard
+          className="dashboard-span-2"
+          links={[
+            {
+              href: "/dashboard/university",
+              label: "University",
+              description: "The JDC Elite Society community at community.coachjdc.org.",
+              icon: GraduationCap,
+            },
+            {
+              href: "/dashboard/contacts?view=registrants",
+              label: "Registrants",
+              description: "Verify member and contact sign-ups after they finish their profile.",
+              icon: Users,
+            },
+            {
+              href: "/dashboard/payments",
+              label: "Mastermind payments",
+              description: "Review checkout receipts and approve confirmed payments.",
+              icon: CreditCard,
+            },
+            {
+              href: "/dashboard/partnership",
+              label: "Partnership Program",
+              description: `Next payday ${formatManilaDate(partnership.payday)} · ${formatPhp(partnership.pendingPayout)} waiting · ${partnership.activeAffiliates} active affiliates.`,
+              icon: Handshake,
+            },
+            {
+              href: "/dashboard/integrations",
+              label: "Integrations",
+              description: "Google Maps, Cloudflare R2, and GoHighLevel configuration.",
+              icon: Plug,
+            },
+          ]}
+        />
       </div>
     </DashboardShell>
   );

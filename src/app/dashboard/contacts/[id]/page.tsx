@@ -19,6 +19,13 @@ import { getGoogleMapsConfig } from "@/lib/maps";
 import { membershipLabel } from "@/lib/membership";
 import { parsePage, paginate } from "@/lib/pagination";
 import { requireAnyCapability } from "@/lib/session";
+import { cn } from "@/lib/utils";
+
+type ContactDetailTab = "overview" | "access" | "location";
+
+function parseContactDetailTab(value?: string): ContactDetailTab {
+  return value === "access" || value === "location" ? value : "overview";
+}
 
 function Field({ label, value, href }: { label: string; value?: string | null; href?: string }) {
   const text = value?.trim();
@@ -47,7 +54,7 @@ export default async function ContactDashboardPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ page?: string }>;
+  searchParams: Promise<{ page?: string; tab?: string }>;
 }) {
   const { user, access } = await requireAnyCapability("contacts.view", "registrations");
   const viewer = { ...user, seeAllContacts: hasAccess(access, "contacts.all") };
@@ -58,8 +65,12 @@ export default async function ContactDashboardPage({
     notFound();
   }
 
+  const rawSearchParams = await searchParams;
+  const tab = parseContactDetailTab(rawSearchParams.tab);
+  const tabHref = (next: ContactDetailTab) => (next === "overview" ? `/dashboard/contacts/${contact.id}` : `/dashboard/contacts/${contact.id}?tab=${next}`);
+
   const assigned = contact.kind === "partner" ? await listAssignedContacts(viewer, contact.name) : [];
-  const assignedPage = paginate(assigned, parsePage((await searchParams).page), 12);
+  const assignedPage = paginate(assigned, parsePage(rawSearchParams.page), 12);
   const [mapsConfig, tagIndex, portalUser] = await Promise.all([
     getGoogleMapsConfig(),
     listTagIndex(viewer),
@@ -77,7 +88,23 @@ export default async function ContactDashboardPage({
           : "Full contact record: profile, portal, tags, and map."
       }
     >
+      <div className="macos-toolbar" style={{ padding: "0 0 0.9rem" }}>
+        <div className="macos-segment" style={{ gridTemplateColumns: "1fr 1fr 1fr", width: "min(28rem, 100%)" }}>
+          <Link href={tabHref("overview")} className={cn(tab === "overview" && "is-active")}>
+            Overview
+          </Link>
+          <Link href={tabHref("access")} className={cn(tab === "access" && "is-active")}>
+            Access &amp; Tags
+          </Link>
+          <Link href={tabHref("location")} className={cn(tab === "location" && "is-active")}>
+            Location
+          </Link>
+        </div>
+      </div>
+
       <div className="dashboard-widget-grid">
+        {tab === "overview" ? (
+        <>
         <MacosWindow title="Profile" className="dashboard-span-2">
           <div className="dashboard-profile-hero">
             <ContactAvatar name={contact.name} photoUrl={contact.photoUrl || portalUser?.facebookPhotoUrl} size="lg" />
@@ -197,7 +224,11 @@ export default async function ContactDashboardPage({
             </div>
           </MacosWindow>
         ) : null}
+        </>
+        ) : null}
 
+        {tab === "access" ? (
+        <>
         <MacosWindow title="Tags" className="dashboard-span-2">
           <p className="macos-lead" style={{ textAlign: "left" }}>
             Advanced tags stay aligned with AiFunnels GHL. Pioneer and jdc-partner unlock the matching affiliate campaigns
@@ -280,7 +311,10 @@ export default async function ContactDashboardPage({
             </>
           )}
         </MacosWindow>
+        </>
+        ) : null}
 
+        {tab === "location" ? (
         <MacosWindow title="Location" className="dashboard-span-2">
           <AddressMap
             address={contact.address || location}
@@ -289,8 +323,10 @@ export default async function ContactDashboardPage({
             embedKey={mapsConfig.embedKey}
           />
         </MacosWindow>
+        ) : null}
 
-        {isPartner ? (
+        {tab === "overview" ? (
+        isPartner ? (
           <MacosWindow title="Assigned contacts" className="dashboard-span-2" bodyClassName="dashboard-contact-list">
             {assigned.length === 0 ? (
               <p className="macos-lead" style={{ textAlign: "left" }}>
@@ -342,7 +378,8 @@ export default async function ContactDashboardPage({
               </Link>
             </div>
           </MacosWindow>
-        )}
+        )
+        ) : null}
       </div>
     </DashboardShell>
   );

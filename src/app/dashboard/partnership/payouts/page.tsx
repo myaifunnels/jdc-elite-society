@@ -82,22 +82,25 @@ export default async function PartnershipPayoutsPage() {
         )}
       </MacosWindow>
 
-      <MacosWindow title="Paid history" className="dashboard-span-2">
-        {payouts.length === 0 ? (
-          <p className="macos-lead" style={{ textAlign: "left" }}>
-            Paid batches will show here with the GCash or bank reference.
-          </p>
-        ) : (
-          <ul className="grid gap-2 text-sm">
-            {payouts.map((payout) => (
-              <li key={payout.id}>
-                {formatManilaDate(payout.scheduledPayDate)} · {formatPhp(payout.amount)} · {payout.status}
-                {payout.reference ? ` · ${payout.reference}` : ""}
-              </li>
-            ))}
-          </ul>
-        )}
-      </MacosWindow>
+      <details className="dashboard-disclosure dashboard-span-2">
+        <summary>Paid history · {payouts.length}</summary>
+        <div className="dashboard-disclosure-body">
+          {payouts.length === 0 ? (
+            <p className="macos-lead" style={{ textAlign: "left" }}>
+              Paid batches will show here with the GCash or bank reference.
+            </p>
+          ) : (
+            <ul className="grid gap-2 text-sm">
+              {payouts.map((payout) => (
+                <li key={payout.id}>
+                  {formatManilaDate(payout.scheduledPayDate)} · {formatPhp(payout.amount)} · {payout.status}
+                  {payout.reference ? ` · ${payout.reference}` : ""}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </details>
     </div>
   );
 }

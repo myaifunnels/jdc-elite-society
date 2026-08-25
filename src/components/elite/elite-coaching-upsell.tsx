@@ -135,9 +135,6 @@ export function EliteCoachingUpsell({ firstName }: { firstName: string }) {
 
             <div className="elite-form elite-form-premium">
               <div className="elite-form-brandbar">
-                <span className="elite-form-traffic" aria-hidden="true">
-                  <i /><i /><i />
-                </span>
                 <span className="elite-form-monogram">JDC</span>
                 <span className="elite-form-brandcopy">
                   <strong>1-on-1 Coaching</strong>

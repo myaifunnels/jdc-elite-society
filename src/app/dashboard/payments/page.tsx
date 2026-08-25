@@ -85,11 +85,14 @@ export default async function PaymentsPage() {
           )}
         </MacosWindow>
 
-        <MacosWindow title="Approval history" className="dashboard-span-2">
-          {approved.length ? approved.map((order) => <PaymentRow key={order.id} order={order} />) : (
-            <p className="macos-lead" style={{ textAlign: "left" }}>Approved payments will appear here.</p>
-          )}
-        </MacosWindow>
+        <details className="dashboard-disclosure dashboard-span-2">
+          <summary>Approval history · {approved.length}</summary>
+          <div className="dashboard-disclosure-body">
+            {approved.length ? approved.map((order) => <PaymentRow key={order.id} order={order} />) : (
+              <p className="macos-lead" style={{ textAlign: "left" }}>Approved payments will appear here.</p>
+            )}
+          </div>
+        </details>
       </div>
     </DashboardShell>
   );

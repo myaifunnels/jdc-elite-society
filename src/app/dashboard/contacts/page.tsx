@@ -70,9 +70,9 @@ export default async function ContactsPage({
   const paged = paginate(matching, page, CONTACTS_PAGE_SIZE);
   const tags = view === "registrants" || !canSeeContacts ? [] : await listTagIndex(viewer);
   const pins =
-    view === "roster" || view === "registrants" || !canSeeContacts
-      ? []
-      : await listContactMapPins(viewer, query, { geocode: view === "map" });
+    view === "map" && canSeeContacts
+      ? await listContactMapPins(viewer, query, { geocode: true })
+      : [];
   const users = view === "roster" && user.role === "admin" ? await listAllUsers() : [];
   const usersByEmail = new Map(users.map((item) => [item.email.toLowerCase(), item]));
 
@@ -98,7 +98,6 @@ export default async function ContactsPage({
   const pagedRegistrants = paginate(filteredRegistrants, page, 20);
   const idsByEmail = view === "registrants" ? await contactIdsByEmail() : new Map<string, string>();
 
-  const ghlCount = allForKind.filter((contact) => contact.ghlContactId || contact.source.includes("GHL")).length;
   const followUp = allForKind.filter((contact) => contact.status === "follow-up" || contact.status === "qualified");
   const rosterBase = contactsHref({ view, kind, q: raw.q, tags: selectedTags, status: registrantStatus });
 
@@ -266,16 +265,6 @@ export default async function ContactsPage({
                 <p className="dashboard-metric-value">{allForKind.length}</p>
                 <p className="dashboard-metric-copy">People in this view</p>
               </article>
-              <article className="dashboard-metric-card">
-                <p className="macos-kicker">GHL synced</p>
-                <p className="dashboard-metric-value">{ghlCount}</p>
-                <p className="dashboard-metric-copy">From the Elite Society subaccount</p>
-              </article>
-              <article className="dashboard-metric-card">
-                <p className="macos-kicker">Matching</p>
-                <p className="dashboard-metric-value">{matching.length}</p>
-                <p className="dashboard-metric-copy">Results for this search</p>
-              </article>
               {canSeeRegistrants ? (
                 <article className="dashboard-metric-card">
                   <p className="macos-kicker">Pending registrants</p>
@@ -315,7 +304,11 @@ export default async function ContactsPage({
               </Link>
             ) : null}
 
-            <ContactsMap pins={pins} />
+            {canSeeContacts ? (
+              <Link href={contactsHref({ view: "map", kind, q: raw.q, tags: selectedTags })} className="macos-btn macos-btn-secondary self-start">
+                Open the map view
+              </Link>
+            ) : null}
           </>
         ) : null}
 

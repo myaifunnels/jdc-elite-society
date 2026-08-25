@@ -121,9 +121,6 @@ export function EliteCheckoutForm() {
   return (
     <form ref={formRef} className="elite-form elite-form-premium" onSubmit={onSubmit}>
       <div className="elite-form-brandbar">
-        <span className="elite-form-traffic" aria-hidden="true">
-          <i /><i /><i />
-        </span>
         <span className="elite-form-monogram">JDC</span>
         <span className="elite-form-brandcopy">
           <strong>Mastermind Application</strong>
