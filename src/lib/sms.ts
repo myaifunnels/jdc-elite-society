@@ -41,7 +41,8 @@ async function sendTextBeeSms(to: string, body: string) {
 async function sendTwilioSms(to: string, body: string) {
   const sid = process.env.TWILIO_ACCOUNT_SID?.trim();
   const token = process.env.TWILIO_AUTH_TOKEN?.trim();
-  const from = process.env.TWILIO_FROM?.trim();
+  const settings = await getResolvedIntegrationSettings();
+  const from = settings.smsFromNumber?.trim();
   if (!sid || !token || !from) {
     return { sent: false as const, skipped: true as const };
   }

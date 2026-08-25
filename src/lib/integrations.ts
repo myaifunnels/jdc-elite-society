@@ -9,6 +9,7 @@ export type IntegrationSettings = {
   ghlLocationId: string;
   textbeeApiKey: string;
   textbeeDeviceId: string;
+  smsFromNumber: string;
 };
 
 export const emptyIntegrationSettings: IntegrationSettings = {
@@ -22,6 +23,7 @@ export const emptyIntegrationSettings: IntegrationSettings = {
   ghlLocationId: "",
   textbeeApiKey: "",
   textbeeDeviceId: "",
+  smsFromNumber: "",
 };
 
 export function envIntegrationSettings(): IntegrationSettings {
@@ -36,6 +38,7 @@ export function envIntegrationSettings(): IntegrationSettings {
     ghlLocationId: process.env.GHL_LOCATION_ID ?? "",
     textbeeApiKey: process.env.TEXTBEE_API_KEY ?? "",
     textbeeDeviceId: process.env.TEXTBEE_DEVICE_ID ?? "",
+    smsFromNumber: process.env.TWILIO_FROM ?? "",
   };
 }
 
@@ -54,6 +57,7 @@ export function mergeIntegrationSettings(
     ghlLocationId: saved?.ghlLocationId || env.ghlLocationId,
     textbeeApiKey: saved?.textbeeApiKey || env.textbeeApiKey,
     textbeeDeviceId: saved?.textbeeDeviceId || env.textbeeDeviceId,
+    smsFromNumber: saved?.smsFromNumber || env.smsFromNumber,
   };
 }
 

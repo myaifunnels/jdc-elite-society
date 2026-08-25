@@ -64,6 +64,10 @@ async function ensureTable(client: Pool) {
     ALTER TABLE integration_settings
     ADD COLUMN IF NOT EXISTS textbee_device_id TEXT
   `);
+  await client.query(`
+    ALTER TABLE integration_settings
+    ADD COLUMN IF NOT EXISTS sms_from_number TEXT
+  `);
   tableReady = true;
 }
 
@@ -83,6 +87,7 @@ function mapRow(row: Record<string, unknown> | undefined): IntegrationSettings |
     ghlLocationId: String(row.ghl_location_id ?? ""),
     textbeeApiKey: String(row.textbee_api_key ?? ""),
     textbeeDeviceId: String(row.textbee_device_id ?? ""),
+    smsFromNumber: String(row.sms_from_number ?? ""),
   };
 }
 
@@ -125,6 +130,7 @@ export async function saveIntegrationSettings(
     ghlLocationId: incoming.ghlLocationId || current.ghlLocationId,
     textbeeApiKey: incoming.textbeeApiKey || current.textbeeApiKey,
     textbeeDeviceId: incoming.textbeeDeviceId || current.textbeeDeviceId,
+    smsFromNumber: incoming.smsFromNumber || current.smsFromNumber,
   };
 
   memoryStore.current = next;
@@ -147,9 +153,10 @@ export async function saveIntegrationSettings(
           ghl_location_id,
           textbee_api_key,
           textbee_device_id,
+          sms_from_number,
           updated_at
         )
-        VALUES (1, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NOW())
+        VALUES (1, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW())
         ON CONFLICT (id) DO UPDATE SET
           google_maps_embed_key = EXCLUDED.google_maps_embed_key,
           r2_account_id = EXCLUDED.r2_account_id,
@@ -161,6 +168,7 @@ export async function saveIntegrationSettings(
           ghl_location_id = EXCLUDED.ghl_location_id,
           textbee_api_key = EXCLUDED.textbee_api_key,
           textbee_device_id = EXCLUDED.textbee_device_id,
+          sms_from_number = EXCLUDED.sms_from_number,
           updated_at = NOW()
         `,
         [
@@ -174,6 +182,7 @@ export async function saveIntegrationSettings(
           next.ghlLocationId,
           next.textbeeApiKey,
           next.textbeeDeviceId,
+          next.smsFromNumber,
         ],
       );
     } catch (error) {

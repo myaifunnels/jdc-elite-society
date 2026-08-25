@@ -18,6 +18,7 @@ import {
   UserRound,
   Users,
   X,
+  Zap,
 } from "lucide-react";
 
 import { logout } from "@/app/login/actions";
@@ -42,6 +43,7 @@ const navCatalog: Array<{
   { href: "/dashboard/partnership", label: "Partnership", icon: Handshake, capability: "partnership" },
   { href: "/dashboard/access", label: "Access", icon: Shield, capability: "access" },
   { href: "/dashboard/integrations", label: "Integrations", icon: Plug, capability: "integrations" },
+  { href: "/dashboard/automation", label: "Automation", icon: Zap, capability: "automation" },
   { href: "/dashboard/settings", label: "Settings", icon: Settings2, capability: "settings" },
 ];
 

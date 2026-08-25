@@ -2,6 +2,8 @@ import { mastermindOffer } from "@/data/mastermind-offer";
 import { notifyEmails, sendEmail } from "@/lib/mail";
 import { eliteSiteUrl, siteUrl } from "@/lib/site";
 import { notifyPhone, sendSms } from "@/lib/sms";
+import { getSmsTemplateBody } from "@/lib/sms-templates-store";
+import { renderTemplate } from "@/lib/sms-templates";
 
 export type MastermindNotice = {
   name: string;
@@ -47,8 +49,16 @@ export async function notifyMastermindPurchase(input: MastermindNotice) {
     <p><a href="${contactsUrl}">Open contacts</a> · <a href="${eliteSiteUrl}">Elite offer</a></p>
   `;
 
-  const buyerSms = `JDC Mastermind: Natanggap namin ang iyong payment (${input.priceLabel}). Bukas na ang access mo, ngayon din! I-check ang email. ${mastermindOffer.communityUrl.replace("https://", "")}`;
-  const teamSms = `New JDC Mastermind payment: ${input.name} · ${input.priceLabel} · ${input.paymentMethod}. Verify receipt.`;
+  const [buyerSmsBody, teamSmsBody] = await Promise.all([
+    getSmsTemplateBody("mastermind_purchase_buyer"),
+    getSmsTemplateBody("mastermind_purchase_team"),
+  ]);
+  const buyerSms = renderTemplate(buyerSmsBody, { name: input.name, price: input.priceLabel });
+  const teamSms = renderTemplate(teamSmsBody, {
+    name: input.name,
+    price: input.priceLabel,
+    paymentMethod: input.paymentMethod,
+  });
 
   await Promise.allSettled([
     sendEmail({
@@ -115,8 +125,16 @@ export async function notifyCoachingOfferPurchase(input: CoachingOfferNotice) {
     <p><a href="${contactsUrl}">Open contacts</a></p>
   `;
 
-  const buyerSms = `JDC Coaching: Natanggap namin ang iyong payment (${input.priceLabel}) para sa ${hoursLabel}. Mage-message kami para i-schedule.`;
-  const teamSms = `New Coaching add-on: ${input.name} · ${formatLabel} · ${hoursLabel} · ${input.priceLabel}. Verify receipt.`;
+  const [buyerSmsBody, teamSmsBody] = await Promise.all([
+    getSmsTemplateBody("coaching_offer_buyer"),
+    getSmsTemplateBody("coaching_offer_team"),
+  ]);
+  const buyerSms = renderTemplate(buyerSmsBody, { name: input.name, price: input.priceLabel, hours: hoursLabel });
+  const teamSms = renderTemplate(teamSmsBody, {
+    name: input.name,
+    price: input.priceLabel,
+    format: `${formatLabel} · ${hoursLabel}`,
+  });
 
   await Promise.allSettled([
     sendEmail({
@@ -139,4 +157,14 @@ export async function notifyCoachingOfferPurchase(input: CoachingOfferNotice) {
       email: notifyEmails()[0] || mastermindOffer.support.email,
     }),
   ]);
+}
+
+export async function notifyPaymentApproved(input: { name: string; email: string; phone: string }) {
+  const body = renderTemplate(await getSmsTemplateBody("payment_approved"), { name: input.name });
+  await sendSms({ to: input.phone, body, name: input.name, email: input.email });
+}
+
+export async function notifyPaymentRejected(input: { name: string; email: string; phone: string }) {
+  const body = renderTemplate(await getSmsTemplateBody("payment_rejected"), { name: input.name });
+  await sendSms({ to: input.phone, body, name: input.name, email: input.email });
 }
