@@ -5,24 +5,34 @@ import { useActionState } from "react";
 
 import { AuthFormState, changeSignedInPassword } from "@/app/login/actions";
 import { SiteLogo } from "@/components/branding/site-logo";
+import { PhotoUploadField } from "@/components/forms/photo-upload-field";
 import { BrandingSettings } from "@/lib/branding";
 
 const initialState: AuthFormState = {};
 
-export function SetPasswordForm({ branding, email }: { branding: BrandingSettings; email: string }) {
+export function SetPasswordForm({
+  branding,
+  email,
+  photoUrl = "",
+}: {
+  branding: BrandingSettings;
+  email: string;
+  photoUrl?: string;
+}) {
   const [state, action, pending] = useActionState(changeSignedInPassword, initialState);
 
   return (
     <div className="macos-window is-signin">
       <header className="macos-titlebar">
-        <p className="macos-title">New Password</p>
+        <p className="macos-title">Finish Setting Up</p>
       </header>
       <div className="macos-body">
         <SiteLogo branding={branding} href="/" compact={Boolean(branding.logoUrl)} />
-        <form action={action} className="auth-form auth-form-login">
+        <form action={action} className="auth-form auth-form-login" encType="multipart/form-data">
           <p className="macos-lead">
-            You signed in as {email} with the temporary password. Enter a new password, then confirm it.
+            You&apos;re signed in as {email}. Add your profile photo, then set a password only you know.
           </p>
+          <PhotoUploadField defaultUrl={photoUrl} />
           <label className="auth-field">
             <span>New password</span>
             <span className="auth-input-wrap">
@@ -46,7 +56,7 @@ export function SetPasswordForm({ branding, email }: { branding: BrandingSetting
           {state.error ? <p className="auth-error">{state.error}</p> : null}
           <div className="macos-actions">
             <button type="submit" className="macos-btn macos-btn-primary" disabled={pending}>
-              {pending ? "Saving..." : "Save new password"}
+              {pending ? "Saving..." : "Finish setup & open dashboard"}
             </button>
           </div>
         </form>

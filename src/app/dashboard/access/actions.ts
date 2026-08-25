@@ -7,7 +7,14 @@ import { redirect } from "next/navigation";
 import { AccessMap, AccessOverride, CAPABILITIES, parseAccessRole } from "@/lib/access";
 import { deleteUserAccess, saveRoleDefaults, saveUserAccess } from "@/lib/access-store";
 import { removeProfileForUser } from "@/lib/affiliate-store";
-import { createUser, deleteUser, findUserByEmail, getPublicUserById, updateUserRole } from "@/lib/auth-store";
+import {
+  createUser,
+  deleteUser,
+  findUserByEmail,
+  getPublicUserById,
+  setUserActive,
+  updateUserRole,
+} from "@/lib/auth-store";
 import { hideAndRemoveContactByEmail, unhideContactEmail } from "@/lib/crm-store";
 import { deletePasswordResetsForUser } from "@/lib/password-reset";
 import { requireCapability } from "@/lib/session";
@@ -83,6 +90,64 @@ export async function grantContactPortalAction(formData: FormData) {
 
   revalidatePath("/dashboard/access");
   revalidatePath("/dashboard/contacts");
+}
+
+export type DeactivateUserState = {
+  error?: string;
+  success?: string;
+};
+
+export async function deactivateUserAction(
+  _prevState: DeactivateUserState,
+  formData: FormData,
+): Promise<DeactivateUserState> {
+  const { user: actor } = await requireCapability("access");
+  if (actor.role !== "admin") {
+    return { error: "Only admin can deactivate accounts." };
+  }
+
+  const userId = String(formData.get("userId") ?? "").trim();
+  if (!userId) {
+    return { error: "Missing account." };
+  }
+  if (userId === actor.id) {
+    return { error: "You can't deactivate the account you're signed in with." };
+  }
+
+  try {
+    await setUserActive(userId, false);
+  } catch (error) {
+    return { error: error instanceof Error ? error.message : "I couldn't deactivate this account." };
+  }
+
+  revalidatePath("/dashboard/access");
+  revalidatePath("/dashboard/contacts");
+  revalidatePath("/dashboard/payments");
+  revalidatePath("/dashboard/registrations");
+  return { success: "Account deactivated. They can no longer sign in or access the dashboard." };
+}
+
+export async function reactivateUserAction(
+  _prevState: DeactivateUserState,
+  formData: FormData,
+): Promise<DeactivateUserState> {
+  await requireCapability("access");
+  const userId = String(formData.get("userId") ?? "").trim();
+  if (!userId) {
+    return { error: "Missing account." };
+  }
+
+  try {
+    await setUserActive(userId, true);
+  } catch (error) {
+    return { error: error instanceof Error ? error.message : "I couldn't reactivate this account." };
+  }
+
+  revalidatePath("/dashboard/access");
+  revalidatePath("/dashboard/contacts");
+  revalidatePath("/dashboard/payments");
+  revalidatePath("/dashboard/registrations");
+  return { success: "Account reactivated." };
 }
 
 export type DeleteUserState = {

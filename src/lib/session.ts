@@ -98,7 +98,7 @@ export async function getSessionUser(): Promise<SessionUser | null> {
   }
 
   const user = await getPublicUserById(userId);
-  if (!user) {
+  if (!user || !user.active) {
     return null;
   }
 

@@ -17,6 +17,7 @@ import {
   requestPasswordReset,
   resetPasswordWithToken,
   setMemberPaymentVerified,
+  setUserAvatar,
   setUserPassword,
 } from "@/lib/auth-store";
 import { storeProfilePhoto } from "@/lib/r2-upload";
@@ -174,6 +175,10 @@ export async function loginAccount(
 
   if (!user) {
     return { error: "That email and password do not match. If you can't sign in, register first." };
+  }
+
+  if (!user.active) {
+    return { error: "This account has been deactivated. Contact support if you believe this is a mistake." };
   }
 
   await setSessionCookie(user.id, String(formData.get("remember") ?? "") === "on");
@@ -362,6 +367,16 @@ export async function changeSignedInPassword(
 
   if (isTemporaryMemberPassword(password)) {
     return { error: "Choose a new password. Do not reuse JDCELITESOCIETY." };
+  }
+
+  const photo = formData.get("profilePhoto");
+  if (photo instanceof File && photo.size > 0) {
+    try {
+      const photoUrl = await storeProfilePhoto(photo, user.id);
+      await setUserAvatar(user.id, photoUrl);
+    } catch (error) {
+      return { error: error instanceof Error ? error.message : "I couldn't save that photo." };
+    }
   }
 
   await setUserPassword(user.id, password);

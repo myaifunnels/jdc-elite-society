@@ -4,7 +4,16 @@ import { programs } from "@/data/programs";
 import { eliteSiteUrl, siteUrl } from "@/lib/site";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const staticPaths = ["", "/programs", "/about", "/contact", "/register", "/login", "/elite"];
+  const staticPaths = [
+    "",
+    "/programs",
+    "/programs/1-on-1-coaching",
+    "/about",
+    "/contact",
+    "/register",
+    "/login",
+    "/elite",
+  ];
 
   return [
     ...staticPaths.map((path) => ({

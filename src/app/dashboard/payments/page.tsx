@@ -1,4 +1,5 @@
 import { ApproveMastermindPaymentButton } from "@/components/dashboard/approve-mastermind-payment-button";
+import { DeactivateAccountButton } from "@/components/dashboard/deactivate-account-button";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { MacosWindow } from "@/components/dashboard/macos-window";
 import { formatPhp } from "@/data/mastermind-offer";
@@ -35,7 +36,13 @@ function PaymentRow({ order }: { order: EliteCheckoutOrder }) {
         View receipt
       </a>
       {order.status === "pending" ? (
-        <ApproveMastermindPaymentButton orderId={order.id} />
+        <>
+          <p className="dashboard-metric-copy" style={{ margin: 0 }}>
+            Newly signed up · instant access already granted
+          </p>
+          <ApproveMastermindPaymentButton orderId={order.id} />
+          <DeactivateAccountButton userId={order.userId} name={order.fullName} />
+        </>
       ) : (
         <span className="status-pill is-verified">Approved</span>
       )}
@@ -53,7 +60,7 @@ export default async function PaymentsPage() {
   return (
     <DashboardShell
       title="Mastermind payments"
-      description="Review checkout receipts, approve confirmed payments, and unlock each buyer's member access."
+      description="Buyers get instant access at checkout. Use this queue to verify receipts after the fact, and deactivate any account whose receipt turns out to be fraudulent."
     >
       <div className="dashboard-widget-grid">
         <article className="dashboard-metric-card">

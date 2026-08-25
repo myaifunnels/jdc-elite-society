@@ -140,37 +140,24 @@ export const resetPasswordSchema = z
 
 export const elitePaymentMethods = ["BPI Bank", "GCash"] as const;
 
-export const eliteCheckoutSchema = z
-  .object({
-    fullName: z.string().min(2, "Kailangan ang iyong buong pangalan."),
-    email: z.email("Hindi wastong email format."),
-    mobile: z
-      .string()
-      .min(1, "Kailangan ang iyong mobile number.")
-      .refine((value) => /^09\d{2}\s?\d{3}\s?\d{4}$/.test(value.replace(/-/g, "")), {
-        message: "Format: 09XX XXX XXXX",
-      }),
-    password: z.string().min(8, "Use at least 8 characters for your password."),
-    confirmPassword: z.string().min(1, "Confirm your password."),
-    paymentMethod: z.enum(elitePaymentMethods, { message: "Pumili ng payment method." }),
-    couponCode: z.string().optional().default(""),
-    coachingHours: z.number().int().min(0).max(10),
-    coachingMode: z.enum(["", "online", "in-person"]),
-  })
-  .refine((value) => value.password === value.confirmPassword, {
-    message: "Passwords do not match.",
-    path: ["confirmPassword"],
-  })
-  .refine((value) => value.coachingHours === 0 || value.coachingMode !== "", {
-    message: "Choose online or in-person coaching.",
-    path: ["coachingMode"],
-  })
-  .refine((value) => value.coachingHours > 0 || value.coachingMode === "", {
-    message: "Choose at least one coaching hour.",
-    path: ["coachingHours"],
-  });
+export const eliteCheckoutSchema = z.object({
+  fullName: z.string().min(2, "Kailangan ang iyong buong pangalan."),
+  email: z.email("Hindi wastong email format."),
+  phoneCountry: z.string().min(2, "Choose a country.").default("PH"),
+  phoneNational: z.string().min(5, "Kailangan ang iyong mobile number."),
+  paymentMethod: z.enum(elitePaymentMethods, { message: "Pumili ng payment method." }),
+  couponCode: z.string().optional().default(""),
+});
 
 export type EliteCheckoutInput = z.infer<typeof eliteCheckoutSchema>;
+
+export const eliteCoachingOfferSchema = z.object({
+  paymentMethod: z.enum(elitePaymentMethods, { message: "Pumili ng payment method." }),
+  coachingHours: z.number().int().min(1).max(10),
+  coachingMode: z.enum(["online", "in-person"], { message: "Choose online or in-person coaching." }),
+});
+
+export type EliteCoachingOfferInput = z.infer<typeof eliteCoachingOfferSchema>;
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
 export type CompleteProfileInput = z.infer<typeof completeProfileSchema>;

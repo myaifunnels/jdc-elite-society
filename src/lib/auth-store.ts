@@ -67,6 +67,7 @@ function publicUser(user: AuthUserRecord): AuthUser {
     profileComplete: user.profileComplete,
     paymentVerified: user.paymentVerified,
     passwordSet: user.passwordSet,
+    active: user.active,
     accountStatus: deriveStatus(user),
     bestDescribesYou: user.bestDescribesYou,
     dateOfBirth: user.dateOfBirth,
@@ -86,6 +87,7 @@ function mapRow(row: Record<string, unknown>): AuthUserRecord {
   const profileComplete = row.profile_complete === true || row.profile_complete === "t" || privileged;
   const paymentVerified = row.payment_verified === true || row.payment_verified === "t" || privileged;
   const passwordSet = row.password_set === true || row.password_set === "t" || privileged;
+  const active = row.active_account === false || row.active_account === "f" ? false : true;
 
   return {
     id: String(row.id),
@@ -101,6 +103,7 @@ function mapRow(row: Record<string, unknown>): AuthUserRecord {
     profileComplete,
     paymentVerified,
     passwordSet,
+    active,
     accountStatus: deriveStatus({ role, profileComplete, paymentVerified }),
     bestDescribesYou: String(row.best_describes_you ?? ""),
     dateOfBirth: String(row.date_of_birth ?? ""),
@@ -182,6 +185,10 @@ async function ensureTable(client: Pool) {
   await client.query(`
     ALTER TABLE site_users
     ADD COLUMN IF NOT EXISTS affiliate_programs TEXT NOT NULL DEFAULT ''
+  `);
+  await client.query(`
+    ALTER TABLE site_users
+    ADD COLUMN IF NOT EXISTS active_account BOOLEAN NOT NULL DEFAULT TRUE
   `);
   await client.query(`
     UPDATE site_users
@@ -442,6 +449,7 @@ export async function createUser(input: {
     profileComplete,
     paymentVerified,
     passwordSet,
+    active: true,
     accountStatus: deriveStatus({ role: input.role, profileComplete, paymentVerified }),
     bestDescribesYou: input.bestDescribesYou ?? "",
     dateOfBirth: input.dateOfBirth ?? "",
@@ -464,9 +472,9 @@ export async function createUser(input: {
           id, name, email, role, password_hash, created_at, best_describes_you,
           date_of_birth, address, facebook_profile_url, facebook_photo_url, memberships,
           phone, phone_country, company, profile_complete, payment_verified, password_set,
-          affiliate_access, affiliate_programs
+          affiliate_access, affiliate_programs, active_account
         )
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21)
         `,
         [
           user.id,
@@ -489,6 +497,7 @@ export async function createUser(input: {
           user.passwordSet,
           user.affiliateAccess,
           serializeAffiliatePrograms(user.affiliatePrograms),
+          user.active,
         ],
       );
     } catch (error) {
@@ -541,6 +550,7 @@ export async function ensurePortalUserForContact(input: {
     profileComplete: true,
     paymentVerified: true,
     passwordSet: false,
+    active: true,
     accountStatus: "verified",
     bestDescribesYou: input.bestDescribesYou ?? "",
     dateOfBirth: input.dateOfBirth ?? "",
@@ -731,6 +741,40 @@ export async function setMemberPaymentVerified(userId: string, verified = true) 
   return publicUser(next);
 }
 
+export async function setUserActive(userId: string, active: boolean) {
+  const user = await findUserById(userId);
+  if (!user) {
+    throw new Error("Account not found.");
+  }
+
+  const next: AuthUserRecord = { ...user, active };
+  await persistUserUpdate(next);
+  return publicUser(next);
+}
+
+export async function setUserAvatar(userId: string, photoUrl: string) {
+  const memoryIndex = memoryUsers.findIndex((user) => user.id === userId);
+  if (memoryIndex >= 0) {
+    memoryUsers[memoryIndex] = { ...memoryUsers[memoryIndex], facebookPhotoUrl: photoUrl };
+  }
+
+  const client = getPool();
+  if (!client) {
+    const user = memoryUsers.find((item) => item.id === userId);
+    return user ? publicUser(user) : null;
+  }
+
+  try {
+    await ensureTable(client);
+    await client.query("UPDATE site_users SET facebook_photo_url = $2 WHERE id = $1", [userId, photoUrl]);
+    return getPublicUserById(userId);
+  } catch (error) {
+    console.error("Failed to update user avatar", error);
+    const user = memoryUsers.find((item) => item.id === userId);
+    return user ? publicUser(user) : null;
+  }
+}
+
 export async function approveAllMemberRegistrations() {
   const members = await listMemberRegistrations();
   const pending = members.filter(
@@ -878,7 +922,8 @@ async function persistUserUpdate(user: AuthUserRecord) {
         company = $14,
         profile_complete = $15,
         payment_verified = $16,
-        password_set = $17
+        password_set = $17,
+        active_account = $18
       WHERE id = $1
       `,
       [
@@ -899,6 +944,7 @@ async function persistUserUpdate(user: AuthUserRecord) {
         user.profileComplete,
         user.paymentVerified,
         user.passwordSet,
+        user.active,
       ],
     );
   } catch (error) {

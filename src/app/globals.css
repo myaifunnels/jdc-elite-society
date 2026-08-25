@@ -271,6 +271,68 @@ a,
   padding: 0.5rem 0.75rem;
 }
 
+.site-nav-item-group {
+  position: relative;
+}
+
+.site-nav-item-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.site-nav-item-trigger svg {
+  transition: transform 160ms ease;
+}
+
+.site-nav-item-group:hover .site-nav-item-trigger svg,
+.site-nav-item-group:focus-within .site-nav-item-trigger svg {
+  transform: rotate(180deg);
+}
+
+.site-nav-dropdown {
+  position: absolute;
+  top: calc(100% + 0.4rem);
+  left: 50%;
+  z-index: 40;
+  display: grid;
+  gap: 0.1rem;
+  width: max-content;
+  min-width: 14rem;
+  padding: 0.5rem;
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  background: color-mix(in srgb, var(--surface-elevated) 96%, transparent);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.16);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, 4px);
+  transition: opacity 160ms ease, transform 160ms ease;
+}
+
+.site-nav-item-group:hover .site-nav-dropdown,
+.site-nav-item-group:focus-within .site-nav-dropdown {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translate(-50%, 0);
+}
+
+.site-nav-dropdown-link {
+  display: block;
+  border-radius: 0.65rem;
+  padding: 0.6rem 0.75rem;
+  color: var(--foreground);
+  font-size: 0.86rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.site-nav-dropdown-link:hover {
+  background: color-mix(in srgb, var(--brand) 12%, transparent);
+}
+
 .site-header-tools {
   display: flex;
   align-items: center;
@@ -344,6 +406,51 @@ a,
 .site-nav-drawer .site-header-cta {
   width: 100%;
   margin-top: 0.35rem;
+}
+
+.site-nav-drawer-group {
+  display: grid;
+}
+
+.site-nav-drawer-group-head {
+  display: flex;
+  align-items: stretch;
+  gap: 0.35rem;
+}
+
+.site-nav-drawer-group-head a {
+  flex: 1;
+}
+
+.site-nav-drawer-expand {
+  display: grid;
+  place-items: center;
+  width: 3rem;
+  border: 0;
+  border-radius: 0.9rem;
+  background: transparent;
+  color: var(--muted);
+}
+
+.site-nav-drawer-expand[aria-expanded="true"] svg {
+  transform: rotate(180deg);
+}
+
+.site-nav-drawer-expand svg {
+  transition: transform 160ms ease;
+}
+
+.site-nav-drawer-children {
+  display: grid;
+  gap: 0.2rem;
+  padding-left: 0.75rem;
+}
+
+.site-nav-drawer-children a {
+  padding: 0.7rem 0.95rem;
+  font-size: 0.92rem;
+  font-weight: 550;
+  color: var(--muted);
 }
 
 @media (min-width: 1100px) {

@@ -71,6 +71,21 @@ export function mastermindCheckoutTags(input: {
   ]);
 }
 
+export function coachingOfferTags(input: {
+  coachingMode: "online" | "in-person";
+  coachingHours: number;
+  priceLabel: string;
+  extra?: string[];
+}) {
+  return uniqueTags([
+    "1-on-1 Coaching",
+    input.coachingMode === "in-person" ? "In-person Coaching" : "Online Coaching",
+    `Coaching: ${input.coachingHours} hour${input.coachingHours === 1 ? "" : "s"}`,
+    input.priceLabel,
+    ...(input.extra ?? []),
+  ]);
+}
+
 export function normalizeTag(value: string) {
   return value.replace(/\s+/g, " ").trim().slice(0, 48);
 }

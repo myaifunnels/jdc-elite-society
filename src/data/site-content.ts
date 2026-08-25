@@ -2,7 +2,16 @@ import { NavItem, SiteStat } from "@/lib/types";
 
 export const navItems: NavItem[] = [
   { href: "/", label: "Home" },
-  { href: "/programs", label: "Programs" },
+  {
+    href: "/programs",
+    label: "Programs",
+    children: [
+      { href: "/elite", label: "JDC Mastermind" },
+      { href: "/programs/1-on-1-coaching#online", label: "Online Coaching" },
+      { href: "/programs/1-on-1-coaching#face-to-face", label: "Face to Face Coaching" },
+      { href: "/programs/90-day-blueprint", label: "90-Day Blueprint" },
+    ],
+  },
   { href: "/about", label: "About" },
   { href: "/contact", label: "Contact" },
 ];
@@ -24,7 +33,7 @@ export const siteContent = {
   secondaryCta: { href: "/programs", label: "See the programs" },
   headerCta: "Talk to me",
   programsEyebrow: "Where we start",
-  programsHeading: "Five tracks. One standard: you do the work.",
+  programsHeading: "Six tracks. One standard: you do the work.",
   programsLink: "See all programs",
   problemEyebrow: "Let me talk to you",
   problemHeading: "If this is your life right now, we should talk.",

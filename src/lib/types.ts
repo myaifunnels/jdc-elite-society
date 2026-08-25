@@ -18,6 +18,7 @@ export type Program = {
 export type NavItem = {
   href: string;
   label: string;
+  children?: NavItem[];
 };
 
 export type SiteStat = {
@@ -42,6 +43,7 @@ export type AuthUser = {
   profileComplete: boolean;
   paymentVerified: boolean;
   passwordSet: boolean;
+  active: boolean;
   accountStatus: AccountStatus;
   bestDescribesYou?: string;
   dateOfBirth?: string;

@@ -1,3 +1,4 @@
+import { randomBytes } from "node:crypto";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
@@ -5,10 +6,10 @@ import { mastermindOffer } from "@/data/mastermind-offer";
 import { AFFILIATE_CAMPAIGN_COOKIE, AFFILIATE_COOKIE, normalizeAffiliateCode } from "@/lib/affiliate";
 import { getProfileByCode, recordAttribution } from "@/lib/affiliate-store";
 import { createUser, deleteUser, ensureSeedUsers, findUserByEmailOrPhone } from "@/lib/auth-store";
+import { formatInternationalPhone } from "@/lib/countries";
 import { createLead } from "@/lib/crm-store";
 import { createEliteCheckoutOrder } from "@/lib/elite-checkout-store";
 import { syncContactToGhl } from "@/lib/ghl";
-import { toE164Phone } from "@/lib/identity";
 import { notifyMastermindPurchase } from "@/lib/notify";
 import { storePaymentReceipt } from "@/lib/r2-upload";
 import { sessionCookieName } from "@/lib/session";
@@ -31,8 +32,6 @@ async function upsertFunnelContact(input: {
   receiptUrl: string;
   priceLabel: string;
   spartans: boolean;
-  coachingHours: number;
-  coachingMode: string;
   tags: string[];
 }) {
   await fetch("https://api.myaifunnels.com/contacts/upsert", {
@@ -52,8 +51,6 @@ async function upsertFunnelContact(input: {
           "Receipt URL": input.receiptUrl,
           "Coupon Code": input.couponCode || "None",
           "Final Price": input.priceLabel,
-          "Private Coaching Hours": String(input.coachingHours),
-          "Private Coaching Format": input.coachingMode || "Not added",
         },
       },
     }),
@@ -65,13 +62,10 @@ export async function POST(request: Request) {
   const parsed = eliteCheckoutSchema.safeParse({
     fullName: String(form.get("fullName") ?? "").trim(),
     email: String(form.get("email") ?? "").trim(),
-    mobile: String(form.get("mobile") ?? "").trim(),
-    password: String(form.get("password") ?? ""),
-    confirmPassword: String(form.get("confirmPassword") ?? ""),
+    phoneCountry: String(form.get("phoneCountry") ?? "PH").trim().toUpperCase() || "PH",
+    phoneNational: String(form.get("phoneNational") ?? "").trim(),
     paymentMethod: String(form.get("paymentMethod") ?? "").trim(),
     couponCode: String(form.get("couponCode") ?? "").trim(),
-    coachingHours: Number(form.get("coachingHours") ?? 0),
-    coachingMode: String(form.get("coachingMode") ?? ""),
   });
 
   if (!parsed.success) {
@@ -85,17 +79,12 @@ export async function POST(request: Request) {
   }
 
   const spartans = appliedCoupon(parsed.data.couponCode);
-  const basePrice = spartans ? mastermindOffer.couponPrice : mastermindOffer.offerPrice;
-  const coachingPricePerHour =
-    parsed.data.coachingMode === "in-person"
-      ? mastermindOffer.inPersonCoachingPricePerHour
-      : mastermindOffer.coachingPricePerHour;
-  const price = basePrice + parsed.data.coachingHours * coachingPricePerHour;
+  const price = spartans ? mastermindOffer.couponPrice : mastermindOffer.offerPrice;
   const priceLabel = `PHP ${price.toLocaleString("en-PH")}`;
-  const mobile = toE164Phone(parsed.data.mobile);
+  const mobile = formatInternationalPhone(parsed.data.phoneCountry, parsed.data.phoneNational);
 
   await ensureSeedUsers();
-  const existing = await findUserByEmailOrPhone(parsed.data.email, mobile || parsed.data.mobile);
+  const existing = await findUserByEmailOrPhone(parsed.data.email, mobile);
   if (existing) {
     return NextResponse.json(
       { error: "An account with this email or mobile number already exists. Sign in or use another account." },
@@ -125,14 +114,7 @@ export async function POST(request: Request) {
     paymentMethod: parsed.data.paymentMethod,
     priceLabel,
     couponApplied: spartans,
-    extra: [
-      ...extraTags,
-      parsed.data.coachingHours > 0 ? "1-on-1 Coaching" : "",
-      parsed.data.coachingHours > 0
-        ? parsed.data.coachingMode === "in-person" ? "In-person Coaching" : "Online Coaching"
-        : "",
-      parsed.data.coachingHours > 0 ? `Coaching: ${parsed.data.coachingHours} hour${parsed.data.coachingHours === 1 ? "" : "s"}` : "",
-    ],
+    extra: extraTags,
   });
 
   let user;
@@ -140,14 +122,14 @@ export async function POST(request: Request) {
     user = await createUser({
       name: parsed.data.fullName,
       email: parsed.data.email,
-      password: parsed.data.password,
+      password: randomBytes(18).toString("hex"),
       role: "member",
-      phone: mobile || parsed.data.mobile,
-      phoneCountry: "PH",
+      phone: mobile || parsed.data.phoneNational,
+      phoneCountry: parsed.data.phoneCountry,
       company: "JDC Mastermind",
-      profileComplete: false,
-      paymentVerified: false,
-      passwordSet: true,
+      profileComplete: true,
+      paymentVerified: true,
+      passwordSet: false,
     });
   } catch (error) {
     return NextResponse.json(
@@ -161,12 +143,12 @@ export async function POST(request: Request) {
       userId: user.id,
       fullName: parsed.data.fullName,
       email: parsed.data.email,
-      mobile: mobile || parsed.data.mobile,
+      mobile: mobile || parsed.data.phoneNational,
       paymentMethod: parsed.data.paymentMethod,
       couponCode: parsed.data.couponCode,
-      basePrice,
-      coachingHours: parsed.data.coachingHours,
-      coachingMode: parsed.data.coachingMode,
+      basePrice: price,
+      coachingHours: 0,
+      coachingMode: "",
       price,
       receiptName: receipt.name,
       receiptUrl,
@@ -188,7 +170,7 @@ export async function POST(request: Request) {
     const lead = await createLead({
       name: parsed.data.fullName,
       email: parsed.data.email,
-      phone: mobile || parsed.data.mobile,
+      phone: mobile || parsed.data.phoneNational,
       dateOfBirth: "",
       address: "",
       city: "",
@@ -222,7 +204,7 @@ export async function POST(request: Request) {
     const ghl = await syncContactToGhl({
       name: parsed.data.fullName,
       email: parsed.data.email,
-      phone: mobile || parsed.data.mobile,
+      phone: mobile || parsed.data.phoneNational,
       source: affiliate ? `Mastermind offer · ${affiliate.code}` : "Mastermind offer",
       tags,
     });
@@ -234,15 +216,13 @@ export async function POST(request: Request) {
   await upsertFunnelContact({
     fullName: parsed.data.fullName,
     email: parsed.data.email,
-    mobile: mobile || parsed.data.mobile,
+    mobile: mobile || parsed.data.phoneNational,
     paymentMethod: parsed.data.paymentMethod,
     couponCode: parsed.data.couponCode || "None",
     receiptName: receipt.name,
     receiptUrl,
     priceLabel,
     spartans,
-    coachingHours: parsed.data.coachingHours,
-    coachingMode: parsed.data.coachingMode,
     tags,
   });
 
@@ -250,7 +230,7 @@ export async function POST(request: Request) {
     await notifyMastermindPurchase({
       name: parsed.data.fullName,
       email: parsed.data.email,
-      phone: mobile || parsed.data.mobile,
+      phone: mobile || parsed.data.phoneNational,
       paymentMethod: parsed.data.paymentMethod,
       priceLabel,
       couponCode: parsed.data.couponCode || "None",

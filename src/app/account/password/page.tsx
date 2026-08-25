@@ -22,7 +22,7 @@ export default async function AccountPasswordPage() {
 
   return (
     <AuthPageShell>
-      <SetPasswordForm branding={branding} email={user.email} />
+      <SetPasswordForm branding={branding} email={user.email} photoUrl={user.facebookPhotoUrl} />
     </AuthPageShell>
   );
 }
