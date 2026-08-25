@@ -6,9 +6,30 @@ import { hasAccess } from "@/lib/access";
 import { parseAffiliatePrograms } from "@/lib/affiliate";
 import { upsertProfile } from "@/lib/affiliate-store";
 import { findUserByEmail, setAffiliatePrograms } from "@/lib/auth-store";
-import { getContact, setContactAffiliateTag, setContactTags } from "@/lib/crm-store";
+import { getContact, purgeServiceContacts, setContactAffiliateTag, setContactTags } from "@/lib/crm-store";
 import { normalizeTag, uniqueTags } from "@/lib/tags";
 import { requireCapability } from "@/lib/session";
+
+export type PurgeServiceContactsState = { error?: string; success?: string };
+
+export async function purgeServiceContactsAction(
+  _prevState: PurgeServiceContactsState,
+  _formData: FormData,
+): Promise<PurgeServiceContactsState> {
+  await requireCapability("contacts.all");
+
+  try {
+    const removed = await purgeServiceContacts();
+    revalidatePath("/dashboard/contacts");
+    revalidatePath("/dashboard");
+    if (removed === 0) {
+      return { success: "No company or service emails found — the list is already clean." };
+    }
+    return { success: `Removed ${removed} company/service contact${removed === 1 ? "" : "s"} (Zoom, Calendly, noreply@, etc.).` };
+  } catch (error) {
+    return { error: error instanceof Error ? error.message : "I couldn't clean up the contact list." };
+  }
+}
 
 export async function addContactTag(contactId: string, tag: string) {
   const { user, access } = await requireCapability("contacts.tags");

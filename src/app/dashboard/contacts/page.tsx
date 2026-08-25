@@ -9,6 +9,7 @@ import { DeleteUserButton } from "@/components/dashboard/delete-user-button";
 import { MacosWindow } from "@/components/dashboard/macos-window";
 import { OpenUserDashboardButton } from "@/components/dashboard/open-user-dashboard-button";
 import { Pagination } from "@/components/dashboard/pagination";
+import { PurgeServiceContactsButton } from "@/components/dashboard/purge-service-contacts-button";
 import { VerifyPaymentButton } from "@/components/dashboard/verify-payment-button";
 import { hasAccess } from "@/lib/access";
 import { listAllUsers, listMemberRegistrations } from "@/lib/auth-store";
@@ -178,6 +179,8 @@ export default async function ContactsPage({
             ))}
           </div>
         ) : null}
+
+        {view !== "registrants" && hasAccess(access, "contacts.all") ? <PurgeServiceContactsButton /> : null}
 
         {view === "registrants" ? (
           <>

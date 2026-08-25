@@ -2829,6 +2829,12 @@ html.dark .auth-screen-centered,
   gap: 0.35rem;
 }
 
+.purge-service-contacts-form {
+  display: grid;
+  gap: 0.35rem;
+  justify-items: start;
+}
+
 .payment-approval-form .auth-error,
 .payment-approval-form .auth-success {
   max-width: 14rem;

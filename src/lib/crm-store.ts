@@ -303,10 +303,64 @@ function asCoord(value: unknown) {
   return Number.isFinite(number) ? number : undefined;
 }
 
+const SERVICE_CONTACT_DOMAINS = new Set([
+  "zoom.us",
+  "zoomgov.com",
+  "calendly.com",
+  "stripe.com",
+  "docusign.net",
+  "mailchimp.com",
+  "sendgrid.net",
+  "sendgrid.com",
+  "twilio.com",
+  "github.com",
+  "notion.so",
+  "slack.com",
+  "zapier.com",
+  "hubspot.com",
+  "intercom.io",
+  "leadconnectorhq.com",
+  "gohighlevel.com",
+]);
+
+const SERVICE_CONTACT_PREFIXES = [
+  "noreply",
+  "no-reply",
+  "donotreply",
+  "do-not-reply",
+  "notifications",
+  "notification",
+  "notify",
+  "mailer-daemon",
+  "postmaster",
+  "no",
+  "alert",
+  "alerts",
+  "bot",
+  "automated",
+  "calendar-notification",
+  "invite",
+];
+
+/** True for automated/company service addresses (Zoom, Calendly, etc.) rather than a real person. */
+export function isServiceContactEmail(email: string) {
+  const value = email.trim().toLowerCase();
+  const at = value.lastIndexOf("@");
+  if (at < 0) {
+    return false;
+  }
+  const local = value.slice(0, at);
+  const domain = value.slice(at + 1);
+  if (SERVICE_CONTACT_DOMAINS.has(domain)) {
+    return true;
+  }
+  return SERVICE_CONTACT_PREFIXES.some((prefix) => local === prefix || local.startsWith(`${prefix}.`) || local.startsWith(`${prefix}-`) || local.startsWith(`${prefix}+`));
+}
+
 function fromGhlContact(contact: GhlRemoteContact): ContactRecord | null {
   const email = String(contact.email ?? "").trim();
   const name = [contact.firstName, contact.lastName].filter(Boolean).join(" ").trim() || String(contact.name ?? "").trim();
-  if (!email || !name) {
+  if (!email || !name || isServiceContactEmail(email)) {
     return null;
   }
 
@@ -1035,6 +1089,16 @@ export async function upsertContactFromAccount(input: {
       };
 
   await persistContact(await withCoordinates(next, { lat: input.lat, lng: input.lng }));
+}
+
+/** One-time cleanup: hides and removes any already-synced service/company contacts (Zoom, Calendly, noreply@, etc.). */
+export async function purgeServiceContacts() {
+  await hydrateCrm();
+  const matches = memoryRecords.filter((contact) => isServiceContactEmail(contact.email));
+  for (const contact of matches) {
+    await hideAndRemoveContactByEmail(contact.email);
+  }
+  return matches.length;
 }
 
 export async function hideAndRemoveContactByEmail(email: string) {
