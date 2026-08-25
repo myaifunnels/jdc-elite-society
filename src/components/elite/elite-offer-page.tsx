@@ -261,15 +261,10 @@ export function EliteOfferPage() {
         </div>
       </section>
 
-      <section className="elite-section elite-reveal" id="coach">
-        <div className="elite-shell elite-about">
-          <div className="elite-coach-portrait">
-            <img src={mastermindOffer.coachImage} alt="Coach Jayson Dela Cruz" />
-            <div className="elite-coach-caption">
-              <strong>Coach Jayson Dela Cruz</strong>
-              <span>Founder, JDC Elite Society</span>
-            </div>
-          </div>
+      <section className="elite-section elite-reveal elite-about" id="coach">
+        <img className="elite-about-media" src={mastermindOffer.coachImage} alt="" aria-hidden="true" />
+        <div className="elite-about-scrim" />
+        <div className="elite-shell">
           <div className="elite-coach-copy">
             <p className="elite-kicker">MEET COACH JDC</p>
             <h2>Standards before motivation.</h2>
@@ -296,6 +291,10 @@ export function EliteOfferPage() {
               subtext="Start with the Foundation and Execution sessions"
               className="elite-cta-lg"
             />
+          </div>
+          <div className="elite-coach-caption">
+            <strong>Coach Jayson Dela Cruz</strong>
+            <span>Founder, JDC Elite Society</span>
           </div>
         </div>
       </section>

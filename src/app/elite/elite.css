@@ -234,11 +234,12 @@ body:has(.elite-offer) {
 .elite-testimonials strong { display: block; color: var(--elite-text); font-size: 0.86rem; letter-spacing: 0.05em; }
 .elite-testimonials span { color: var(--elite-muted); font-size: 0.8rem; }
 
-.elite-about { position: relative; display: grid; align-items: center; gap: clamp(2.5rem, 6vw, 5.5rem); isolation: isolate; }
-.elite-about::before { position: absolute; z-index: -1; top: 50%; left: 50%; color: rgba(80, 139, 255, 0.055); content: "JDC"; font-family: var(--font-display), Georgia, serif; font-size: clamp(15rem, 37vw, 32rem); font-weight: 700; letter-spacing: -0.08em; line-height: 0.7; pointer-events: none; transform: translate(-52%, -48%); white-space: nowrap; }
-.elite-coach-portrait { position: relative; overflow: hidden; border: 1px solid rgba(143, 200, 255, 0.15); border-radius: 32px; background: radial-gradient(circle at 50% 18%, rgba(23, 105, 255, 0.2), transparent 62%); box-shadow: 0 35px 110px rgba(0, 0, 0, 0.34), inset 0 1px rgba(255, 255, 255, 0.06); }
-.elite-coach-portrait img { display: block; width: 100%; min-height: 540px; object-fit: cover; }
-.elite-coach-caption { position: absolute; right: 16px; bottom: 16px; left: 16px; padding: 1rem 1.1rem; border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 18px; background: rgba(4, 8, 18, 0.72); backdrop-filter: blur(20px) saturate(150%); }
+.elite-about { position: relative; overflow: hidden; isolation: isolate; padding-block: clamp(4.5rem, 10vw, 7.5rem); }
+.elite-about-media { position: absolute; z-index: -3; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 22%; pointer-events: none; }
+.elite-about-scrim { position: absolute; z-index: -2; inset: 0; background: linear-gradient(0deg, rgba(2, 4, 10, 0.94) 8%, rgba(2, 4, 10, 0.7) 46%, rgba(2, 4, 10, 0.3) 100%), linear-gradient(90deg, rgba(2, 4, 10, 0.94) 0%, rgba(2, 4, 10, 0.8) 42%, rgba(2, 4, 10, 0.32) 78%, rgba(2, 4, 10, 0.1) 100%); }
+.elite-about .elite-shell { position: relative; z-index: 1; }
+.elite-coach-copy { max-width: 620px; }
+.elite-coach-caption { position: absolute; right: max(24px, calc((100% - 1160px) / 2)); bottom: clamp(2rem, 6vw, 3.5rem); z-index: 1; padding: 1rem 1.1rem; border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 18px; background: rgba(4, 8, 18, 0.72); backdrop-filter: blur(20px) saturate(150%); }
 .elite-coach-caption strong, .elite-coach-caption span { display: block; }
 .elite-coach-caption strong { color: var(--elite-text); font-size: 0.92rem; }
 .elite-coach-caption span { margin-top: 0.2rem; color: var(--elite-muted); font-size: 0.76rem; }
@@ -463,7 +464,6 @@ body:has(.elite-offer) {
   .elite-agenda, .elite-grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
-@media (min-width: 860px) { .elite-about { grid-template-columns: 0.88fr 1.12fr; } }
 @media (min-width: 900px) { .elite-checkout { grid-template-columns: 0.92fr 1.08fr; align-items: start; } }
 @media (min-width: 940px) { .elite-checkout-layout { grid-template-columns: 0.9fr 1.1fr; } }
 
@@ -489,7 +489,9 @@ body:has(.elite-offer) {
   .elite-section h2 { margin-inline: 0; }
   .elite-final .elite-sub { margin-inline: 0; }
   .elite-price { font-size: 2.55rem; }
-  .elite-coach-portrait img { min-height: 440px; }
+  .elite-about { padding-block: 3.4rem 5.5rem; }
+  .elite-about-scrim { background: linear-gradient(0deg, rgba(2, 4, 10, 0.97) 20%, rgba(2, 4, 10, 0.78) 60%, rgba(2, 4, 10, 0.4) 100%); }
+  .elite-coach-caption { position: static; margin-top: 1.6rem; }
   .elite-checkout-topbar { align-items: flex-start; }
   .elite-secure-label { white-space: nowrap; }
   .elite-checkout-hero h1, .elite-checkout-hero > .elite-shell > .elite-sub { text-align: left; }
