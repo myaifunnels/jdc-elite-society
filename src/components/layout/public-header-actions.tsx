@@ -8,13 +8,39 @@ import { logout } from "@/app/login/actions";
 import { ContactAvatar } from "@/components/dashboard/contact-avatar";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { navItems } from "@/data/site-content";
-import { NavItem } from "@/lib/types";
+import { NavItem, NavSubItem } from "@/lib/types";
 
 type AccountSummary = {
   name: string;
   email: string;
   photoUrl?: string;
 };
+
+function DesktopNavChild({ child }: { child: NavSubItem }) {
+  if (!child.children?.length) {
+    return (
+      <Link href={child.href} className="site-nav-dropdown-link">
+        {child.label}
+      </Link>
+    );
+  }
+
+  return (
+    <div className="site-nav-subitem-group">
+      <Link href={child.href} className="site-nav-dropdown-link site-nav-subitem-trigger">
+        {child.label}
+        <ChevronDown size={12} aria-hidden />
+      </Link>
+      <div className="site-nav-subdropdown">
+        {child.children.map((grandchild) => (
+          <Link key={grandchild.href} href={grandchild.href} className="site-nav-dropdown-link">
+            {grandchild.label}
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 function DesktopNavItem({ item }: { item: NavItem }) {
   if (!item.children?.length) {
@@ -33,11 +59,49 @@ function DesktopNavItem({ item }: { item: NavItem }) {
       </Link>
       <div className="site-nav-dropdown">
         {item.children.map((child) => (
-          <Link key={child.href} href={child.href} className="site-nav-dropdown-link">
-            {child.label}
-          </Link>
+          <DesktopNavChild key={child.href} child={child} />
         ))}
       </div>
+    </div>
+  );
+}
+
+function MobileNavSubItem({ child, onNavigate }: { child: NavSubItem; onNavigate: () => void }) {
+  const [expanded, setExpanded] = useState(false);
+
+  if (!child.children?.length) {
+    return (
+      <Link href={child.href} className="pressable" onClick={onNavigate}>
+        {child.label}
+      </Link>
+    );
+  }
+
+  return (
+    <div className="site-nav-drawer-group site-nav-drawer-subgroup">
+      <div className="site-nav-drawer-group-head">
+        <Link href={child.href} className="pressable" onClick={onNavigate}>
+          {child.label}
+        </Link>
+        <button
+          type="button"
+          className="site-nav-drawer-expand"
+          aria-expanded={expanded}
+          aria-label={expanded ? `Collapse ${child.label}` : `Expand ${child.label}`}
+          onClick={() => setExpanded((current) => !current)}
+        >
+          <ChevronDown size={16} aria-hidden />
+        </button>
+      </div>
+      {expanded ? (
+        <div className="site-nav-drawer-children site-nav-drawer-subchildren">
+          {child.children.map((grandchild) => (
+            <Link key={grandchild.href} href={grandchild.href} className="pressable" onClick={onNavigate}>
+              {grandchild.label}
+            </Link>
+          ))}
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -72,9 +136,7 @@ function MobileNavItem({ item, onNavigate }: { item: NavItem; onNavigate: () => 
       {expanded ? (
         <div className="site-nav-drawer-children">
           {item.children.map((child) => (
-            <Link key={child.href} href={child.href} className="pressable" onClick={onNavigate}>
-              {child.label}
-            </Link>
+            <MobileNavSubItem key={child.href} child={child} onNavigate={onNavigate} />
           ))}
         </div>
       ) : null}

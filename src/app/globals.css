@@ -1,38 +1,37 @@
 @import "tailwindcss";
 
 :root {
-  --custom-brand: #007bff;
-  --custom-brand-dark: #0022aa;
-  --custom-light-background: #e8eef6;
-  --custom-dark-background: #05070c;
-  --custom-light-surface: #f4f7fb;
-  --custom-dark-surface: #10151f;
-  --custom-light-glow: #c8d8ff;
-  --custom-dark-glow: #0055ff;
-  --chrome: #c8cdd6;
-  --chrome-bright: #e8eef7;
+  --custom-brand: #1769ff;
+  --custom-brand-dark: #0c54e8;
+  --custom-light-background: #eef3fb;
+  --custom-dark-background: #02040a;
+  --custom-light-surface: #f4f7fd;
+  --custom-dark-surface: #0c1326;
+  --custom-light-glow: #c9def9;
+  --custom-dark-glow: #1769ff;
+  --chrome: #b6bfd1;
+  --chrome-bright: #f5f7ff;
   --background: var(--custom-dark-background);
-  --foreground: #f4f7fb;
-  --heading: color-mix(in srgb, white 88%, var(--custom-brand));
+  --foreground: #f5f7ff;
+  --heading: #f5f7ff;
   --card: color-mix(in srgb, var(--custom-dark-surface) 72%, transparent);
   --surface: color-mix(in srgb, var(--custom-dark-surface) 80%, transparent);
-  --surface-elevated: color-mix(in srgb, var(--custom-dark-surface) 90%, #000);
-  --muted: #9aa3b2;
-  --line: rgba(200, 205, 214, 0.16);
-  --line-strong: rgba(232, 238, 247, 0.28);
+  --surface-elevated: color-mix(in srgb, var(--custom-dark-surface) 92%, #000);
+  --muted: #7d879d;
+  --line: rgba(159, 188, 255, 0.14);
+  --line-strong: rgba(159, 188, 255, 0.28);
   --brand: var(--custom-brand);
   --brand-dark: var(--custom-brand-dark);
   --brand-soft: color-mix(in srgb, var(--brand) 22%, transparent);
   --glow: color-mix(in srgb, var(--custom-dark-glow) 72%, transparent);
   --shadow-xl:
-    0 28px 90px rgba(0, 0, 0, 0.55),
-    0 0 48px color-mix(in srgb, var(--brand) 14%, transparent),
-    inset 0 1px 0 rgba(232, 238, 247, 0.14),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.45);
+    0 30px 90px rgba(0, 0, 0, 0.5),
+    0 0 48px color-mix(in srgb, var(--brand) 16%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
   --shadow-lg:
     0 16px 40px rgba(0, 0, 0, 0.36),
     0 0 24px color-mix(in srgb, var(--brand) 10%, transparent),
-    inset 0 1px 0 rgba(232, 238, 247, 0.1);
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
   --safe-top: env(safe-area-inset-top, 0px);
@@ -45,14 +44,14 @@
 
 html:not(.dark) {
   --background: var(--custom-light-background);
-  --foreground: #0b1220;
+  --foreground: #0e1626;
   --heading: #07101c;
   --card: color-mix(in srgb, var(--custom-light-surface) 82%, transparent);
   --surface: color-mix(in srgb, var(--custom-light-surface) 88%, transparent);
   --surface-elevated: color-mix(in srgb, var(--custom-light-surface) 94%, white);
   --muted: #4b5568;
   --line: rgba(11, 18, 32, 0.1);
-  --line-strong: rgba(0, 34, 170, 0.22);
+  --line-strong: rgba(23, 105, 255, 0.22);
   --brand: var(--custom-brand);
   --brand-dark: var(--custom-brand-dark);
   --brand-soft: color-mix(in srgb, var(--brand) 16%, transparent);
@@ -69,27 +68,26 @@ html:not(.dark) {
 
 .dark {
   --background: var(--custom-dark-background);
-  --foreground: #f4f7fb;
-  --heading: color-mix(in srgb, white 88%, var(--custom-brand));
+  --foreground: #f5f7ff;
+  --heading: #f5f7ff;
   --card: color-mix(in srgb, var(--custom-dark-surface) 72%, transparent);
   --surface: color-mix(in srgb, var(--custom-dark-surface) 80%, transparent);
-  --surface-elevated: color-mix(in srgb, var(--custom-dark-surface) 90%, #000);
-  --muted: #9aa3b2;
-  --line: rgba(200, 205, 214, 0.16);
-  --line-strong: rgba(232, 238, 247, 0.28);
+  --surface-elevated: color-mix(in srgb, var(--custom-dark-surface) 92%, #000);
+  --muted: #7d879d;
+  --line: rgba(159, 188, 255, 0.14);
+  --line-strong: rgba(159, 188, 255, 0.28);
   --brand: var(--custom-brand);
   --brand-dark: var(--custom-brand-dark);
   --brand-soft: color-mix(in srgb, var(--brand) 22%, transparent);
   --glow: color-mix(in srgb, var(--custom-dark-glow) 72%, transparent);
   --shadow-xl:
-    0 28px 90px rgba(0, 0, 0, 0.55),
-    0 0 48px color-mix(in srgb, var(--brand) 14%, transparent),
-    inset 0 1px 0 rgba(232, 238, 247, 0.14),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.45);
+    0 30px 90px rgba(0, 0, 0, 0.5),
+    0 0 48px color-mix(in srgb, var(--brand) 16%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
   --shadow-lg:
     0 16px 40px rgba(0, 0, 0, 0.36),
     0 0 24px color-mix(in srgb, var(--brand) 10%, transparent),
-    inset 0 1px 0 rgba(232, 238, 247, 0.1);
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
   color-scheme: dark;
 }
 
@@ -113,7 +111,7 @@ html {
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
   -webkit-tap-highlight-color: transparent;
-  background: #05070c;
+  background: var(--background);
 }
 
 body {
@@ -122,10 +120,9 @@ body {
   min-height: -webkit-fill-available;
   overflow-x: hidden;
   background:
-    radial-gradient(circle at 12% -8%, color-mix(in srgb, var(--brand) 28%, transparent), transparent 32%),
-    radial-gradient(circle at 88% 8%, color-mix(in srgb, var(--chrome-bright) 10%, transparent), transparent 26%),
-    radial-gradient(circle at 50% 100%, color-mix(in srgb, var(--brand-dark) 24%, transparent), transparent 38%),
-    linear-gradient(180deg, #000 0%, var(--background) 18%, #070b14 100%);
+    radial-gradient(circle at 78% -8%, color-mix(in srgb, var(--brand) 18%, transparent), transparent 33rem),
+    radial-gradient(circle at 8% 34%, color-mix(in srgb, var(--brand-dark) 8%, transparent), transparent 30rem),
+    var(--background);
   color: var(--foreground);
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", var(--font-geist-sans), sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -143,6 +140,14 @@ h1,
 h2,
 h3 {
   color: var(--heading);
+}
+
+/* Serif display treatment for the public marketing site only — dashboard and
+   the /elite Mastermind page (which sets its own headline fonts) opt out. */
+body:not(:has(.dashboard-content)):not(:has(.dashboard-toolbar)):not(:has(.university-fill)):not(:has(.elite-offer)) h1,
+body:not(:has(.dashboard-content)):not(:has(.dashboard-toolbar)):not(:has(.university-fill)):not(:has(.elite-offer)) h2 {
+  font-family: var(--font-display), Georgia, serif;
+  letter-spacing: -0.02em;
 }
 
 .skip-link {
@@ -331,6 +336,78 @@ a,
 
 .site-nav-dropdown-link:hover {
   background: color-mix(in srgb, var(--brand) 12%, transparent);
+}
+
+.site-nav-subitem-group {
+  position: relative;
+}
+
+.site-nav-subitem-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.site-nav-subitem-trigger svg {
+  flex: 0 0 auto;
+  transition: transform 160ms ease;
+}
+
+.site-nav-subitem-group:hover .site-nav-subitem-trigger svg,
+.site-nav-subitem-group:focus-within .site-nav-subitem-trigger svg {
+  transform: rotate(-90deg);
+}
+
+.site-nav-subdropdown {
+  position: absolute;
+  top: -0.5rem;
+  left: calc(100% + 0.4rem);
+  z-index: 41;
+  display: grid;
+  gap: 0.1rem;
+  width: max-content;
+  min-width: 13rem;
+  padding: 0.5rem;
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  background: color-mix(in srgb, var(--surface-elevated) 96%, transparent);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.16);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  opacity: 0;
+  pointer-events: none;
+  transform-origin: left top;
+  transform: scale(0.96) translateX(-4px);
+  transition: opacity 180ms var(--ease-out), transform 180ms var(--ease-out);
+}
+
+.site-nav-subitem-group:hover .site-nav-subdropdown,
+.site-nav-subitem-group:focus-within .site-nav-subdropdown {
+  opacity: 1;
+  pointer-events: auto;
+  transform: scale(1) translateX(0);
+}
+
+.site-nav-drawer-subgroup {
+  margin-left: -0.35rem;
+}
+
+.site-nav-drawer-subgroup .site-nav-drawer-group-head a {
+  font-size: 0.92rem;
+  font-weight: 550;
+  color: var(--muted);
+}
+
+.site-nav-drawer-subchildren {
+  padding-left: 0.75rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .site-nav-subdropdown {
+    transform: none !important;
+    transition: opacity 160ms ease !important;
+  }
 }
 
 .site-account-menu {
@@ -636,31 +713,21 @@ a,
   padding-block: 5.5rem;
 }
 
-.card-surface {
+.card-surface,
+.glass-panel {
+  border: 1px solid color-mix(in srgb, var(--chrome-bright) 14%, var(--line));
+  border-radius: 28px;
   background:
-    linear-gradient(180deg, color-mix(in srgb, var(--chrome-bright) 8%, transparent), transparent 32%),
-    color-mix(in srgb, var(--surface) 78%, transparent);
-  border: 1px solid color-mix(in srgb, var(--chrome-bright) 16%, transparent);
-  box-shadow:
-    10px 14px 32px rgba(0, 0, 0, 0.32),
-    -3px -4px 14px rgba(255, 255, 255, 0.04),
-    inset 0 1px 0 rgba(255, 255, 255, 0.12);
-  backdrop-filter: blur(22px) saturate(170%);
-  -webkit-backdrop-filter: blur(22px) saturate(170%);
+    linear-gradient(150deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.018) 45%),
+    color-mix(in srgb, var(--surface) 82%, transparent);
+  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.2), inset 0 1px rgba(255, 255, 255, 0.045);
+  backdrop-filter: blur(24px) saturate(145%);
+  -webkit-backdrop-filter: blur(24px) saturate(145%);
 }
 
-.glass-panel {
-  background:
-    linear-gradient(145deg, color-mix(in srgb, var(--chrome-bright) 12%, transparent), transparent 34%),
-    color-mix(in srgb, var(--surface-elevated) 70%, transparent);
-  border: 1px solid color-mix(in srgb, var(--chrome-bright) 18%, transparent);
-  box-shadow:
-    12px 18px 40px rgba(0, 0, 0, 0.36),
-    -4px -6px 16px rgba(255, 255, 255, 0.05),
-    inset 0 1px 0 rgba(255, 255, 255, 0.14),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.22);
-  backdrop-filter: blur(28px) saturate(180%);
-  -webkit-backdrop-filter: blur(28px) saturate(180%);
+html:not(.dark) .card-surface,
+html:not(.dark) .glass-panel {
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.1), inset 0 1px rgba(255, 255, 255, 0.5);
 }
 
 .visual-frame {
@@ -734,30 +801,39 @@ a,
 
 .button-primary,
 .button-secondary {
+  position: relative;
   background-repeat: no-repeat;
   border: 1px solid transparent;
+  border-radius: 999px;
+  overflow: hidden;
   backdrop-filter: blur(18px) saturate(180%);
   -webkit-backdrop-filter: blur(18px) saturate(180%);
+  transition: transform 160ms var(--ease-out), filter 200ms ease, box-shadow 200ms ease;
 }
 
 .button-primary {
-  background-color: color-mix(in srgb, var(--brand) 58%, transparent);
-  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.34) 0%, rgba(255, 255, 255, 0.04) 48%);
-  border-color: rgba(255, 255, 255, 0.38);
+  background-color: color-mix(in srgb, var(--brand) 20%, transparent);
+  background-image:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.22), transparent 42%),
+    linear-gradient(135deg, color-mix(in srgb, var(--brand) 88%, white 12%), var(--brand) 58%, var(--brand-dark));
+  border-color: rgba(255, 255, 255, 0.2);
   color: white;
+  font-weight: 720;
+  letter-spacing: -0.01em;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.42),
-    0 12px 28px color-mix(in srgb, var(--brand) 26%, transparent);
+    0 12px 32px color-mix(in srgb, var(--brand) 30%, transparent),
+    inset 0 1px rgba(255, 255, 255, 0.34),
+    inset 0 -1px rgba(0, 0, 0, 0.3);
 }
 
 .button-secondary {
-  background-color: color-mix(in srgb, var(--surface-elevated) 42%, transparent);
-  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.03) 100%);
-  border-color: color-mix(in srgb, #fff 28%, var(--line-strong));
+  background-color: color-mix(in srgb, var(--surface-elevated) 60%, transparent);
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.01) 100%);
+  border-color: var(--line);
   color: var(--foreground);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.28),
-    0 8px 20px rgba(0, 0, 0, 0.16);
+    inset 0 1px rgba(255, 255, 255, 0.06),
+    0 16px 45px rgba(0, 0, 0, 0.16);
 }
 
 .eyebrow {
@@ -1713,25 +1789,22 @@ a,
   }
 
   .button-primary:hover {
-    transform: none;
-    filter: none;
-    background-color: color-mix(in srgb, var(--brand) 72%, transparent);
-    background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.42) 0%, rgba(255, 255, 255, 0.06) 52%);
+    transform: translateY(-2px);
+    filter: brightness(1.09);
     box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.5),
-      0 10px 24px color-mix(in srgb, var(--brand) 30%, transparent);
+      0 16px 42px color-mix(in srgb, var(--brand) 38%, transparent),
+      inset 0 1px rgba(255, 255, 255, 0.38);
   }
 
   .button-secondary:hover {
-    transform: none;
+    transform: translateY(-2px);
     filter: none;
-    border-color: color-mix(in srgb, #fff 42%, var(--line-strong));
-    background-color: color-mix(in srgb, var(--surface-elevated) 58%, transparent);
-    background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.28) 0%, rgba(255, 255, 255, 0.05) 100%);
-    color: #fff;
+    border-color: var(--line-strong);
+    background-color: color-mix(in srgb, var(--surface-elevated) 78%, transparent);
+    color: var(--foreground);
     box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.34),
-      0 8px 20px rgba(0, 0, 0, 0.18);
+      inset 0 1px rgba(255, 255, 255, 0.1),
+      0 18px 48px rgba(0, 0, 0, 0.2);
   }
 
   .auth-btn-active:hover {

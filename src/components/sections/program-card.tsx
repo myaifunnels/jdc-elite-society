@@ -3,11 +3,14 @@ import Link from "next/link";
 
 import { Program } from "@/lib/types";
 
-export function ProgramCard({ program }: { program: Program }) {
+export function ProgramCard({ program, delayMs }: { program: Program; delayMs?: number }) {
   const programHref = program.slug === "jdc-mastermind" ? "/elite" : `/programs/${program.slug}`;
 
   return (
-    <article className="card-surface interactive-card fade-up overflow-hidden rounded-[2rem]">
+    <article
+      className="card-surface interactive-card fade-up overflow-hidden rounded-[2rem]"
+      style={delayMs ? { animationDelay: `${delayMs}ms` } : undefined}
+    >
       <div className="visual-frame">
         <Image
           src={program.image}

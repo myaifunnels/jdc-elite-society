@@ -16,7 +16,7 @@ export async function SiteHeader({ overlay = false }: { overlay?: boolean }) {
         </div>
         <PublicHeaderActions
           overlay={overlay}
-          ctaHref="/contact"
+          ctaHref="/programs"
           ctaLabel={siteContent.headerCta}
           account={
             user
