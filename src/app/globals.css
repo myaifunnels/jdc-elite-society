@@ -3841,8 +3841,14 @@ html:not(.dark) .dashboard-desktop {
   height: 3rem;
   place-items: center;
   border-radius: 14px;
-  color: white;
-  box-shadow: inset 0 1px rgba(255, 255, 255, 0.22), 0 6px 16px rgba(0, 0, 0, 0.18);
+  overflow: hidden;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+}
+
+.app-store-icon svg {
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 
 .app-store-icon.is-lg {

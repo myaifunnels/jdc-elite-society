@@ -1,5 +1,5 @@
-import { Cloud, MapPin, MessageSquare, Workflow, type LucideIcon } from "lucide-react";
 import Link from "next/link";
+import type { ComponentType } from "react";
 
 import {
   GhlIntegrationForm,
@@ -8,6 +8,12 @@ import {
   TextBeeIntegrationForm,
 } from "@/components/dashboard/integration-forms";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
+import {
+  CloudflareLogo,
+  GoHighLevelLogo,
+  GoogleMapsLogo,
+  TextBeeLogo,
+} from "@/components/dashboard/integration-logos";
 import { MigrateFilesToR2Button } from "@/components/dashboard/migrate-files-button";
 import { AddressMap } from "@/components/maps/address-map";
 import { isGhlReady, isMapsReady, isR2Ready, isTextBeeReady, maskSecret } from "@/lib/integrations";
@@ -20,8 +26,7 @@ type AppEntry = {
   id: AppId;
   name: string;
   tagline: string;
-  icon: LucideIcon;
-  color: string;
+  logo: ComponentType<{ size?: number }>;
   connected: boolean;
 };
 
@@ -44,32 +49,28 @@ export default async function IntegrationsPage({
       id: "maps",
       name: "Google Maps",
       tagline: "Live map previews on contact dashboards.",
-      icon: MapPin,
-      color: "#4285F4",
+      logo: GoogleMapsLogo,
       connected: mapsReady,
     },
     {
       id: "r2",
       name: "Cloudflare R2",
       tagline: "Stores profile photos and payment receipts.",
-      icon: Cloud,
-      color: "#F38020",
+      logo: CloudflareLogo,
       connected: r2Ready,
     },
     {
       id: "ghl",
       name: "GoHighLevel",
       tagline: "Syncs contacts, tags, and course access.",
-      icon: Workflow,
-      color: "#2E7D32",
+      logo: GoHighLevelLogo,
       connected: ghlReady,
     },
     {
       id: "textbee",
       name: "TextBee",
       tagline: "SMS gateway for buyer and team alerts.",
-      icon: MessageSquare,
-      color: "#7C3AED",
+      logo: TextBeeLogo,
       connected: textbeeReady,
     },
   ];
@@ -84,11 +85,11 @@ export default async function IntegrationsPage({
       >
         <div className="app-store-grid">
           {apps.map((app) => {
-            const Icon = app.icon;
+            const Logo = app.logo;
             return (
               <Link key={app.id} href={`/dashboard/integrations?app=${app.id}`} className="app-store-card">
-                <span className="app-store-icon" style={{ background: app.color }}>
-                  <Icon size={22} aria-hidden />
+                <span className="app-store-icon">
+                  <Logo size={48} />
                 </span>
                 <span className="app-store-copy">
                   <strong>{app.name}</strong>
@@ -105,7 +106,7 @@ export default async function IntegrationsPage({
     );
   }
 
-  const ActiveIcon = active.icon;
+  const ActiveLogo = active.logo;
 
   return (
     <DashboardShell
@@ -118,8 +119,8 @@ export default async function IntegrationsPage({
 
       <div className="app-store-detail">
         <header className="app-store-detail-head">
-          <span className="app-store-icon is-lg" style={{ background: active.color }}>
-            <ActiveIcon size={30} aria-hidden />
+          <span className="app-store-icon is-lg">
+            <ActiveLogo size={64} />
           </span>
           <div>
             <h2>{active.name}</h2>
