@@ -92,7 +92,9 @@ export function EliteOfferPage() {
           <p className="elite-kicker">PREMIUM COACHING · MENTORSHIP · COMMUNITY</p>
           <h1 className="elite-display elite-identity-headline">
             <span className="elite-headline-line">Stop Building Your Network</span>
-            <span className="elite-headline-line">Marketing Business Like a Beginner.</span>
+            <span className="elite-headline-line">
+              Marketing Business <span className="elite-headline-negative">Like a Beginner.</span>
+            </span>
             <span className="elite-headline-shift">
               Start Building <em>Like a Professional.</em>
             </span>
