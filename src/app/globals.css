@@ -2485,11 +2485,16 @@ html.dark .auth-screen-centered,
 
 .phone-field {
   position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
   gap: 0.45rem;
   width: 100%;
   min-width: 0;
+}
+
+.phone-field.is-open {
+  z-index: 60;
 }
 
 .phone-flag {
@@ -2519,19 +2524,18 @@ html.dark .auth-screen-centered,
 }
 
 .phone-flag-menu {
-  position: absolute;
-  top: calc(100% + 0.4rem);
-  left: 0;
-  z-index: 40;
+  position: fixed;
+  z-index: 220;
   display: grid;
-  min-width: 16rem;
-  max-height: 16rem;
+  width: min(17rem, calc(100vw - 1.5rem));
   overflow: auto;
+  overscroll-behavior: contain;
   padding: 0.35rem;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  background: color-mix(in srgb, var(--surface-elevated) 96%, white);
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.22);
+  border: 1px solid rgba(23, 60, 130, 0.16);
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 18px 40px rgba(2, 6, 16, 0.28);
+  color: #16213f;
 }
 
 .phone-flag-menu button {
@@ -2544,7 +2548,7 @@ html.dark .auth-screen-centered,
   border: 0;
   border-radius: 6px;
   background: transparent;
-  color: var(--foreground);
+  color: #16213f;
   font: inherit;
   font-size: 0.82rem;
   text-align: left;

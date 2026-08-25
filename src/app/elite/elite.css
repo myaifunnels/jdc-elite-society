@@ -363,7 +363,7 @@ body:has(.elite-offer) {
 .elite-form-step-heading > small { color: var(--elite-card-muted); font-size: 0.67rem; white-space: nowrap; }
 .elite-form-step { min-height: 254px; opacity: 1; transform: translateY(0); transition: opacity 200ms var(--elite-ease-out), transform 200ms var(--elite-ease-out); }
 @starting-style { .elite-form-step { opacity: 0; transform: translateY(8px); } }
-.elite-form-actions { display: flex; gap: 0.7rem; margin-top: 0.4rem; }
+.elite-form-actions { position: relative; z-index: 0; display: flex; gap: 0.7rem; margin-top: 0.4rem; }
 .elite-form-actions .elite-cta { flex: 1; }
 .elite-form-back { min-width: 86px; border: 1px solid var(--elite-card-border); border-radius: 999px; background: rgba(255, 255, 255, 0.6); color: var(--elite-card-ink); cursor: pointer; font-family: inherit; font-weight: 700; transition: transform 160ms var(--elite-ease-out), background-color 160ms ease; }
 .elite-form-back:active { transform: scale(0.97); }
