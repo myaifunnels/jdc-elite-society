@@ -1,6 +1,6 @@
 import { Program } from "@/lib/types";
 
-export const programs: Program[] = [
+const allPrograms: Program[] = [
   {
     slug: "mindset-reset",
     title: "Mindset Reset",
@@ -204,6 +204,13 @@ export const programs: Program[] = [
     imageAlt: "A desk calendar marked with a 90-day countdown",
   },
 ];
+
+// Only the Mastermind and the 90-Day Blueprint are shown on the public site
+// (nav, /programs, homepage listings, sitemap). The other tracks stay defined
+// above in case they're needed again, but are intentionally filtered out here.
+const VISIBLE_SLUGS = new Set(["jdc-mastermind", "90-day-blueprint"]);
+
+export const programs: Program[] = allPrograms.filter((program) => VISIBLE_SLUGS.has(program.slug));
 
 export function getProgram(slug: string) {
   return programs.find((program) => program.slug === slug);

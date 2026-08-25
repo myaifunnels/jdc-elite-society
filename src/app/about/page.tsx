@@ -27,7 +27,7 @@ export default async function AboutPage() {
               {siteContent.mentorPoints.map((item) => (
                 <div
                   key={item}
-                  className="rounded-[1.5rem] border border-black/8 bg-white px-5 py-4 text-sm text-[var(--muted)]"
+                  className="rounded-[1.5rem] border border-[var(--line)] bg-[color:var(--surface-elevated)]/70 px-5 py-4 text-sm text-[var(--muted)]"
                 >
                   {item}
                 </div>

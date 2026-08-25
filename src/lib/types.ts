@@ -15,10 +15,16 @@ export type Program = {
   imageAlt: string;
 };
 
+export type NavSubItem = {
+  href: string;
+  label: string;
+  children?: { href: string; label: string }[];
+};
+
 export type NavItem = {
   href: string;
   label: string;
-  children?: NavItem[];
+  children?: NavSubItem[];
 };
 
 export type SiteStat = {

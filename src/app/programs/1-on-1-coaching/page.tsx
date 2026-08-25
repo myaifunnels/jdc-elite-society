@@ -60,16 +60,10 @@ export default function OneOnOneCoachingPage() {
                 add Online or Face-to-Face coaching — or skip it and keep just the Mastermind. Either way, you&apos;re in.
               </p>
               <div className="mt-6 flex flex-wrap justify-center gap-4">
-                <Link
-                  href="/elite"
-                  className="rounded-full bg-[var(--brand)] px-6 py-3 font-semibold text-white transition hover:bg-[var(--brand-dark)]"
-                >
+                <Link href="/elite" className="button-primary pressable rounded-full px-6 py-3 font-semibold">
                   Join JDC Mastermind
                 </Link>
-                <Link
-                  href="/programs"
-                  className="rounded-full border border-black/10 px-6 py-3 font-semibold transition hover:border-black/30"
-                >
+                <Link href="/programs" className="button-secondary pressable rounded-full px-6 py-3 font-semibold">
                   See the other tracks
                 </Link>
               </div>

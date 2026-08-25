@@ -62,20 +62,20 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
                 />
               </div>
               <div className="p-5 sm:p-10">
-                <p className="text-xs uppercase tracking-[0.3em] text-[var(--brand-dark)]">A program from Coach JDC</p>
+                <p className="text-xs uppercase tracking-[0.3em] text-[var(--brand)]">A program from Coach JDC</p>
                 <h1 className="mt-3 max-w-3xl text-3xl font-semibold tracking-tight sm:text-4xl lg:text-5xl">{program.title}</h1>
                 <p className="mt-4 max-w-2xl text-lg text-[var(--muted)]">{program.shortDescription}</p>
 
                 <div className="mt-8 flex flex-wrap gap-4">
                   <Link
                     href={program.slug === "jdc-mastermind" ? "/elite" : `/contact?program=${encodeURIComponent(program.title)}`}
-                    className="rounded-full bg-[var(--brand)] px-6 py-3 font-semibold text-white transition hover:bg-[var(--brand-dark)]"
+                    className="button-primary pressable rounded-full px-6 py-3 font-semibold"
                   >
                     {program.ctaLabel}
                   </Link>
                   <Link
                     href="/programs"
-                    className="rounded-full border border-black/10 px-6 py-3 font-semibold transition hover:border-black/30"
+                    className="button-secondary pressable rounded-full px-6 py-3 font-semibold"
                   >
                     See the other tracks
                   </Link>
@@ -119,7 +119,10 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
               <h2 className="text-2xl font-semibold">Frequently asked questions</h2>
               <div className="mt-6 grid gap-4">
                 {program.faqs.map((item) => (
-                  <div key={item.question} className="rounded-[1.5rem] border border-black/8 bg-white px-5 py-4">
+                  <div
+                    key={item.question}
+                    className="rounded-[1.5rem] border border-[var(--line)] bg-[color:var(--surface-elevated)]/70 px-5 py-4"
+                  >
                     <h3 className="font-semibold">{item.question}</h3>
                     <p className="mt-2 text-sm text-[var(--muted)]">{item.answer}</p>
                   </div>

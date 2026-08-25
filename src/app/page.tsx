@@ -35,6 +35,7 @@ export default async function Home() {
                 <article
                   key={item.title}
                   className="glass-panel interactive-card fade-up overflow-hidden rounded-[2rem]"
+                  style={{ animationDelay: `${index * 70}ms` }}
                 >
                   <div className="visual-mark" aria-hidden="true">
                     {String(index + 1).padStart(2, "0")}
@@ -64,8 +65,8 @@ export default async function Home() {
             </div>
 
             <div className="grid gap-8 lg:grid-cols-2">
-              {programs.map((program) => (
-                <ProgramCard key={program.slug} program={program} />
+              {programs.map((program, index) => (
+                <ProgramCard key={program.slug} program={program} delayMs={index * 60} />
               ))}
             </div>
           </div>

@@ -7,8 +7,14 @@ export const navItems: NavItem[] = [
     label: "Programs",
     children: [
       { href: "/elite", label: "JDC Mastermind" },
-      { href: "/programs/1-on-1-coaching#online", label: "Online Coaching" },
-      { href: "/programs/1-on-1-coaching#face-to-face", label: "Face to Face Coaching" },
+      {
+        href: "/programs/1-on-1-coaching",
+        label: "1-on-1 Coaching",
+        children: [
+          { href: "/programs/1-on-1-coaching#online", label: "Online Coaching" },
+          { href: "/programs/1-on-1-coaching#face-to-face", label: "Face to Face Coaching" },
+        ],
+      },
       { href: "/programs/90-day-blueprint", label: "90-Day Blueprint" },
     ],
   },
@@ -29,9 +35,9 @@ export const siteContent = {
   subheadline:
     "I coach OFWs, employees, and first-time entrepreneurs: mindset, business, and the discipline to follow through.",
   heroTags: ["OFWs", "Employees", "First-time entrepreneurs"],
-  primaryCta: { href: "/contact", label: "Talk to me" },
-  secondaryCta: { href: "/programs", label: "See the programs" },
-  headerCta: "Talk to me",
+  primaryCta: { href: "/programs", label: "See Programs" },
+  secondaryCta: { href: "/contact", label: "Talk to me" },
+  headerCta: "See Programs",
   programsEyebrow: "Where we start",
   programsHeading: "Six tracks. One standard: you do the work.",
   programsLink: "See all programs",
