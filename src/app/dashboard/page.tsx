@@ -72,9 +72,21 @@ export default async function DashboardPage() {
                 </div>
                 <div>
                   <dt>Status</dt>
-                  <dd>{checkoutOrder.status === "approved" ? "Payment approved" : "Verification in progress"}</dd>
+                  <dd>
+                    {checkoutOrder.status === "approved"
+                      ? "Payment approved"
+                      : checkoutOrder.status === "rejected"
+                        ? "Payment rejected — contact support"
+                        : "Verification in progress"}
+                  </dd>
                 </div>
               </dl>
+              {checkoutOrder.status === "rejected" ? (
+                <p className="macos-lead" style={{ textAlign: "left", marginTop: "0.75rem" }}>
+                  We couldn&apos;t verify your receipt, so University access is locked for now. Reply to your
+                  confirmation email or contact support to resolve this.
+                </p>
+              ) : null}
             </MacosWindow>
           ) : null}
           <AccountProfileDashboard

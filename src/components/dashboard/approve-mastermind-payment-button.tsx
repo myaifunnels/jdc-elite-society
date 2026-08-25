@@ -4,6 +4,7 @@ import { useActionState } from "react";
 
 import {
   approveMastermindPayment,
+  rejectMastermindPayment,
   type PaymentActionState,
 } from "@/app/dashboard/payments/actions";
 
@@ -16,6 +17,28 @@ export function ApproveMastermindPaymentButton({ orderId }: { orderId: string })
       <input type="hidden" name="orderId" value={orderId} />
       <button type="submit" className="macos-btn macos-btn-primary" disabled={pending}>
         {pending ? "Approving..." : "Approve payment"}
+      </button>
+      {state.error ? <p className="auth-error">{state.error}</p> : null}
+      {state.success ? <p className="auth-success">{state.success}</p> : null}
+    </form>
+  );
+}
+
+export function RejectMastermindPaymentButton({ orderId }: { orderId: string }) {
+  const [state, action, pending] = useActionState(rejectMastermindPayment, initialState);
+  return (
+    <form
+      action={action}
+      className="payment-approval-form"
+      onSubmit={(event) => {
+        if (!window.confirm("Reject this payment? Their University access locks until this is resolved.")) {
+          event.preventDefault();
+        }
+      }}
+    >
+      <input type="hidden" name="orderId" value={orderId} />
+      <button type="submit" className="macos-btn macos-btn-danger" disabled={pending}>
+        {pending ? "Rejecting..." : "Reject payment"}
       </button>
       {state.error ? <p className="auth-error">{state.error}</p> : null}
       {state.success ? <p className="auth-success">{state.success}</p> : null}

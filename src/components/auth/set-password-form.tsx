@@ -1,7 +1,7 @@
 "use client";
 
-import { Lock } from "lucide-react";
-import { useActionState } from "react";
+import { Eye, EyeOff, Lock } from "lucide-react";
+import { useActionState, useState } from "react";
 
 import { AuthFormState, changeSignedInPassword } from "@/app/login/actions";
 import { SiteLogo } from "@/components/branding/site-logo";
@@ -9,6 +9,45 @@ import { PhotoUploadField } from "@/components/forms/photo-upload-field";
 import { BrandingSettings } from "@/lib/branding";
 
 const initialState: AuthFormState = {};
+
+function PasswordField({
+  name,
+  label,
+  placeholder,
+  autoComplete,
+}: {
+  name: string;
+  label: string;
+  placeholder: string;
+  autoComplete: string;
+}) {
+  const [visible, setVisible] = useState(false);
+
+  return (
+    <label className="auth-field">
+      <span>{label}</span>
+      <span className="auth-input-wrap">
+        <Lock size={15} aria-hidden />
+        <input
+          name={name}
+          type={visible ? "text" : "password"}
+          autoComplete={autoComplete}
+          placeholder={placeholder}
+          minLength={8}
+          required
+        />
+        <button
+          type="button"
+          className="auth-input-toggle"
+          onClick={() => setVisible((current) => !current)}
+          aria-label={visible ? `Hide ${label.toLowerCase()}` : `Show ${label.toLowerCase()}`}
+        >
+          {visible ? <EyeOff size={15} aria-hidden /> : <Eye size={15} aria-hidden />}
+        </button>
+      </span>
+    </label>
+  );
+}
 
 export function SetPasswordForm({
   branding,
@@ -32,27 +71,23 @@ export function SetPasswordForm({
           <p className="macos-lead">
             You&apos;re signed in as {email}. Add your profile photo, then set a password only you know.
           </p>
-          <PhotoUploadField defaultUrl={photoUrl} />
-          <label className="auth-field">
-            <span>New password</span>
-            <span className="auth-input-wrap">
-              <Lock size={15} aria-hidden />
-              <input name="password" type="password" autoComplete="new-password" placeholder="At least 8 characters" required />
-            </span>
-          </label>
-          <label className="auth-field">
-            <span>Confirmation password</span>
-            <span className="auth-input-wrap">
-              <Lock size={15} aria-hidden />
-              <input
-                name="confirmPassword"
-                type="password"
-                autoComplete="new-password"
-                placeholder="Repeat the password"
-                required
-              />
-            </span>
-          </label>
+
+          <div className="auth-form-section">
+            <p className="auth-form-section-label">Profile photo</p>
+            <PhotoUploadField defaultUrl={photoUrl} />
+          </div>
+
+          <div className="auth-form-section">
+            <p className="auth-form-section-label">New password</p>
+            <PasswordField name="password" label="New password" placeholder="At least 8 characters" autoComplete="new-password" />
+            <PasswordField
+              name="confirmPassword"
+              label="Confirmation password"
+              placeholder="Repeat the password"
+              autoComplete="new-password"
+            />
+          </div>
+
           {state.error ? <p className="auth-error">{state.error}</p> : null}
           <div className="macos-actions">
             <button type="submit" className="macos-btn macos-btn-primary" disabled={pending}>

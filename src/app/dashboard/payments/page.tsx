@@ -1,4 +1,7 @@
-import { ApproveMastermindPaymentButton } from "@/components/dashboard/approve-mastermind-payment-button";
+import {
+  ApproveMastermindPaymentButton,
+  RejectMastermindPaymentButton,
+} from "@/components/dashboard/approve-mastermind-payment-button";
 import { DeactivateAccountButton } from "@/components/dashboard/deactivate-account-button";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { MacosWindow } from "@/components/dashboard/macos-window";
@@ -35,16 +38,26 @@ function PaymentRow({ order }: { order: EliteCheckoutOrder }) {
       <a className="macos-btn macos-btn-secondary" href={order.receiptUrl} target="_blank" rel="noreferrer">
         View receipt
       </a>
+
       {order.status === "pending" ? (
         <>
           <p className="dashboard-metric-copy" style={{ margin: 0 }}>
             Newly signed up · instant access already granted
           </p>
           <ApproveMastermindPaymentButton orderId={order.id} />
+          <RejectMastermindPaymentButton orderId={order.id} />
           <DeactivateAccountButton userId={order.userId} name={order.fullName} />
         </>
+      ) : order.status === "approved" ? (
+        <>
+          <span className="status-pill is-verified">Approved</span>
+          <RejectMastermindPaymentButton orderId={order.id} />
+        </>
       ) : (
-        <span className="status-pill is-verified">Approved</span>
+        <>
+          <span className="status-pill is-rejected">Rejected · University locked</span>
+          <ApproveMastermindPaymentButton orderId={order.id} />
+        </>
       )}
     </article>
   );
@@ -55,12 +68,13 @@ export default async function PaymentsPage() {
   const orders = await listEliteCheckoutOrders();
   const pending = orders.filter((order) => order.status === "pending");
   const approved = orders.filter((order) => order.status === "approved");
+  const rejected = orders.filter((order) => order.status === "rejected");
   const approvedRevenue = approved.reduce((total, order) => total + order.price, 0);
 
   return (
     <DashboardShell
       title="Mastermind payments"
-      description="Buyers get instant access at checkout. Use this queue to verify receipts after the fact, and deactivate any account whose receipt turns out to be fraudulent."
+      description="Buyers get instant access at checkout. Verify receipts here — reject a payment to lock their University access, or deactivate the account entirely if the receipt is fraudulent."
     >
       <div className="dashboard-widget-grid">
         <article className="dashboard-metric-card">
@@ -90,6 +104,15 @@ export default async function PaymentsPage() {
           <div className="dashboard-disclosure-body">
             {approved.length ? approved.map((order) => <PaymentRow key={order.id} order={order} />) : (
               <p className="macos-lead" style={{ textAlign: "left" }}>Approved payments will appear here.</p>
+            )}
+          </div>
+        </details>
+
+        <details className="dashboard-disclosure dashboard-span-2">
+          <summary>Rejected · {rejected.length}</summary>
+          <div className="dashboard-disclosure-body">
+            {rejected.length ? rejected.map((order) => <PaymentRow key={order.id} order={order} />) : (
+              <p className="macos-lead" style={{ textAlign: "left" }}>Rejected payments will appear here.</p>
             )}
           </div>
         </details>

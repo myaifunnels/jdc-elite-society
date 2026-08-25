@@ -2210,6 +2210,45 @@ html.dark .auth-screen-centered,
   font-weight: 500;
 }
 
+.auth-input-toggle {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 1.6rem;
+  height: 1.6rem;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.auth-input-toggle:hover {
+  color: var(--foreground);
+  background: color-mix(in srgb, var(--surface) 60%, white 10%);
+}
+
+.auth-form-section {
+  display: grid;
+  gap: 0.65rem;
+  padding: 0.9rem 0;
+  border-top: 1px solid var(--line);
+}
+
+.auth-form-section:first-of-type {
+  border-top: 0;
+  padding-top: 0.2rem;
+}
+
+.auth-form-section-label {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
 .phone-field {
   position: relative;
   display: flex;
@@ -2416,46 +2455,72 @@ html.dark .auth-screen-centered,
 }
 
 .photo-upload {
-  display: grid;
-  justify-items: start;
-  gap: 0.55rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
 }
 
 .photo-upload-frame {
+  position: relative;
   display: grid;
-  overflow: hidden;
+  flex: 0 0 auto;
+  overflow: visible;
   place-items: center;
-  width: 6.5rem;
-  height: 6.5rem;
-  border: 1px dashed var(--line);
+  width: 5.5rem;
+  height: 5.5rem;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  cursor: pointer;
+}
+
+.photo-upload-placeholder {
+  display: grid;
+  width: 100%;
+  height: 100%;
+  place-items: center;
+  border: 1.5px dashed color-mix(in srgb, var(--brand) 45%, var(--line));
   border-radius: 999px;
   background: color-mix(in srgb, var(--brand) 12%, var(--surface));
-  color: var(--muted);
-  font-size: 0.78rem;
-  font-weight: 700;
+  color: var(--brand-dark);
+  transition: border-color 160ms ease, background-color 160ms ease;
 }
 
 .photo-upload-frame img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
-}
-
-.photo-upload-pick {
-  position: relative;
-  display: inline-flex;
-  cursor: pointer;
-  align-items: center;
-  min-height: 2.1rem;
-  padding: 0 0.9rem;
-  border: 1px solid var(--line);
   border-radius: 999px;
-  background: color-mix(in srgb, var(--surface-elevated) 88%, white);
-  font-size: 0.82rem;
-  font-weight: 700;
+  object-fit: cover;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--surface) 60%, white 10%);
 }
 
-.photo-upload-pick input {
+.photo-upload-frame.is-dragging .photo-upload-placeholder,
+.photo-upload-frame:hover .photo-upload-placeholder {
+  border-color: var(--brand);
+  background: color-mix(in srgb, var(--brand) 20%, var(--surface));
+}
+
+.photo-upload-frame.is-dragging img {
+  box-shadow: 0 0 0 3px var(--brand);
+}
+
+.photo-upload-badge {
+  position: absolute;
+  right: -0.1rem;
+  bottom: -0.1rem;
+  display: grid;
+  width: 1.9rem;
+  height: 1.9rem;
+  place-items: center;
+  border: 2px solid var(--surface);
+  border-radius: 50%;
+  background: var(--brand);
+  color: white;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.22);
+}
+
+.photo-upload-input {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -2463,10 +2528,35 @@ html.dark .auth-screen-centered,
   clip: rect(0 0 0 0);
 }
 
-.photo-upload p {
+.photo-upload-copy {
+  display: grid;
+  gap: 0.2rem;
+  text-align: left;
+}
+
+.photo-upload-title {
+  margin: 0;
+  color: var(--foreground);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.photo-upload-hint {
   margin: 0;
   color: var(--muted);
-  font-size: 0.78rem;
+  font-size: 0.76rem;
+  line-height: 1.4;
+}
+
+.photo-upload-error {
+  margin: 0;
+  color: #dc2626;
+  font-size: 0.76rem;
+  line-height: 1.4;
+}
+
+.dark .photo-upload-error {
+  color: #fca5a5;
 }
 
 .contact-avatar.is-xl {
@@ -2543,6 +2633,24 @@ html.dark .auth-screen-centered,
   background: color-mix(in srgb, var(--brand) 14%, transparent);
   font-size: 0.78rem;
   font-weight: 700;
+}
+
+.status-pill.is-verified {
+  background: color-mix(in srgb, #16a34a 18%, transparent);
+  color: #15803d;
+}
+
+.dark .status-pill.is-verified {
+  color: #86efac;
+}
+
+.status-pill.is-rejected {
+  background: color-mix(in srgb, #dc2626 16%, transparent);
+  color: #b91c1c;
+}
+
+.dark .status-pill.is-rejected {
+  color: #fca5a5;
 }
 
 .macos-actions .auth-switch-copy {

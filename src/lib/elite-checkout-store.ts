@@ -1,6 +1,6 @@
 import { Pool } from "pg";
 
-export type EliteCheckoutStatus = "pending" | "approved";
+export type EliteCheckoutStatus = "pending" | "approved" | "rejected";
 
 export type EliteCheckoutOrder = {
   id: string;
@@ -92,7 +92,7 @@ function mapRow(row: Record<string, unknown>): EliteCheckoutOrder {
     price: Number(row.price),
     receiptName: String(row.receipt_name),
     receiptUrl: String(row.receipt_url),
-    status: row.status === "approved" ? "approved" : "pending",
+    status: row.status === "approved" ? "approved" : row.status === "rejected" ? "rejected" : "pending",
     createdAt: new Date(String(row.created_at)).toISOString(),
     approvedAt: row.approved_at ? new Date(String(row.approved_at)).toISOString() : "",
     approvedBy: String(row.approved_by ?? ""),
@@ -202,6 +202,33 @@ export async function approveEliteCheckoutOrder(orderId: string, approvedBy: str
       RETURNING *
       `,
       [orderId, approvedAt, approvedBy],
+    );
+    if (!result.rows[0]) throw new Error("Payment submission not found.");
+    return mapRow(result.rows[0]);
+  }
+
+  if (memoryIndex < 0) throw new Error("Payment submission not found.");
+  return memoryOrders[memoryIndex];
+}
+
+export async function rejectEliteCheckoutOrder(orderId: string, reviewedBy: string) {
+  const approvedAt = new Date().toISOString();
+  const memoryIndex = memoryOrders.findIndex((order) => order.id === orderId);
+  if (memoryIndex >= 0) {
+    memoryOrders[memoryIndex] = { ...memoryOrders[memoryIndex], status: "rejected", approvedAt, approvedBy: reviewedBy };
+  }
+
+  const client = getPool();
+  if (client) {
+    await ensureTable(client);
+    const result = await client.query(
+      `
+      UPDATE elite_checkout_orders
+      SET status = 'rejected', approved_at = $2, approved_by = $3
+      WHERE id = $1
+      RETURNING *
+      `,
+      [orderId, approvedAt, reviewedBy],
     );
     if (!result.rows[0]) throw new Error("Payment submission not found.");
     return mapRow(result.rows[0]);

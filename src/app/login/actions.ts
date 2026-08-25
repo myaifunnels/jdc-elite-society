@@ -380,6 +380,8 @@ export async function changeSignedInPassword(
   }
 
   await setUserPassword(user.id, password);
+  revalidatePath("/dashboard");
+  revalidatePath("/account/password");
   redirect("/dashboard?welcome=1");
 }
 
