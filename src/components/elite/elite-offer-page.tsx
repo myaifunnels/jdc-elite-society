@@ -299,6 +299,24 @@ export function EliteOfferPage() {
         </div>
       </section>
 
+      <section className="elite-section elite-reveal elite-faq" id="faq">
+        <div className="elite-shell">
+          <p className="elite-kicker elite-center">STRAIGHT ANSWERS</p>
+          <h2>What people ask before they join JDC Mastermind</h2>
+          <p className="elite-center elite-sub" style={{ marginInline: "auto" }}>
+            Clear answers for people deciding whether this is the right room.
+          </p>
+          <div className="elite-faq-list">
+            {mastermindOffer.faqs.map((item) => (
+              <article className="elite-glass elite-reveal-item" key={item.question}>
+                <h3>{item.question}</h3>
+                <p>{item.answer}</p>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
       <section className="elite-final elite-reveal">
         <div className="elite-shell">
           <p className="elite-kicker">THE DECISION IS SMALL. THE STANDARD ISN&apos;T.</p>

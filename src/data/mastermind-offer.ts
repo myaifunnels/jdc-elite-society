@@ -1,8 +1,48 @@
 export const mastermindOffer = {
-  title: "JDC Mastermind | Full Access | PHP 2,000",
+  title: "JDC Mastermind",
   description:
-    "Turn hard work into clear, disciplined execution with two focused JDC Mastermind sessions, lifetime replays, and a private accountability community led by Coach JDC.",
-  ogImage: "https://vibe.filesafe.space/meta/1780838141047994819/og_image.png",
+    "Premium coaching with Coach Jayson Dela Cruz for network marketers, entrepreneurs, aspiring leaders, and OFWs. Two Mastermind sessions, lifetime access, and a private community.",
+  ogImage: "/og/jdc-mastermind.jpg",
+  ogImageAlt:
+    "JDC Mastermind: Stop building your network marketing business like a beginner. Start building like a professional.",
+  ogImageWidth: 1200,
+  ogImageHeight: 630,
+  keywords: [
+    "JDC Mastermind",
+    "Coach Jayson Dela Cruz",
+    "Coach JDC",
+    "network marketing coaching",
+    "OFW business coaching",
+    "entrepreneur mentorship Philippines",
+    "JDC Elite Society",
+  ],
+  faqs: [
+    {
+      question: "What is JDC Mastermind?",
+      answer:
+        "JDC Mastermind is a premium coaching and mentorship environment led by Coach Jayson Dela Cruz. It helps serious network marketers, entrepreneurs, aspiring leaders, and OFWs build skills, systems, consistency, and leadership so they can grow a business instead of chasing the next sale.",
+    },
+    {
+      question: "Who is JDC Mastermind for?",
+      answer:
+        "It is for serious builders: network marketers, entrepreneurs, aspiring leaders, and OFWs who are ready to develop competence, consistency, and leadership. It is not a pep talk or a beginner seminar.",
+    },
+    {
+      question: "What is included in JDC Mastermind?",
+      answer:
+        "You get two complete sessions (Foundation and Execution), lifetime access to every replay, the private JDC Elite Society accountability community, and the ability to watch on the portal or through the Android and iPhone apps.",
+    },
+    {
+      question: "How much does JDC Mastermind cost?",
+      answer:
+        "Full Mastermind access is a one-time PHP 2,000 investment. There is no recurring fee. Lifetime access to the sessions and community is included.",
+    },
+    {
+      question: "Does JDC Mastermind include lifetime access?",
+      answer:
+        "Yes. One payment unlocks both Mastermind sessions, session replays, and the private community for life. You can revisit the training whenever you need a reset.",
+    },
+  ],
   logo: "https://vibe.filesafe.space/1780838141047994819/attachments/5738db11-cc5d-4ee5-91d6-b11707063731.png",
   heroVideo: "https://assets.cdn.filesafe.space/Col3j2B7jRDX5y8J5bgN/media/6a8425979f720b54ef08fd2f.mp4",
   thankYouVideo: "https://assets.cdn.filesafe.space/Col3j2B7jRDX5y8J5bgN/media/6a77412a8880872019a0353a.mp4",
