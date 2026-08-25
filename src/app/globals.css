@@ -338,19 +338,59 @@ a,
 }
 
 .site-account-trigger {
-  display: grid;
-  place-items: center;
-  padding: 0;
-  border: 2px solid transparent;
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.3rem 0.5rem 0.3rem 0.3rem;
+  border: 1px solid transparent;
   border-radius: 999px;
   background: transparent;
   cursor: pointer;
-  transition: border-color 160ms ease;
+  transition: border-color 160ms ease, background-color 160ms ease;
 }
 
 .site-account-trigger:hover,
 .site-account-trigger[aria-expanded="true"] {
-  border-color: color-mix(in srgb, var(--brand) 45%, transparent);
+  border-color: var(--line);
+  background: color-mix(in srgb, var(--surface) 60%, white 8%);
+}
+
+.site-account-trigger-copy {
+  display: none;
+  min-width: 0;
+  max-width: 9rem;
+  text-align: left;
+}
+
+.site-account-trigger-copy strong {
+  display: block;
+  overflow: hidden;
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.site-account-trigger-copy small {
+  display: block;
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 0.7rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.site-account-trigger-chevron {
+  display: none;
+  flex: 0 0 auto;
+  color: var(--muted);
+}
+
+@media (min-width: 640px) {
+  .site-account-trigger-copy,
+  .site-account-trigger-chevron {
+    display: block;
+  }
 }
 
 .site-account-dropdown {
@@ -2711,9 +2751,77 @@ html.dark .auth-screen-centered,
   font-style: normal;
 }
 
-.payment-row-main {
-  min-width: min(100%, 18rem);
-  flex: 1 1 22rem;
+.payment-row-list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.payment-row {
+  display: grid;
+  gap: 0.5rem;
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--surface) 55%, transparent);
+}
+
+.payment-row-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.6rem;
+}
+
+.payment-row-who {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.payment-row-who strong {
+  font-size: 0.96rem;
+  font-weight: 700;
+}
+
+.payment-row-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.payment-row-contact,
+.payment-row-detail {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.payment-row-note {
+  margin: 0;
+  color: var(--brand-dark);
+  font-size: 0.76rem;
+  font-weight: 600;
+}
+
+.payment-row-note.is-warn {
+  color: #dc2626;
+}
+
+.dark .payment-row-note.is-warn {
+  color: #fca5a5;
+}
+
+.payment-row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 0.6rem;
+  padding-top: 0.4rem;
+  border-top: 1px solid var(--line);
+  margin-top: 0.2rem;
 }
 
 .payment-approval-form {
@@ -2754,6 +2862,12 @@ html.dark .auth-screen-centered,
   background: color-mix(in srgb, var(--brand) 14%, transparent);
   font-size: 0.78rem;
   font-weight: 700;
+}
+
+.status-pill.is-quiet {
+  background: color-mix(in srgb, var(--muted) 16%, transparent);
+  color: var(--muted);
+  font-weight: 600;
 }
 
 .status-pill.is-verified {

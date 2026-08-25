@@ -17,48 +17,54 @@ function submittedAt(value: string) {
   }).format(new Date(value));
 }
 
+function categoryLabel(order: EliteCheckoutOrder) {
+  if (order.coachingHours <= 0) return "Mastermind";
+  const mode = order.coachingMode === "in-person" ? "In-person" : "Online";
+  return `Mastermind + ${mode} Coaching · ${order.coachingHours} hr${order.coachingHours === 1 ? "" : "s"}`;
+}
+
 function PaymentRow({ order }: { order: EliteCheckoutOrder }) {
   return (
-    <article className="registration-row payment-row">
-      <div className="payment-row-main">
-        <strong>{order.fullName}</strong>
-        <em>{order.email} · {order.mobile}</em>
-        <p>{order.paymentMethod} · {formatPhp(order.price)} · {submittedAt(order.createdAt)}</p>
-        <p>
-          Category: {order.coachingHours > 0 ? `Mastermind + ${order.coachingMode === "in-person" ? "In-person" : "Online"} Coaching` : "Mastermind only"}
-          {order.coachingHours > 0 ? ` · ${order.coachingHours} coaching hour${order.coachingHours === 1 ? "" : "s"}` : ""}
-        </p>
-        {order.couponCode ? <p>Coupon: {order.couponCode}</p> : null}
-      </div>
-      <span className="status-pill">
-        {order.coachingHours > 0
-          ? order.coachingMode === "in-person" ? "In-person coaching" : "Online coaching"
-          : "Mastermind"}
-      </span>
-      <a className="macos-btn macos-btn-secondary" href={order.receiptUrl} target="_blank" rel="noreferrer">
-        View receipt
-      </a>
+    <article className="payment-row">
+      <header className="payment-row-head">
+        <div className="payment-row-who">
+          <strong>{order.fullName}</strong>
+          <span className="payment-row-tags">
+            <span className="status-pill is-quiet">{categoryLabel(order)}</span>
+            {order.status === "approved" ? <span className="status-pill is-verified">Approved</span> : null}
+            {order.status === "rejected" ? <span className="status-pill is-rejected">Rejected</span> : null}
+          </span>
+        </div>
+        <a className="macos-btn macos-btn-secondary" href={order.receiptUrl} target="_blank" rel="noreferrer">
+          View receipt
+        </a>
+      </header>
+
+      <p className="payment-row-contact">{order.email} · {order.mobile}</p>
+      <p className="payment-row-detail">
+        {order.paymentMethod} · {formatPhp(order.price)} · {submittedAt(order.createdAt)}
+        {order.couponCode ? ` · Coupon ${order.couponCode}` : ""}
+      </p>
 
       {order.status === "pending" ? (
-        <>
-          <p className="dashboard-metric-copy" style={{ margin: 0 }}>
-            Newly signed up · instant access already granted
-          </p>
-          <ApproveMastermindPaymentButton orderId={order.id} />
+        <p className="payment-row-note">Newly signed up · instant access already granted</p>
+      ) : order.status === "rejected" ? (
+        <p className="payment-row-note is-warn">University, courses, and group access are locked</p>
+      ) : null}
+
+      <div className="payment-row-actions">
+        {order.status === "pending" ? (
+          <>
+            <ApproveMastermindPaymentButton orderId={order.id} />
+            <RejectMastermindPaymentButton orderId={order.id} />
+            <DeactivateAccountButton userId={order.userId} name={order.fullName} />
+          </>
+        ) : order.status === "approved" ? (
           <RejectMastermindPaymentButton orderId={order.id} />
-          <DeactivateAccountButton userId={order.userId} name={order.fullName} />
-        </>
-      ) : order.status === "approved" ? (
-        <>
-          <span className="status-pill is-verified">Approved</span>
-          <RejectMastermindPaymentButton orderId={order.id} />
-        </>
-      ) : (
-        <>
-          <span className="status-pill is-rejected">Rejected · University locked</span>
+        ) : (
           <ApproveMastermindPaymentButton orderId={order.id} />
-        </>
-      )}
+        )}
+      </div>
     </article>
   );
 }
@@ -93,7 +99,7 @@ export default async function PaymentsPage() {
           <p className="dashboard-metric-copy">Recorded value of approved checkout submissions.</p>
         </article>
 
-        <MacosWindow title={`Pending verification · ${pending.length}`} className="dashboard-span-2">
+        <MacosWindow title={`Pending verification · ${pending.length}`} className="dashboard-span-2" bodyClassName="payment-row-list">
           {pending.length ? pending.map((order) => <PaymentRow key={order.id} order={order} />) : (
             <p className="macos-lead" style={{ textAlign: "left" }}>No Mastermind payments are waiting for review.</p>
           )}
@@ -101,7 +107,7 @@ export default async function PaymentsPage() {
 
         <details className="dashboard-disclosure dashboard-span-2">
           <summary>Approval history · {approved.length}</summary>
-          <div className="dashboard-disclosure-body">
+          <div className="dashboard-disclosure-body payment-row-list">
             {approved.length ? approved.map((order) => <PaymentRow key={order.id} order={order} />) : (
               <p className="macos-lead" style={{ textAlign: "left" }}>Approved payments will appear here.</p>
             )}
@@ -110,7 +116,7 @@ export default async function PaymentsPage() {
 
         <details className="dashboard-disclosure dashboard-span-2">
           <summary>Rejected · {rejected.length}</summary>
-          <div className="dashboard-disclosure-body">
+          <div className="dashboard-disclosure-body payment-row-list">
             {rejected.length ? rejected.map((order) => <PaymentRow key={order.id} order={order} />) : (
               <p className="macos-lead" style={{ textAlign: "left" }}>Rejected payments will appear here.</p>
             )}

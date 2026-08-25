@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useId, useState } from "react";
 import {
   CreditCard,
+  Globe,
   GraduationCap,
   Handshake,
   LayoutDashboard,
@@ -130,6 +131,10 @@ function SidebarPanel({
             </Link>
           );
         })}
+        <Link href="/" onClick={onNavigate} className="dashboard-nav-item pressable">
+          <Globe size={16} aria-hidden />
+          Back to main website
+        </Link>
       </nav>
 
       <div className="mt-auto grid gap-3 border-t border-[var(--line)] p-3">
@@ -144,10 +149,6 @@ function SidebarPanel({
           </div>
           <ThemeToggle />
         </div>
-
-        <Link href="/" onClick={onNavigate} className="dashboard-nav-item pressable">
-          View public site
-        </Link>
 
         <form action={logout}>
           <button type="submit" className="macos-btn macos-btn-secondary pressable w-full gap-2">

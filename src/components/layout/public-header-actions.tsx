@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronDown, LayoutDashboard, LogOut, Menu, UserRound, X } from "lucide-react";
+import { ChevronDown, GraduationCap, LayoutDashboard, LogOut, Menu, UserRound, X } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
@@ -114,6 +114,11 @@ function AccountMenu({ account, onNavigate }: { account: AccountSummary; onNavig
         onClick={() => setOpen((current) => !current)}
       >
         <ContactAvatar name={account.name} photoUrl={account.photoUrl} size="sm" />
+        <span className="site-account-trigger-copy">
+          <strong>{account.name}</strong>
+          <small>{account.email}</small>
+        </span>
+        <ChevronDown size={14} aria-hidden className="site-account-trigger-chevron" />
       </button>
 
       {open ? (
@@ -128,6 +133,10 @@ function AccountMenu({ account, onNavigate }: { account: AccountSummary; onNavig
           <Link href="/dashboard" className="site-account-dropdown-link" onClick={close}>
             <LayoutDashboard size={15} aria-hidden />
             Dashboard
+          </Link>
+          <Link href="/dashboard/university" className="site-account-dropdown-link" onClick={close}>
+            <GraduationCap size={15} aria-hidden />
+            University
           </Link>
           <Link href="/dashboard/profile" className="site-account-dropdown-link" onClick={close}>
             <UserRound size={15} aria-hidden />
@@ -220,6 +229,12 @@ export function PublicHeaderActions({
             </div>
             <Link href="/dashboard" className="pressable" onClick={() => setOpen(false)}>
               Dashboard
+            </Link>
+            <Link href="/dashboard/university" className="pressable" onClick={() => setOpen(false)}>
+              University
+            </Link>
+            <Link href="/dashboard/profile" className="pressable" onClick={() => setOpen(false)}>
+              Account
             </Link>
             <form action={logout}>
               <button type="submit" className="pressable site-nav-drawer-signout" onClick={() => setOpen(false)}>
