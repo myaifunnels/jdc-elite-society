@@ -34,13 +34,11 @@ function roleLabel(role: AuthUser["role"]) {
 export function AccountProfileDashboard({
   user,
   showWorkspaceLinks = false,
-  showPath = false,
   needsAddressConfirm = false,
   mapAddress,
 }: {
   user: AuthUser;
   showWorkspaceLinks?: boolean;
-  showPath?: boolean;
   needsAddressConfirm?: boolean;
   mapAddress?: string;
 }) {
@@ -144,11 +142,6 @@ export function AccountProfileDashboard({
               <Link href="/dashboard/university" className="macos-btn macos-btn-primary">
                 Open University
               </Link>
-              {showPath ? (
-                <Link href="/dashboard/path" className="macos-btn macos-btn-secondary">
-                  See my path
-                </Link>
-              ) : null}
               <Link href="/contact" className="macos-btn macos-btn-secondary">
                 Talk to Coach JDC
               </Link>

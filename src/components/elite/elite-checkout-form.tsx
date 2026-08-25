@@ -230,7 +230,7 @@ export function EliteCheckoutForm() {
                 setCouponApplied(false);
                 setCouponError("");
               }}
-              placeholder="Enter SPARTANS for PHP 500 off"
+              placeholder="Enter your coupon code"
             />
             <button type="button" onClick={applyCoupon}>
               APPLY

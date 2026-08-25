@@ -16,8 +16,32 @@ import {
   updateUserRole,
 } from "@/lib/auth-store";
 import { hideAndRemoveContactByEmail, unhideContactEmail } from "@/lib/crm-store";
+import { addGhlContactTags, lookupGhlContact, removeGhlContactTags } from "@/lib/ghl";
 import { deletePasswordResetsForUser } from "@/lib/password-reset";
 import { requireCapability } from "@/lib/session";
+import { COURSE_ACCESS_TAGS, PAYMENT_REJECTED_TAG } from "@/lib/tags";
+
+async function revokeCourseAccess(email: string, mobile: string) {
+  try {
+    const contact = await lookupGhlContact(email, mobile);
+    if (!contact?.id) return;
+    await removeGhlContactTags(contact.id, [...COURSE_ACCESS_TAGS]);
+    await addGhlContactTags(contact.id, [PAYMENT_REJECTED_TAG]);
+  } catch (error) {
+    console.error("Failed to revoke GHL course access", error);
+  }
+}
+
+async function restoreCourseAccess(email: string, mobile: string) {
+  try {
+    const contact = await lookupGhlContact(email, mobile);
+    if (!contact?.id) return;
+    await addGhlContactTags(contact.id, [...COURSE_ACCESS_TAGS]);
+    await removeGhlContactTags(contact.id, [PAYMENT_REJECTED_TAG]);
+  } catch (error) {
+    console.error("Failed to restore GHL course access", error);
+  }
+}
 
 function mapFromForm(formData: FormData, prefix: string): AccessMap {
   const next = {} as AccessMap;
@@ -115,7 +139,11 @@ export async function deactivateUserAction(
   }
 
   try {
+    const target = await getPublicUserById(userId);
     await setUserActive(userId, false);
+    if (target) {
+      await revokeCourseAccess(target.email, target.phone);
+    }
   } catch (error) {
     return { error: error instanceof Error ? error.message : "I couldn't deactivate this account." };
   }
@@ -124,7 +152,7 @@ export async function deactivateUserAction(
   revalidatePath("/dashboard/contacts");
   revalidatePath("/dashboard/payments");
   revalidatePath("/dashboard/registrations");
-  return { success: "Account deactivated. They can no longer sign in or access the dashboard." };
+  return { success: "Account deactivated. They can no longer sign in, access the dashboard, or reach University." };
 }
 
 export async function reactivateUserAction(
@@ -138,7 +166,11 @@ export async function reactivateUserAction(
   }
 
   try {
+    const target = await getPublicUserById(userId);
     await setUserActive(userId, true);
+    if (target) {
+      await restoreCourseAccess(target.email, target.phone);
+    }
   } catch (error) {
     return { error: error instanceof Error ? error.message : "I couldn't reactivate this account." };
   }

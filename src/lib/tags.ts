@@ -1,4 +1,18 @@
-export type TagGroupId = "audience" | "program" | "stage" | "membership" | "offer" | "ghl" | "custom";
+export type TagGroupId = "audience" | "program" | "stage" | "membership" | "offer" | "access" | "ghl" | "custom";
+
+/**
+ * Applying these tags is what actually unlocks the buyer's GHL Membership
+ * courses and JDC Elite Society community group — GHL workflows on the
+ * JDC Elite Society subaccount are configured to grant/revoke portal access
+ * when a contact gains/loses these tags. Keep names in sync with GHL.
+ */
+export const COURSE_ACCESS_TAGS = [
+  "JDC Mastermind Session 1",
+  "JDC Mastermind Session 2",
+  "JDC Elite Society Group",
+] as const;
+
+export const PAYMENT_REJECTED_TAG = "Payment Rejected";
 
 export type TagGroup = {
   id: TagGroupId;
@@ -49,6 +63,11 @@ export const TAG_GROUPS: TagGroup[] = [
       "GCash",
     ],
   },
+  {
+    id: "access",
+    label: "Course & group access",
+    tags: [...COURSE_ACCESS_TAGS, PAYMENT_REJECTED_TAG],
+  },
 ];
 
 export function mastermindCheckoutTags(input: {
@@ -64,6 +83,7 @@ export function mastermindCheckoutTags(input: {
     "Elite offer",
     "Mastermind checkout",
     "Payment pending",
+    ...COURSE_ACCESS_TAGS,
     input.paymentMethod,
     input.priceLabel,
     input.couponApplied ? "spartans-coupon" : "",

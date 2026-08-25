@@ -4,7 +4,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useId, useState } from "react";
 import {
-  BookOpen,
   CreditCard,
   GraduationCap,
   Handshake,
@@ -37,7 +36,6 @@ const navCatalog: Array<{
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, capability: "dashboard" },
   { href: "/dashboard/university", label: "University", icon: GraduationCap, capability: "university" },
   { href: "/dashboard/profile", label: "Account", icon: UserRound, capability: "profile" },
-  { href: "/dashboard/path", label: "My path", icon: BookOpen, capability: "path" },
   { href: "/dashboard/contacts", label: "Contacts", icon: Users, capability: "contacts.view" },
   { href: "/dashboard/payments", label: "Payments", icon: CreditCard, capability: "registrations" },
   { href: "/dashboard/partnership", label: "Partnership", icon: Handshake, capability: "partnership" },

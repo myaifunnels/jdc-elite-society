@@ -92,7 +92,6 @@ export default async function DashboardPage() {
           <AccountProfileDashboard
             user={user}
             showWorkspaceLinks={!pending}
-            showPath={!pending && hasAccess(access, "path")}
             needsAddressConfirm={needsAddressConfirm}
             mapAddress={crmContact?.address}
           />

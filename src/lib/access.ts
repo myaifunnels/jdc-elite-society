@@ -6,7 +6,6 @@ export type Capability =
   | "dashboard"
   | "university"
   | "profile"
-  | "path"
   | "contacts.view"
   | "contacts.all"
   | "contacts.tags"
@@ -31,7 +30,6 @@ export const CAPABILITIES: Array<{ id: Capability; label: string; detail: string
   { id: "dashboard", label: "Dashboard home", detail: "See the signed-in workspace home." },
   { id: "university", label: "University", detail: "Open the membership community embed." },
   { id: "profile", label: "Account profile", detail: "Edit their own profile and membership card." },
-  { id: "path", label: "My path", detail: "See program tracks inside the member room." },
   { id: "contacts.view", label: "Contacts", detail: "Open the contacts workspace." },
   { id: "contacts.all", label: "All contacts", detail: "See the full roster, not only assigned people." },
   { id: "contacts.tags", label: "Edit tags", detail: "Add and remove GHL-synced tags." },
@@ -46,7 +44,7 @@ export const CAPABILITIES: Array<{ id: Capability; label: string; detail: string
 export const ACCESS_ROLES: Array<{ id: AccessRole; label: string; detail: string }> = [
   { id: "admin", label: "Admin", detail: "Full platform. Defaults on for every room." },
   { id: "partner", label: "Partner", detail: "Assigned contacts, University, own account, and optional partnership." },
-  { id: "member", label: "Member", detail: "Verified membership: University, profile, and path." },
+  { id: "member", label: "Member", detail: "Verified membership: University and profile." },
   { id: "contact", label: "Contact", detail: "Limited portal for CRM contacts: home, account, and University." },
 ];
 
@@ -55,7 +53,6 @@ export const ROLE_DEFAULTS: Record<AccessRole, AccessMap> = {
     dashboard: true,
     university: true,
     profile: true,
-    path: true,
     "contacts.view": true,
     "contacts.all": true,
     "contacts.tags": true,
@@ -70,7 +67,6 @@ export const ROLE_DEFAULTS: Record<AccessRole, AccessMap> = {
     dashboard: true,
     university: true,
     profile: true,
-    path: false,
     "contacts.view": true,
     "contacts.all": false,
     "contacts.tags": true,
@@ -85,7 +81,6 @@ export const ROLE_DEFAULTS: Record<AccessRole, AccessMap> = {
     dashboard: true,
     university: true,
     profile: true,
-    path: true,
     "contacts.view": false,
     "contacts.all": false,
     "contacts.tags": false,
@@ -100,7 +95,6 @@ export const ROLE_DEFAULTS: Record<AccessRole, AccessMap> = {
     dashboard: true,
     university: true,
     profile: true,
-    path: false,
     "contacts.view": false,
     "contacts.all": false,
     "contacts.tags": false,
