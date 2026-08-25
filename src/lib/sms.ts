@@ -1,8 +1,41 @@
 import { lookupGhlContact, sendGhlSms, syncContactToGhl } from "@/lib/ghl";
 import { toE164Phone } from "@/lib/identity";
+import { isTextBeeReady } from "@/lib/integrations";
+import { getResolvedIntegrationSettings } from "@/lib/integrations-store";
 
 export function notifyPhone() {
   return toE164Phone(process.env.NOTIFY_PHONE || "+639569448114");
+}
+
+async function sendTextBeeSms(to: string, body: string) {
+  const settings = await getResolvedIntegrationSettings();
+  if (!isTextBeeReady(settings)) {
+    return { sent: false as const, skipped: true as const };
+  }
+
+  try {
+    const response = await fetch(
+      `https://api.textbee.dev/api/v1/gateway/devices/${settings.textbeeDeviceId}/send-sms`,
+      {
+        method: "POST",
+        headers: {
+          "x-api-key": settings.textbeeApiKey,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ recipients: [to], message: body }),
+      },
+    );
+
+    if (!response.ok) {
+      console.error("TextBee SMS failed", response.status, await response.text());
+      return { sent: false as const, skipped: false as const };
+    }
+
+    return { sent: true as const, skipped: false as const };
+  } catch (error) {
+    console.error("TextBee SMS error", error);
+    return { sent: false as const, skipped: false as const };
+  }
 }
 
 async function sendTwilioSms(to: string, body: string) {
@@ -57,6 +90,11 @@ export async function sendSms(input: { to: string; body: string; name?: string; 
     if (ghl.ok) {
       return { sent: true as const };
     }
+  }
+
+  const textbee = await sendTextBeeSms(to, input.body);
+  if (textbee.sent) {
+    return { sent: true as const };
   }
 
   const twilio = await sendTwilioSms(to, input.body);

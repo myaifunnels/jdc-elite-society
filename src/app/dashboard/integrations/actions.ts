@@ -2,8 +2,9 @@
 
 import { revalidatePath } from "next/cache";
 
-import { isGhlReady, isMapsReady, isR2Ready } from "@/lib/integrations";
+import { isGhlReady, isMapsReady, isR2Ready, isTextBeeReady } from "@/lib/integrations";
 import { getResolvedIntegrationSettings, saveIntegrationSettings } from "@/lib/integrations-store";
+import { migrateDataUrlFilesToR2 } from "@/lib/r2-migrate";
 import { requireCapability } from "@/lib/session";
 
 export type IntegrationFormState = {
@@ -94,4 +95,62 @@ export async function saveGhlIntegration(
   revalidatePath("/dashboard/integrations");
 
   return { success: "GoHighLevel JDC Elite Society subaccount saved." };
+}
+
+export async function saveTextBeeIntegration(
+  _prevState: IntegrationFormState,
+  formData: FormData,
+): Promise<IntegrationFormState> {
+  await requireCapability("integrations");
+
+  const incoming = {
+    textbeeApiKey: String(formData.get("textbeeApiKey") ?? "").trim(),
+    textbeeDeviceId: String(formData.get("textbeeDeviceId") ?? "").trim(),
+  };
+  const current = await getResolvedIntegrationSettings();
+  const preview = {
+    ...current,
+    textbeeApiKey: incoming.textbeeApiKey || current.textbeeApiKey,
+    textbeeDeviceId: incoming.textbeeDeviceId || current.textbeeDeviceId,
+  };
+
+  if (!isTextBeeReady(preview)) {
+    return { error: "Paste your TextBee API key and device ID." };
+  }
+
+  await saveIntegrationSettings(incoming);
+  revalidatePath("/dashboard/integrations");
+
+  return { success: "TextBee SMS gateway saved." };
+}
+
+export async function migrateFilesToR2Action(
+  _prevState: IntegrationFormState,
+  _formData: FormData,
+): Promise<IntegrationFormState> {
+  await requireCapability("integrations");
+
+  const summary = await migrateDataUrlFilesToR2();
+  const migrated = summary.profilePhotos + summary.receipts + summary.contactPhotos;
+
+  revalidatePath("/dashboard/integrations");
+  revalidatePath("/dashboard/contacts");
+
+  if (migrated === 0 && summary.errors.length === 0) {
+    return { success: "Nothing to migrate — every file already lives on Cloudflare R2." };
+  }
+
+  const parts = [
+    summary.profilePhotos ? `${summary.profilePhotos} profile photo${summary.profilePhotos === 1 ? "" : "s"}` : "",
+    summary.receipts ? `${summary.receipts} receipt${summary.receipts === 1 ? "" : "s"}` : "",
+    summary.contactPhotos ? `${summary.contactPhotos} contact photo${summary.contactPhotos === 1 ? "" : "s"}` : "",
+  ].filter(Boolean);
+
+  if (summary.errors.length > 0) {
+    return {
+      error: `Migrated ${parts.join(", ") || "nothing"}. ${summary.errors.length} failed: ${summary.errors.slice(0, 3).join("; ")}${summary.errors.length > 3 ? "…" : ""}`,
+    };
+  }
+
+  return { success: `Migrated ${parts.join(", ")} to Cloudflare R2.` };
 }

@@ -7,6 +7,7 @@ import {
   saveGhlIntegration,
   saveGoogleMapsIntegration,
   saveR2Integration,
+  saveTextBeeIntegration,
 } from "@/app/dashboard/integrations/actions";
 import { FloatField } from "@/components/forms/float-field";
 import { StickyForm } from "@/components/forms/sticky-form";
@@ -122,6 +123,40 @@ export function GhlIntegrationForm({
         className="button-primary pressable w-fit rounded-full px-4 py-2 text-sm font-semibold disabled:opacity-70"
       >
         {pending ? "Saving..." : "Save GoHighLevel"}
+      </button>
+    </StickyForm>
+  );
+}
+
+export function TextBeeIntegrationForm({
+  configured,
+  deviceId,
+}: {
+  configured: boolean;
+  deviceId: string;
+}) {
+  const [state, formAction, pending] = useActionState(saveTextBeeIntegration, initialState);
+
+  return (
+    <StickyForm storageKey="coach-jdc-textbee-integration" action={formAction} className="mt-6 grid gap-4">
+      <FloatField
+        label={configured ? `Enter a new API key (${maskSecret("set")})` : "Enter your TextBee API key"}
+      >
+        <input name="textbeeApiKey" type="password" autoComplete="off" placeholder=" " />
+      </FloatField>
+      <FloatField label="Enter your TextBee device ID">
+        <input name="textbeeDeviceId" autoComplete="off" defaultValue={deviceId} placeholder=" " />
+      </FloatField>
+
+      {state.error ? <p className="text-sm text-red-500">{state.error}</p> : null}
+      {state.success ? <p className="text-sm text-emerald-400">{state.success}</p> : null}
+
+      <button
+        type="submit"
+        disabled={pending}
+        className="button-primary pressable w-fit rounded-full px-4 py-2 text-sm font-semibold disabled:opacity-70"
+      >
+        {pending ? "Saving..." : "Save TextBee"}
       </button>
     </StickyForm>
   );

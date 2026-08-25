@@ -1,165 +1,191 @@
+import { Cloud, MapPin, MessageSquare, Workflow, type LucideIcon } from "lucide-react";
 import Link from "next/link";
 
 import {
   GhlIntegrationForm,
   GoogleMapsIntegrationForm,
   R2IntegrationForm,
+  TextBeeIntegrationForm,
 } from "@/components/dashboard/integration-forms";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
+import { MigrateFilesToR2Button } from "@/components/dashboard/migrate-files-button";
 import { AddressMap } from "@/components/maps/address-map";
-import { isGhlReady, isMapsReady, isR2Ready, maskSecret } from "@/lib/integrations";
+import { isGhlReady, isMapsReady, isR2Ready, isTextBeeReady, maskSecret } from "@/lib/integrations";
 import { getResolvedIntegrationSettings } from "@/lib/integrations-store";
 import { requireCapability } from "@/lib/session";
-import { cn } from "@/lib/utils";
 
-type IntegrationTab = "maps" | "r2" | "ghl";
+type AppId = "maps" | "r2" | "ghl" | "textbee";
 
-function parseIntegrationTab(value?: string): IntegrationTab {
-  return value === "r2" || value === "ghl" ? value : "maps";
-}
+type AppEntry = {
+  id: AppId;
+  name: string;
+  tagline: string;
+  icon: LucideIcon;
+  color: string;
+  connected: boolean;
+};
 
 export default async function IntegrationsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ provider?: string }>;
+  searchParams: Promise<{ app?: string }>;
 }) {
   await requireCapability("integrations");
-  const tab = parseIntegrationTab((await searchParams).provider);
+  const requested = (await searchParams).app;
 
   const settings = await getResolvedIntegrationSettings();
   const mapsReady = isMapsReady(settings);
   const r2Ready = isR2Ready(settings);
   const ghlReady = isGhlReady(settings);
+  const textbeeReady = isTextBeeReady(settings);
+
+  const apps: AppEntry[] = [
+    {
+      id: "maps",
+      name: "Google Maps",
+      tagline: "Live map previews on contact dashboards.",
+      icon: MapPin,
+      color: "#4285F4",
+      connected: mapsReady,
+    },
+    {
+      id: "r2",
+      name: "Cloudflare R2",
+      tagline: "Stores profile photos and payment receipts.",
+      icon: Cloud,
+      color: "#F38020",
+      connected: r2Ready,
+    },
+    {
+      id: "ghl",
+      name: "GoHighLevel",
+      tagline: "Syncs contacts, tags, and course access.",
+      icon: Workflow,
+      color: "#2E7D32",
+      connected: ghlReady,
+    },
+    {
+      id: "textbee",
+      name: "TextBee",
+      tagline: "SMS gateway for buyer and team alerts.",
+      icon: MessageSquare,
+      color: "#7C3AED",
+      connected: textbeeReady,
+    },
+  ];
+
+  const active = apps.find((app) => app.id === requested) ?? null;
+
+  if (!active) {
+    return (
+      <DashboardShell
+        title="Integrations"
+        description="Connect the services JDC Elite Society runs on. Tap an app to configure it."
+      >
+        <div className="app-store-grid">
+          {apps.map((app) => {
+            const Icon = app.icon;
+            return (
+              <Link key={app.id} href={`/dashboard/integrations?app=${app.id}`} className="app-store-card">
+                <span className="app-store-icon" style={{ background: app.color }}>
+                  <Icon size={22} aria-hidden />
+                </span>
+                <span className="app-store-copy">
+                  <strong>{app.name}</strong>
+                  <small>{app.tagline}</small>
+                </span>
+                <span className={app.connected ? "status-pill is-verified" : "status-pill is-quiet"}>
+                  {app.connected ? "Connected" : "Not connected"}
+                </span>
+              </Link>
+            );
+          })}
+        </div>
+      </DashboardShell>
+    );
+  }
+
+  const ActiveIcon = active.icon;
 
   return (
     <DashboardShell
       title="Integrations"
-      description="Paste Google Maps and Cloudflare R2 credentials here. The dashboards will use them immediately."
+      description="Connect the services JDC Elite Society runs on. Tap an app to configure it."
     >
-      <div className="grid gap-6">
-        <div className="macos-toolbar" style={{ padding: 0 }}>
-          <div className="macos-segment" style={{ gridTemplateColumns: "1fr 1fr 1fr", width: "min(26rem, 100%)" }}>
-            <Link href="/dashboard/integrations" className={cn(tab === "maps" && "is-active")}>
-              Google Maps
-            </Link>
-            <Link href="/dashboard/integrations?provider=r2" className={cn(tab === "r2" && "is-active")}>
-              Cloudflare R2
-            </Link>
-            <Link href="/dashboard/integrations?provider=ghl" className={cn(tab === "ghl" && "is-active")}>
-              GoHighLevel
-            </Link>
+      <Link href="/dashboard/integrations" className="app-store-back">
+        ← All integrations
+      </Link>
+
+      <div className="app-store-detail">
+        <header className="app-store-detail-head">
+          <span className="app-store-icon is-lg" style={{ background: active.color }}>
+            <ActiveIcon size={30} aria-hidden />
+          </span>
+          <div>
+            <h2>{active.name}</h2>
+            <p>{active.tagline}</p>
           </div>
-        </div>
+          <span className={active.connected ? "status-pill is-verified" : "status-pill is-quiet"}>
+            {active.connected ? "Connected" : "Not connected"}
+          </span>
+        </header>
 
-        {tab === "maps" ? (
-          <section className="glass-panel rounded-[2rem] p-8">
-            <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-              <div>
-                <p className="text-sm font-semibold">Google Maps</p>
-                <p className="mt-2 text-sm text-[var(--muted)]">
-                  Paste the Maps Embed API key to enable live map previews on contact dashboards.
-                </p>
-              </div>
-              <span
-                className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                  mapsReady
-                    ? "bg-emerald-500/14 text-emerald-300"
-                    : "bg-amber-500/14 text-amber-200"
-                }`}
-              >
-                {mapsReady ? "Configured" : "Pending key"}
-              </span>
-            </div>
-
-            <div className="mt-6 text-sm text-[var(--muted)]">
+        {active.id === "maps" ? (
+          <>
+            <p className="app-store-detail-meta">
               Current key: <code>{maskSecret(settings.googleMapsEmbedKey)}</code>
-            </div>
-
+            </p>
             <GoogleMapsIntegrationForm configured={mapsReady} />
-
-            <div className="mt-6">
-              <Link
-                href="/dashboard"
-                className="button-secondary pressable rounded-full px-4 py-2 text-sm font-semibold"
-              >
-                Open dashboard map
-              </Link>
-            </div>
-
-            <details className="dashboard-disclosure mt-6">
+            <details className="dashboard-disclosure" style={{ marginTop: "1.5rem" }}>
               <summary>Preview map</summary>
               <div className="dashboard-disclosure-body">
                 <AddressMap address="Makati City, Metro Manila" embedKey={settings.googleMapsEmbedKey} />
               </div>
             </details>
-          </section>
+          </>
         ) : null}
 
-        {tab === "r2" ? (
-          <section className="glass-panel rounded-[2rem] p-8">
-            <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-              <div>
-                <p className="text-sm font-semibold">Cloudflare R2</p>
-                <p className="mt-2 text-sm text-[var(--muted)]">
-                  Paste the R2 account, keys, bucket, and public URL to keep media off Render&apos;s ephemeral disk.
-                </p>
-              </div>
-              <span
-                className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                  r2Ready
-                    ? "bg-emerald-500/14 text-emerald-300"
-                    : "bg-amber-500/14 text-amber-200"
-                }`}
-              >
-                {r2Ready ? "Connected" : "Pending secrets"}
-              </span>
-            </div>
-
-            <div className="mt-6 grid gap-2 text-sm text-[var(--muted)]">
-              <p>
-                Bucket: <code>{settings.r2Bucket || "not set"}</code>
-              </p>
-              <p>
-                Public URL: <code>{settings.r2PublicUrl || "not set"}</code>
-              </p>
-              <p>
-                Access key: <code>{maskSecret(settings.r2AccessKeyId)}</code>
-              </p>
-            </div>
-
+        {active.id === "r2" ? (
+          <>
+            <p className="app-store-detail-meta">
+              Bucket: <code>{settings.r2Bucket || "not set"}</code> · Public URL:{" "}
+              <code>{settings.r2PublicUrl || "not set"}</code> · Access key: <code>{maskSecret(settings.r2AccessKeyId)}</code>
+            </p>
             <R2IntegrationForm
               accountId={settings.r2AccountId}
               bucket={settings.r2Bucket}
               publicUrl={settings.r2PublicUrl}
               accessKeyConfigured={Boolean(settings.r2AccessKeyId)}
             />
-          </section>
+            {r2Ready ? (
+              <div className="mt-6 border-t border-[var(--line)] pt-6">
+                <p className="text-sm font-semibold">Migrate existing files</p>
+                <p className="mt-1 text-sm text-[var(--muted)]">
+                  Photos and receipts uploaded before R2 was connected are stored directly in the database. Move
+                  them to R2 now — safe to run more than once.
+                </p>
+                <MigrateFilesToR2Button />
+              </div>
+            ) : null}
+          </>
         ) : null}
 
-        {tab === "ghl" ? (
-          <section className="glass-panel rounded-[2rem] p-8">
-            <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-              <div>
-                <p className="text-sm font-semibold">GoHighLevel — JDC Elite Society</p>
-                <p className="mt-2 text-sm text-[var(--muted)]">
-                  Registrations and inquiry leads sync into the JDC Elite Society subaccount. Use a Private Integration
-                  token with Contacts read/write access and that location&apos;s ID. Contacts and tags sync both ways
-                  with the admin roster; registrations still push the other way.
-                </p>
-              </div>
-              <span
-                className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                  ghlReady ? "bg-emerald-500/14 text-emerald-300" : "bg-amber-500/14 text-amber-200"
-                }`}
-              >
-                {ghlReady ? "Connected" : "Pending token"}
-              </span>
-            </div>
-            <div className="mt-6 text-sm text-[var(--muted)]">
+        {active.id === "ghl" ? (
+          <>
+            <p className="app-store-detail-meta">
               Location: <code>{settings.ghlLocationId || "not set"}</code>
-            </div>
+            </p>
             <GhlIntegrationForm configured={ghlReady} locationId={settings.ghlLocationId} />
-          </section>
+          </>
+        ) : null}
+
+        {active.id === "textbee" ? (
+          <>
+            <p className="app-store-detail-meta">
+              Device: <code>{settings.textbeeDeviceId || "not set"}</code>
+            </p>
+            <TextBeeIntegrationForm configured={textbeeReady} deviceId={settings.textbeeDeviceId} />
+          </>
         ) : null}
       </div>
     </DashboardShell>

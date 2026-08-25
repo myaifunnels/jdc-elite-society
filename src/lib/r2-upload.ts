@@ -16,7 +16,7 @@ function hashHex(data: Buffer | string) {
   return createHash("sha256").update(data).digest("hex");
 }
 
-function extensionFor(type: string) {
+export function extensionFor(type: string) {
   if (type === "image/png") return "png";
   if (type === "image/webp") return "webp";
   if (type === "image/gif") return "gif";
@@ -24,7 +24,7 @@ function extensionFor(type: string) {
   return "jpg";
 }
 
-async function putR2Object(settings: IntegrationSettings, key: string, body: Buffer, contentType: string) {
+export async function putR2Object(settings: IntegrationSettings, key: string, body: Buffer, contentType: string) {
   const host = `${settings.r2AccountId}.r2.cloudflarestorage.com`;
   const path = `/${settings.r2Bucket}/${key.split("/").map(encodeURIComponent).join("/")}`;
   const now = new Date();

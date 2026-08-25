@@ -26,7 +26,7 @@ export default async function SettingsPage() {
             {r2Configured ? "connected" : "awaiting Admin Integrations"}
           </span>
           {" — "}
-          <Link href="/dashboard/integrations?provider=r2">Open Integrations →</Link>
+          <Link href="/dashboard/integrations?app=r2">Open Integrations →</Link>
         </p>
 
         <details className="dashboard-disclosure">

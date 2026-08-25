@@ -7,6 +7,8 @@ export type IntegrationSettings = {
   r2PublicUrl: string;
   ghlApiKey: string;
   ghlLocationId: string;
+  textbeeApiKey: string;
+  textbeeDeviceId: string;
 };
 
 export const emptyIntegrationSettings: IntegrationSettings = {
@@ -18,6 +20,8 @@ export const emptyIntegrationSettings: IntegrationSettings = {
   r2PublicUrl: "",
   ghlApiKey: "",
   ghlLocationId: "",
+  textbeeApiKey: "",
+  textbeeDeviceId: "",
 };
 
 export function envIntegrationSettings(): IntegrationSettings {
@@ -30,6 +34,8 @@ export function envIntegrationSettings(): IntegrationSettings {
     r2PublicUrl: process.env.R2_PUBLIC_URL ?? "",
     ghlApiKey: process.env.GHL_API_KEY ?? "",
     ghlLocationId: process.env.GHL_LOCATION_ID ?? "",
+    textbeeApiKey: process.env.TEXTBEE_API_KEY ?? "",
+    textbeeDeviceId: process.env.TEXTBEE_DEVICE_ID ?? "",
   };
 }
 
@@ -46,6 +52,8 @@ export function mergeIntegrationSettings(
     r2PublicUrl: saved?.r2PublicUrl || env.r2PublicUrl,
     ghlApiKey: saved?.ghlApiKey || env.ghlApiKey,
     ghlLocationId: saved?.ghlLocationId || env.ghlLocationId,
+    textbeeApiKey: saved?.textbeeApiKey || env.textbeeApiKey,
+    textbeeDeviceId: saved?.textbeeDeviceId || env.textbeeDeviceId,
   };
 }
 
@@ -65,6 +73,10 @@ export function isR2Ready(settings: IntegrationSettings) {
 
 export function isGhlReady(settings: IntegrationSettings) {
   return Boolean(settings.ghlApiKey && settings.ghlLocationId);
+}
+
+export function isTextBeeReady(settings: IntegrationSettings) {
+  return Boolean(settings.textbeeApiKey && settings.textbeeDeviceId);
 }
 
 export function maskSecret(value: string) {
