@@ -333,6 +333,127 @@ a,
   background: color-mix(in srgb, var(--brand) 12%, transparent);
 }
 
+.site-account-menu {
+  position: relative;
+}
+
+.site-account-trigger {
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background: transparent;
+  cursor: pointer;
+  transition: border-color 160ms ease;
+}
+
+.site-account-trigger:hover,
+.site-account-trigger[aria-expanded="true"] {
+  border-color: color-mix(in srgb, var(--brand) 45%, transparent);
+}
+
+.site-account-dropdown {
+  position: absolute;
+  top: calc(100% + 0.6rem);
+  right: 0;
+  z-index: 40;
+  display: grid;
+  width: max-content;
+  min-width: 14rem;
+  padding: 0.5rem;
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  background: color-mix(in srgb, var(--surface-elevated) 96%, transparent);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.16);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+}
+
+.site-account-dropdown-head {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.4rem 0.6rem 0.7rem;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 0.4rem;
+}
+
+.site-account-dropdown-head span {
+  display: grid;
+  min-width: 0;
+  gap: 0.1rem;
+}
+
+.site-account-dropdown-head strong {
+  overflow: hidden;
+  font-size: 0.86rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.site-account-dropdown-head small {
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 0.72rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.site-account-dropdown-link {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 0.6rem;
+  border: 0;
+  border-radius: 0.65rem;
+  padding: 0.6rem 0.75rem;
+  background: transparent;
+  color: var(--foreground);
+  cursor: pointer;
+  font-size: 0.86rem;
+  font-weight: 600;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.site-account-dropdown-link:hover {
+  background: color-mix(in srgb, var(--brand) 12%, transparent);
+}
+
+.site-account-dropdown-link.is-danger {
+  color: #dc2626;
+}
+
+.dark .site-account-dropdown-link.is-danger {
+  color: #fca5a5;
+}
+
+.site-nav-drawer-account {
+  display: grid;
+  gap: 0.2rem;
+  padding: 0.6rem 0.2rem;
+  border-top: 1px solid var(--line);
+  margin-top: 0.35rem;
+}
+
+.site-nav-drawer-account .site-account-dropdown-head {
+  padding: 0.2rem 0.75rem 0.9rem;
+}
+
+.site-nav-drawer-signout {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: #dc2626;
+  cursor: pointer;
+  text-align: left;
+}
+
+.dark .site-nav-drawer-signout {
+  color: #fca5a5;
+}
+
 .site-header-tools {
   display: flex;
   align-items: center;

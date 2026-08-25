@@ -16,9 +16,13 @@ export async function SiteHeader({ overlay = false }: { overlay?: boolean }) {
         </div>
         <PublicHeaderActions
           overlay={overlay}
-          signedIn={Boolean(user)}
-          ctaHref={user ? "/dashboard" : "/contact"}
-          ctaLabel={user ? "My dashboard" : siteContent.headerCta}
+          ctaHref="/contact"
+          ctaLabel={siteContent.headerCta}
+          account={
+            user
+              ? { name: user.name, email: user.email, photoUrl: user.facebookPhotoUrl }
+              : null
+          }
         />
       </div>
     </header>
