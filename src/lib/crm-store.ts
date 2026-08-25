@@ -351,8 +351,10 @@ export function isServiceContactEmail(email: string) {
   }
   const local = value.slice(0, at);
   const domain = value.slice(at + 1);
-  if (SERVICE_CONTACT_DOMAINS.has(domain)) {
-    return true;
+  for (const serviceDomain of SERVICE_CONTACT_DOMAINS) {
+    if (domain === serviceDomain || domain.endsWith(`.${serviceDomain}`)) {
+      return true;
+    }
   }
   return SERVICE_CONTACT_PREFIXES.some((prefix) => local === prefix || local.startsWith(`${prefix}.`) || local.startsWith(`${prefix}-`) || local.startsWith(`${prefix}+`));
 }
