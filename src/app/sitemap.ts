@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 
 import { programs } from "@/data/programs";
-import { eliteSiteUrl, siteUrl } from "@/lib/site";
+import { siteUrl } from "@/lib/site";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();
@@ -29,11 +29,5 @@ export default function sitemap(): MetadataRoute.Sitemap {
         changeFrequency: "monthly" as const,
         priority: 0.55,
       })),
-    {
-      url: `${eliteSiteUrl}/`,
-      lastModified: now,
-      changeFrequency: "weekly" as const,
-      priority: 1,
-    },
   ];
 }

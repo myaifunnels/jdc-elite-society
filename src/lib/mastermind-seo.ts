@@ -1,18 +1,19 @@
 import type { Metadata } from "next";
 
 import { mastermindOffer } from "@/data/mastermind-offer";
-import { eliteSiteUrl, siteUrl } from "@/lib/site";
+import { siteUrl } from "@/lib/site";
 
+const offerUrl = `${siteUrl}/elite`;
 const ogImageUrl = `${siteUrl}${mastermindOffer.ogImage}`;
 
 export const mastermindSeo: Metadata = {
-  metadataBase: new URL(eliteSiteUrl),
+  metadataBase: new URL(siteUrl),
   title: {
     absolute: mastermindOffer.title,
   },
   description: mastermindOffer.description,
   applicationName: "JDC Mastermind",
-  authors: [{ name: "Coach Jayson Dela Cruz", url: eliteSiteUrl }],
+  authors: [{ name: "Coach Jayson Dela Cruz", url: offerUrl }],
   creator: "Coach Jayson Dela Cruz",
   publisher: "JDC Elite Society",
   keywords: [...mastermindOffer.keywords],
@@ -29,12 +30,12 @@ export const mastermindSeo: Metadata = {
     },
   },
   alternates: {
-    canonical: eliteSiteUrl,
+    canonical: offerUrl,
   },
   openGraph: {
     type: "website",
     locale: "en_PH",
-    url: eliteSiteUrl,
+    url: offerUrl,
     siteName: "JDC Mastermind",
     title: mastermindOffer.title,
     description: mastermindOffer.description,
@@ -62,11 +63,11 @@ export const mastermindSeo: Metadata = {
 };
 
 export function mastermindJsonLd() {
-  const orgId = `${eliteSiteUrl}/#organization`;
-  const personId = `${eliteSiteUrl}/#coach`;
-  const websiteId = `${eliteSiteUrl}/#website`;
-  const webpageId = `${eliteSiteUrl}/#webpage`;
-  const courseId = `${eliteSiteUrl}/#course`;
+  const orgId = `${offerUrl}/#organization`;
+  const personId = `${offerUrl}/#coach`;
+  const websiteId = `${offerUrl}/#website`;
+  const webpageId = `${offerUrl}/#webpage`;
+  const courseId = `${offerUrl}/#course`;
 
   return {
     "@context": "https://schema.org",
@@ -76,7 +77,7 @@ export function mastermindJsonLd() {
         "@id": orgId,
         name: "JDC Elite Society",
         alternateName: ["JDC Mastermind", "Coach JDC"],
-        url: eliteSiteUrl,
+        url: offerUrl,
         logo: mastermindOffer.logo,
         email: mastermindOffer.support.email,
         telephone: mastermindOffer.support.phone,
@@ -95,13 +96,13 @@ export function mastermindJsonLd() {
         alternateName: "Coach JDC",
         jobTitle: "Coach and Founder",
         worksFor: { "@id": orgId },
-        url: `${eliteSiteUrl}/#coach`,
+        url: `${offerUrl}/#coach`,
         image: mastermindOffer.coachImage,
       },
       {
         "@type": "WebSite",
         "@id": websiteId,
-        url: eliteSiteUrl,
+        url: offerUrl,
         name: "JDC Mastermind",
         description: mastermindOffer.description,
         inLanguage: "en-PH",
@@ -110,7 +111,7 @@ export function mastermindJsonLd() {
       {
         "@type": "WebPage",
         "@id": webpageId,
-        url: eliteSiteUrl,
+        url: offerUrl,
         name: mastermindOffer.title,
         description: mastermindOffer.description,
         isPartOf: { "@id": websiteId },
@@ -131,7 +132,7 @@ export function mastermindJsonLd() {
         "@id": courseId,
         name: "JDC Mastermind",
         description: mastermindOffer.description,
-        url: eliteSiteUrl,
+        url: offerUrl,
         image: ogImageUrl,
         inLanguage: "en-PH",
         provider: { "@id": orgId },
@@ -149,7 +150,7 @@ export function mastermindJsonLd() {
         })),
         offers: {
           "@type": "Offer",
-          url: `${eliteSiteUrl}/checkout`,
+          url: `${offerUrl}/checkout`,
           price: String(mastermindOffer.offerPrice),
           priceCurrency: "PHP",
           availability: "https://schema.org/InStock",
@@ -158,7 +159,7 @@ export function mastermindJsonLd() {
       },
       {
         "@type": "FAQPage",
-        "@id": `${eliteSiteUrl}/#faq`,
+        "@id": `${offerUrl}/#faq`,
         mainEntity: mastermindOffer.faqs.map((item) => ({
           "@type": "Question",
           name: item.question,
