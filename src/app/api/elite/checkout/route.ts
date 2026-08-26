@@ -9,7 +9,7 @@ import { createUser, deleteUser, ensureSeedUsers, findUserByEmailOrPhone } from 
 import { formatInternationalPhone } from "@/lib/countries";
 import { createLead } from "@/lib/crm-store";
 import { createEliteCheckoutOrder } from "@/lib/elite-checkout-store";
-import { syncContactToGhl } from "@/lib/ghl";
+import { grantCommunityAndMastermindAccess } from "@/lib/ghl-community";
 import { notifyMastermindPurchase } from "@/lib/notify";
 import { storePaymentReceipt } from "@/lib/r2-upload";
 import { sessionCookieName } from "@/lib/session";
@@ -127,6 +127,7 @@ export async function POST(request: Request) {
       phone: mobile || parsed.data.phoneNational,
       phoneCountry: parsed.data.phoneCountry,
       company: "JDC Mastermind",
+      memberships: ["jes"],
       profileComplete: true,
       paymentVerified: true,
       passwordSet: false,
@@ -201,16 +202,15 @@ export async function POST(request: Request) {
 
   let ghlContactId: string | null = null;
   try {
-    const ghl = await syncContactToGhl({
+    const community = await grantCommunityAndMastermindAccess({
       name: parsed.data.fullName,
       email: parsed.data.email,
       phone: mobile || parsed.data.phoneNational,
-      source: affiliate ? `Mastermind offer · ${affiliate.code}` : "Mastermind offer",
-      tags,
+      extraTags: tags,
     });
-    ghlContactId = ghl.contactId ?? null;
+    ghlContactId = community.contactId ?? null;
   } catch (error) {
-    console.error("Mastermind GHL sync failed", error);
+    console.error("Mastermind GHL community grant failed", error);
   }
 
   await upsertFunnelContact({

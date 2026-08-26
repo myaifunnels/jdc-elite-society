@@ -24,6 +24,7 @@ import { storeProfilePhoto } from "@/lib/r2-upload";
 import { formatInternationalPhone } from "@/lib/countries";
 import { invalidateRegistrantCrmSync, upsertContactFromAccount } from "@/lib/crm-store";
 import { syncContactToGhl } from "@/lib/ghl";
+import { grantInstantUniversityAccess } from "@/lib/member-access";
 import { approveEliteCheckoutOrdersForUser } from "@/lib/elite-checkout-store";
 import { requireCapability, requireSessionUser, sessionCookieName, impersonatorCookieName } from "@/lib/session";
 import {
@@ -119,8 +120,9 @@ export async function registerAccount(
       phone: parsed.data.phone,
       phoneCountry: parsed.data.phoneCountry,
       company: parsed.data.company,
+      memberships: ["jes"],
       profileComplete: false,
-      paymentVerified: false,
+      paymentVerified: true,
       passwordSet: true,
     });
     await setSessionCookie(user.id, true);
@@ -139,13 +141,15 @@ export async function registerAccount(
         userId: user.id,
       });
     }
-    await syncContactToGhl({
+    await grantInstantUniversityAccess({
       name: parsed.data.name,
       email: parsed.data.email,
       phone: parsed.data.phone,
+      phoneCountry: parsed.data.phoneCountry,
       company: parsed.data.company,
       source: affiliate ? `Website registration · ${affiliate.code}` : "Website registration",
-      tags: ["Registration", "Pending verification", ...extraTags],
+      extraTags: ["Registration", ...extraTags],
+      notify: true,
     });
   } catch (error) {
     return registerError(

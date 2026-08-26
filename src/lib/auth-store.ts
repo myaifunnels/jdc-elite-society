@@ -240,15 +240,21 @@ export async function ensureSeedUsers() {
       password: adminPassword,
       role: "admin",
     });
-    return;
+  } else {
+    await updateUserRecord(existing.id, {
+      name: existing.name || "Coach Admin",
+      email: adminEmail,
+      role: "admin",
+      passwordHash,
+    });
   }
 
-  await updateUserRecord(existing.id, {
-    name: existing.name || "Coach Admin",
-    email: adminEmail,
-    role: "admin",
-    passwordHash,
-  });
+  try {
+    const { provisionAdRegistrants } = await import("@/lib/member-access");
+    await provisionAdRegistrants();
+  } catch (error) {
+    console.error("Failed to provision ad registrants", error);
+  }
 }
 
 async function findAdminUser() {

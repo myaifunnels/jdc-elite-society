@@ -19,12 +19,12 @@ export function UniversityCourseGrid({
       {!unlocked ? (
         <MacosWindow title="Verify to unlock" className="dashboard-span-2">
           <p className="macos-lead" style={{ textAlign: "left" }}>
-            University is open so you can see the JDC Elite Society membership courses. The lock stays on until your
-            account is verified. Finish your profile and wait for the team to activate you — then every lesson opens.
+            University stays locked until payment is verified. If the team rejected this payment, Sessions 1 and 2 stay
+            closed.
           </p>
           <div className="macos-actions">
             <Link href={verifyHref} className="macos-btn macos-btn-primary">
-              Verify my account
+              Finish my account
             </Link>
           </div>
         </MacosWindow>

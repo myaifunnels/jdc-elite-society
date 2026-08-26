@@ -3826,7 +3826,7 @@ html:not(.dark) .dashboard-desktop {
 .university-community-window {
   display: flex;
   flex: 1;
-  min-height: 0;
+  min-height: 32rem;
   flex-direction: column;
   background: color-mix(in srgb, var(--surface-elevated) 82%, transparent);
 }

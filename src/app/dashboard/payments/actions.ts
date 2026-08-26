@@ -6,6 +6,7 @@ import { setMemberPaymentVerified } from "@/lib/auth-store";
 import { approveEliteCheckoutOrder, getEliteCheckoutOrder, rejectEliteCheckoutOrder } from "@/lib/elite-checkout-store";
 import { invalidateRegistrantCrmSync } from "@/lib/crm-store";
 import { addGhlContactTags, lookupGhlContact, removeGhlContactTags } from "@/lib/ghl";
+import { grantCommunityAndMastermindAccess } from "@/lib/ghl-community";
 import { notifyPaymentApproved, notifyPaymentRejected } from "@/lib/notify";
 import { requireCapability } from "@/lib/session";
 import { COURSE_ACCESS_TAGS, PAYMENT_REJECTED_TAG } from "@/lib/tags";
@@ -16,11 +17,13 @@ function revalidatePaymentPaths() {
   revalidatePath("/dashboard");
   revalidatePath("/dashboard/payments");
   revalidatePath("/dashboard/contacts");
+  revalidatePath("/dashboard/university");
 }
 
 /** Grants (or restores) the buyer's GHL Membership courses and community group access. */
-async function grantCourseAccess(email: string, mobile: string) {
+async function grantCourseAccess(name: string, email: string, mobile: string) {
   try {
+    await grantCommunityAndMastermindAccess({ name, email, phone: mobile, extraTags: [...COURSE_ACCESS_TAGS] });
     const contact = await lookupGhlContact(email, mobile);
     if (!contact?.id) return;
     await addGhlContactTags(contact.id, [...COURSE_ACCESS_TAGS]);
@@ -57,7 +60,7 @@ export async function approveMastermindPayment(
 
     await setMemberPaymentVerified(order.userId, true);
     await approveEliteCheckoutOrder(order.id, admin.id);
-    await grantCourseAccess(order.email, order.mobile);
+    await grantCourseAccess(order.fullName, order.email, order.mobile);
     notifyPaymentApproved({ name: order.fullName, email: order.email, phone: order.mobile }).catch((error) =>
       console.error("Payment-approved SMS failed", error),
     );

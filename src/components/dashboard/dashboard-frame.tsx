@@ -8,6 +8,7 @@ import { AccessMap } from "@/lib/access";
 import { BrandingSettings } from "@/lib/branding";
 import { membershipLabel } from "@/lib/membership";
 import { AuthUser } from "@/lib/types";
+import { hasUniversityAccess } from "@/lib/university-access";
 
 export function DashboardFrame({
   user,
@@ -37,6 +38,7 @@ export function DashboardFrame({
           userName={user.name}
           membershipLabel={membershipLabel(user.memberships)}
           accountStatus={user.accountStatus}
+          universityLocked={!hasUniversityAccess(user)}
           branding={branding}
           access={access}
         />

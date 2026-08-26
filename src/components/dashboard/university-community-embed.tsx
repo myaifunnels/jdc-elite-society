@@ -33,12 +33,11 @@ export function UniversityCommunityEmbed({
       ) : (
         <div className="macos-body">
           <p className="macos-lead" style={{ textAlign: "left" }}>
-            University is the membership community at community.coachjdc.org. The lock stays on until your account is
-            verified.
+            University is locked because payment was not verified or was rejected. Access returns when the team restores it.
           </p>
           <div className="macos-actions">
             <Link href={verifyHref} className="macos-btn macos-btn-primary">
-              Verify my account
+              Back to dashboard
             </Link>
           </div>
         </div>

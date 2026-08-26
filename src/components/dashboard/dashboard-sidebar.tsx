@@ -69,6 +69,7 @@ function SidebarPanel({
   userName,
   membershipLabel,
   accountStatus,
+  universityLocked,
   branding,
   access,
   titleId,
@@ -79,6 +80,7 @@ function SidebarPanel({
   userName: string;
   membershipLabel: string;
   accountStatus?: string;
+  universityLocked?: boolean;
   branding: BrandingSettings;
   access: AccessMap;
   titleId: string;
@@ -116,7 +118,7 @@ function SidebarPanel({
         {navItems(access).map((item) => {
           const Icon = item.icon;
           const active = isActivePath(pathname, item.href);
-          const locked = item.href === "/dashboard/university" && accountStatus !== "verified";
+          const locked = item.href === "/dashboard/university" && universityLocked;
 
           return (
             <Link
@@ -129,7 +131,7 @@ function SidebarPanel({
               <Icon size={16} aria-hidden />
               {item.label}
               {locked ? <Lock size={13} className="dashboard-nav-lock" aria-hidden /> : null}
-              {locked ? <span className="sr-only">Locked until your account is verified</span> : null}
+              {locked ? <span className="sr-only">Locked until payment is verified</span> : null}
             </Link>
           );
         })}
@@ -168,6 +170,7 @@ export function DashboardSidebar({
   userName,
   membershipLabel,
   accountStatus,
+  universityLocked,
   branding,
   access,
 }: {
@@ -175,6 +178,7 @@ export function DashboardSidebar({
   userName: string;
   membershipLabel: string;
   accountStatus?: string;
+  universityLocked?: boolean;
   branding: BrandingSettings;
   access: AccessMap;
 }) {
@@ -257,6 +261,7 @@ export function DashboardSidebar({
           userName={userName}
           membershipLabel={membershipLabel}
           accountStatus={accountStatus}
+          universityLocked={universityLocked}
           branding={branding}
           access={access}
           titleId={titleId}
@@ -274,6 +279,7 @@ export function DashboardSidebar({
           userName={userName}
           membershipLabel={membershipLabel}
           accountStatus={accountStatus}
+          universityLocked={universityLocked}
           branding={branding}
           access={access}
           titleId={`${titleId}-desktop`}
