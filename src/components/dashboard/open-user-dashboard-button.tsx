@@ -5,7 +5,7 @@ export function OpenUserDashboardButton({
   email = "",
   name = "",
   phone = "",
-  label = "Open user dashboard",
+  label = "Dashboard",
 }: {
   userId?: string;
   email?: string;

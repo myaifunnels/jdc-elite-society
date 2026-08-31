@@ -82,10 +82,11 @@ export default async function ContactDashboardPage({
   return (
     <DashboardShell
       title={contact.name}
-      description={
-        isPartner
-          ? "Partner dashboard with coverage, assigned contacts, and location."
-          : "Full contact record: profile, portal, tags, and map."
+      description={isPartner ? "Coverage, assigned people, and map." : "Profile, portal, tags, and map."}
+      actions={
+        <Link href="/dashboard/contacts" className="macos-btn macos-btn-secondary">
+          Back
+        </Link>
       }
     >
       <div className="macos-toolbar" style={{ padding: "0 0 0.9rem" }}>
@@ -94,10 +95,10 @@ export default async function ContactDashboardPage({
             Overview
           </Link>
           <Link href={tabHref("access")} className={cn(tab === "access" && "is-active")}>
-            Access &amp; Tags
+            Access
           </Link>
           <Link href={tabHref("location")} className={cn(tab === "location" && "is-active")}>
-            Location
+            Map
           </Link>
         </div>
       </div>
@@ -203,6 +204,15 @@ export default async function ContactDashboardPage({
           </>
         )}
 
+        <MacosWindow title="Location" className="dashboard-span-2">
+          <AddressMap
+            address={contact.address || location}
+            lat={contact.lat}
+            lng={contact.lng}
+            embedKey={mapsConfig.embedKey}
+          />
+        </MacosWindow>
+
         {portalUser &&
         (portalUser.role === "member" || portalUser.role === "contact") &&
         hasAccess(access, "registrations") ? (
@@ -219,7 +229,7 @@ export default async function ContactDashboardPage({
                 <VerifyPaymentButton userId={portalUser.id} />
               )}
               <Link href="/dashboard/contacts?view=registrants" className="macos-btn macos-btn-secondary">
-                All registrants
+                Registrants
               </Link>
             </div>
           </MacosWindow>
@@ -263,7 +273,7 @@ export default async function ContactDashboardPage({
               <div className="macos-actions">
                 {hasAccess(access, "access") ? (
                   <Link href={`/dashboard/access/${portalUser.id}`} className="macos-btn macos-btn-primary">
-                    Configure access
+                    Access
                   </Link>
                 ) : null}
                 {user.role === "admin" && portalUser.role !== "admin" ? (
@@ -300,7 +310,7 @@ export default async function ContactDashboardPage({
                     <input type="hidden" name="email" value={contact.email} />
                     <input type="hidden" name="name" value={contact.name} />
                     <button type="submit" className="macos-btn macos-btn-secondary">
-                      Grant Contact portal access
+                      Grant portal
                     </button>
                   </form>
                 ) : null}
@@ -374,7 +384,7 @@ export default async function ContactDashboardPage({
                 </a>
               ) : null}
               <Link href="/dashboard/contacts" className="macos-btn macos-btn-secondary">
-                Back to contacts
+                Back
               </Link>
             </div>
           </MacosWindow>

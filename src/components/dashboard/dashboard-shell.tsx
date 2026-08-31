@@ -1,11 +1,13 @@
 export function DashboardShell({
   title,
   description,
+  actions,
   children,
   fill = false,
 }: {
   title: string;
   description: string;
+  actions?: React.ReactNode;
   children: React.ReactNode;
   fill?: boolean;
 }) {
@@ -27,6 +29,7 @@ export function DashboardShell({
           <h1>{title}</h1>
           <p>{description}</p>
         </div>
+        {actions ? <div className="dashboard-toolbar-actions">{actions}</div> : null}
       </header>
       <main id="dashboard-main" tabIndex={-1} className="dashboard-content outline-none">
         {children}

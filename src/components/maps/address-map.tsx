@@ -5,6 +5,12 @@ type AddressMapProps = {
   embedKey?: string;
 };
 
+function osmEmbedUrl(lat: number, lng: number) {
+  const pad = 0.06;
+  const bbox = `${lng - pad},${lat - pad},${lng + pad},${lat + pad}`;
+  return `https://www.openstreetmap.org/export/embed.html?bbox=${encodeURIComponent(bbox)}&layer=mapnik&marker=${encodeURIComponent(`${lat},${lng}`)}`;
+}
+
 export function AddressMap({ address, lat, lng, embedKey }: AddressMapProps) {
   const trimmed = address.trim();
   const resolvedKey = embedKey || process.env.NEXT_PUBLIC_GOOGLE_MAPS_EMBED_KEY || "";
@@ -13,48 +19,38 @@ export function AddressMap({ address, lat, lng, embedKey }: AddressMapProps) {
   if (!trimmed && !hasCoords) {
     return (
       <div className="card-surface rounded-3xl p-6 text-sm text-[var(--muted)]">
-        Add an address to preview the Google Maps lookup link for this contact or inquiry.
+        Add an address to preview this contact on the map.
       </div>
     );
   }
 
   const query = trimmed ? encodeURIComponent(trimmed) : `${lat},${lng}`;
-  const mapsUrl = trimmed
+  const googleMapsUrl = trimmed
     ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(trimmed)}`
     : `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
-  const embedUrl = resolvedKey
-    ? `https://www.google.com/maps/embed/v1/place?key=${resolvedKey}&q=${query}`
-    : null;
+  const osmMapsUrl = hasCoords
+    ? `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lng}#map=13/${lat}/${lng}`
+    : `https://www.openstreetmap.org/search?query=${query}`;
+  const googleEmbedUrl = resolvedKey ? `https://www.google.com/maps/embed/v1/place?key=${resolvedKey}&q=${query}` : null;
+  const osmEmbed = hasCoords ? osmEmbedUrl(lat, lng) : null;
+  const embedUrl = googleEmbedUrl || osmEmbed;
+  const mapsUrl = resolvedKey ? googleMapsUrl : osmMapsUrl;
 
   return (
-    <div className="overflow-hidden rounded-3xl border border-[var(--line)] bg-[color:var(--surface-elevated)]">
+    <div className="contact-location-map">
       {embedUrl ? (
-        <iframe
-          title="Contact address map"
-          src={embedUrl}
-          className="h-64 w-full border-0"
-          loading="lazy"
-          referrerPolicy="no-referrer-when-downgrade"
-        />
+        <iframe title="Contact address map" src={embedUrl} className="contact-location-map-frame" loading="lazy" />
       ) : (
-        <div className="flex h-64 items-center justify-center bg-[linear-gradient(135deg,rgba(41,98,255,0.16),rgba(15,23,48,0.72))] p-6 text-center text-sm text-[var(--muted)]">
-          Save a Google Maps Embed API key in Admin Integrations to show the live map preview.
-        </div>
+        <div className="contact-location-map-empty">Map preview needs a saved address or coordinates.</div>
       )}
 
-      <div className="flex items-center justify-between gap-4 p-4 text-sm">
-        <div>
-          <p className="font-semibold">Google Maps integration</p>
-          <p className="text-[var(--muted)]">{trimmed || `${lat}, ${lng}`}</p>
+      <div className="contact-location-map-meta">
+        <div className="min-w-0">
+          <p className="font-semibold">Location</p>
+          <p className="truncate text-[var(--muted)]">{trimmed || `${lat}, ${lng}`}</p>
         </div>
-
-        <a
-          href={mapsUrl}
-          target="_blank"
-          rel="noreferrer"
-          className="button-secondary pressable rounded-full px-4 py-2 font-medium"
-        >
-          Open Maps
+        <a href={mapsUrl} target="_blank" rel="noreferrer" className="macos-btn macos-btn-secondary">
+          Map
         </a>
       </div>
     </div>

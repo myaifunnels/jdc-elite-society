@@ -2337,8 +2337,9 @@ html.dark .auth-screen-centered,
 .macos-actions {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  gap: 0.5rem;
   padding-top: 0.25rem;
 }
 
@@ -2346,13 +2347,14 @@ html.dark .auth-screen-centered,
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 2rem;
-  min-width: 6.5rem;
-  padding: 0 0.95rem;
+  min-height: 1.85rem;
+  min-width: 0;
+  padding: 0 0.7rem;
   border: 0;
   border-radius: 6px;
-  font-size: 0.84rem;
+  font-size: 0.78rem;
   font-weight: 600;
+  white-space: nowrap;
   cursor: pointer;
 }
 
@@ -3794,9 +3796,22 @@ html:not(.dark) .dashboard-desktop {
 }
 
 .dashboard-toolbar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.7rem;
   padding: 1.15rem 1.25rem 0.85rem;
   border-bottom: 1px solid var(--line);
   background: color-mix(in srgb, var(--surface) 55%, transparent);
+}
+
+.dashboard-toolbar-actions {
+  display: flex;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.4rem;
+  padding-top: 0.35rem;
 }
 
 .dashboard-toolbar h1 {
@@ -5245,6 +5260,83 @@ html:not(.dark) .macos-boot-wallpaper {
 @keyframes macos-route-bar {
   0% { transform: translateX(-120%); }
   100% { transform: translateX(280%); }
+}
+
+.contact-location-map {
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+
+.contact-location-map-frame {
+  display: block;
+  width: 100%;
+  height: 16rem;
+  border: 0;
+  background: #d7dee8;
+}
+
+.contact-location-map-empty {
+  display: grid;
+  place-items: center;
+  height: 12rem;
+  padding: 1rem;
+  color: var(--muted);
+  font-size: 0.84rem;
+  text-align: center;
+}
+
+.contact-location-map-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.7rem 0.8rem;
+}
+
+@media (max-width: 767px) {
+  .macos-btn {
+    min-height: 1.7rem;
+    padding: 0 0.55rem;
+    font-size: 0.72rem;
+  }
+
+  .dashboard-toolbar {
+    flex-wrap: wrap;
+    padding: 0.8rem 0.85rem 0.65rem;
+  }
+
+  .dashboard-toolbar h1 {
+    font-size: 1.15rem;
+  }
+
+  .dashboard-toolbar-actions {
+    padding-top: 0;
+  }
+
+  .dashboard-content {
+    padding: 0.8rem 0.75rem 1.2rem;
+  }
+
+  .dashboard-table .col-optional {
+    display: none;
+  }
+
+  .contact-location-map-frame {
+    height: 13rem;
+  }
+
+  .contact-row-actions .macos-btn {
+    min-width: 0;
+  }
+}
+
+@media (min-width: 768px) {
+  .macos-btn {
+    min-height: 2rem;
+    padding: 0 0.85rem;
+    font-size: 0.82rem;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

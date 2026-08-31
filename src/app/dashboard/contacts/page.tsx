@@ -298,18 +298,18 @@ export default async function ContactsPage({
             </div>
             {matching.length > 8 ? (
               <Link href={contactsHref({ view: "roster", kind, q: raw.q, tags: selectedTags })} className="macos-btn macos-btn-secondary self-start">
-                View all {matching.length} in roster
+                Roster
               </Link>
             ) : null}
             {canSeeRegistrants && pendingCount > 0 ? (
               <Link href={contactsHref({ view: "registrants", status: "pending" })} className="macos-btn macos-btn-secondary self-start">
-                Review {pendingCount} pending registrant{pendingCount === 1 ? "" : "s"}
+                Pending
               </Link>
             ) : null}
 
             {canSeeContacts ? (
               <Link href={contactsHref({ view: "map", kind, q: raw.q, tags: selectedTags })} className="macos-btn macos-btn-secondary self-start">
-                Open the map view
+                Map
               </Link>
             ) : null}
           </>
@@ -324,10 +324,10 @@ export default async function ContactsPage({
                 <thead>
                   <tr>
                     <th>Name</th>
-                    <th>Type</th>
-                    <th>Location</th>
+                    <th className="col-optional">Type</th>
+                    <th className="col-optional">Location</th>
                     <th>Status</th>
-                    {user.role === "admin" ? <th>Portal</th> : null}
+                    {user.role === "admin" ? <th className="col-optional">Portal</th> : null}
                     <th>Actions</th>
                   </tr>
                 </thead>
@@ -350,11 +350,11 @@ export default async function ContactsPage({
                               </span>
                             </div>
                           </td>
-                          <td className="capitalize">{contact.kind}</td>
-                          <td>{contact.region ?? contact.city ?? contact.address}</td>
+                          <td className="col-optional capitalize">{contact.kind}</td>
+                          <td className="col-optional">{contact.region ?? contact.city ?? contact.address}</td>
                           <td className="capitalize">{contact.status}</td>
                           {user.role === "admin" ? (
-                            <td className="capitalize">
+                            <td className="col-optional capitalize">
                               {portal
                                 ? portal.role
                                 : contact.ghlContactId || contact.source.toLowerCase().includes("ghl")
@@ -365,7 +365,7 @@ export default async function ContactsPage({
                           <td>
                             <div className="contact-row-actions">
                               <Link href={`/dashboard/contacts/${contact.id}`} className="macos-btn macos-btn-secondary">
-                                Contact
+                                Open
                               </Link>
                               {user.role === "admin" && portal?.role !== "admin" && contact.email ? (
                                 <OpenUserDashboardButton
@@ -373,7 +373,7 @@ export default async function ContactsPage({
                                   email={contact.email}
                                   name={contact.name}
                                   phone={contact.phone}
-                                  label="User dashboard"
+                                  label="User"
                                 />
                               ) : null}
                               {user.role === "admin" && portal && portal.id !== user.id ? (

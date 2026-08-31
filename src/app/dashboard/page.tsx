@@ -147,7 +147,7 @@ export default async function DashboardPage() {
               ))
             )}
             <Link href="/dashboard/contacts" className="macos-btn macos-btn-secondary mt-2 self-start">
-              Open my contacts
+              Contacts
             </Link>
           </MacosWindow>
 
@@ -228,7 +228,7 @@ export default async function DashboardPage() {
             </Link>
           ))}
           <Link href="/dashboard/contacts" className="macos-btn macos-btn-secondary mt-2 self-start">
-            Open contacts
+            Contacts
           </Link>
         </MacosWindow>
 

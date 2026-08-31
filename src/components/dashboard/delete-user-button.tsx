@@ -11,7 +11,7 @@ export function DeleteUserButton({
   email = "",
   name,
   redirectTo = "/dashboard/contacts",
-  label = "Delete user",
+  label = "Delete",
 }: {
   userId?: string;
   email?: string;
