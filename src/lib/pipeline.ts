@@ -25,14 +25,18 @@ export type PipelineStageId = (typeof PIPELINE_STAGES)[number]["id"];
 
 export const SECOND_BATCH_TAGS = ["jdc-mastermind-second-batch"];
 export const FIRST_BATCH_TAGS = ["jdc-mastermind-buyer", "jdc-mastermind", "mastermind", "jdc mastermind"];
-const PAYMENT_TAGS = ["payment pending"];
+const PAYMENT_TAGS = ["payment pending", "jdc-mastermind-payment-verification"];
 const LEAD_TAGS = ["pipeline-leads", "lead"];
 
-export const PIPELINE_GHL_FETCH_TAGS = [...FIRST_BATCH_TAGS, ...SECOND_BATCH_TAGS];
+export const PIPELINE_GHL_FETCH_TAGS = [
+  ...FIRST_BATCH_TAGS,
+  ...SECOND_BATCH_TAGS,
+  "jdc-mastermind-payment-verification",
+];
 
 export const PIPELINE_WRITE_TAGS: Record<PipelineStageId, string[]> = {
   leads: ["pipeline-leads"],
-  payment: ["Payment pending"],
+  payment: ["jdc-mastermind-payment-verification", "Payment pending"],
   "first-batch": ["jdc-mastermind-buyer", "jdc-mastermind"],
   "second-batch": ["jdc-mastermind-second-batch"],
 };
@@ -44,6 +48,7 @@ export const PIPELINE_MANAGED_TAGS = uniqueLower([
   ...SECOND_BATCH_TAGS,
   "pipeline-leads",
   "payment pending",
+  "jdc-mastermind-payment-verification",
 ]);
 
 function uniqueLower(values: string[]) {
@@ -83,11 +88,11 @@ export function classifyPipelineStage(
   if (hasExactTag(tags, SECOND_BATCH_TAGS)) {
     return "second-batch";
   }
-  if (hasExactTag(tags, FIRST_BATCH_TAGS)) {
-    return "first-batch";
-  }
   if (hasExactTag(tags, PAYMENT_TAGS) || options?.paymentPending) {
     return "payment";
+  }
+  if (hasExactTag(tags, FIRST_BATCH_TAGS)) {
+    return "first-batch";
   }
   return "leads";
 }

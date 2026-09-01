@@ -14,6 +14,9 @@ export const COURSE_ACCESS_TAGS = [
 
 export const PAYMENT_REJECTED_TAG = "Payment Rejected";
 
+/** Applied on Elite checkout submit so GHL "Payment Verification Workflow" can move the contact. */
+export const JDC_MASTERMIND_PAYMENT_VERIFICATION_TAG = "jdc-mastermind-payment-verification";
+
 export type TagGroup = {
   id: TagGroupId;
   label: string;
@@ -53,6 +56,7 @@ export const TAG_GROUPS: TagGroup[] = [
     tags: [
       "jdc-mastermind",
       "jdc-mastermind-buyer",
+      "jdc-mastermind-payment-verification",
       "jdc-mastermind-second-batch",
       "mastermind",
       "pipeline-leads",
@@ -87,6 +91,7 @@ export function mastermindCheckoutTags(input: {
     "Elite offer",
     "Mastermind checkout",
     "Payment pending",
+    JDC_MASTERMIND_PAYMENT_VERIFICATION_TAG,
     ...COURSE_ACCESS_TAGS,
     input.paymentMethod,
     input.priceLabel,

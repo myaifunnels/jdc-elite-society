@@ -46,9 +46,12 @@ export function isMastermindBuyerPipeline(name: string) {
   const compact = key.replace(/\s+/g, "-");
   return (
     compact === MASTERMIND_BUYER_PIPELINE_KEY ||
+    compact === "jdc-mastermind-pipeline" ||
     compact.includes("jdc-mastermind-buyer") ||
     compact.includes("mastermind-buyer") ||
-    key.includes("mastermind buyer")
+    compact.includes("jdc-mastermind-pipeline") ||
+    key.includes("mastermind buyer") ||
+    key.includes("jdc mastermind pipeline")
   );
 }
 

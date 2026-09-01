@@ -9,11 +9,12 @@ import { createUser, deleteUser, ensureSeedUsers, findUserByEmailOrPhone } from 
 import { formatInternationalPhone } from "@/lib/countries";
 import { createLead } from "@/lib/crm-store";
 import { createEliteCheckoutOrder } from "@/lib/elite-checkout-store";
+import { addGhlContactTags, lookupGhlContact } from "@/lib/ghl";
 import { grantCommunityAndMastermindAccess } from "@/lib/ghl-community";
 import { notifyMastermindPurchase } from "@/lib/notify";
 import { storePaymentReceipt } from "@/lib/r2-upload";
 import { sessionCookieName } from "@/lib/session";
-import { mastermindCheckoutTags } from "@/lib/tags";
+import { JDC_MASTERMIND_PAYMENT_VERIFICATION_TAG, mastermindCheckoutTags } from "@/lib/tags";
 import { eliteCheckoutSchema } from "@/lib/validations";
 
 const couponCode = mastermindOffer.couponCode;
@@ -202,13 +203,23 @@ export async function POST(request: Request) {
 
   let ghlContactId: string | null = null;
   try {
+    const ghlCreateTags = tags.filter((tag) => tag !== JDC_MASTERMIND_PAYMENT_VERIFICATION_TAG);
     const community = await grantCommunityAndMastermindAccess({
       name: parsed.data.fullName,
       email: parsed.data.email,
       phone: mobile || parsed.data.phoneNational,
-      extraTags: tags,
+      extraTags: ghlCreateTags,
     });
     ghlContactId = community.contactId ?? null;
+    if (!ghlContactId) {
+      ghlContactId = (await lookupGhlContact(parsed.data.email, mobile || parsed.data.phoneNational))?.id ?? null;
+    }
+    if (ghlContactId) {
+      // Separate tag add so GHL "Payment Verification Workflow" fires on Contact Tag Added.
+      await addGhlContactTags(ghlContactId, [JDC_MASTERMIND_PAYMENT_VERIFICATION_TAG]);
+    } else {
+      console.error("Mastermind payment verification tag skipped: no GHL contact id");
+    }
   } catch (error) {
     console.error("Mastermind GHL community grant failed", error);
   }
