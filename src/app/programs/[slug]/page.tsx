@@ -114,7 +114,7 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
               <h2 className="text-2xl font-semibold">Frequently asked questions</h2>
               <div className="mt-6 grid gap-4">
                 {program.faqs.map((item) => (
-                  <div key={item.question} className="rounded-[1.5rem] border border-black/8 bg-white px-5 py-4">
+                  <div key={item.question} className="rounded-[1.5rem] border border-[var(--glass-border)] bg-[color:var(--field-recess)] px-5 py-4">
                     <h3 className="font-semibold">{item.question}</h3>
                     <p className="mt-2 text-sm text-[var(--muted)]">{item.answer}</p>
                   </div>

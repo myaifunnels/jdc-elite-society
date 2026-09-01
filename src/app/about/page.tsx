@@ -27,7 +27,7 @@ export default async function AboutPage() {
               {siteContent.mentorPoints.map((item) => (
                 <div
                   key={item}
-                  className="rounded-[1.5rem] border border-black/8 bg-white px-5 py-4 text-sm text-[var(--muted)]"
+                  className="rounded-[1.5rem] border border-[var(--glass-border)] bg-[color:var(--field-recess)] px-5 py-4 text-sm text-[var(--muted)]"
                 >
                   {item}
                 </div>
@@ -43,7 +43,7 @@ export default async function AboutPage() {
               {siteContent.frameworkItems.map((item, index) => (
                 <li
                   key={item}
-                  className="flex gap-4 rounded-[1.5rem] bg-[#fff5e9] px-5 py-4 text-sm"
+                  className="flex gap-4 rounded-[1.5rem] bg-[var(--brand-soft)] px-5 py-4 text-sm"
                 >
                   <span className="font-semibold text-[var(--brand-dark)]">
                     {String(index + 1).padStart(2, "0")}

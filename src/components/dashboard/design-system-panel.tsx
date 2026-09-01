@@ -40,7 +40,7 @@ export function DesignSystemPanel() {
         {fields.map((field) => (
           <label key={field.key} className="grid gap-2 text-sm">
             <span className="font-medium">{field.label}</span>
-            <div className="flex items-center gap-3 rounded-2xl border border-[var(--line)] bg-[color:var(--surface-elevated)]/86 px-4 py-3">
+            <div className="macos-field">
               <input
                 type="color"
                 value={settings[field.key]}

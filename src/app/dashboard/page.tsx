@@ -70,7 +70,7 @@ export default async function DashboardPage() {
             <p className="text-sm font-semibold">Partner summary</p>
             <div className="mt-6 grid gap-4 md:grid-cols-3">
               {partnerSummary.slice(0, 1).map((partner) => (
-                <div key={partner.id} className="rounded-[1.5rem] border border-black/8 bg-white p-5">
+                <div key={partner.id} className="rounded-[1.5rem] border border-[var(--glass-border)] bg-[color:var(--field-recess)] p-5">
                   <p className="font-semibold">{partner.name}</p>
                   <p className="mt-1 text-sm text-[var(--muted)]">{partner.region}</p>
                   <p className="mt-4 text-sm">Active leads: {partner.activeLeads}</p>
@@ -107,7 +107,7 @@ export default async function DashboardPage() {
           <p className="text-sm font-semibold">Partners</p>
           <div className="mt-6 grid gap-4 md:grid-cols-3">
             {partnerSummary.map((partner) => (
-              <div key={partner.id} className="rounded-[1.5rem] border border-black/8 bg-white p-5">
+              <div key={partner.id} className="rounded-[1.5rem] border border-[var(--glass-border)] bg-[color:var(--field-recess)] p-5">
                 <p className="font-semibold">{partner.name}</p>
                 <p className="mt-1 text-sm text-[var(--muted)]">{partner.region}</p>
                 <p className="mt-4 text-sm">Active leads: {partner.activeLeads}</p>

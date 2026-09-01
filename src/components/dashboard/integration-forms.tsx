@@ -12,8 +12,7 @@ import { maskSecret } from "@/lib/integrations";
 
 const initialState: IntegrationFormState = {};
 
-const inputClass =
-  "w-full rounded-2xl border border-[var(--line)] bg-[color:var(--surface-elevated)]/86 px-4 py-3 outline-none transition focus:border-[var(--brand)] focus:ring-2 focus:ring-[rgba(41,98,255,0.18)]";
+const inputClass = "macos-control";
 
 export function GoogleMapsIntegrationForm({
   configured,

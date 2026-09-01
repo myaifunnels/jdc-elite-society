@@ -14,7 +14,7 @@ export function DashboardFrame({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-dvh">
+    <div className="dashboard-app">
       <a href="#dashboard-main" className="skip-link">
         Skip to dashboard content
       </a>

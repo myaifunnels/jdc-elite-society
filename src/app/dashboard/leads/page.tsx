@@ -43,7 +43,7 @@ export default async function LeadsPage() {
                         {lead.tags.map((tag) => (
                           <span
                             key={tag}
-                            className="rounded-full bg-[#fff5e9] px-3 py-1 text-xs font-medium text-[var(--brand-dark)]"
+                            className="rounded-full bg-[var(--brand-soft)] px-3 py-1 text-xs font-medium text-[var(--brand-dark)]"
                           >
                             {tag}
                           </span>

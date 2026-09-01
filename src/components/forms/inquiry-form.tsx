@@ -81,25 +81,25 @@ export function InquiryForm({ className, defaultProgram, showIntro = true }: Inq
 
         <div className="grid gap-4 md:grid-cols-2">
           <Field label="Full name" error={errors.name?.message}>
-            <input className={inputClass} {...register("name")} placeholder="Juan Dela Cruz" />
+            <input className="macos-control" {...register("name")} placeholder="Juan Dela Cruz" />
           </Field>
 
           <Field label="Email" error={errors.email?.message}>
-            <input className={inputClass} {...register("email")} placeholder="juan@example.com" />
+            <input className="macos-control" {...register("email")} placeholder="juan@example.com" />
           </Field>
 
           <Field label="Phone" error={errors.phone?.message}>
-            <input className={inputClass} {...register("phone")} placeholder="+63 917 000 0000" />
+            <input className="macos-control" {...register("phone")} placeholder="+63 917 000 0000" />
           </Field>
 
           <Field label="Date of birth" error={errors.dateOfBirth?.message}>
-            <input className={inputClass} type="date" {...register("dateOfBirth")} />
+            <input className="macos-control" type="date" {...register("dateOfBirth")} />
           </Field>
         </div>
 
         <div className="mt-4 grid gap-4 md:grid-cols-2">
           <Field label="Which program are you considering?" error={errors.programInterest?.message}>
-            <select className={inputClass} {...register("programInterest")}>
+            <select className="macos-control" {...register("programInterest")}>
               {programs.map((program) => (
                 <option key={program.slug} value={program.title}>
                   {program.title}
@@ -109,7 +109,7 @@ export function InquiryForm({ className, defaultProgram, showIntro = true }: Inq
           </Field>
 
           <Field label="City / region" error={errors.city?.message}>
-            <input className={inputClass} {...register("city")} placeholder="Makati" />
+            <input className="macos-control" {...register("city")} placeholder="Makati" />
           </Field>
         </div>
 
@@ -117,7 +117,7 @@ export function InquiryForm({ className, defaultProgram, showIntro = true }: Inq
           <input type="hidden" {...register("tags")} />
           <Field label="Where are you based?" error={errors.address?.message}>
             <input
-              className={inputClass}
+              className="macos-control"
               {...register("address")}
               placeholder="Street, city, province or country"
               autoComplete="street-address"
@@ -135,7 +135,7 @@ export function InquiryForm({ className, defaultProgram, showIntro = true }: Inq
           <button
             type="submit"
             disabled={isSubmitting}
-            className="button-primary pressable w-full rounded-full px-5 py-3 font-semibold disabled:opacity-70 sm:w-auto"
+            className="button-primary pressable inline-flex w-full items-center justify-center gap-2 rounded-[0.9rem] px-5 py-3 font-semibold disabled:opacity-70 sm:w-auto"
           >
             {isSubmitting ? siteContent.inquiry.submitting : siteContent.inquiry.submit}
           </button>
@@ -184,12 +184,9 @@ function Field({
 }) {
   return (
     <label className="grid gap-2 text-sm">
-      <span className="font-medium">{label}</span>
+      <span className="text-xs font-semibold text-[var(--muted)]">{label}</span>
       {children}
-      {error ? <span className="text-xs text-red-700">{error}</span> : null}
+      {error ? <span className="text-xs text-red-500">{error}</span> : null}
     </label>
   );
 }
-
-const inputClass =
-  "w-full min-h-11 rounded-2xl border border-[var(--line)] bg-[color:var(--surface-elevated)]/86 px-4 py-3 text-base outline-none transition focus:border-[var(--brand)] focus:ring-2 focus:ring-[color-mix(in_srgb,var(--brand)_22%,transparent)]";
