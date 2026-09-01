@@ -32,7 +32,7 @@ export default async function ContactPage({ searchParams }: ContactPageProps) {
             <p className="text-xs uppercase tracking-[0.3em] text-[var(--brand-dark)]">
               {siteContent.inquiry.eyebrow}
             </p>
-            <h1 className="mt-3 text-5xl font-semibold tracking-tight">{siteContent.inquiry.heading}</h1>
+            <h1 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl lg:text-5xl">{siteContent.inquiry.heading}</h1>
             <p className="mt-4 text-lg text-[var(--muted)]">{siteContent.inquiry.body}</p>
           </div>
 

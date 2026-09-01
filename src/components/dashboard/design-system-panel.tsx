@@ -23,7 +23,7 @@ export function DesignSystemPanel() {
         <div>
           <p className="text-sm font-semibold">Live design system</p>
           <p className="mt-2 text-sm text-[var(--muted)]">
-            Update the shared palette here and the public site plus dashboards inherit the same tokens immediately.
+            Palette defaults follow the jDC chrome-and-electric-blue dark brand. Changes apply live across the public site and dashboards.
           </p>
         </div>
 

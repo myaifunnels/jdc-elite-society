@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { SiteLogo } from "@/components/branding/site-logo";
 import { ScrollTopButton } from "@/components/layout/scroll-top-button";
+import { StickyContact } from "@/components/layout/sticky-contact";
 import { siteContent } from "@/data/site-content";
 import { getResolvedBrandingSettings } from "@/lib/branding-store";
 
@@ -9,10 +10,12 @@ const quickLinks = [
   { href: "/programs", label: "JDC Partnership Program" },
   { href: "/programs", label: "JDC Elite Society" },
   { href: "/programs", label: "1-on-1 Coaching" },
-  { href: "/programs/jdc-mastermind", label: "JDC Mastermind" },
+  { href: "/elite", label: "JDC Mastermind" },
   { href: "/about", label: "About Coach JDC" },
   { href: "/about", label: "Success Stories" },
   { href: "/#faq", label: "FAQ" },
+  { href: "/#register", label: "Register" },
+  { href: "/login", label: "Sign in" },
 ];
 
 const socialLinks = [
@@ -61,7 +64,7 @@ export async function SiteFooter() {
     <footer className="site-footer">
       <div className="container-shell site-footer-grid">
         <div className="site-footer-brand">
-          <SiteLogo branding={branding} inverted compact={Boolean(branding.logoUrl)} />
+          <SiteLogo branding={branding} href="/" inverted compact={Boolean(branding.logoUrl)} />
           <p>{siteContent.footerBlurb}</p>
           <div className="site-footer-socials">
             {socialLinks.map((item) => (
@@ -160,6 +163,7 @@ export async function SiteFooter() {
         </p>
         <div className="site-footer-copy">Copyright © 2026 JDC Elite Society. All Rights Reserved.</div>
       </div>
+      <StickyContact />
     </footer>
   );
 }

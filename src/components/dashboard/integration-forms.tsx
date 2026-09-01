@@ -7,13 +7,13 @@ import {
   saveGhlIntegration,
   saveGoogleMapsIntegration,
   saveR2Integration,
+  saveTextBeeIntegration,
 } from "@/app/dashboard/integrations/actions";
+import { FloatField } from "@/components/forms/float-field";
+import { StickyForm } from "@/components/forms/sticky-form";
 import { maskSecret } from "@/lib/integrations";
 
 const initialState: IntegrationFormState = {};
-
-const inputClass =
-  "w-full rounded-2xl border border-[var(--line)] bg-[color:var(--surface-elevated)]/86 px-4 py-3 outline-none transition focus:border-[var(--brand)] focus:ring-2 focus:ring-[rgba(41,98,255,0.18)]";
 
 export function GoogleMapsIntegrationForm({
   configured,
@@ -26,17 +26,10 @@ export function GoogleMapsIntegrationForm({
   );
 
   return (
-    <form action={formAction} className="mt-6 grid gap-4">
-      <label className="grid gap-2 text-sm">
-        <span className="font-medium">Maps Embed API key</span>
-        <input
-          name="googleMapsEmbedKey"
-          type="password"
-          autoComplete="off"
-          placeholder={configured ? maskSecret("set") : "AIza..."}
-          className={inputClass}
-        />
-      </label>
+    <StickyForm storageKey="coach-jdc-maps-integration" action={formAction} className="mt-6 grid gap-4">
+      <FloatField label={configured ? `Enter a new Maps API key (${maskSecret("set")})` : "Enter your Maps API key"}>
+        <input name="googleMapsEmbedKey" type="password" autoComplete="off" placeholder=" " />
+      </FloatField>
 
       {state.error ? <p className="text-sm text-red-500">{state.error}</p> : null}
       {state.success ? <p className="text-sm text-emerald-400">{state.success}</p> : null}
@@ -48,7 +41,7 @@ export function GoogleMapsIntegrationForm({
       >
         {pending ? "Saving..." : "Save Google Maps"}
       </button>
-    </form>
+    </StickyForm>
   );
 }
 
@@ -66,49 +59,26 @@ export function R2IntegrationForm({
   const [state, formAction, pending] = useActionState(saveR2Integration, initialState);
 
   return (
-    <form action={formAction} className="mt-6 grid gap-4">
-      <label className="grid gap-2 text-sm">
-        <span className="font-medium">Account ID</span>
-        <input
-          name="r2AccountId"
-          autoComplete="off"
-          defaultValue={accountId}
-          placeholder="Cloudflare account ID"
-          className={inputClass}
-        />
-      </label>
-      <label className="grid gap-2 text-sm">
-        <span className="font-medium">Access key ID</span>
-        <input
-          name="r2AccessKeyId"
-          autoComplete="off"
-          placeholder={accessKeyConfigured ? maskSecret("set") : "R2 access key"}
-          className={inputClass}
-        />
-      </label>
-      <label className="grid gap-2 text-sm">
-        <span className="font-medium">Secret access key</span>
-        <input
-          name="r2SecretAccessKey"
-          type="password"
-          autoComplete="off"
-          placeholder={accessKeyConfigured ? maskSecret("set") : "R2 secret key"}
-          className={inputClass}
-        />
-      </label>
-      <label className="grid gap-2 text-sm">
-        <span className="font-medium">Bucket</span>
-        <input name="r2Bucket" defaultValue={bucket} placeholder="coach-jdc-media" className={inputClass} />
-      </label>
-      <label className="grid gap-2 text-sm">
-        <span className="font-medium">Public URL</span>
-        <input
-          name="r2PublicUrl"
-          defaultValue={publicUrl}
-          placeholder="https://media.yourdomain.com"
-          className={inputClass}
-        />
-      </label>
+    <StickyForm storageKey="coach-jdc-r2-integration" action={formAction} className="mt-6 grid gap-4">
+      <FloatField label="Enter your Cloudflare account ID">
+        <input name="r2AccountId" autoComplete="off" defaultValue={accountId} placeholder=" " />
+      </FloatField>
+      <FloatField
+        label={accessKeyConfigured ? `Enter a new access key (${maskSecret("set")})` : "Enter your R2 access key"}
+      >
+        <input name="r2AccessKeyId" autoComplete="off" data-sticky="off" placeholder=" " />
+      </FloatField>
+      <FloatField
+        label={accessKeyConfigured ? `Enter a new secret key (${maskSecret("set")})` : "Enter your R2 secret key"}
+      >
+        <input name="r2SecretAccessKey" type="password" autoComplete="off" placeholder=" " />
+      </FloatField>
+      <FloatField label="Enter your R2 bucket name">
+        <input name="r2Bucket" defaultValue={bucket} placeholder=" " />
+      </FloatField>
+      <FloatField label="Enter your public media URL">
+        <input name="r2PublicUrl" defaultValue={publicUrl} placeholder=" " />
+      </FloatField>
 
       {state.error ? <p className="text-sm text-red-500">{state.error}</p> : null}
       {state.success ? <p className="text-sm text-emerald-400">{state.success}</p> : null}
@@ -120,7 +90,75 @@ export function R2IntegrationForm({
       >
         {pending ? "Saving..." : "Save Cloudflare R2"}
       </button>
-    </form>
+    </StickyForm>
+  );
+}
+
+export function GhlIntegrationForm({
+  configured,
+  locationId,
+}: {
+  configured: boolean;
+  locationId: string;
+}) {
+  const [state, formAction, pending] = useActionState(saveGhlIntegration, initialState);
+
+  return (
+    <StickyForm storageKey="coach-jdc-ghl-integration" action={formAction} className="mt-6 grid gap-4">
+      <FloatField
+        label={configured ? `Enter a new GHL token (${maskSecret("set")})` : "Enter your GHL private token"}
+      >
+        <input name="ghlApiKey" type="password" autoComplete="off" placeholder=" " />
+      </FloatField>
+      <FloatField label="Enter your GHL location ID">
+        <input name="ghlLocationId" autoComplete="off" defaultValue={locationId} placeholder=" " />
+      </FloatField>
+
+      {state.error ? <p className="text-sm text-red-500">{state.error}</p> : null}
+      {state.success ? <p className="text-sm text-emerald-400">{state.success}</p> : null}
+
+      <button
+        type="submit"
+        disabled={pending}
+        className="button-primary pressable w-fit rounded-full px-4 py-2 text-sm font-semibold disabled:opacity-70"
+      >
+        {pending ? "Saving..." : "Save GoHighLevel"}
+      </button>
+    </StickyForm>
+  );
+}
+
+export function TextBeeIntegrationForm({
+  configured,
+  deviceId,
+}: {
+  configured: boolean;
+  deviceId: string;
+}) {
+  const [state, formAction, pending] = useActionState(saveTextBeeIntegration, initialState);
+
+  return (
+    <StickyForm storageKey="coach-jdc-textbee-integration" action={formAction} className="mt-6 grid gap-4">
+      <FloatField
+        label={configured ? `Enter a new API key (${maskSecret("set")})` : "Enter your TextBee API key"}
+      >
+        <input name="textbeeApiKey" type="password" autoComplete="off" placeholder=" " />
+      </FloatField>
+      <FloatField label="Enter your TextBee device ID">
+        <input name="textbeeDeviceId" autoComplete="off" defaultValue={deviceId} placeholder=" " />
+      </FloatField>
+
+      {state.error ? <p className="text-sm text-red-500">{state.error}</p> : null}
+      {state.success ? <p className="text-sm text-emerald-400">{state.success}</p> : null}
+
+      <button
+        type="submit"
+        disabled={pending}
+        className="button-primary pressable w-fit rounded-full px-4 py-2 text-sm font-semibold disabled:opacity-70"
+      >
+        {pending ? "Saving..." : "Save TextBee"}
+      </button>
+    </StickyForm>
   );
 }
 

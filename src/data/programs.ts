@@ -1,6 +1,6 @@
 import { Program } from "@/lib/types";
 
-export const programs: Program[] = [
+const allPrograms: Program[] = [
   {
     slug: "mindset-reset",
     title: "Mindset Reset",
@@ -168,7 +168,49 @@ export const programs: Program[] = [
     image: "/media/coach-room.jpg",
     imageAlt: "A coaching room set for a mastermind session",
   },
+  {
+    slug: "90-day-blueprint",
+    title: "90-Day Blueprint",
+    shortDescription:
+      "Not another course. A 90-day execution window with a plan, weekly checkpoints, and no room to disappear.",
+    audience:
+      "People who already know their next move but keep pushing it past the finish line, one 'next week' at a time.",
+    transformation:
+      "You stop planning in circles. In 90 days you get a written plan, weekly execution checkpoints, and a finished first version of the thing you've been meaning to build.",
+    benefits: [
+      "A 90-day plan broken into weekly, doable actions",
+      "Checkpoints that catch you before month two, not after",
+      "A finished first version instead of another draft",
+    ],
+    modules: [
+      "Days 1-30: Foundation and the plan you'll actually follow",
+      "Days 31-60: Execution sprints and weekly checkpoints",
+      "Days 61-90: Finish, review, and set the next 90 days",
+    ],
+    faqs: [
+      {
+        question: "How is this different from the other programs?",
+        answer:
+          "The other tracks build the person or the offer. This one is a timeboxed execution sprint — 90 days, a plan, and checkpoints that keep you honest until it's done.",
+      },
+      {
+        question: "What do I need before I start?",
+        answer:
+          "A goal you already know you want to hit. If you're still deciding what to build, start with Business Kickstart or Mindset Reset first.",
+      },
+    ],
+    ctaLabel: "Start my 90-Day Blueprint",
+    image: "/media/program-business.jpg",
+    imageAlt: "A desk calendar marked with a 90-day countdown",
+  },
 ];
+
+// Only the Mastermind and the 90-Day Blueprint are shown on the public site
+// (nav, /programs, homepage listings, sitemap). The other tracks stay defined
+// above in case they're needed again, but are intentionally filtered out here.
+const VISIBLE_SLUGS = new Set(["jdc-mastermind", "90-day-blueprint"]);
+
+export const programs: Program[] = allPrograms.filter((program) => VISIBLE_SLUGS.has(program.slug));
 
 export function getProgram(slug: string) {
   return programs.find((program) => program.slug === slug);

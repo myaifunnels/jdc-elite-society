@@ -5,27 +5,11 @@ export type IntegrationSettings = {
   r2SecretAccessKey: string;
   r2Bucket: string;
   r2PublicUrl: string;
-  ghlPrivateToken: string;
+  ghlApiKey: string;
   ghlLocationId: string;
-  ghlLocationName: string;
-  ghlAutoSync: boolean;
-  ghlTags: string;
-  ghlWebhookUrl: string;
-  ghlLastSyncedAt: string;
-  ghlLastError: string;
-};
-
-export type GhlSyncEvent = {
-  id: string;
-  leadId: string;
-  name: string;
-  email: string;
-  phone: string;
-  programInterest: string;
-  ghlContactId: string;
-  status: "synced" | "failed" | "skipped";
-  error: string;
-  createdAt: string;
+  textbeeApiKey: string;
+  textbeeDeviceId: string;
+  smsFromNumber: string;
 };
 
 export const emptyIntegrationSettings: IntegrationSettings = {
@@ -35,23 +19,12 @@ export const emptyIntegrationSettings: IntegrationSettings = {
   r2SecretAccessKey: "",
   r2Bucket: "",
   r2PublicUrl: "",
-  ghlPrivateToken: "",
+  ghlApiKey: "",
   ghlLocationId: "",
-  ghlLocationName: "",
-  ghlAutoSync: true,
-  ghlTags: "Website, JDC Elite Society",
-  ghlWebhookUrl: "",
-  ghlLastSyncedAt: "",
-  ghlLastError: "",
+  textbeeApiKey: "",
+  textbeeDeviceId: "",
+  smsFromNumber: "",
 };
-
-function envFlag(value: string | undefined, fallback: boolean) {
-  if (value == null || value === "") {
-    return fallback;
-  }
-
-  return !["0", "false", "off", "no"].includes(value.toLowerCase());
-}
 
 export function envIntegrationSettings(): IntegrationSettings {
   return {
@@ -61,14 +34,11 @@ export function envIntegrationSettings(): IntegrationSettings {
     r2SecretAccessKey: process.env.R2_SECRET_ACCESS_KEY ?? "",
     r2Bucket: process.env.R2_BUCKET ?? "",
     r2PublicUrl: process.env.R2_PUBLIC_URL ?? "",
-    ghlPrivateToken: process.env.GHL_PRIVATE_TOKEN ?? process.env.GHL_API_KEY ?? "",
+    ghlApiKey: process.env.GHL_API_KEY ?? "",
     ghlLocationId: process.env.GHL_LOCATION_ID ?? "",
-    ghlLocationName: process.env.GHL_LOCATION_NAME ?? "",
-    ghlAutoSync: envFlag(process.env.GHL_AUTO_SYNC, true),
-    ghlTags: process.env.GHL_TAGS ?? emptyIntegrationSettings.ghlTags,
-    ghlWebhookUrl: process.env.GHL_WEBHOOK_URL ?? "",
-    ghlLastSyncedAt: "",
-    ghlLastError: "",
+    textbeeApiKey: process.env.TEXTBEE_API_KEY ?? "",
+    textbeeDeviceId: process.env.TEXTBEE_DEVICE_ID ?? "",
+    smsFromNumber: process.env.TWILIO_FROM ?? "",
   };
 }
 
@@ -83,14 +53,11 @@ export function mergeIntegrationSettings(
     r2SecretAccessKey: saved?.r2SecretAccessKey || env.r2SecretAccessKey,
     r2Bucket: saved?.r2Bucket || env.r2Bucket,
     r2PublicUrl: saved?.r2PublicUrl || env.r2PublicUrl,
-    ghlPrivateToken: saved?.ghlPrivateToken || env.ghlPrivateToken,
+    ghlApiKey: saved?.ghlApiKey || env.ghlApiKey,
     ghlLocationId: saved?.ghlLocationId || env.ghlLocationId,
-    ghlLocationName: saved?.ghlLocationName || env.ghlLocationName,
-    ghlAutoSync: saved?.ghlAutoSync ?? env.ghlAutoSync,
-    ghlTags: saved?.ghlTags || env.ghlTags,
-    ghlWebhookUrl: saved?.ghlWebhookUrl || env.ghlWebhookUrl,
-    ghlLastSyncedAt: saved?.ghlLastSyncedAt || "",
-    ghlLastError: saved?.ghlLastError || "",
+    textbeeApiKey: saved?.textbeeApiKey || env.textbeeApiKey,
+    textbeeDeviceId: saved?.textbeeDeviceId || env.textbeeDeviceId,
+    smsFromNumber: saved?.smsFromNumber || env.smsFromNumber,
   };
 }
 
@@ -108,27 +75,14 @@ export function isR2Ready(settings: IntegrationSettings) {
   );
 }
 
-export function isGhlApiReady(settings: IntegrationSettings) {
-  return Boolean(settings.ghlPrivateToken && settings.ghlLocationId);
-}
-
 export function isGhlReady(settings: IntegrationSettings) {
-  return isGhlApiReady(settings) || Boolean(settings.ghlWebhookUrl);
+  return Boolean(settings.ghlApiKey && settings.ghlLocationId);
 }
 
-export function isGhlAutoSyncReady(settings: IntegrationSettings) {
-  return settings.ghlAutoSync && isGhlReady(settings);
+export function isTextBeeReady(settings: IntegrationSettings) {
+  return Boolean(settings.textbeeApiKey && settings.textbeeDeviceId);
 }
 
 export function maskSecret(value: string) {
   return value ? "•••••••• configured" : "not set";
-}
-
-export function isHttpsUrl(value: string) {
-  try {
-    const url = new URL(value);
-    return url.protocol === "https:";
-  } catch {
-    return false;
-  }
 }

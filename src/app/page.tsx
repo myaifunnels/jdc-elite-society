@@ -2,14 +2,17 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { InquiryForm } from "@/components/forms/inquiry-form";
+import { RegisterForm } from "@/components/auth/register-form";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
 import { HeroBillboard } from "@/components/sections/hero-billboard";
 import { ProgramCard } from "@/components/sections/program-card";
 import { programs } from "@/data/programs";
 import { siteContent } from "@/data/site-content";
+import { getSessionUser } from "@/lib/session";
 
 export default async function Home() {
+  const user = await getSessionUser();
   return (
     <div className="min-h-screen">
       <SiteHeader overlay />
@@ -32,6 +35,7 @@ export default async function Home() {
                 <article
                   key={item.title}
                   className="glass-panel interactive-card fade-up overflow-hidden rounded-[2rem]"
+                  style={{ animationDelay: `${index * 70}ms` }}
                 >
                   <div className="visual-mark" aria-hidden="true">
                     {String(index + 1).padStart(2, "0")}
@@ -61,8 +65,8 @@ export default async function Home() {
             </div>
 
             <div className="grid gap-8 lg:grid-cols-2">
-              {programs.map((program) => (
-                <ProgramCard key={program.slug} program={program} />
+              {programs.map((program, index) => (
+                <ProgramCard key={program.slug} program={program} delayMs={index * 60} />
               ))}
             </div>
           </div>
@@ -80,7 +84,7 @@ export default async function Home() {
               />
             </div>
 
-            <div className="glass-panel interactive-card fade-up fade-up-delay-1 rounded-[2rem] p-8">
+            <div className="glass-panel interactive-card fade-up fade-up-delay-1 rounded-[2rem] p-6 sm:p-8">
               <p className="eyebrow text-xs">{siteContent.mentorEyebrow}</p>
               <h2 className="mt-3 text-3xl font-semibold tracking-[-0.03em]">{siteContent.mentorHeading}</h2>
               <p className="mt-4 text-[var(--muted)]">{siteContent.mentorBody}</p>
@@ -118,7 +122,7 @@ export default async function Home() {
 
         <section className="section-space">
           <div className="container-shell">
-            <div className="glass-panel fade-up rounded-[2rem] p-8 sm:p-10">
+            <div className="glass-panel fade-up rounded-[2rem] p-6 sm:p-10">
               <p className="eyebrow text-xs">The standard</p>
               <h2 className="mt-3 text-3xl font-semibold tracking-[-0.03em]">
                 {siteContent.frameworkHeading}
@@ -158,6 +162,23 @@ export default async function Home() {
             </div>
           </div>
         </section>
+
+        {!user ? (
+          <section id="register" className="section-space scroll-mt-24">
+            <div className="container-shell grid gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
+              <div>
+                <p className="eyebrow text-xs">Register</p>
+                <h2 className="mt-2 text-3xl font-semibold tracking-[-0.03em] md:text-4xl">
+                  Create your account
+                </h2>
+                <p className="mt-4 text-[var(--muted)]">
+                  Register to open the dashboard. Your account stays pending until we verify you.
+                </p>
+              </div>
+              <RegisterForm />
+            </div>
+          </section>
+        ) : null}
 
         <section className="section-space bg-[color:var(--surface)]/60">
           <div className="container-shell">

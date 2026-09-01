@@ -2,10 +2,24 @@ import { NavItem, SiteStat } from "@/lib/types";
 
 export const navItems: NavItem[] = [
   { href: "/", label: "Home" },
-  { href: "/programs", label: "Programs" },
+  {
+    href: "/programs",
+    label: "Programs",
+    children: [
+      { href: "/elite", label: "JDC Mastermind" },
+      {
+        href: "/programs/1-on-1-coaching",
+        label: "1-on-1 Coaching",
+        children: [
+          { href: "/programs/1-on-1-coaching#online", label: "Online Coaching" },
+          { href: "/programs/1-on-1-coaching#face-to-face", label: "Face to Face Coaching" },
+        ],
+      },
+      { href: "/programs/90-day-blueprint", label: "90-Day Blueprint" },
+    ],
+  },
   { href: "/about", label: "About" },
   { href: "/contact", label: "Contact" },
-  { href: "/login", label: "Dashboards" },
 ];
 
 export const heroStats: SiteStat[] = [
@@ -19,13 +33,13 @@ export const siteContent = {
   eyebrow: "A message from Coach JDC",
   headline: "Work isn't the problem.\nThe plan is.",
   subheadline:
-    "I'm Coach Jayson Dela Cruz. If you're an OFW, an employee, or starting from zero, I'll tell you straight: another year of hard work without a system still leaves you in the same place. I coach mindset, business, and the standards that make you follow through.",
+    "I coach OFWs, employees, and first-time entrepreneurs: mindset, business, and the discipline to follow through.",
   heroTags: ["OFWs", "Employees", "First-time entrepreneurs"],
-  primaryCta: { href: "/contact", label: "Talk to me" },
-  secondaryCta: { href: "/programs", label: "See the programs" },
-  headerCta: "Talk to me",
+  primaryCta: { href: "/programs", label: "See Programs" },
+  secondaryCta: { href: "/contact", label: "Talk to me" },
+  headerCta: "See Programs",
   programsEyebrow: "Where we start",
-  programsHeading: "Five tracks. One standard: you do the work.",
+  programsHeading: "Six tracks. One standard: you do the work.",
   programsLink: "See all programs",
   problemEyebrow: "Let me talk to you",
   problemHeading: "If this is your life right now, we should talk.",

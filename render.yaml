@@ -3,9 +3,12 @@ services:
     name: coach-jdc-platform
     runtime: node
     plan: starter
+    branch: main
+    autoDeployTrigger: commit
     domains:
       - coachjdc.org
       - www.coachjdc.org
+      - elite.coachjdc.org
     buildCommand: npm ci && npm run build
     startCommand: npx next start --hostname 0.0.0.0 --port $PORT
     envVars:
@@ -29,14 +32,24 @@ services:
         sync: false
       - key: R2_PUBLIC_URL
         sync: false
-      - key: GHL_PRIVATE_TOKEN
+      - key: GHL_API_KEY
         sync: false
       - key: GHL_LOCATION_ID
         sync: false
-      - key: GHL_LOCATION_NAME
-        value: JDC Elite Society
-      - key: GHL_AUTO_SYNC
-        value: "true"
+      - key: RESEND_API_KEY
+        sync: false
+      - key: MAIL_FROM
+        sync: false
+      - key: NOTIFY_EMAIL
+        sync: false
+      - key: NOTIFY_PHONE
+        sync: false
+      - key: TWILIO_ACCOUNT_SID
+        sync: false
+      - key: TWILIO_AUTH_TOKEN
+        sync: false
+      - key: TWILIO_FROM
+        sync: false
 databases:
   - name: coach-jdc-platform-db
     databaseName: coach_jdc_platform

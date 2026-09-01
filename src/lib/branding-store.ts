@@ -5,6 +5,7 @@ import {
   defaultBrandingSettings,
   envBrandingSettings,
   mergeBrandingSettings,
+  resolveLogoHref,
 } from "@/lib/branding";
 
 const memoryStore: { current: BrandingSettings | null } = { current: null };
@@ -88,7 +89,10 @@ export async function saveBrandingSettings(
   const current = (await getSavedBrandingSettings()) ?? defaultBrandingSettings;
   const next: BrandingSettings = {
     logoUrl: incoming.logoUrl ?? current.logoUrl,
-    logoHref: incoming.logoHref || current.logoHref || defaultBrandingSettings.logoHref,
+    logoHref: resolveLogoHref(
+      incoming.logoHref || current.logoHref || defaultBrandingSettings.logoHref,
+      incoming.logoUrl ?? current.logoUrl,
+    ),
     logoAlt: incoming.logoAlt || current.logoAlt || defaultBrandingSettings.logoAlt,
   };
 

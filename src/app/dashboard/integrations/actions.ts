@@ -2,10 +2,10 @@
 
 import { revalidatePath } from "next/cache";
 
-import { testGhlConnection } from "@/lib/ghl";
-import { isGhlReady, isHttpsUrl, isMapsReady, isR2Ready } from "@/lib/integrations";
+import { isGhlReady, isMapsReady, isR2Ready, isTextBeeReady } from "@/lib/integrations";
 import { getResolvedIntegrationSettings, saveIntegrationSettings } from "@/lib/integrations-store";
-import { requireSessionUser } from "@/lib/session";
+import { migrateDataUrlFilesToR2 } from "@/lib/r2-migrate";
+import { requireCapability } from "@/lib/session";
 
 export type IntegrationFormState = {
   error?: string;
@@ -16,11 +16,7 @@ export async function saveGoogleMapsIntegration(
   _prevState: IntegrationFormState,
   formData: FormData,
 ): Promise<IntegrationFormState> {
-  const user = await requireSessionUser();
-
-  if (user.role !== "admin") {
-    return { error: "Only admins can update integrations." };
-  }
+  await requireCapability("integrations");
 
   const googleMapsEmbedKey = String(formData.get("googleMapsEmbedKey") ?? "").trim();
   const resolved = await getResolvedIntegrationSettings();
@@ -33,8 +29,8 @@ export async function saveGoogleMapsIntegration(
     await saveIntegrationSettings({ googleMapsEmbedKey });
   }
   revalidatePath("/dashboard/integrations");
-  revalidatePath("/dashboard/maps");
-  revalidatePath("/dashboard/leads");
+  revalidatePath("/dashboard");
+  revalidatePath("/dashboard/contacts");
   revalidatePath("/contact");
 
   return { success: "Google Maps key saved." };
@@ -44,11 +40,7 @@ export async function saveR2Integration(
   _prevState: IntegrationFormState,
   formData: FormData,
 ): Promise<IntegrationFormState> {
-  const user = await requireSessionUser();
-
-  if (user.role !== "admin") {
-    return { error: "Only admins can update integrations." };
-  }
+  await requireCapability("integrations");
 
   const incoming = {
     r2AccountId: String(formData.get("r2AccountId") ?? "").trim(),
@@ -82,71 +74,83 @@ export async function saveGhlIntegration(
   _prevState: IntegrationFormState,
   formData: FormData,
 ): Promise<IntegrationFormState> {
-  const user = await requireSessionUser();
+  await requireCapability("integrations");
 
-  if (user.role !== "admin") {
-    return { error: "Only admins can update integrations." };
-  }
-
-  const incomingToken = String(formData.get("ghlPrivateToken") ?? "").trim();
-  const incomingLocationId = String(formData.get("ghlLocationId") ?? "").trim();
-  const incomingWebhookUrl = String(formData.get("ghlWebhookUrl") ?? "").trim();
-  const incomingTags = String(formData.get("ghlTags") ?? "").trim();
-  const autoSync = formData.get("ghlAutoSync") === "on";
+  const incoming = {
+    ghlApiKey: String(formData.get("ghlApiKey") ?? "").trim(),
+    ghlLocationId: String(formData.get("ghlLocationId") ?? "").trim(),
+  };
   const current = await getResolvedIntegrationSettings();
-  const nextToken = incomingToken || current.ghlPrivateToken;
-  const nextLocationId = incomingLocationId || current.ghlLocationId;
-
-  if (incomingWebhookUrl && !isHttpsUrl(incomingWebhookUrl)) {
-    return { error: "The optional GHL webhook URL must start with https://." };
-  }
-
   const preview = {
     ...current,
-    ghlPrivateToken: nextToken,
-    ghlLocationId: nextLocationId,
-    ghlWebhookUrl: incomingWebhookUrl,
-    ghlAutoSync: autoSync,
-    ghlTags: incomingTags || current.ghlTags,
+    ghlApiKey: incoming.ghlApiKey || current.ghlApiKey,
+    ghlLocationId: incoming.ghlLocationId || current.ghlLocationId,
   };
 
   if (!isGhlReady(preview)) {
+    return { error: "Paste the GHL Private Integration token and the JDC Elite Society location ID." };
+  }
+
+  await saveIntegrationSettings(incoming);
+  revalidatePath("/dashboard/integrations");
+
+  return { success: "GoHighLevel JDC Elite Society subaccount saved." };
+}
+
+export async function saveTextBeeIntegration(
+  _prevState: IntegrationFormState,
+  formData: FormData,
+): Promise<IntegrationFormState> {
+  await requireCapability("integrations");
+
+  const incoming = {
+    textbeeApiKey: String(formData.get("textbeeApiKey") ?? "").trim(),
+    textbeeDeviceId: String(formData.get("textbeeDeviceId") ?? "").trim(),
+  };
+  const current = await getResolvedIntegrationSettings();
+  const preview = {
+    ...current,
+    textbeeApiKey: incoming.textbeeApiKey || current.textbeeApiKey,
+    textbeeDeviceId: incoming.textbeeDeviceId || current.textbeeDeviceId,
+  };
+
+  if (!isTextBeeReady(preview)) {
+    return { error: "Paste your TextBee API key and device ID." };
+  }
+
+  await saveIntegrationSettings(incoming);
+  revalidatePath("/dashboard/integrations");
+
+  return { success: "TextBee SMS gateway saved." };
+}
+
+export async function migrateFilesToR2Action(
+  _prevState: IntegrationFormState,
+  _formData: FormData,
+): Promise<IntegrationFormState> {
+  await requireCapability("integrations");
+
+  const summary = await migrateDataUrlFilesToR2();
+  const migrated = summary.profilePhotos + summary.receipts + summary.contactPhotos;
+
+  revalidatePath("/dashboard/integrations");
+  revalidatePath("/dashboard/contacts");
+
+  if (migrated === 0 && summary.errors.length === 0) {
+    return { success: "Nothing to migrate — every file already lives on Cloudflare R2." };
+  }
+
+  const parts = [
+    summary.profilePhotos ? `${summary.profilePhotos} profile photo${summary.profilePhotos === 1 ? "" : "s"}` : "",
+    summary.receipts ? `${summary.receipts} receipt${summary.receipts === 1 ? "" : "s"}` : "",
+    summary.contactPhotos ? `${summary.contactPhotos} contact photo${summary.contactPhotos === 1 ? "" : "s"}` : "",
+  ].filter(Boolean);
+
+  if (summary.errors.length > 0) {
     return {
-      error:
-        "Paste the JDC Elite Society Location ID plus a Private Integration token, or an inbound webhook URL.",
+      error: `Migrated ${parts.join(", ") || "nothing"}. ${summary.errors.length} failed: ${summary.errors.slice(0, 3).join("; ")}${summary.errors.length > 3 ? "…" : ""}`,
     };
   }
 
-  let locationName = current.ghlLocationName;
-  const credentialsChanged = Boolean(incomingToken || incomingLocationId) || !locationName;
-
-  if (nextToken && nextLocationId && credentialsChanged) {
-    const test = await testGhlConnection(nextToken, nextLocationId);
-    if (!test.ok) {
-      return {
-        error: test.error || "Could not connect to that GoHighLevel subaccount.",
-      };
-    }
-    locationName = test.locationName || "JDC Elite Society";
-  }
-
-  await saveIntegrationSettings({
-    ghlPrivateToken: nextToken,
-    ghlLocationId: nextLocationId,
-    ghlLocationName: locationName,
-    ghlWebhookUrl: incomingWebhookUrl,
-    ghlAutoSync: autoSync,
-    ghlTags: incomingTags,
-    ghlLastError: "",
-  });
-  revalidatePath("/dashboard/integrations");
-  revalidatePath("/dashboard/leads");
-  revalidatePath("/dashboard/settings");
-
-  const destination = locationName || "the JDC Elite Society subaccount";
-  return {
-    success: autoSync
-      ? `Connected to ${destination}. New website form submissions will sync automatically.`
-      : `Saved ${destination}. Turn automatic sync back on to push new inquiries.`,
-  };
+  return { success: `Migrated ${parts.join(", ")} to Cloudflare R2.` };
 }

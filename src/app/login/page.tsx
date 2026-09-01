@@ -1,61 +1,33 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 
-import { loginAsRole } from "@/app/login/actions";
-import { AdminLoginForm } from "@/components/auth/admin-login-form";
-import { SiteFooter } from "@/components/layout/site-footer";
-import { SiteHeader } from "@/components/layout/site-header";
+import { AuthPageShell } from "@/components/auth/auth-page-shell";
+import { AuthPanel } from "@/components/auth/auth-panel";
+import { getResolvedBrandingSettings } from "@/lib/branding-store";
+import { getSessionUser } from "@/lib/session";
 
 export const metadata: Metadata = {
-  title: "Login",
-  description: "Choose a demo dashboard role for the Coach JDC platform.",
+  title: "Sign in",
+  description: "Sign in with your email and password, or register first.",
 };
 
-export default async function LoginPage() {
+type LoginPageProps = {
+  searchParams: Promise<{ email?: string }>;
+};
+
+export default async function LoginPage({ searchParams }: LoginPageProps) {
+  const user = await getSessionUser();
+  const params = await searchParams;
+
+  if (user) {
+    redirect(user.passwordSet ? "/dashboard" : "/account/password");
+  }
+
+  const branding = await getResolvedBrandingSettings();
+
   return (
-    <div className="min-h-screen">
-      <SiteHeader />
-      <main className="section-space">
-        <div className="container-shell max-w-5xl">
-          <div className="mb-8 max-w-2xl">
-            <p className="eyebrow text-xs">Dashboard access</p>
-            <h1 className="mt-3 text-5xl font-semibold tracking-[-0.04em]">
-              Enter the CRM workspace as an admin or partner.
-            </h1>
-            <p className="mt-4 text-lg text-[var(--muted)]">
-              Admin access now uses explicit credentials, while partner access stays lightweight for previewing the role-based experience.
-            </p>
-          </div>
-
-          <div className="grid gap-6 md:grid-cols-2">
-            <AdminLoginForm />
-
-            <form
-              action={async () => {
-                "use server";
-                await loginAsRole("partner");
-              }}
-              className="glass-panel rounded-[2rem] p-8"
-            >
-              <p className="eyebrow text-xs">Partner</p>
-              <h2 className="mt-3 text-3xl font-semibold tracking-[-0.03em]">
-                See assigned leads and partner KPIs
-              </h2>
-              <ul className="mt-5 grid gap-3 text-sm text-[var(--muted)]">
-                <li>• Review partner-owned leads</li>
-                <li>• Track routing and conversion performance</li>
-                <li>• Stay within role-based visibility boundaries</li>
-              </ul>
-              <button
-                type="submit"
-                className="button-secondary pressable mt-8 rounded-full px-5 py-3 font-semibold"
-              >
-                Continue as partner
-              </button>
-            </form>
-          </div>
-        </div>
-      </main>
-      <SiteFooter />
-    </div>
+    <AuthPageShell>
+      <AuthPanel branding={branding} mode="login" email={params.email ?? ""} />
+    </AuthPageShell>
   );
 }

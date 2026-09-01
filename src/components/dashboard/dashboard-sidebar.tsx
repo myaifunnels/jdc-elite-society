@@ -4,42 +4,57 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useId, useState } from "react";
 import {
+  CreditCard,
+  Globe,
+  GraduationCap,
   Handshake,
   LayoutDashboard,
+  Lock,
   LogOut,
-  Map,
   Menu,
   Plug,
   Settings2,
+  Shield,
+  UserRound,
   Users,
   X,
+  Zap,
 } from "lucide-react";
 
 import { logout } from "@/app/login/actions";
 import { SiteLogo } from "@/components/branding/site-logo";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
+import { AccessMap, Capability } from "@/lib/access";
 import { BrandingSettings } from "@/lib/branding";
 import { DashboardRole } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
-const navByRole: Record<
-  DashboardRole,
-  { href: string; label: string; icon: typeof LayoutDashboard }[]
-> = {
-  admin: [
-    { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
-    { href: "/dashboard/leads", label: "Leads", icon: Users },
-    { href: "/dashboard/maps", label: "Maps", icon: Map },
-    { href: "/dashboard/integrations", label: "Integrations", icon: Plug },
-    { href: "/dashboard/partners", label: "Partners", icon: Handshake },
-    { href: "/dashboard/settings", label: "Settings", icon: Settings2 },
-  ],
-  partner: [
-    { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
-    { href: "/dashboard/leads", label: "My leads", icon: Users },
-    { href: "/dashboard/partners", label: "Partner summary", icon: Handshake },
-  ],
-};
+const navCatalog: Array<{
+  href: string;
+  label: string;
+  icon: typeof LayoutDashboard;
+  capability: Capability;
+}> = [
+  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, capability: "dashboard" },
+  { href: "/dashboard/university", label: "University", icon: GraduationCap, capability: "university" },
+  { href: "/dashboard/profile", label: "Account", icon: UserRound, capability: "profile" },
+  { href: "/dashboard/contacts", label: "Contacts", icon: Users, capability: "contacts.view" },
+  { href: "/dashboard/payments", label: "Payments", icon: CreditCard, capability: "registrations" },
+  { href: "/dashboard/partnership", label: "Partnership", icon: Handshake, capability: "partnership" },
+  { href: "/dashboard/access", label: "Access", icon: Shield, capability: "access" },
+  { href: "/dashboard/integrations", label: "Integrations", icon: Plug, capability: "integrations" },
+  { href: "/dashboard/automation", label: "Automation", icon: Zap, capability: "automation" },
+  { href: "/dashboard/settings", label: "Settings", icon: Settings2, capability: "settings" },
+];
+
+function navItems(access: AccessMap) {
+  return navCatalog.filter((item) => {
+    if (item.href === "/dashboard/contacts") {
+      return access["contacts.view"] || access.registrations;
+    }
+    return access[item.capability];
+  });
+}
 
 function isActivePath(pathname: string, href: string) {
   if (href === "/dashboard") {
@@ -52,14 +67,22 @@ function isActivePath(pathname: string, href: string) {
 function SidebarPanel({
   role,
   userName,
+  membershipLabel,
+  accountStatus,
+  universityLocked,
   branding,
+  access,
   titleId,
   onNavigate,
   showClose = false,
 }: {
   role: DashboardRole;
   userName: string;
+  membershipLabel: string;
+  accountStatus?: string;
+  universityLocked?: boolean;
   branding: BrandingSettings;
+  access: AccessMap;
   titleId: string;
   onNavigate?: () => void;
   showClose?: boolean;
@@ -68,30 +91,34 @@ function SidebarPanel({
 
   return (
     <>
-      <div className="flex items-center justify-between gap-3 border-b border-[var(--line)] px-4 py-4">
-        <SiteLogo branding={branding} href="/dashboard" compact />
-        {showClose ? (
+      {showClose ? (
+        <div className="dashboard-sidebar-head">
           <button
             type="button"
-            className="pressable inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border border-[var(--line)]"
+            className="glass-icon-btn pressable inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-full"
             onClick={onNavigate}
           >
-            <X size={18} />
+            <X size={16} />
             <span className="sr-only">Close navigation</span>
           </button>
-        ) : null}
+        </div>
+      ) : null}
+
+      <div className="px-3 pb-3">
+        <SiteLogo branding={branding} href="/dashboard" compact />
       </div>
 
-      <div className="px-4 pt-5">
-        <p id={titleId} className="text-[0.68rem] font-semibold uppercase tracking-[0.28em] text-[var(--muted)]">
-          {role} workspace
+      <div className="px-4">
+        <p id={titleId} className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-[var(--muted)]">
+          {role === "member" || role === "contact" ? membershipLabel : role} workspace
         </p>
       </div>
 
-      <nav aria-label="Dashboard" className="mt-3 grid gap-1 px-3">
-        {navByRole[role].map((item) => {
+      <nav aria-label="Dashboard" className="mt-3 grid gap-1 px-2">
+        {navItems(access).map((item) => {
           const Icon = item.icon;
           const active = isActivePath(pathname, item.href);
+          const locked = item.href === "/dashboard/university" && universityLocked;
 
           return (
             <Link
@@ -99,43 +126,37 @@ function SidebarPanel({
               href={item.href}
               aria-current={active ? "page" : undefined}
               onClick={onNavigate}
-              className={cn(
-                "pressable inline-flex min-h-11 items-center gap-3 rounded-2xl px-3 text-sm font-medium transition",
-                active
-                  ? "bg-[var(--brand-soft)] text-[var(--foreground)]"
-                  : "text-[var(--muted)] hover:bg-[color:var(--brand-soft)] hover:text-[var(--foreground)]",
-              )}
+              className={cn("dashboard-nav-item pressable", active && "is-active", locked && "is-locked")}
             >
-              <Icon size={18} aria-hidden />
+              <Icon size={16} aria-hidden />
               {item.label}
+              {locked ? <Lock size={13} className="dashboard-nav-lock" aria-hidden /> : null}
+              {locked ? <span className="sr-only">Locked until payment is verified</span> : null}
             </Link>
           );
         })}
+        <Link href="/" onClick={onNavigate} className="dashboard-nav-item pressable">
+          <Globe size={16} aria-hidden />
+          Back to main website
+        </Link>
       </nav>
 
-      <div className="mt-auto grid gap-3 border-t border-[var(--line)] p-4">
+      <div className="mt-auto grid gap-3 border-t border-[var(--line)] p-3">
         <div className="flex items-center justify-between gap-3">
           <div className="min-w-0">
             <p className="truncate text-sm font-semibold">{userName}</p>
-            <p className="truncate text-xs capitalize text-[var(--muted)]">{role}</p>
+            <p className="truncate text-xs text-[var(--muted)]">
+              {role === "member" || role === "contact"
+                ? `${role} · ${accountStatus === "verified" ? "Verified" : "Pending"}`
+                : role}
+            </p>
           </div>
           <ThemeToggle />
         </div>
 
-        <Link
-          href="/"
-          onClick={onNavigate}
-          className="pressable inline-flex min-h-11 items-center justify-center rounded-2xl px-3 text-sm font-medium text-[var(--muted)] transition hover:bg-[color:var(--brand-soft)] hover:text-[var(--foreground)]"
-        >
-          View public site
-        </Link>
-
         <form action={logout}>
-          <button
-            type="submit"
-            className="button-secondary pressable inline-flex min-h-11 w-full cursor-pointer items-center justify-center gap-2 rounded-2xl px-3 text-sm font-medium"
-          >
-            <LogOut size={16} aria-hidden />
+          <button type="submit" className="macos-btn macos-btn-secondary pressable w-full gap-2">
+            <LogOut size={14} aria-hidden />
             Sign out
           </button>
         </form>
@@ -147,11 +168,19 @@ function SidebarPanel({
 export function DashboardSidebar({
   role,
   userName,
+  membershipLabel,
+  accountStatus,
+  universityLocked,
   branding,
+  access,
 }: {
   role: DashboardRole;
   userName: string;
+  membershipLabel: string;
+  accountStatus?: string;
+  universityLocked?: boolean;
   branding: BrandingSettings;
+  access: AccessMap;
 }) {
   const [open, setOpen] = useState(false);
   const titleId = useId();
@@ -191,13 +220,13 @@ export function DashboardSidebar({
 
   return (
     <>
-      <div className="sticky top-0 z-30 flex items-center justify-between gap-3 border-b border-[var(--line)] bg-[color:var(--background)]/88 px-4 py-3 backdrop-blur-xl lg:hidden">
+      <div className="dashboard-mobile-bar sticky top-0 z-30 flex items-center justify-between gap-3 px-4 py-3 lg:hidden">
         <SiteLogo branding={branding} href="/dashboard" compact />
         <div className="flex items-center gap-2">
           <ThemeToggle />
           <button
             type="button"
-            className="pressable inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border border-[var(--line)] bg-[color:var(--surface-elevated)]/80"
+            className="glass-icon-btn pressable inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full"
             aria-expanded={open}
             aria-controls="dashboard-sidebar-mobile"
             onClick={() => setOpen(true)}
@@ -223,14 +252,18 @@ export function DashboardSidebar({
         aria-hidden={!open}
         inert={!open}
         className={cn(
-          "dashboard-sidebar fixed inset-y-0 left-0 z-50 flex w-[17rem] flex-col overflow-y-auto border-r border-[var(--line)] bg-[color:var(--surface-elevated)]/94 shadow-[var(--shadow-xl)] backdrop-blur-2xl transition-transform duration-200 ease-out lg:hidden",
+          "dashboard-sidebar fixed inset-y-0 left-0 z-50 flex w-[16.5rem] flex-col overflow-y-auto transition-transform duration-200 ease-out lg:hidden",
           open ? "translate-x-0" : "-translate-x-full",
         )}
       >
         <SidebarPanel
           role={role}
           userName={userName}
+          membershipLabel={membershipLabel}
+          accountStatus={accountStatus}
+          universityLocked={universityLocked}
           branding={branding}
+          access={access}
           titleId={titleId}
           onNavigate={close}
           showClose
@@ -239,12 +272,16 @@ export function DashboardSidebar({
 
       <aside
         aria-labelledby={`${titleId}-desktop`}
-        className="dashboard-sidebar fixed inset-y-0 left-0 z-40 hidden w-[17rem] flex-col overflow-y-auto border-r border-[var(--line)] bg-[color:var(--surface-elevated)]/94 shadow-[var(--shadow-xl)] backdrop-blur-2xl lg:flex"
+        className="dashboard-sidebar hidden w-[16.5rem] shrink-0 flex-col overflow-y-auto lg:flex"
       >
         <SidebarPanel
           role={role}
           userName={userName}
+          membershipLabel={membershipLabel}
+          accountStatus={accountStatus}
+          universityLocked={universityLocked}
           branding={branding}
+          access={access}
           titleId={`${titleId}-desktop`}
         />
       </aside>

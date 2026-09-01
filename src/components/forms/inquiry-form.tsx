@@ -1,11 +1,15 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { useForm, useWatch } from "react-hook-form";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Controller, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "next/navigation";
 
+import { AddressAutocomplete } from "@/components/forms/address-autocomplete";
+import { FloatField } from "@/components/forms/float-field";
 import { programs } from "@/data/programs";
 import { siteContent } from "@/data/site-content";
+import { inquiryDraftStorageKey, readStoredForm, writeStoredForm } from "@/lib/form-storage";
 import { cn } from "@/lib/utils";
 import { LeadInput, leadSchema } from "@/lib/validations";
 
@@ -13,11 +17,19 @@ type InquiryFormProps = {
   className?: string;
   defaultProgram?: string;
   showIntro?: boolean;
+  variant?: "full" | "sticky";
 };
 
-export function InquiryForm({ className, defaultProgram, showIntro = true }: InquiryFormProps) {
+export function InquiryForm({
+  className,
+  defaultProgram,
+  showIntro = true,
+  variant = "full",
+}: InquiryFormProps) {
+  const router = useRouter();
   const [submitted, setSubmitted] = useState(false);
   const [serverError, setServerError] = useState("");
+  const skipDraftWrite = useRef(true);
 
   const defaultValues = useMemo<LeadInput>(
     () => ({
@@ -27,6 +39,8 @@ export function InquiryForm({ className, defaultProgram, showIntro = true }: Inq
       dateOfBirth: "",
       address: "",
       city: "",
+      lat: undefined,
+      lng: undefined,
       tags: defaultProgram ? `${defaultProgram}, Website` : "Website, Warm lead",
       programInterest: defaultProgram ?? programs[0].title,
       assignedPartner: "",
@@ -40,36 +54,70 @@ export function InquiryForm({ className, defaultProgram, showIntro = true }: Inq
     control,
     formState: { errors, isSubmitting },
     reset,
+    setValue,
   } = useForm<LeadInput>({
     resolver: zodResolver(leadSchema),
     defaultValues,
   });
 
-  const address = useWatch({ control, name: "address" });
+  const values = useWatch({ control });
+  const address = values.address;
 
-  async function onSubmit(values: LeadInput) {
+  useEffect(() => {
+    const saved = readStoredForm(inquiryDraftStorageKey);
+    reset({
+      ...defaultValues,
+      ...saved,
+      tags: saved.tags || defaultValues.tags,
+      programInterest: saved.programInterest || defaultValues.programInterest,
+    });
+  }, [defaultValues, reset]);
+
+  useEffect(() => {
+    if (skipDraftWrite.current) {
+      skipDraftWrite.current = false;
+      return;
+    }
+    if (!values) {
+      return;
+    }
+    writeStoredForm(inquiryDraftStorageKey, values);
+  }, [values]);
+
+  async function onSubmit(formValues: LeadInput) {
     setServerError("");
+    writeStoredForm(inquiryDraftStorageKey, formValues);
 
     const response = await fetch("/api/inquiries", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(values),
+      body: JSON.stringify(formValues),
     });
 
+    const payload = (await response.json().catch(() => null)) as
+      | { redirectTo?: string; error?: string }
+      | null;
+
+    if (response.status === 409 && payload?.redirectTo) {
+      router.push(payload.redirectTo);
+      return;
+    }
+
     if (!response.ok) {
-      setServerError("I couldn't receive this just now. Try again.");
+      setServerError(payload?.error || "I couldn't receive this just now. Try again.");
       return;
     }
 
     setSubmitted(true);
-    reset(defaultValues);
   }
 
+  const compact = variant === "sticky";
+
   return (
-    <div className={cn("grid gap-6 lg:grid-cols-[1.25fr_0.75fr]", className)}>
+    <div className={cn(compact ? "grid gap-4" : "grid gap-6 lg:grid-cols-[1.25fr_0.75fr]", className)}>
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className="glass-panel fade-up rounded-[2rem] p-6 sm:p-8"
+        className={cn("glass-panel fade-up rounded-[2rem]", compact ? "p-5" : "p-6 sm:p-8")}
       >
         {showIntro ? (
           <div className="mb-6 space-y-2">
@@ -80,61 +128,73 @@ export function InquiryForm({ className, defaultProgram, showIntro = true }: Inq
         ) : null}
 
         <div className="grid gap-4 md:grid-cols-2">
-          <Field label="Full name" error={errors.name?.message}>
-            <input className={inputClass} {...register("name")} placeholder="Juan Dela Cruz" />
-          </Field>
+          <FloatField label="Enter your full name" error={errors.name?.message}>
+            <input {...register("name")} placeholder=" " />
+          </FloatField>
 
-          <Field label="Email" error={errors.email?.message}>
-            <input className={inputClass} {...register("email")} placeholder="juan@example.com" />
-          </Field>
+          <FloatField label="Enter your email address" error={errors.email?.message}>
+            <input {...register("email")} placeholder=" " />
+          </FloatField>
 
-          <Field label="Phone" error={errors.phone?.message}>
-            <input className={inputClass} {...register("phone")} placeholder="+63 917 000 0000" />
-          </Field>
+          <FloatField label="Enter your phone number" error={errors.phone?.message}>
+            <input {...register("phone")} placeholder=" " />
+          </FloatField>
 
-          <Field label="Date of birth" error={errors.dateOfBirth?.message}>
-            <input className={inputClass} type="date" {...register("dateOfBirth")} />
-          </Field>
+          <FloatField label="Enter your date of birth" error={errors.dateOfBirth?.message}>
+            <input type="date" {...register("dateOfBirth")} />
+          </FloatField>
         </div>
 
         <div className="mt-4 grid gap-4 md:grid-cols-2">
-          <Field label="Which program are you considering?" error={errors.programInterest?.message}>
-            <select className={inputClass} {...register("programInterest")}>
+          <FloatField label="Which program are you considering?" error={errors.programInterest?.message}>
+            <select {...register("programInterest")}>
               {programs.map((program) => (
                 <option key={program.slug} value={program.title}>
                   {program.title}
                 </option>
               ))}
             </select>
-          </Field>
+          </FloatField>
 
-          <Field label="City / region" error={errors.city?.message}>
-            <input className={inputClass} {...register("city")} placeholder="Makati" />
-          </Field>
+          <FloatField label="Enter your city or region" error={errors.city?.message}>
+            <input {...register("city")} placeholder=" " />
+          </FloatField>
         </div>
 
         <div className="mt-4 grid gap-4">
           <input type="hidden" {...register("tags")} />
-          <Field label="Where are you based?" error={errors.address?.message}>
-            <input
-              className={inputClass}
-              {...register("address")}
-              placeholder="Street, city, province or country"
+          <FloatField label="Enter your address" error={errors.address?.message}>
+            <Controller
+              name="address"
+              control={control}
+              render={({ field }) => (
+                <AddressAutocomplete
+                  name={field.name}
+                  value={field.value}
+                  placeholder=" "
+                  onChange={field.onChange}
+                  onBlur={field.onBlur}
+                  onLocationChange={(coords) => {
+                    setValue("lat", coords.lat);
+                    setValue("lng", coords.lng);
+                  }}
+                />
+              )}
             />
-          </Field>
+          </FloatField>
         </div>
 
         <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="text-sm text-[var(--muted)]">
             {submitted
-              ? siteContent.inquiry.success
+              ? "Received. If you already have an account, sign in with your email. First-time access uses the temporary password JDCELITESOCIETY, then you set a new password."
               : siteContent.inquiry.helper}
           </div>
 
           <button
             type="submit"
             disabled={isSubmitting}
-            className="button-primary pressable rounded-full px-5 py-3 font-semibold disabled:opacity-70"
+            className="button-primary pressable w-full rounded-full px-5 py-3 font-semibold disabled:opacity-70 sm:w-auto"
           >
             {isSubmitting ? siteContent.inquiry.submitting : siteContent.inquiry.submit}
           </button>
@@ -143,7 +203,8 @@ export function InquiryForm({ className, defaultProgram, showIntro = true }: Inq
         {serverError ? <p className="mt-4 text-sm text-red-700">{serverError}</p> : null}
       </form>
 
-      <aside className="glass-panel fade-up-delay-1 fade-up rounded-[2rem] p-6 sm:p-8">
+      {compact ? null : (
+        <aside className="glass-panel fade-up-delay-1 fade-up rounded-[2rem] p-6 sm:p-8">
         <p className="text-sm font-semibold tracking-[-0.01em]">{siteContent.inquiry.nextHeading}</p>
         <ul className="mt-4 grid gap-3 text-sm text-[var(--muted)]">
           {siteContent.inquiry.nextSteps.map((item) => (
@@ -168,27 +229,7 @@ export function InquiryForm({ className, defaultProgram, showIntro = true }: Inq
           ) : null}
         </div>
       </aside>
+      )}
     </div>
   );
 }
-
-function Field({
-  label,
-  error,
-  children,
-}: {
-  label: string;
-  error?: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <label className="grid gap-2 text-sm">
-      <span className="font-medium">{label}</span>
-      {children}
-      {error ? <span className="text-xs text-red-700">{error}</span> : null}
-    </label>
-  );
-}
-
-const inputClass =
-  "w-full rounded-2xl border border-[var(--line)] bg-[color:var(--surface-elevated)]/86 px-4 py-3 outline-none transition focus:border-[var(--brand)] focus:ring-2 focus:ring-[rgba(184,134,77,0.18)]";
