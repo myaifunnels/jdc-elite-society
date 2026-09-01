@@ -10,14 +10,14 @@ export type DesignSystemSettings = {
 };
 
 export const defaultDesignSystem: DesignSystemSettings = {
-  brand: "#007bff",
-  brandDark: "#0022aa",
-  lightBackground: "#e8eef6",
-  darkBackground: "#05070c",
+  brand: "#2962ff",
+  brandDark: "#0d36d9",
+  lightBackground: "#e8eeff",
+  darkBackground: "#04102a",
   lightSurface: "#f4f7fb",
-  darkSurface: "#10151f",
-  lightGlow: "#c8d8ff",
-  darkGlow: "#0055ff",
+  darkSurface: "#0c1c4a",
+  lightGlow: "#9bbcff",
+  darkGlow: "#2962ff",
 };
 
 export const designSystemStorageKey = "coach-jdc-design-system-v5";
