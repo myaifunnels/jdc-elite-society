@@ -23,8 +23,8 @@ export function PendingMemberHome({
             <p className="macos-kicker">{user.profileComplete ? "Almost live" : "Next up"}</p>
             <h2>
               {user.profileComplete
-                ? `${firstName}, your room is being unlocked.`
-                : `${firstName}, finish your profile and the wait gets fun.`}
+                ? `${firstName}, University is already open.`
+                : `${firstName}, finish your profile when you can — University is already open.`}
             </h2>
             <p>
               {user.role === "contact"
@@ -32,8 +32,8 @@ export function PendingMemberHome({
                   ? "One more step: change the temporary map address on your account to the place you actually live. That is how we verify a Contact seat."
                   : "Finish your profile, then change the temporary map address to your real home or OFW address so we can verify you."
                 : user.profileComplete
-                  ? "The team is reviewing your registration and payment. You can still edit your account below anytime."
-                  : "Put your face on the account, tell us who you are, and we start the verification clock."}
+                  ? "The team is still reviewing payment. University stays open unless they reject or delete the record."
+                  : "University is already on. Finish your profile when you can."}
             </p>
           </div>
         </div>
@@ -61,7 +61,7 @@ export function PendingMemberHome({
             {user.profileComplete ? "Edit my account" : "Complete my account"}
           </a>
           <Link href="/dashboard/university" className="macos-btn macos-btn-secondary">
-            Peek at University
+            University
           </Link>
           <Link href="/contact" className="macos-btn macos-btn-secondary">
             Message Coach JDC

@@ -1,11 +1,13 @@
 import {
   ApproveMastermindPaymentButton,
+  DeletePaymentRecordButton,
   RejectMastermindPaymentButton,
 } from "@/components/dashboard/approve-mastermind-payment-button";
 import { DeactivateAccountButton } from "@/components/dashboard/deactivate-account-button";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { MacosWindow } from "@/components/dashboard/macos-window";
 import { formatPhp } from "@/data/mastermind-offer";
+import { contactIdsByEmail } from "@/lib/crm-store";
 import { listEliteCheckoutOrders, type EliteCheckoutOrder } from "@/lib/elite-checkout-store";
 import { requireCapability } from "@/lib/session";
 
@@ -23,7 +25,7 @@ function categoryLabel(order: EliteCheckoutOrder) {
   return `Mastermind + ${mode} Coaching · ${order.coachingHours} hr${order.coachingHours === 1 ? "" : "s"}`;
 }
 
-function PaymentRow({ order }: { order: EliteCheckoutOrder }) {
+function PaymentRow({ order, contactId }: { order: EliteCheckoutOrder; contactId?: string }) {
   return (
     <article className="payment-row">
       <header className="payment-row-head">
@@ -36,7 +38,7 @@ function PaymentRow({ order }: { order: EliteCheckoutOrder }) {
           </span>
         </div>
         <a className="macos-btn macos-btn-secondary" href={order.receiptUrl} target="_blank" rel="noreferrer">
-          View receipt
+          Receipt
         </a>
       </header>
 
@@ -53,6 +55,15 @@ function PaymentRow({ order }: { order: EliteCheckoutOrder }) {
       ) : null}
 
       <div className="payment-row-actions">
+        {contactId ? (
+          <a href={`/dashboard/contacts/${contactId}`} className="macos-btn macos-btn-secondary">
+            Open
+          </a>
+        ) : (
+          <a href={`/dashboard/contacts/${encodeURIComponent(order.email)}`} className="macos-btn macos-btn-secondary">
+            Open
+          </a>
+        )}
         {order.status === "pending" ? (
           <>
             <ApproveMastermindPaymentButton orderId={order.id} />
@@ -64,6 +75,7 @@ function PaymentRow({ order }: { order: EliteCheckoutOrder }) {
         ) : (
           <ApproveMastermindPaymentButton orderId={order.id} />
         )}
+        <DeletePaymentRecordButton orderId={order.id} name={order.fullName} />
       </div>
     </article>
   );
@@ -71,7 +83,7 @@ function PaymentRow({ order }: { order: EliteCheckoutOrder }) {
 
 export default async function PaymentsPage() {
   await requireCapability("registrations");
-  const orders = await listEliteCheckoutOrders();
+  const [orders, idsByEmail] = await Promise.all([listEliteCheckoutOrders(), contactIdsByEmail()]);
   const pending = orders.filter((order) => order.status === "pending");
   const approved = orders.filter((order) => order.status === "approved");
   const rejected = orders.filter((order) => order.status === "rejected");
@@ -80,7 +92,7 @@ export default async function PaymentsPage() {
   return (
     <DashboardShell
       title="Mastermind payments"
-      description="Buyers get instant access at checkout. Verify receipts here — reject a payment to lock their University access, or deactivate the account entirely if the receipt is fraudulent."
+      description="Buyers get University at signup. Verify receipts here. Open a contact dashboard from any row, or delete a test/random submission to remove the payment, contact, and login."
     >
       <div className="dashboard-widget-grid">
         <article className="dashboard-metric-card">
@@ -100,7 +112,7 @@ export default async function PaymentsPage() {
         </article>
 
         <MacosWindow title={`Pending verification · ${pending.length}`} className="dashboard-span-2" bodyClassName="payment-row-list">
-          {pending.length ? pending.map((order) => <PaymentRow key={order.id} order={order} />) : (
+          {pending.length ? pending.map((order) => <PaymentRow key={order.id} order={order} contactId={idsByEmail.get(order.email.toLowerCase())} />) : (
             <p className="macos-lead" style={{ textAlign: "left" }}>No Mastermind payments are waiting for review.</p>
           )}
         </MacosWindow>
@@ -108,7 +120,7 @@ export default async function PaymentsPage() {
         <details className="dashboard-disclosure dashboard-span-2">
           <summary>Approval history · {approved.length}</summary>
           <div className="dashboard-disclosure-body payment-row-list">
-            {approved.length ? approved.map((order) => <PaymentRow key={order.id} order={order} />) : (
+            {approved.length ? approved.map((order) => <PaymentRow key={order.id} order={order} contactId={idsByEmail.get(order.email.toLowerCase())} />) : (
               <p className="macos-lead" style={{ textAlign: "left" }}>Approved payments will appear here.</p>
             )}
           </div>
@@ -117,7 +129,7 @@ export default async function PaymentsPage() {
         <details className="dashboard-disclosure dashboard-span-2">
           <summary>Rejected · {rejected.length}</summary>
           <div className="dashboard-disclosure-body payment-row-list">
-            {rejected.length ? rejected.map((order) => <PaymentRow key={order.id} order={order} />) : (
+            {rejected.length ? rejected.map((order) => <PaymentRow key={order.id} order={order} contactId={idsByEmail.get(order.email.toLowerCase())} />) : (
               <p className="macos-lead" style={{ textAlign: "left" }}>Rejected payments will appear here.</p>
             )}
           </div>

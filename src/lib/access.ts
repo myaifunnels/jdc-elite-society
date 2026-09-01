@@ -137,6 +137,10 @@ export function mergeAccess(role: AccessRole, roleDefaults: AccessMap, overrides
     resolved.access = true;
     resolved.dashboard = true;
   }
+  if ((role === "member" || role === "contact") && overrides.university !== false) {
+    resolved.university = true;
+    resolved.dashboard = true;
+  }
   resolved.profile = true;
   return { role, defaults, overrides, resolved };
 }

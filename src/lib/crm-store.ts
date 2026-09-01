@@ -757,16 +757,28 @@ export async function listLeads(viewer: CrmViewer) {
   return listContacts(viewer, "contact");
 }
 
-export async function getContact(viewer: CrmViewer, id: string) {
-  await hydrateCrm();
-  const contact = visibleToViewer(viewer).find((item) => item.id === id) ?? null;
-  if (!contact) {
+function findVisibleContact(viewer: CrmViewer, rawId: string) {
+  const id = decodeURIComponent(rawId).trim();
+  if (!id) {
     return null;
   }
 
+  const needle = id.toLowerCase();
+  return (
+    visibleToViewer(viewer).find(
+      (item) =>
+        item.id === id ||
+        item.ghlContactId === id ||
+        item.email.toLowerCase() === needle ||
+        emailsMatch(item.email, id),
+    ) ?? null
+  );
+}
+
+async function enrichContact(viewer: CrmViewer, contact: ContactRecord) {
   const located = withMapLocation(contact);
 
-  if (located.ghlContactId) {
+  if (located.ghlContactId || located.kind === "contact") {
     await ensurePortalUserForContact({
       name: located.name,
       email: located.email,
@@ -777,7 +789,7 @@ export async function getContact(viewer: CrmViewer, id: string) {
       facebookPhotoUrl: located.photoUrl,
       company: located.programInterest,
     }).catch((error) => {
-      console.error("Failed to provision GHL contact portal", located.email, error);
+      console.error("Failed to provision contact portal", located.email, error);
     });
   }
 
@@ -788,9 +800,67 @@ export async function getContact(viewer: CrmViewer, id: string) {
     return located;
   }
 
-  const next = await withCoordinates(located);
-  await persistContact(next);
-  return withMapLocation(visibleToViewer(viewer).find((item) => item.id === id) ?? next);
+  try {
+    const next = await withCoordinates(located);
+    await persistContact(next);
+    return withMapLocation(findVisibleContact(viewer, next.id) ?? next);
+  } catch (error) {
+    console.error("Failed to geocode contact", located.id, error);
+    return located;
+  }
+}
+
+export async function getContact(viewer: CrmViewer, id: string) {
+  await hydrateCrm();
+  const contact = findVisibleContact(viewer, id);
+  if (!contact) {
+    return null;
+  }
+
+  return enrichContact(viewer, contact);
+}
+
+export async function resolveContactDashboard(viewer: CrmViewer, rawId: string) {
+  const existing = await getContact(viewer, rawId);
+  if (existing) {
+    return existing;
+  }
+
+  const id = decodeURIComponent(rawId).trim();
+  if (!id || !(viewer.seeAllContacts || viewer.role === "admin")) {
+    return null;
+  }
+
+  try {
+    const { findUserById, findUserByEmail } = await import("@/lib/auth-store");
+    const account = (await findUserById(id)) ?? (id.includes("@") ? await findUserByEmail(id) : null);
+    if (!account || account.role === "admin") {
+      return null;
+    }
+
+    await unhideContactEmail(account.email);
+    await upsertContactFromAccount({
+      email: account.email,
+      name: account.name,
+      phone: account.phone,
+      address: account.address ?? "",
+      city: "",
+      photoUrl: account.facebookPhotoUrl,
+      bestDescribesYou: account.bestDescribesYou,
+      programInterest: account.company,
+      source: "Portal account",
+      tags: ["Registration"],
+    });
+
+    return (
+      findVisibleContact(viewer, account.email) ??
+      findVisibleContact(viewer, account.id) ??
+      (await getContact(viewer, account.email))
+    );
+  } catch (error) {
+    console.error("Failed to rebuild contact dashboard", rawId, error);
+    return null;
+  }
 }
 
 export async function listAssignedContacts(viewer: CrmViewer, partnerName: string) {

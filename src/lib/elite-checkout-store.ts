@@ -184,6 +184,23 @@ export async function getEliteCheckoutOrder(orderId: string) {
   return result.rows[0] ? mapRow(result.rows[0]) : null;
 }
 
+export async function deleteEliteCheckoutOrder(orderId: string) {
+  const memoryIndex = memoryOrders.findIndex((order) => order.id === orderId);
+  const existing = memoryIndex >= 0 ? memoryOrders[memoryIndex] : null;
+  if (memoryIndex >= 0) {
+    memoryOrders.splice(memoryIndex, 1);
+  }
+
+  const client = getPool();
+  if (client) {
+    await ensureTable(client);
+    const result = await client.query("DELETE FROM elite_checkout_orders WHERE id = $1 RETURNING *", [orderId]);
+    return result.rows[0] ? mapRow(result.rows[0]) : existing;
+  }
+
+  return existing;
+}
+
 export async function approveEliteCheckoutOrder(orderId: string, approvedBy: string) {
   const approvedAt = new Date().toISOString();
   const memoryIndex = memoryOrders.findIndex((order) => order.id === orderId);

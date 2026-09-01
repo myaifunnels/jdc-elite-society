@@ -9,5 +9,6 @@ export function hasUniversityAccess(
   if (user.role === "admin" || user.role === "partner") {
     return true;
   }
-  return user.paymentVerified === true;
+  // Members and contacts get University on registration. Rejecting payment or deactivating the account is the lock.
+  return user.paymentVerified !== false;
 }

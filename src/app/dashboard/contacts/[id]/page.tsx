@@ -14,7 +14,7 @@ import { VerifyPaymentButton } from "@/components/dashboard/verify-payment-butto
 import { AddressMap } from "@/components/maps/address-map";
 import { hasAccess } from "@/lib/access";
 import { findUserByEmail } from "@/lib/auth-store";
-import { getContact, listAssignedContacts, listTagIndex } from "@/lib/crm-store";
+import { listAssignedContacts, listTagIndex, resolveContactDashboard } from "@/lib/crm-store";
 import { getGoogleMapsConfig } from "@/lib/maps";
 import { membershipLabel } from "@/lib/membership";
 import { parsePage, paginate } from "@/lib/pagination";
@@ -59,7 +59,7 @@ export default async function ContactDashboardPage({
   const { user, access } = await requireAnyCapability("contacts.view", "registrations");
   const viewer = { ...user, seeAllContacts: hasAccess(access, "contacts.all") };
   const { id } = await params;
-  const contact = await getContact(viewer, id);
+  const contact = await resolveContactDashboard(viewer, id);
 
   if (!contact) {
     notFound();

@@ -2,12 +2,15 @@
 
 import { revalidatePath } from "next/cache";
 
-import { setMemberPaymentVerified } from "@/lib/auth-store";
-import { approveEliteCheckoutOrder, getEliteCheckoutOrder, rejectEliteCheckoutOrder } from "@/lib/elite-checkout-store";
-import { invalidateRegistrantCrmSync } from "@/lib/crm-store";
+import { setMemberPaymentVerified, deleteUser, getPublicUserById, findUserByEmail } from "@/lib/auth-store";
+import { approveEliteCheckoutOrder, deleteEliteCheckoutOrder, getEliteCheckoutOrder, rejectEliteCheckoutOrder } from "@/lib/elite-checkout-store";
+import { hideAndRemoveContactByEmail, invalidateRegistrantCrmSync } from "@/lib/crm-store";
 import { addGhlContactTags, lookupGhlContact, removeGhlContactTags } from "@/lib/ghl";
 import { grantCommunityAndMastermindAccess } from "@/lib/ghl-community";
 import { notifyPaymentApproved, notifyPaymentRejected } from "@/lib/notify";
+import { deletePasswordResetsForUser } from "@/lib/password-reset";
+import { removeProfileForUser } from "@/lib/affiliate-store";
+import { deleteUserAccess } from "@/lib/access-store";
 import { requireCapability } from "@/lib/session";
 import { COURSE_ACCESS_TAGS, PAYMENT_REJECTED_TAG } from "@/lib/tags";
 
@@ -96,5 +99,45 @@ export async function rejectMastermindPayment(
     return { success: "Payment rejected. Their University, courses, and group access are locked until this is resolved." };
   } catch (error) {
     return { error: error instanceof Error ? error.message : "I couldn't reject this payment." };
+  }
+}
+
+export async function deletePaymentRecord(
+  _state: PaymentActionState,
+  formData: FormData,
+): Promise<PaymentActionState> {
+  const { user: admin } = await requireCapability("registrations");
+  if (admin.role !== "admin") {
+    return { error: "Only admin can delete payment records." };
+  }
+
+  const orderId = String(formData.get("orderId") ?? "");
+  if (!orderId) return { error: "Missing payment submission." };
+
+  try {
+    const order = await getEliteCheckoutOrder(orderId);
+    if (!order) return { error: "Payment submission not found." };
+
+    const target = (await getPublicUserById(order.userId)) ?? (await findUserByEmail(order.email));
+    if (target?.id === admin.id) {
+      return { error: "You can't delete the account you're signed in with." };
+    }
+
+    await deleteEliteCheckoutOrder(order.id);
+    await hideAndRemoveContactByEmail(order.email);
+    await revokeCourseAccess(order.email, order.mobile);
+
+    if (target && target.role !== "admin") {
+      await deleteUserAccess(target.id);
+      await deletePasswordResetsForUser(target.id);
+      await removeProfileForUser(target.id);
+      await deleteUser(target.id);
+    }
+
+    invalidateRegistrantCrmSync();
+    revalidatePaymentPaths();
+    return { success: "Payment record, contact, and portal login were deleted." };
+  } catch (error) {
+    return { error: error instanceof Error ? error.message : "I couldn't delete this payment record." };
   }
 }

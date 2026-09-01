@@ -10,23 +10,29 @@ import { PartnersMap } from "@/components/dashboard/partners-map";
 import { QuickLinksCard } from "@/components/dashboard/quick-links-card";
 import { dashboardMetrics } from "@/data/crm";
 import { PendingMemberHome } from "@/components/dashboard/pending-member-home";
-import { contactNeedsAddressConfirm, getContactByEmail, listContactsPaged, listPartnerMapPins, listViewerMetrics } from "@/lib/crm-store";
+import { UniversityCommunityEmbed } from "@/components/dashboard/university-community-embed";
+import { UniversityCourseGrid } from "@/components/dashboard/university-course-grid";
 import { adminPartnershipSnapshot } from "@/lib/affiliate-store";
+import { contactNeedsAddressConfirm, getContactByEmail, listContactsPaged, listPartnerMapPins, listViewerMetrics } from "@/lib/crm-store";
+import { listUniversityCourses } from "@/lib/ghl-courses";
 import { formatManilaDate, formatPhp } from "@/lib/pay-cycle";
 import { hasAccess } from "@/lib/access";
 import { resolveAccess } from "@/lib/access-store";
 import { requireSessionUser } from "@/lib/session";
 import { listEliteCheckoutOrdersForUser } from "@/lib/elite-checkout-store";
+import { hasUniversityAccess } from "@/lib/university-access";
 
 export default async function DashboardPage() {
   const user = await requireSessionUser();
   const access = await resolveAccess(user);
 
   if (!hasAccess(access, "contacts.view") && !hasAccess(access, "registrations")) {
-    const pending = user.accountStatus !== "verified";
-    const [crmContact, checkoutOrders] = await Promise.all([
-      user.role === "contact" ? getContactByEmail(user.email) : Promise.resolve(null),
+    const universityOpen = hasUniversityAccess(user) && hasAccess(access, "university");
+    const profilePending = !user.profileComplete;
+    const [crmContact, checkoutOrders, courses] = await Promise.all([
+      getContactByEmail(user.email).catch(() => null),
       listEliteCheckoutOrdersForUser(user.id),
+      universityOpen ? listUniversityCourses() : Promise.resolve([]),
     ]);
     const checkoutOrder = checkoutOrders[0];
     const needsAddressConfirm = user.role === "contact" && contactNeedsAddressConfirm(crmContact);
@@ -35,18 +41,26 @@ export default async function DashboardPage() {
       <DashboardShell
         title={`Welcome, ${user.name.split(" ")[0]}`}
         description={
-          needsAddressConfirm
-            ? "Change the temporary map address on your account so the team can verify you."
-            : pending
-              ? "Edit your account below. The team turns the full member room on after registration and payment."
-              : "Your account, your path, and University — all in one workspace."
+          universityOpen
+            ? "University and Mastermind sessions are open. The team still reviews payment on our side."
+            : "University is locked until the team restores access."
         }
       >
         <div className="account-dash-stack">
+          {universityOpen ? (
+            <>
+              <div className="dashboard-span-2" style={{ minHeight: "28rem" }}>
+                <UniversityCommunityEmbed unlocked verifyHref="/dashboard" />
+              </div>
+              <UniversityCourseGrid courses={courses} unlocked verifyHref="/dashboard" />
+            </>
+          ) : (
+            <UniversityCommunityEmbed unlocked={false} verifyHref="/dashboard" />
+          )}
           {needsAddressConfirm ? (
             <ContactAddressVerifyNotice address={crmContact?.address || user.address} />
           ) : null}
-          {pending ? <PendingMemberHome user={user} compact /> : null}
+          {profilePending ? <PendingMemberHome user={user} compact /> : null}
           {checkoutOrder ? (
             <MacosWindow title="Your Mastermind order" className="dashboard-span-2">
               <dl className="registration-meta checkout-order-meta">
@@ -91,11 +105,11 @@ export default async function DashboardPage() {
           ) : null}
           <AccountProfileDashboard
             user={user}
-            showWorkspaceLinks={!pending}
+            showWorkspaceLinks={universityOpen}
             needsAddressConfirm={needsAddressConfirm}
             mapAddress={crmContact?.address}
           />
-          {!pending && hasAccess(access, "partnership") ? (
+          {universityOpen && hasAccess(access, "partnership") ? (
             <p className="account-dash-inline-link">
               You have invite-only partner access — 20% recorded and released on the 15th and 30th.{" "}
               <Link href="/dashboard/partnership">Open Partnership →</Link>
