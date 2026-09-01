@@ -46,19 +46,22 @@ export default async function ContactsPage({
   const viewer = { ...user, seeAllContacts: hasAccess(access, "contacts.all") };
   const raw = await searchParams;
   const canSeeAll = hasAccess(access, "contacts.all");
+  const canSeePipeline = canSeeAll || canSeeRegistrants;
   const requested = parseContactsView(raw.view);
   const view =
-    !canSeeContacts && canSeeRegistrants
+    requested === "registrants" && canSeeRegistrants
       ? "registrants"
-      : requested === "registrants" && !canSeeRegistrants
-        ? canSeeAll
-          ? "pipeline"
-          : "roster"
-        : requested === "pipeline" && !canSeeAll
-          ? "roster"
-        : !raw.view && !canSeeAll
-          ? "roster"
-          : requested;
+      : requested === "pipeline" && canSeePipeline
+        ? "pipeline"
+        : requested === "map" && canSeeContacts
+          ? "map"
+          : requested === "roster" && canSeeContacts
+            ? "roster"
+            : !canSeeContacts && canSeeRegistrants
+              ? "pipeline"
+              : canSeeAll
+                ? "pipeline"
+                : "roster";
   const kind: ContactKind | undefined =
     canSeeAll && (raw.kind === "partner" || raw.kind === "contact")
       ? raw.kind
@@ -101,16 +104,15 @@ export default async function ContactsPage({
   const pagedRegistrants = paginate(filteredRegistrants, page, 20);
   const idsByEmail = view === "registrants" ? await contactIdsByEmail() : new Map<string, string>();
 
-  const orders = view === "pipeline" && canSeeAll ? await listEliteCheckoutOrders() : [];
-  const pendingEmails = new Set(
-    orders.filter((order) => order.status === "pending").map((order) => order.email.toLowerCase()),
-  );
-  const prices = new Map(orders.map((order) => [order.email.toLowerCase(), order.price]));
-  const board = view === "pipeline" && canSeeAll ? await listPipelineBoard(viewer, pendingEmails, prices) : null;
+  const orders = view === "pipeline" && canSeePipeline ? await listEliteCheckoutOrders() : [];
+  const board =
+    view === "pipeline" && canSeePipeline
+      ? await listPipelineBoard({ ...user, seeAllContacts: canSeeAll || canSeeRegistrants }, orders)
+      : null;
   const rosterBase = contactsHref({ view, kind, q: raw.q, tags: selectedTags, status: registrantStatus });
 
   const views = [
-    ...(canSeeAll ? [{ id: "pipeline" as const, label: "Pipeline" }] : []),
+    ...(canSeePipeline ? [{ id: "pipeline" as const, label: "Pipeline" }] : []),
     ...(canSeeContacts ? [{ id: "roster" as const, label: "List" }] : []),
     ...(canSeeContacts ? [{ id: "map" as const, label: "Map" }] : []),
     ...(canSeeRegistrants ? [{ id: "registrants" as const, label: "Registrants" }] : []),
@@ -136,7 +138,7 @@ export default async function ContactsPage({
       title={hasAccess(access, "contacts.all") ? "Contacts" : canSeeContacts ? "My contacts" : "Registrants"}
       description={
         canSeeAll
-          ? "Pipeline, list, and map for Elite Society contacts. The board mirrors the jdc-mastermind-buyer pipeline in GHL."
+          ? "Pipeline, list, and map. Checkout receipts to verify live in Payment Verification."
           : canSeeContacts
             ? "Search the people assigned to you. Filter by tag when you need it."
             : "Verify member sign-ups and payment after they complete their account profile."
@@ -164,7 +166,9 @@ export default async function ContactsPage({
         </div>
       ) : null}
 
-      {view === "pipeline" && board ? <PipelineWorkspace board={board} /> : null}
+      {view === "pipeline" && board ? (
+        <PipelineWorkspace board={board} canReviewPayments={canSeeRegistrants} />
+      ) : null}
 
       {view !== "pipeline" ? (
       <MacosWindow

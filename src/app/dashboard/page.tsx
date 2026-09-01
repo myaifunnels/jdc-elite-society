@@ -1,4 +1,4 @@
-import { CreditCard, GraduationCap, Handshake, Plug, Users } from "lucide-react";
+import { GraduationCap, Handshake, Plug, Users } from "lucide-react";
 import Link from "next/link";
 
 import { AccountProfileDashboard } from "@/components/dashboard/account-profile-dashboard";
@@ -272,14 +272,8 @@ export default async function DashboardPage() {
             {
               href: "/dashboard/contacts",
               label: "Contacts",
-              description: "Mastermind buyer pipeline, list, and map in one place.",
+              description: "Pipeline, receipts, and Payment Verification in one place.",
               icon: Users,
-            },
-            {
-              href: "/dashboard/payments",
-              label: "Mastermind payments",
-              description: "Review checkout receipts and approve confirmed payments.",
-              icon: CreditCard,
             },
             {
               href: "/dashboard/partnership",

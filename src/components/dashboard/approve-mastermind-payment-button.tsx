@@ -11,13 +11,19 @@ import {
 
 const initialState: PaymentActionState = {};
 
-export function ApproveMastermindPaymentButton({ orderId }: { orderId: string }) {
+export function ApproveMastermindPaymentButton({
+  orderId,
+  compact = false,
+}: {
+  orderId: string;
+  compact?: boolean;
+}) {
   const [state, action, pending] = useActionState(approveMastermindPayment, initialState);
   return (
     <form action={action} className="payment-approval-form">
       <input type="hidden" name="orderId" value={orderId} />
       <button type="submit" className="macos-btn macos-btn-primary" disabled={pending}>
-        {pending ? "Approving..." : "Approve payment"}
+        {pending ? "…" : compact ? "Approve" : "Approve payment"}
       </button>
       {state.error ? <p className="auth-error">{state.error}</p> : null}
       {state.success ? <p className="auth-success">{state.success}</p> : null}
@@ -25,7 +31,13 @@ export function ApproveMastermindPaymentButton({ orderId }: { orderId: string })
   );
 }
 
-export function RejectMastermindPaymentButton({ orderId }: { orderId: string }) {
+export function RejectMastermindPaymentButton({
+  orderId,
+  compact = false,
+}: {
+  orderId: string;
+  compact?: boolean;
+}) {
   const [state, action, pending] = useActionState(rejectMastermindPayment, initialState);
   return (
     <form
@@ -39,7 +51,7 @@ export function RejectMastermindPaymentButton({ orderId }: { orderId: string }) 
     >
       <input type="hidden" name="orderId" value={orderId} />
       <button type="submit" className="macos-btn macos-btn-danger" disabled={pending}>
-        {pending ? "Rejecting..." : "Reject payment"}
+        {pending ? "…" : compact ? "Reject" : "Reject payment"}
       </button>
       {state.error ? <p className="auth-error">{state.error}</p> : null}
       {state.success ? <p className="auth-success">{state.success}</p> : null}
@@ -50,9 +62,11 @@ export function RejectMastermindPaymentButton({ orderId }: { orderId: string }) 
 export function DeletePaymentRecordButton({
   orderId,
   name,
+  compact = false,
 }: {
   orderId: string;
   name: string;
+  compact?: boolean;
 }) {
   const [state, action, pending] = useActionState(deletePaymentRecord, initialState);
   return (
@@ -71,7 +85,7 @@ export function DeletePaymentRecordButton({
     >
       <input type="hidden" name="orderId" value={orderId} />
       <button type="submit" className="macos-btn macos-btn-danger" disabled={pending}>
-        {pending ? "Deleting…" : "Delete"}
+        {pending ? "…" : compact ? "Delete" : "Delete"}
       </button>
       {state.error ? <p className="auth-error">{state.error}</p> : null}
       {state.success ? <p className="auth-success">{state.success}</p> : null}

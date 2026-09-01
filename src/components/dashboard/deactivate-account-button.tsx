@@ -10,7 +10,15 @@ import {
 
 const initialState: DeactivateUserState = {};
 
-export function DeactivateAccountButton({ userId, name }: { userId: string; name: string }) {
+export function DeactivateAccountButton({
+  userId,
+  name,
+  compact = false,
+}: {
+  userId: string;
+  name: string;
+  compact?: boolean;
+}) {
   const [state, formAction, pending] = useActionState(deactivateUserAction, initialState);
 
   return (
@@ -28,7 +36,7 @@ export function DeactivateAccountButton({ userId, name }: { userId: string; name
     >
       <input type="hidden" name="userId" value={userId} />
       <button type="submit" className="macos-btn macos-btn-danger" disabled={pending}>
-        {pending ? "Deactivating..." : "Deactivate account"}
+        {pending ? "…" : compact ? "Deactivate" : "Deactivate account"}
       </button>
       {state.error ? <p className="auth-error">{state.error}</p> : null}
       {state.success ? <p className="auth-success">{state.success}</p> : null}

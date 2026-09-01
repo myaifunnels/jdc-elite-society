@@ -22,6 +22,7 @@ import {
   type GhlOpportunity,
 } from "@/lib/ghl-opportunities";
 import { mastermindOffer } from "@/data/mastermind-offer";
+import { type EliteCheckoutOrder } from "@/lib/elite-checkout-store";
 import {
   canonicalStageFromName,
   classifyPipelineStage,
@@ -1110,6 +1111,19 @@ export type PipelineBoardStage = {
   canonical?: PipelineStageId;
 };
 
+export type PipelineCheckout = {
+  orderId: string;
+  userId: string;
+  status: "pending" | "approved" | "rejected";
+  paymentMethod: string;
+  couponCode: string;
+  coachingHours: number;
+  coachingMode: string;
+  price: number;
+  receiptUrl: string;
+  createdAt: string;
+};
+
 export type PipelineCard = {
   id: string;
   contactId: string;
@@ -1123,6 +1137,7 @@ export type PipelineCard = {
   monetaryValue: number;
   ghlContactId?: string;
   opportunityId?: string;
+  checkout?: PipelineCheckout;
 };
 
 export type PipelineBoard = {
@@ -1180,13 +1195,40 @@ function stagesFromGhlPipeline(name: string, ghlStages: Array<{ id: string; name
   });
 }
 
-function resolveOpportunityValue(opportunity: Pick<GhlOpportunity, "monetaryValue" | "email">, prices: Map<string, number>) {
+function toPipelineCheckout(order: EliteCheckoutOrder): PipelineCheckout {
+  return {
+    orderId: order.id,
+    userId: order.userId,
+    status: order.status,
+    paymentMethod: order.paymentMethod,
+    couponCode: order.couponCode,
+    coachingHours: order.coachingHours,
+    coachingMode: order.coachingMode,
+    price: order.price,
+    receiptUrl: order.receiptUrl,
+    createdAt: order.createdAt,
+  };
+}
+
+function latestOrderForEmail(orders: EliteCheckoutOrder[], email: string) {
+  const matches = orders.filter((order) => order.email.toLowerCase() === email.toLowerCase());
+  if (!matches.length) {
+    return undefined;
+  }
+  const pending = matches.find((order) => order.status === "pending");
+  if (pending) {
+    return pending;
+  }
+  return [...matches].sort((left, right) => right.createdAt.localeCompare(left.createdAt))[0];
+}
+
+function resolveOpportunityValue(opportunity: Pick<GhlOpportunity, "monetaryValue" | "email">, orders: EliteCheckoutOrder[]) {
   if (opportunity.monetaryValue > 0) {
     return opportunity.monetaryValue;
   }
-  const priced = prices.get(opportunity.email.toLowerCase());
-  if (priced && priced > 0) {
-    return priced;
+  const order = latestOrderForEmail(orders, opportunity.email);
+  if (order?.price) {
+    return order.price;
   }
   return mastermindOffer.offerPrice;
 }
@@ -1218,32 +1260,42 @@ async function contactFromOpportunity(opportunity: GhlOpportunity) {
   return null;
 }
 
-export async function listPipelineBoard(viewer: CrmViewer, pendingEmails: Set<string> = new Set(), prices: Map<string, number> = new Map()) {
+export async function listPipelineBoard(viewer: CrmViewer, orders: EliteCheckoutOrder[] = []) {
   await refreshGhlContacts().catch((error) => console.error("Pipeline GHL refresh failed", error));
   await ingestPipelineTaggedContacts().catch((error) => console.error("Pipeline GHL tag fetch failed", error));
   await listContacts(viewer);
 
+  const pendingEmails = new Set(
+    orders.filter((order) => order.status === "pending").map((order) => order.email.toLowerCase()),
+  );
+  const reviewOrders = orders.filter((order) => order.status === "pending" || order.status === "rejected");
+
   const pipeline = await getMastermindBuyerPipeline();
+  const stages = pipeline
+    ? stagesFromGhlPipeline(pipeline.name, pipeline.stages)
+    : fallbackPipelineStages();
+  const paymentStage = stages.find((item) => item.canonical === "payment") ?? stages.find((item) => item.id === "payment");
+  const cards: PipelineCard[] = [];
+
   if (pipeline) {
     const opportunities = await searchGhlOpportunities(pipeline.id);
-    const stages = stagesFromGhlPipeline(pipeline.name, pipeline.stages);
-    const cards: PipelineCard[] = [];
-    const seenEmails = new Set<string>();
-
     for (const opportunity of opportunities) {
       if (opportunity.status === "lost" || opportunity.status === "abandoned") {
         continue;
       }
       const contact = await contactFromOpportunity(opportunity);
       const email = (contact?.email || opportunity.email).toLowerCase();
-      const stage =
+      const checkout = email ? latestOrderForEmail(orders, email) : undefined;
+      let stage =
         stages.find((item) => item.id === opportunity.pipelineStageId)?.id ??
         stages.find((item) => item.canonical === "leads")?.id ??
         stages[0]?.id;
       if (!stage) {
         continue;
       }
-      const monetaryValue = resolveOpportunityValue(opportunity, prices);
+      if (checkout && checkout.status !== "approved" && paymentStage) {
+        stage = paymentStage.id;
+      }
       cards.push({
         id: `opp-${opportunity.id}`,
         contactId: contact?.id ?? `ghl-${opportunity.contactId || opportunity.id}`,
@@ -1254,24 +1306,21 @@ export async function listPipelineBoard(viewer: CrmViewer, pendingEmails: Set<st
         city: contact?.city || contact?.region || "",
         tags: contact?.tags ?? [],
         stage,
-        monetaryValue,
+        monetaryValue: checkout?.price || resolveOpportunityValue(opportunity, orders),
         ghlContactId: contact?.ghlContactId || opportunity.contactId,
         opportunityId: opportunity.id,
+        checkout: checkout ? toPipelineCheckout(checkout) : undefined,
       });
-      if (email) {
-        seenEmails.add(email);
-      }
     }
-
-    for (const email of pendingEmails) {
-      if (seenEmails.has(email)) {
-        continue;
-      }
-      const contact = await getContactByEmail(email);
-      const paymentStage = stages.find((item) => item.canonical === "payment") ?? stages.find((item) => item.id === "payment");
-      if (!contact || !paymentStage) {
-        continue;
-      }
+  } else {
+    const contacts = await listContacts(viewer);
+    for (const contact of contacts.filter((item) => item.kind === "contact" || item.ghlContactId)) {
+      const checkout = latestOrderForEmail(orders, contact.email);
+      const canonical = classifyPipelineStage(contact.tags, {
+        paymentPending: pendingEmails.has(contact.email.toLowerCase()) || checkout?.status === "pending",
+      });
+      const stage =
+        checkout && checkout.status !== "approved" && paymentStage ? paymentStage.id : canonical;
       cards.push({
         id: contact.id,
         contactId: contact.id,
@@ -1281,46 +1330,48 @@ export async function listPipelineBoard(viewer: CrmViewer, pendingEmails: Set<st
         photoUrl: contact.photoUrl,
         city: contact.city || contact.region || "",
         tags: contact.tags,
-        stage: paymentStage.id,
-        monetaryValue: prices.get(email) || mastermindOffer.offerPrice,
+        stage,
+        monetaryValue: checkout?.price || (canonical === "leads" ? 0 : mastermindOffer.offerPrice),
         ghlContactId: contact.ghlContactId,
+        checkout: checkout ? toPipelineCheckout(checkout) : undefined,
       });
     }
-
-    return {
-      pipelineName: pipeline.name,
-      pipelineId: pipeline.id,
-      stages,
-      cards,
-      totalValue: pipelineStageValue(cards),
-    } satisfies PipelineBoard;
   }
 
-  const stages = fallbackPipelineStages();
-  const contacts = await listContacts(viewer);
-  const cards = contacts
-    .filter((contact) => contact.kind === "contact" || contact.ghlContactId)
-    .map((contact) => {
-      const canonical = classifyPipelineStage(contact.tags, {
-        paymentPending: pendingEmails.has(contact.email.toLowerCase()),
-      });
-      return {
-        id: contact.id,
-        contactId: contact.id,
-        name: contact.name,
-        email: contact.email,
-        phone: contact.phone,
-        photoUrl: contact.photoUrl,
-        city: contact.city || contact.region || "",
-        tags: contact.tags,
-        stage: canonical,
-        monetaryValue: prices.get(contact.email.toLowerCase()) || (canonical === "leads" ? 0 : mastermindOffer.offerPrice),
-        ghlContactId: contact.ghlContactId,
-      } satisfies PipelineCard;
+  for (const order of reviewOrders) {
+    const email = order.email.toLowerCase();
+    const existing = cards.find((card) => card.email.toLowerCase() === email);
+    if (existing) {
+      existing.checkout = toPipelineCheckout(order);
+      existing.monetaryValue = order.price;
+      if (paymentStage) {
+        existing.stage = paymentStage.id;
+      }
+      continue;
+    }
+    if (!paymentStage) {
+      continue;
+    }
+    const contact = await getContactByEmail(email);
+    cards.push({
+      id: `pay-${order.id}`,
+      contactId: contact?.id ?? encodeURIComponent(order.email),
+      name: contact?.name || order.fullName,
+      email: order.email,
+      phone: contact?.phone || order.mobile,
+      photoUrl: contact?.photoUrl,
+      city: contact?.city || contact?.region || "",
+      tags: contact?.tags ?? ["jdc-mastermind-payment-verification"],
+      stage: paymentStage.id,
+      monetaryValue: order.price,
+      ghlContactId: contact?.ghlContactId,
+      checkout: toPipelineCheckout(order),
     });
+  }
 
   return {
-    pipelineName: "jdc-mastermind-buyer",
+    pipelineName: pipeline?.name ?? "JDC Mastermind",
+    pipelineId: pipeline?.id,
     stages,
     cards,
     totalValue: pipelineStageValue(cards),

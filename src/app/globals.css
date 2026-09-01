@@ -5445,12 +5445,30 @@ html:not(.dark) .macos-boot-wallpaper {
   white-space: nowrap;
 }
 
-.pipeline-card-value {
-  margin: 0.4rem 0 0;
-  color: var(--foreground);
-  font-size: 0.82rem;
-  font-weight: 650;
-  letter-spacing: -0.02em;
+.pipeline-card-note {
+  margin: 0.25rem 0 0;
+  color: var(--muted);
+  font-size: 0.72rem;
+  line-height: 1.35;
+}
+
+.pipeline-card-note.is-warn {
+  color: #b45309;
+}
+
+.pipeline-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.5rem;
+}
+
+.pipeline-card-actions .macos-btn,
+.pipeline-card-actions .payment-approval-form .macos-btn {
+  min-height: 1.7rem;
+  min-width: 0;
+  padding: 0 0.5rem;
+  font-size: 0.72rem;
 }
 
 .pipeline-list {
