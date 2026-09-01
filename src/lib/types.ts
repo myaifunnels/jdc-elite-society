@@ -190,7 +190,6 @@ export type ContactRecord = {
   activeContacts?: number;
   winRate?: string;
   createdAt: string;
-  ghlContactId?: string;
   ghlSyncStatus?: "synced" | "failed" | "skipped" | "pending";
   ghlSyncError?: string;
 };
