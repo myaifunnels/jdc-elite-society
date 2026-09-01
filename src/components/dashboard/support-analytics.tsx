@@ -1,13 +1,33 @@
 import { SupportTicketMetrics } from "@/lib/types";
 import { supportStatusLabel } from "@/lib/support-labels";
 
-export function SupportAnalytics({ metrics }: { metrics: SupportTicketMetrics }) {
+export function SupportAnalytics({
+  metrics,
+  compact = false,
+}: {
+  metrics: SupportTicketMetrics;
+  compact?: boolean;
+}) {
   const cards = [
-    { label: "Waiting for response", value: metrics.open, detail: "New tickets awaiting team reply" },
-    { label: "Awaiting reply", value: metrics.waitingForResponse, detail: "Team replied — waiting on customer" },
-    { label: "Resolved", value: metrics.resolved, detail: "Issue resolved, pending closure" },
-    { label: "Completed", value: metrics.completed, detail: "Closed tickets" },
+    { label: "Waiting", value: metrics.open, status: "open" as const },
+    { label: "Awaiting reply", value: metrics.waitingForResponse, status: "waiting_for_response" as const },
+    { label: "Resolved", value: metrics.resolved, status: "resolved" as const },
+    { label: "Completed", value: metrics.completed, status: "completed" as const },
   ];
+
+  if (compact) {
+    return (
+      <div className="support-metrics-strip" aria-label="Support ticket summary">
+        {cards.map((card) => (
+          <div key={card.label} className="support-metrics-chip">
+            <span className={`support-status-dot is-${card.status.replace(/_/g, "-")}`} aria-hidden />
+            <span className="support-metrics-chip-value">{card.value}</span>
+            <span className="support-metrics-chip-label">{card.label}</span>
+          </div>
+        ))}
+      </div>
+    );
+  }
 
   return (
     <div className="support-analytics-grid">
@@ -15,7 +35,7 @@ export function SupportAnalytics({ metrics }: { metrics: SupportTicketMetrics })
         <article key={card.label} className="dashboard-metric-card">
           <p className="macos-kicker">{card.label}</p>
           <p className="dashboard-metric-value">{card.value}</p>
-          <p className="dashboard-metric-copy">{card.detail}</p>
+          <p className="dashboard-metric-copy">{supportStatusLabel(card.status)}</p>
         </article>
       ))}
     </div>

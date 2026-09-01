@@ -32,6 +32,7 @@ export default async function SupportPage({
 
   return (
     <DashboardShell
+      fill
       title="Support"
       description={
         isAdmin
@@ -39,14 +40,16 @@ export default async function SupportPage({
           : "Message our team — we typically respond within 24 hours."
       }
     >
-      <SupportAnalytics metrics={metrics} />
-      <SupportMessenger
-        tickets={tickets}
-        messagesByTicket={messagesByTicket}
-        currentUserId={user.id}
-        isAdmin={isAdmin}
-        selectedTicketId={params.ticket}
-      />
+      <div className="support-workspace">
+        <SupportAnalytics metrics={metrics} compact />
+        <SupportMessenger
+          tickets={tickets}
+          messagesByTicket={messagesByTicket}
+          currentUserId={user.id}
+          isAdmin={isAdmin}
+          selectedTicketId={params.ticket}
+        />
+      </div>
     </DashboardShell>
   );
 }
