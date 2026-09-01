@@ -218,3 +218,40 @@ export type ContactMapPin = PartnerMapPin & {
   kind: ContactKind;
   tags: string[];
 };
+
+export type SupportTicketStatus = "open" | "waiting_for_response" | "resolved" | "completed";
+
+export type SupportTicketCategory = "general" | "payment" | "university" | "account" | "other";
+
+export type SupportTicket = {
+  id: string;
+  userId: string;
+  userName: string;
+  userEmail: string;
+  subject: string;
+  category: SupportTicketCategory;
+  status: SupportTicketStatus;
+  relatedOrderId: string;
+  assignedTo: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type SupportTicketMessage = {
+  id: string;
+  ticketId: string;
+  authorId: string;
+  authorName: string;
+  authorRole: DashboardRole | "system";
+  body: string;
+  attachmentUrl: string;
+  createdAt: string;
+};
+
+export type SupportTicketMetrics = {
+  open: number;
+  waitingForResponse: number;
+  resolved: number;
+  completed: number;
+  total: number;
+};

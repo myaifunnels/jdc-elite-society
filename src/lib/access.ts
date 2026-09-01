@@ -6,6 +6,8 @@ export type Capability =
   | "dashboard"
   | "university"
   | "profile"
+  | "support"
+  | "support.admin"
   | "contacts.view"
   | "contacts.all"
   | "contacts.tags"
@@ -31,6 +33,8 @@ export const CAPABILITIES: Array<{ id: Capability; label: string; detail: string
   { id: "dashboard", label: "Dashboard home", detail: "See the signed-in workspace home." },
   { id: "university", label: "University", detail: "Open the membership community embed." },
   { id: "profile", label: "Account profile", detail: "Edit their own profile and membership card." },
+  { id: "support", label: "Support", detail: "Open support tickets and message the team." },
+  { id: "support.admin", label: "Support admin", detail: "View and respond to all support tickets." },
   { id: "contacts.view", label: "Contacts", detail: "Open the contacts workspace." },
   { id: "contacts.all", label: "All contacts", detail: "See the full roster, not only assigned people." },
   { id: "contacts.tags", label: "Edit tags", detail: "Add and remove GHL-synced tags." },
@@ -55,6 +59,8 @@ export const ROLE_DEFAULTS: Record<AccessRole, AccessMap> = {
     dashboard: true,
     university: true,
     profile: true,
+    support: true,
+    "support.admin": true,
     "contacts.view": true,
     "contacts.all": true,
     "contacts.tags": true,
@@ -70,6 +76,8 @@ export const ROLE_DEFAULTS: Record<AccessRole, AccessMap> = {
     dashboard: true,
     university: true,
     profile: true,
+    support: true,
+    "support.admin": false,
     "contacts.view": true,
     "contacts.all": false,
     "contacts.tags": true,
@@ -82,9 +90,11 @@ export const ROLE_DEFAULTS: Record<AccessRole, AccessMap> = {
     "partnership.admin": false,
   },
   member: {
-    dashboard: true,
+    dashboard: false,
     university: true,
     profile: true,
+    support: true,
+    "support.admin": false,
     "contacts.view": false,
     "contacts.all": false,
     "contacts.tags": false,
@@ -97,9 +107,11 @@ export const ROLE_DEFAULTS: Record<AccessRole, AccessMap> = {
     "partnership.admin": false,
   },
   contact: {
-    dashboard: true,
+    dashboard: false,
     university: true,
     profile: true,
+    support: true,
+    "support.admin": false,
     "contacts.view": false,
     "contacts.all": false,
     "contacts.tags": false,
@@ -139,7 +151,6 @@ export function mergeAccess(role: AccessRole, roleDefaults: AccessMap, overrides
   }
   if ((role === "member" || role === "contact") && overrides.university !== false) {
     resolved.university = true;
-    resolved.dashboard = true;
   }
   resolved.profile = true;
   return { role, defaults, overrides, resolved };
@@ -151,4 +162,12 @@ export function hasAccess(profile: AccessProfile, capability: Capability) {
 
 export function overrideCount(overrides: AccessOverride) {
   return CAPABILITIES.filter((item) => typeof overrides[item.id] === "boolean").length;
+}
+
+export function dashboardHomeHref(access: AccessMap) {
+  if (access.dashboard) return "/dashboard";
+  if (access.university) return "/dashboard/university";
+  if (access.support) return "/dashboard/support";
+  if (access.profile) return "/dashboard/profile";
+  return "/dashboard";
 }

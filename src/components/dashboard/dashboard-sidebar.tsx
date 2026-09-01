@@ -11,6 +11,7 @@ import {
   Lock,
   LogOut,
   Menu,
+  MessageCircle,
   Plug,
   Settings2,
   Shield,
@@ -23,7 +24,7 @@ import {
 import { logout } from "@/app/login/actions";
 import { SiteLogo } from "@/components/branding/site-logo";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
-import { AccessMap, Capability } from "@/lib/access";
+import { AccessMap, Capability, dashboardHomeHref } from "@/lib/access";
 import { BrandingSettings } from "@/lib/branding";
 import { DashboardRole } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -36,6 +37,7 @@ const navCatalog: Array<{
 }> = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, capability: "dashboard" },
   { href: "/dashboard/university", label: "University", icon: GraduationCap, capability: "university" },
+  { href: "/dashboard/support", label: "Support", icon: MessageCircle, capability: "support" },
   { href: "/dashboard/profile", label: "Account", icon: UserRound, capability: "profile" },
   { href: "/dashboard/contacts", label: "Contacts", icon: Users, capability: "contacts.view" },
   { href: "/dashboard/partnership", label: "Partnership", icon: Handshake, capability: "partnership" },
@@ -86,6 +88,7 @@ function SidebarPanel({
   showClose?: boolean;
 }) {
   const pathname = usePathname();
+  const homeHref = dashboardHomeHref(access);
 
   return (
     <>
@@ -103,7 +106,7 @@ function SidebarPanel({
       ) : null}
 
       <div className="px-3 pb-3">
-        <SiteLogo branding={branding} href="/dashboard" compact />
+        <SiteLogo branding={branding} href={homeHref} compact />
       </div>
 
       <div className="px-4">
@@ -219,7 +222,7 @@ export function DashboardSidebar({
   return (
     <>
       <div className="dashboard-mobile-bar sticky top-0 z-30 flex items-center justify-between gap-3 px-4 py-3 lg:hidden">
-        <SiteLogo branding={branding} href="/dashboard" compact />
+        <SiteLogo branding={branding} href={dashboardHomeHref(access)} compact />
         <div className="flex items-center gap-2">
           <ThemeToggle />
           <button

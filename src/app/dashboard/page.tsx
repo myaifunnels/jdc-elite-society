@@ -1,5 +1,6 @@
-import { GraduationCap, Handshake, Plug, Users } from "lucide-react";
+import { GraduationCap, Handshake, MessageCircle, Plug, Users } from "lucide-react";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 
 import { AccountProfileDashboard } from "@/components/dashboard/account-profile-dashboard";
 import { ContactAvatar } from "@/components/dashboard/contact-avatar";
@@ -16,15 +17,21 @@ import { adminPartnershipSnapshot } from "@/lib/affiliate-store";
 import { contactNeedsAddressConfirm, getContactByEmail, listContactsPaged, listPartnerMapPins, listViewerMetrics } from "@/lib/crm-store";
 import { listUniversityCourses } from "@/lib/ghl-courses";
 import { formatManilaDate, formatPhp } from "@/lib/pay-cycle";
-import { hasAccess } from "@/lib/access";
+import { hasAccess, dashboardHomeHref } from "@/lib/access";
 import { resolveAccess } from "@/lib/access-store";
 import { requireSessionUser } from "@/lib/session";
 import { listEliteCheckoutOrdersForUser } from "@/lib/elite-checkout-store";
 import { hasUniversityAccess } from "@/lib/university-access";
+import { getSupportTicketMetrics } from "@/lib/support-store";
+import { SupportAnalytics } from "@/components/dashboard/support-analytics";
 
 export default async function DashboardPage() {
   const user = await requireSessionUser();
   const access = await resolveAccess(user);
+
+  if (!hasAccess(access, "dashboard")) {
+    redirect(dashboardHomeHref(access.resolved));
+  }
 
   if (!hasAccess(access, "contacts.view") && !hasAccess(access, "registrations")) {
     const universityOpen = hasUniversityAccess(user) && hasAccess(access, "university");
@@ -201,11 +208,12 @@ export default async function DashboardPage() {
   }
 
   const viewer = { ...user, seeAllContacts: hasAccess(access, "contacts.all") };
-  const [contacts, partners, pins, partnership] = await Promise.all([
+  const [contacts, partners, pins, partnership, supportMetrics] = await Promise.all([
     listContactsPaged(viewer, undefined, 1, 8),
     listContactsPaged(viewer, "partner", 1, 8),
     listPartnerMapPins(viewer),
     adminPartnershipSnapshot(),
+    getSupportTicketMetrics(),
   ]);
 
   return (
@@ -221,6 +229,13 @@ export default async function DashboardPage() {
             <p className="dashboard-metric-copy">{metric.detail}</p>
           </article>
         ))}
+
+        <MacosWindow title="Support tickets" className="dashboard-span-2">
+          <SupportAnalytics metrics={supportMetrics} />
+          <Link href="/dashboard/support" className="macos-btn macos-btn-secondary mt-3 self-start">
+            Open Support
+          </Link>
+        </MacosWindow>
 
         <MacosWindow title="Partner map" className="dashboard-span-2" bodyClassName="partners-map-body">
           <p className="macos-lead" style={{ textAlign: "left" }}>
@@ -280,6 +295,12 @@ export default async function DashboardPage() {
               label: "Partnership Program",
               description: `Next payday ${formatManilaDate(partnership.payday)} · ${formatPhp(partnership.pendingPayout)} waiting · ${partnership.activeAffiliates} active affiliates.`,
               icon: Handshake,
+            },
+            {
+              href: "/dashboard/support",
+              label: "Support",
+              description: "Customer support tickets and messenger conversations.",
+              icon: MessageCircle,
             },
             {
               href: "/dashboard/integrations",

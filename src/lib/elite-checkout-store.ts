@@ -264,3 +264,39 @@ export async function approveEliteCheckoutOrdersForUser(userId: string, approved
   }
   return orders.length;
 }
+
+export async function updateEliteCheckoutReceipt(
+  orderId: string,
+  input: { receiptName: string; receiptUrl: string },
+) {
+  const memoryIndex = memoryOrders.findIndex((order) => order.id === orderId);
+  if (memoryIndex >= 0) {
+    memoryOrders[memoryIndex] = {
+      ...memoryOrders[memoryIndex],
+      receiptName: input.receiptName,
+      receiptUrl: input.receiptUrl,
+      status: "pending",
+      approvedAt: "",
+      approvedBy: "",
+    };
+  }
+
+  const client = getPool();
+  if (client) {
+    await ensureTable(client);
+    const result = await client.query(
+      `
+      UPDATE elite_checkout_orders
+      SET receipt_name = $2, receipt_url = $3, status = 'pending', approved_at = NULL, approved_by = ''
+      WHERE id = $1
+      RETURNING *
+      `,
+      [orderId, input.receiptName, input.receiptUrl],
+    );
+    if (!result.rows[0]) throw new Error("Payment submission not found.");
+    return mapRow(result.rows[0]);
+  }
+
+  if (memoryIndex < 0) throw new Error("Payment submission not found.");
+  return memoryOrders[memoryIndex];
+}

@@ -2,7 +2,7 @@ import { createHmac, timingSafeEqual } from "node:crypto";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
-import { hasAccess, type Capability } from "@/lib/access";
+import { hasAccess, type Capability, dashboardHomeHref } from "@/lib/access";
 import { resolveAccess } from "@/lib/access-store";
 import { hasAffiliateWorkspace, parseAffiliatePrograms } from "@/lib/affiliate";
 import { upsertProfile } from "@/lib/affiliate-store";
@@ -132,7 +132,8 @@ export async function requireRoles(roles: DashboardRole[]) {
   const user = await requireSessionUser();
 
   if (!roles.includes(user.role)) {
-    redirect("/dashboard");
+    const access = await resolveAccess(user);
+    redirect(dashboardHomeHref(access.resolved));
   }
 
   return user;
@@ -143,7 +144,7 @@ export async function requireCapability(capability: Capability) {
   const access = await resolveAccess(user);
 
   if (!hasAccess(access, capability)) {
-    redirect("/dashboard");
+    redirect(dashboardHomeHref(access.resolved));
   }
 
   return { user, access };
@@ -154,16 +155,16 @@ export async function requireAnyCapability(...capabilities: Capability[]) {
   const access = await resolveAccess(user);
 
   if (!capabilities.some((capability) => hasAccess(access, capability))) {
-    redirect("/dashboard");
+    redirect(dashboardHomeHref(access.resolved));
   }
 
   return { user, access };
 }
 
 export async function requireAffiliateAccess() {
-  const { user } = await requireCapability("partnership");
+  const { user, access } = await requireCapability("partnership");
   if (!hasAffiliateWorkspace(user) && user.role !== "admin") {
-    redirect("/dashboard");
+    redirect(dashboardHomeHref(access.resolved));
   }
   return user;
 }
