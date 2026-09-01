@@ -11,9 +11,9 @@
   --custom-dark-glow: #2962ff;
   --background: var(--custom-light-background);
   --foreground: #0b1224;
-  --card: color-mix(in srgb, var(--custom-light-surface) 58%, transparent);
-  --surface: color-mix(in srgb, var(--custom-light-surface) 64%, transparent);
-  --surface-elevated: color-mix(in srgb, var(--custom-light-surface) 78%, transparent);
+  --card: color-mix(in srgb, var(--custom-light-surface) 42%, transparent);
+  --surface: color-mix(in srgb, var(--custom-light-surface) 48%, transparent);
+  --surface-elevated: color-mix(in srgb, var(--custom-light-surface) 58%, transparent);
   --muted: #5b6788;
   --line: rgba(13, 54, 217, 0.12);
   --line-strong: rgba(13, 54, 217, 0.22);
