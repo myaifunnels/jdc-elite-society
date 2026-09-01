@@ -1,5 +1,5 @@
 import { SupportTicketMetrics } from "@/lib/types";
-import { supportStatusLabel } from "@/lib/support-store";
+import { supportStatusLabel } from "@/lib/support-labels";
 
 export function SupportAnalytics({ metrics }: { metrics: SupportTicketMetrics }) {
   const cards = [

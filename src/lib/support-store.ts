@@ -7,6 +7,9 @@ import {
   SupportTicketMetrics,
   SupportTicketStatus,
 } from "@/lib/types";
+import { supportStatusLabel } from "@/lib/support-labels";
+
+export { supportStatusLabel };
 
 const memoryTickets: SupportTicket[] = [];
 const memoryMessages: SupportTicketMessage[] = [];
@@ -107,19 +110,6 @@ function mapMessage(row: Record<string, unknown>): SupportTicketMessage {
     attachmentUrl: String(row.attachment_url ?? ""),
     createdAt: new Date(String(row.created_at)).toISOString(),
   };
-}
-
-export function supportStatusLabel(status: SupportTicketStatus) {
-  switch (status) {
-    case "open":
-      return "Waiting for response";
-    case "waiting_for_response":
-      return "Awaiting your reply";
-    case "resolved":
-      return "Resolved";
-    case "completed":
-      return "Completed";
-  }
 }
 
 export async function createSupportTicket(input: {

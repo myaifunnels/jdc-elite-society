@@ -10,7 +10,7 @@ import {
   updateTicketStatusAction,
 } from "@/app/dashboard/support/actions";
 import { SupportStatusPill } from "@/components/dashboard/support-analytics";
-import { supportStatusLabel } from "@/lib/support-store";
+import { supportStatusLabel } from "@/lib/support-labels";
 import { SupportTicket, SupportTicketMessage, SupportTicketStatus } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
