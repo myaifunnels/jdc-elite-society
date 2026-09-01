@@ -5349,28 +5349,16 @@ html:not(.dark) .macos-boot-wallpaper {
 }
 
 .pipeline-metrics {
-  margin-bottom: 0.75rem;
-}
-
-.pipeline-toolbar {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
   margin-bottom: 0.85rem;
-}
-
-.pipeline-sync-note {
-  margin: 0.9rem 0 0;
-  color: var(--muted);
-  font-size: 0.78rem;
-  line-height: 1.45;
-}
-
-.pipeline-sync-note code {
-  font-size: 0.74rem;
 }
 
 .pipeline-kanban {
   display: grid;
   gap: 0.75rem;
-  grid-template-columns: repeat(4, minmax(16rem, 1fr));
+  grid-template-columns: repeat(var(--pipeline-cols, 4), minmax(15.5rem, 1fr));
   overflow-x: auto;
   padding-bottom: 0.5rem;
   align-items: start;
@@ -5451,10 +5439,18 @@ html:not(.dark) .macos-boot-wallpaper {
 }
 
 .pipeline-card-meta {
-  margin: 0.45rem 0 0;
+  margin: 0.2rem 0 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.pipeline-card-value {
+  margin: 0.4rem 0 0;
+  color: var(--foreground);
+  font-size: 0.82rem;
+  font-weight: 650;
+  letter-spacing: -0.02em;
 }
 
 .pipeline-list {

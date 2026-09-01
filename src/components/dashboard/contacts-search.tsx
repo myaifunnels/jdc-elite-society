@@ -137,7 +137,7 @@ export function ContactsSearch({
     <div className="contacts-filters">
       <div ref={rootRef} className="contact-search is-advanced">
         <form action="/dashboard/contacts" method="get" autoComplete="off">
-          {view !== "dashboard" ? <input type="hidden" name="view" value={view} /> : null}
+          {view !== "pipeline" ? <input type="hidden" name="view" value={view} /> : null}
           {kind ? <input type="hidden" name="kind" value={kind} /> : null}
           {selectedTags.map((tag) => (
             <input key={tag} type="hidden" name="tag" value={tag} />

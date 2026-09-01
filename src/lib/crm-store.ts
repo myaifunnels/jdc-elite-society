@@ -15,8 +15,19 @@ import {
   type GhlRemoteContact,
 } from "@/lib/ghl";
 import {
+  getMastermindBuyerPipeline,
+  searchGhlOpportunities,
+  updateGhlOpportunity,
+  upsertGhlOpportunity,
+  type GhlOpportunity,
+} from "@/lib/ghl-opportunities";
+import { mastermindOffer } from "@/data/mastermind-offer";
+import {
+  canonicalStageFromName,
   classifyPipelineStage,
   PIPELINE_GHL_FETCH_TAGS,
+  PIPELINE_STAGES,
+  pipelineStageValue,
   tagsForPipelineStage,
   type PipelineStageId,
 } from "@/lib/pipeline";
@@ -1092,17 +1103,93 @@ async function ensureGhlLink(contact: ContactRecord): Promise<ContactRecord> {
   return contact;
 }
 
+export type PipelineBoardStage = {
+  id: string;
+  label: string;
+  detail: string;
+  canonical?: PipelineStageId;
+};
+
 export type PipelineCard = {
   id: string;
+  contactId: string;
   name: string;
   email: string;
   phone: string;
   photoUrl?: string;
   city: string;
   tags: string[];
-  stage: PipelineStageId;
+  stage: string;
+  monetaryValue: number;
   ghlContactId?: string;
+  opportunityId?: string;
 };
+
+export type PipelineBoard = {
+  pipelineName: string;
+  pipelineId?: string;
+  stages: PipelineBoardStage[];
+  cards: PipelineCard[];
+  totalValue: number;
+};
+
+function fallbackPipelineStages(): PipelineBoardStage[] {
+  return PIPELINE_STAGES.map((stage) => ({
+    id: stage.id,
+    label: stage.label,
+    detail: stage.detail,
+    canonical: stage.id,
+  }));
+}
+
+function stagesFromGhlPipeline(name: string, ghlStages: Array<{ id: string; name: string }>): PipelineBoardStage[] {
+  const mapped = ghlStages.map((stage) => {
+    const canonical = canonicalStageFromName(stage.name);
+    const fallback = PIPELINE_STAGES.find((item) => item.id === canonical);
+    return {
+      id: stage.id,
+      label: fallback?.label ?? stage.name,
+      detail: fallback?.detail ?? `${name} · ${stage.name}`,
+      canonical: canonical ?? undefined,
+    };
+  });
+
+  const have = new Set(mapped.map((stage) => stage.canonical).filter(Boolean));
+  const missing = PIPELINE_STAGES.filter((stage) => !have.has(stage.id)).map((stage) => ({
+    id: stage.id,
+    label: stage.label,
+    detail: stage.detail,
+    canonical: stage.id,
+  }));
+
+  const payment = mapped.find((stage) => stage.canonical === "payment");
+  const leads = mapped.find((stage) => stage.canonical === "leads");
+  const first = mapped.find((stage) => stage.canonical === "first-batch");
+  const second = mapped.find((stage) => stage.canonical === "second-batch");
+  const extras = mapped.filter(
+    (stage) => stage !== payment && stage !== leads && stage !== first && stage !== second,
+  );
+  const ordered = [leads, payment, first, second, ...extras, ...missing].filter(Boolean) as PipelineBoardStage[];
+  const seen = new Set<string>();
+  return ordered.filter((stage) => {
+    if (seen.has(stage.id)) {
+      return false;
+    }
+    seen.add(stage.id);
+    return true;
+  });
+}
+
+function resolveOpportunityValue(opportunity: Pick<GhlOpportunity, "monetaryValue" | "email">, prices: Map<string, number>) {
+  if (opportunity.monetaryValue > 0) {
+    return opportunity.monetaryValue;
+  }
+  const priced = prices.get(opportunity.email.toLowerCase());
+  if (priced && priced > 0) {
+    return priced;
+  }
+  return mastermindOffer.offerPrice;
+}
 
 async function ingestPipelineTaggedContacts() {
   const remotes = await searchGhlContactsByTags(PIPELINE_GHL_FETCH_TAGS);
@@ -1111,45 +1198,201 @@ async function ingestPipelineTaggedContacts() {
   }
 }
 
-export async function listPipelineBoard(viewer: CrmViewer, pendingEmails: Set<string> = new Set()) {
-  await refreshGhlContacts().catch((error) => console.error("Pipeline GHL refresh failed", error));
-  await ingestPipelineTaggedContacts().catch((error) => console.error("Pipeline GHL tag fetch failed", error));
-  const contacts = await listContacts(viewer);
-  return contacts
-    .filter((contact) => contact.kind === "contact" || contact.ghlContactId)
-    .map(
-      (contact) =>
-        ({
-          id: contact.id,
-          name: contact.name,
-          email: contact.email,
-          phone: contact.phone,
-          photoUrl: contact.photoUrl,
-          city: contact.city || contact.region || "",
-          tags: contact.tags,
-          stage: classifyPipelineStage(contact.tags, {
-            paymentPending: pendingEmails.has(contact.email.toLowerCase()),
-          }),
-          ghlContactId: contact.ghlContactId,
-        }) satisfies PipelineCard,
-    );
+async function contactFromOpportunity(opportunity: GhlOpportunity) {
+  if (opportunity.contactId) {
+    const byGhl = memoryRecords.find((record) => record.ghlContactId === opportunity.contactId);
+    if (byGhl) {
+      return byGhl;
+    }
+    const ingested = await ingestGhlContactById(opportunity.contactId);
+    if (ingested) {
+      return ingested;
+    }
+  }
+  if (opportunity.email) {
+    const existing = await getContactByEmail(opportunity.email);
+    if (existing) {
+      return existing;
+    }
+  }
+  return null;
 }
 
-export async function setPipelineStage(viewer: CrmViewer, contactId: string, stage: PipelineStageId) {
-  const found = await getContact(viewer, contactId);
-  if (!found) {
-    return { ok: false as const, error: "Contact not found." };
+export async function listPipelineBoard(viewer: CrmViewer, pendingEmails: Set<string> = new Set(), prices: Map<string, number> = new Map()) {
+  await refreshGhlContacts().catch((error) => console.error("Pipeline GHL refresh failed", error));
+  await ingestPipelineTaggedContacts().catch((error) => console.error("Pipeline GHL tag fetch failed", error));
+  await listContacts(viewer);
+
+  const pipeline = await getMastermindBuyerPipeline();
+  if (pipeline) {
+    const opportunities = await searchGhlOpportunities(pipeline.id);
+    const stages = stagesFromGhlPipeline(pipeline.name, pipeline.stages);
+    const cards: PipelineCard[] = [];
+    const seenEmails = new Set<string>();
+
+    for (const opportunity of opportunities) {
+      if (opportunity.status === "lost" || opportunity.status === "abandoned") {
+        continue;
+      }
+      const contact = await contactFromOpportunity(opportunity);
+      const email = (contact?.email || opportunity.email).toLowerCase();
+      const stage =
+        stages.find((item) => item.id === opportunity.pipelineStageId)?.id ??
+        stages.find((item) => item.canonical === "leads")?.id ??
+        stages[0]?.id;
+      if (!stage) {
+        continue;
+      }
+      const monetaryValue = resolveOpportunityValue(opportunity, prices);
+      cards.push({
+        id: `opp-${opportunity.id}`,
+        contactId: contact?.id ?? `ghl-${opportunity.contactId || opportunity.id}`,
+        name: contact?.name || opportunity.contactName || opportunity.name || opportunity.email || "GHL contact",
+        email: contact?.email || opportunity.email,
+        phone: contact?.phone || opportunity.phone,
+        photoUrl: contact?.photoUrl,
+        city: contact?.city || contact?.region || "",
+        tags: contact?.tags ?? [],
+        stage,
+        monetaryValue,
+        ghlContactId: contact?.ghlContactId || opportunity.contactId,
+        opportunityId: opportunity.id,
+      });
+      if (email) {
+        seenEmails.add(email);
+      }
+    }
+
+    for (const email of pendingEmails) {
+      if (seenEmails.has(email)) {
+        continue;
+      }
+      const contact = await getContactByEmail(email);
+      const paymentStage = stages.find((item) => item.canonical === "payment") ?? stages.find((item) => item.id === "payment");
+      if (!contact || !paymentStage) {
+        continue;
+      }
+      cards.push({
+        id: contact.id,
+        contactId: contact.id,
+        name: contact.name,
+        email: contact.email,
+        phone: contact.phone,
+        photoUrl: contact.photoUrl,
+        city: contact.city || contact.region || "",
+        tags: contact.tags,
+        stage: paymentStage.id,
+        monetaryValue: prices.get(email) || mastermindOffer.offerPrice,
+        ghlContactId: contact.ghlContactId,
+      });
+    }
+
+    return {
+      pipelineName: pipeline.name,
+      pipelineId: pipeline.id,
+      stages,
+      cards,
+      totalValue: pipelineStageValue(cards),
+    } satisfies PipelineBoard;
   }
 
-  const contact = await ensureGhlLink(found);
-  const result = await setContactTags(viewer, contact.id, tagsForPipelineStage(contact.tags, stage));
-  if (!result.ok) {
+  const stages = fallbackPipelineStages();
+  const contacts = await listContacts(viewer);
+  const cards = contacts
+    .filter((contact) => contact.kind === "contact" || contact.ghlContactId)
+    .map((contact) => {
+      const canonical = classifyPipelineStage(contact.tags, {
+        paymentPending: pendingEmails.has(contact.email.toLowerCase()),
+      });
+      return {
+        id: contact.id,
+        contactId: contact.id,
+        name: contact.name,
+        email: contact.email,
+        phone: contact.phone,
+        photoUrl: contact.photoUrl,
+        city: contact.city || contact.region || "",
+        tags: contact.tags,
+        stage: canonical,
+        monetaryValue: prices.get(contact.email.toLowerCase()) || (canonical === "leads" ? 0 : mastermindOffer.offerPrice),
+        ghlContactId: contact.ghlContactId,
+      } satisfies PipelineCard;
+    });
+
+  return {
+    pipelineName: "jdc-mastermind-buyer",
+    stages,
+    cards,
+    totalValue: pipelineStageValue(cards),
+  } satisfies PipelineBoard;
+}
+
+export async function setPipelineStage(viewer: CrmViewer, cardId: string, stageId: string) {
+  const pipeline = await getMastermindBuyerPipeline();
+  const ghlStage = pipeline?.stages.find((stage) => stage.id === stageId);
+  const canonical =
+    (ghlStage ? canonicalStageFromName(ghlStage.name) : null) ??
+    (stageId as PipelineStageId | undefined);
+  const resolvedGhlStage =
+    ghlStage ??
+    pipeline?.stages.find((stage) => canonicalStageFromName(stage.name) === stageId) ??
+    null;
+
+  const opportunityId = cardId.startsWith("opp-") ? cardId.slice(4) : undefined;
+  let contact = opportunityId ? null : await getContact(viewer, cardId);
+
+  if (!contact && opportunityId) {
+    const { getGhlOpportunityById } = await import("@/lib/ghl-opportunities");
+    const opportunity = await getGhlOpportunityById(opportunityId);
+    if (opportunity?.contactId) {
+      contact = await ingestGhlContactById(opportunity.contactId);
+    }
+    if (!contact && opportunity?.email) {
+      contact = await getContactByEmail(opportunity.email);
+    }
+  }
+
+  if (resolvedGhlStage && pipeline) {
+    if (opportunityId) {
+      const moved = await updateGhlOpportunity(opportunityId, { pipelineStageId: resolvedGhlStage.id });
+      if (!moved.ok && !moved.skipped) {
+        return { ok: false as const, error: "GoHighLevel did not accept that stage move." };
+      }
+    } else if (contact) {
+      const linked = await ensureGhlLink(contact);
+      contact = linked;
+      if (linked.ghlContactId) {
+        const upserted = await upsertGhlOpportunity({
+          contactId: linked.ghlContactId,
+          pipelineId: pipeline.id,
+          pipelineStageId: resolvedGhlStage.id,
+          name: linked.name,
+          monetaryValue: mastermindOffer.offerPrice,
+        });
+        if (!upserted.ok && !upserted.skipped) {
+          return { ok: false as const, error: "Could not create the GHL opportunity." };
+        }
+      }
+    }
+  }
+
+  if (contact && canonical && ["leads", "payment", "first-batch", "second-batch"].includes(canonical)) {
+    const linked = await ensureGhlLink(contact);
+    const result = await setContactTags(viewer, linked.id, tagsForPipelineStage(linked.tags, canonical as PipelineStageId));
+    if (!result.ok) {
+      return result;
+    }
+    if (linked.ghlContactId && !result.ghlSynced) {
+      return { ok: false as const, error: "Stage saved here, but GoHighLevel tag sync failed. Try again." };
+    }
     return result;
   }
-  if (contact.ghlContactId && !result.ghlSynced) {
-    return { ok: false as const, error: "Stage saved here, but GoHighLevel tag sync failed. Try again." };
+
+  if (opportunityId && resolvedGhlStage) {
+    return { ok: true as const, tags: [] as string[], ghlSynced: true };
   }
-  return result;
+
+  return { ok: false as const, error: "Contact not found." };
 }
 
 export async function listViewerMetrics(viewer: CrmViewer): Promise<DashboardMetric[]> {

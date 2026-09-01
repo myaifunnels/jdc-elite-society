@@ -1,10 +1,13 @@
-export type ContactsView = "dashboard" | "roster" | "map" | "registrants";
+export type ContactsView = "pipeline" | "roster" | "map" | "registrants";
 
 export function parseContactsView(value?: string): ContactsView {
-  if (value === "roster" || value === "map" || value === "registrants") {
+  if (value === "roster" || value === "map" || value === "registrants" || value === "pipeline") {
     return value;
   }
-  return "dashboard";
+  if (value === "dashboard" || value === "list") {
+    return value === "list" ? "roster" : "pipeline";
+  }
+  return "pipeline";
 }
 
 export function contactsHref(params: {
@@ -16,7 +19,7 @@ export function contactsHref(params: {
   status?: string;
 }) {
   const search = new URLSearchParams();
-  if (params.view && params.view !== "dashboard") {
+  if (params.view && params.view !== "pipeline") {
     search.set("view", params.view);
   }
   if (params.kind) {

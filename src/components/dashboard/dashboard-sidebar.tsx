@@ -4,7 +4,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useId, useState } from "react";
 import {
-  Columns3,
   CreditCard,
   Globe,
   GraduationCap,
@@ -40,7 +39,6 @@ const navCatalog: Array<{
   { href: "/dashboard/university", label: "University", icon: GraduationCap, capability: "university" },
   { href: "/dashboard/profile", label: "Account", icon: UserRound, capability: "profile" },
   { href: "/dashboard/contacts", label: "Contacts", icon: Users, capability: "contacts.view" },
-  { href: "/dashboard/pipeline", label: "Pipeline", icon: Columns3, capability: "contacts.all" },
   { href: "/dashboard/payments", label: "Payments", icon: CreditCard, capability: "registrations" },
   { href: "/dashboard/partnership", label: "Partnership", icon: Handshake, capability: "partnership" },
   { href: "/dashboard/access", label: "Access", icon: Shield, capability: "access" },

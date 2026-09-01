@@ -125,7 +125,7 @@ export type GhlRemoteContact = {
   customFields?: Array<{ id?: string; key?: string; field_value?: string; value?: string }>;
 };
 
-function ghlHeaders(token: string, json = false) {
+export function ghlHeaders(token: string, json = false) {
   return {
     Authorization: `Bearer ${token}`,
     Version: "2021-07-28",

@@ -7,7 +7,7 @@ export const PIPELINE_STAGES = [
   {
     id: "payment",
     label: "Payment for Verification",
-    detail: "Checkout receipts and payment-pending tags waiting on the team.",
+    detail: "Checkout receipts waiting on the team.",
   },
   {
     id: "first-batch",
@@ -59,6 +59,23 @@ function hasExactTag(tags: string[], names: string[]) {
   return names.some((name) => have.has(tagKey(name)));
 }
 
+export function canonicalStageFromName(name: string): PipelineStageId | null {
+  const key = tagKey(name).replace(/_/g, "-");
+  if ((key.includes("second") && key.includes("batch")) || key.includes("second-batch")) {
+    return "second-batch";
+  }
+  if ((key.includes("first") && key.includes("batch")) || key.includes("first-batch")) {
+    return "first-batch";
+  }
+  if (key.includes("payment") || key.includes("verif")) {
+    return "payment";
+  }
+  if (key === "leads" || key === "lead" || key === "stages" || key.startsWith("lead")) {
+    return "leads";
+  }
+  return null;
+}
+
 export function classifyPipelineStage(
   tags: string[],
   options?: { paymentPending?: boolean },
@@ -82,4 +99,8 @@ export function tagsForPipelineStage(currentTags: string[], stage: PipelineStage
 
 export function isPipelineStageId(value: string): value is PipelineStageId {
   return PIPELINE_STAGES.some((stage) => stage.id === value);
+}
+
+export function pipelineStageValue(cards: Array<{ monetaryValue?: number }>) {
+  return cards.reduce((sum, card) => sum + (Number(card.monetaryValue) || 0), 0);
 }

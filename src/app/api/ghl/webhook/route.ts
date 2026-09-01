@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 
 import { ingestGhlContactById, ingestGhlRemoteContact, invalidateGhlContactSync } from "@/lib/crm-store";
 import { getGhlContactById, lookupGhlContact, type GhlRemoteContact } from "@/lib/ghl";
+import { getGhlOpportunityById, isMastermindBuyerPipeline, listGhlOpportunityPipelines } from "@/lib/ghl-opportunities";
 import { getResolvedIntegrationSettings } from "@/lib/integrations-store";
 
 export const dynamic = "force-dynamic";
@@ -88,6 +89,30 @@ export async function POST(request: Request) {
   const incoming = pickContact(payload);
   let stored = null;
 
+  const opportunity = asRecord(payload.opportunity);
+  const opportunityId = String(opportunity.id ?? payload.opportunityId ?? "").trim();
+  const type = String(payload.type ?? payload.eventType ?? payload.webhookId ?? "").toLowerCase();
+  const looksLikeOpportunity =
+    Boolean(opportunity.id) ||
+    Boolean(payload.pipelineStageId) ||
+    type.includes("opportunity");
+
+  if (looksLikeOpportunity && opportunityId) {
+    const remoteOpportunity = await getGhlOpportunityById(opportunityId);
+    const pipelineId = String(remoteOpportunity?.pipelineId ?? payload.pipelineId ?? opportunity.pipelineId ?? "").trim();
+    if (pipelineId) {
+      const pipelines = await listGhlOpportunityPipelines();
+      const matched = pipelines.find((item) => item.id === pipelineId);
+      if (matched && !isMastermindBuyerPipeline(matched.name)) {
+        revalidatePath("/dashboard/contacts");
+        return NextResponse.json({ ok: true, skipped: true, reason: "pipeline" });
+      }
+    }
+    if (remoteOpportunity?.contactId) {
+      stored = await ingestGhlContactById(remoteOpportunity.contactId);
+    }
+  }
+
   const contactId = String(incoming?.id ?? payload.contactId ?? "").trim();
   if (contactId && !contactId.includes("@")) {
     const remote = await getGhlContactById(contactId);
@@ -114,7 +139,7 @@ export async function POST(request: Request) {
     }
   }
 
-  revalidatePath("/dashboard/pipeline");
   revalidatePath("/dashboard/contacts");
+  revalidatePath("/dashboard/pipeline");
   return NextResponse.json({ ok: true, ingested: Boolean(stored), id: stored?.id ?? null });
 }

@@ -181,7 +181,7 @@ export default async function IntegrationsPage({
             <p className="app-store-detail-meta" style={{ marginTop: "1rem" }}>
               Pipeline mirror webhook: <code>{siteUrl}/api/ghl/webhook</code>
               <br />
-              In GHL, add this URL to Contact Tag Update and Contact Update so Kanban stages stay in sync both ways.
+              In GHL, add this URL for Contact Tag Update, Contact Update, and Opportunity Stage Update so the Contacts pipeline stays in sync. Only the <code>jdc-mastermind-buyer</code> pipeline is mirrored.
             </p>
           </>
         ) : null}
