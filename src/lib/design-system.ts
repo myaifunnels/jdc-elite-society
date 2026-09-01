@@ -20,7 +20,7 @@ export const defaultDesignSystem: DesignSystemSettings = {
   darkGlow: "#2962ff",
 };
 
-export const designSystemStorageKey = "coach-jdc-design-system-v5";
+export const designSystemStorageKey = "coach-jdc-design-system-v6";
 
 export function getDesignSystemCssVariables(settings: DesignSystemSettings) {
   return {
