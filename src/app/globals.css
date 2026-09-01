@@ -173,7 +173,7 @@ a,
 }
 
 .site-header-overlay .eyebrow {
-  color: #e8d5b0;
+  color: #c5d7ff;
 }
 
 .site-header-overlay nav,
@@ -424,7 +424,7 @@ a,
   width: 2.5rem;
   height: 2.5rem;
   border: 0;
-  border-radius: 0.78rem;
+  border-radius: 0.62rem;
   background:
     linear-gradient(180deg, color-mix(in srgb, white 22%, var(--brand)), var(--brand-dark));
   color: white;
@@ -759,7 +759,7 @@ button.macos-field {
 .hero-kicker {
   width: fit-content;
   margin: 0 0 1rem;
-  color: #e8d5b0;
+  color: #c5d7ff;
   font-size: 0.78rem;
   font-weight: 700;
   letter-spacing: 0.28em;
@@ -1080,7 +1080,7 @@ button.macos-field {
 
 .hero-title-card p {
   margin: 0;
-  color: #e8d5b0;
+  color: #c5d7ff;
   font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.08em;

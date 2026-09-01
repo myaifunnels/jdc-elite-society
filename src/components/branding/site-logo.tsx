@@ -41,7 +41,7 @@ export function SiteLogo({
           <span
             className={cn(
               "block text-[0.68rem] font-semibold uppercase tracking-[0.28em]",
-              inverted ? "text-[#e8d5b0]" : "text-[var(--brand-dark)]",
+              inverted ? "text-[#c5d7ff]" : "text-[var(--brand-dark)]",
             )}
           >
             coachjdc.org
