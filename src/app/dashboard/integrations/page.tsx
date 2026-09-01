@@ -19,6 +19,7 @@ import { AddressMap } from "@/components/maps/address-map";
 import { isGhlReady, isMapsReady, isR2Ready, isTextBeeReady, maskSecret } from "@/lib/integrations";
 import { getResolvedIntegrationSettings } from "@/lib/integrations-store";
 import { requireCapability } from "@/lib/session";
+import { siteUrl } from "@/lib/site";
 
 type AppId = "maps" | "r2" | "ghl" | "textbee";
 
@@ -62,7 +63,7 @@ export default async function IntegrationsPage({
     {
       id: "ghl",
       name: "GoHighLevel",
-      tagline: "Syncs contacts, tags, and course access.",
+      tagline: "Syncs contacts, tags, pipeline stages, and course access.",
       logo: GoHighLevelLogo,
       connected: ghlReady,
     },
@@ -177,6 +178,11 @@ export default async function IntegrationsPage({
               Location: <code>{settings.ghlLocationId || "not set"}</code>
             </p>
             <GhlIntegrationForm configured={ghlReady} locationId={settings.ghlLocationId} />
+            <p className="app-store-detail-meta" style={{ marginTop: "1rem" }}>
+              Pipeline mirror webhook: <code>{siteUrl}/api/ghl/webhook</code>
+              <br />
+              In GHL, add this URL to Contact Tag Update and Contact Update so Kanban stages stay in sync both ways.
+            </p>
           </>
         ) : null}
 

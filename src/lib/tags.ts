@@ -52,6 +52,10 @@ export const TAG_GROUPS: TagGroup[] = [
     label: "Offer",
     tags: [
       "jdc-mastermind",
+      "jdc-mastermind-buyer",
+      "jdc-mastermind-second-batch",
+      "mastermind",
+      "pipeline-leads",
       "webinar-paid",
       "Elite offer",
       "Mastermind checkout",

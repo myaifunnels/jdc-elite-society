@@ -5,11 +5,21 @@ import { geocodeAddress } from "@/lib/geocode";
 import { emailsMatch, phonesMatch } from "@/lib/identity";
 import {
   addGhlContactTags,
+  getGhlContactById,
   listGhlLocationContacts,
   listGhlLocationTags,
+  lookupGhlContact,
   removeGhlContactTags,
+  searchGhlContactsByTags,
+  syncContactToGhl,
   type GhlRemoteContact,
 } from "@/lib/ghl";
+import {
+  classifyPipelineStage,
+  PIPELINE_GHL_FETCH_TAGS,
+  tagsForPipelineStage,
+  type PipelineStageId,
+} from "@/lib/pipeline";
 import { ensurePortalUserForContact } from "@/lib/auth-store";
 import { TAG_GROUPS, uniqueTags } from "@/lib/tags";
 import {
@@ -360,9 +370,16 @@ export function isServiceContactEmail(email: string) {
 }
 
 function fromGhlContact(contact: GhlRemoteContact): ContactRecord | null {
-  const email = String(contact.email ?? "").trim();
-  const name = [contact.firstName, contact.lastName].filter(Boolean).join(" ").trim() || String(contact.name ?? "").trim();
-  if (!email || !name || isServiceContactEmail(email)) {
+  const ghlId = String(contact.id ?? "").trim();
+  const email =
+    String(contact.email ?? "").trim() || (ghlId ? `contact.${ghlId}@ghl.invalid` : "");
+  const name =
+    [contact.firstName, contact.lastName].filter(Boolean).join(" ").trim() ||
+    String(contact.name ?? "").trim() ||
+    String(contact.phone ?? "").trim() ||
+    (email.includes("@") ? email.split("@")[0] : "") ||
+    "GHL contact";
+  if (!ghlId || !email || isServiceContactEmail(email)) {
     return null;
   }
 
@@ -604,6 +621,32 @@ export async function contactIdsByEmail() {
 
 export function invalidateRegistrantCrmSync() {
   lastRegistrantHydrateAt = 0;
+}
+
+export function invalidateGhlContactSync() {
+  lastGhlSyncAt = 0;
+}
+
+export async function refreshGhlContacts() {
+  lastGhlSyncAt = 0;
+  await syncGhlContacts();
+}
+
+export async function ingestGhlRemoteContact(remote: GhlRemoteContact) {
+  const mapped = fromGhlContact(remote);
+  if (!mapped || isHiddenEmail(mapped.email)) {
+    return null;
+  }
+  await persistContact(mapped);
+  return mapped;
+}
+
+export async function ingestGhlContactById(contactId: string) {
+  const remote = await getGhlContactById(contactId);
+  if (!remote) {
+    return null;
+  }
+  return ingestGhlRemoteContact(remote);
 }
 
 function isOwnPartnerRecord(contact: ContactRecord, viewer: CrmViewer) {
@@ -997,16 +1040,116 @@ export async function setContactTags(viewer: CrmViewer, contactId: string, tags:
 
   await persistContact({ ...contact, tags: nextTags });
 
+  let ghlSynced = !contact.ghlContactId;
   if (contact.ghlContactId) {
+    ghlSynced = true;
     if (added.length) {
-      await addGhlContactTags(contact.ghlContactId, added);
+      const result = await addGhlContactTags(contact.ghlContactId, added);
+      if (!result.skipped && result.ok === false) {
+        ghlSynced = false;
+      }
     }
     if (removed.length) {
-      await removeGhlContactTags(contact.ghlContactId, removed);
+      const result = await removeGhlContactTags(contact.ghlContactId, removed);
+      if (!result.skipped && result.ok === false) {
+        ghlSynced = false;
+      }
     }
   }
 
-  return { ok: true as const, tags: nextTags };
+  return { ok: true as const, tags: nextTags, ghlSynced };
+}
+
+async function ensureGhlLink(contact: ContactRecord): Promise<ContactRecord> {
+  if (contact.ghlContactId) {
+    return contact;
+  }
+
+  const existing = await lookupGhlContact(contact.email, contact.phone);
+  if (existing?.id) {
+    const next = { ...contact, ghlContactId: String(existing.id) };
+    await persistContact(next);
+    return next;
+  }
+
+  const synced = await syncContactToGhl({
+    name: contact.name,
+    email: contact.email,
+    phone: contact.phone,
+    address: contact.address,
+    city: contact.city,
+    tags: contact.tags,
+    source: contact.source,
+    facebookPhotoUrl: contact.photoUrl,
+    bestDescribesYou: contact.bestDescribesYou,
+  });
+  if (synced.contactId) {
+    const next = { ...contact, ghlContactId: synced.contactId };
+    await persistContact(next);
+    return next;
+  }
+
+  return contact;
+}
+
+export type PipelineCard = {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  photoUrl?: string;
+  city: string;
+  tags: string[];
+  stage: PipelineStageId;
+  ghlContactId?: string;
+};
+
+async function ingestPipelineTaggedContacts() {
+  const remotes = await searchGhlContactsByTags(PIPELINE_GHL_FETCH_TAGS);
+  for (const remote of remotes) {
+    await ingestGhlRemoteContact(remote);
+  }
+}
+
+export async function listPipelineBoard(viewer: CrmViewer, pendingEmails: Set<string> = new Set()) {
+  await refreshGhlContacts().catch((error) => console.error("Pipeline GHL refresh failed", error));
+  await ingestPipelineTaggedContacts().catch((error) => console.error("Pipeline GHL tag fetch failed", error));
+  const contacts = await listContacts(viewer);
+  return contacts
+    .filter((contact) => contact.kind === "contact" || contact.ghlContactId)
+    .map(
+      (contact) =>
+        ({
+          id: contact.id,
+          name: contact.name,
+          email: contact.email,
+          phone: contact.phone,
+          photoUrl: contact.photoUrl,
+          city: contact.city || contact.region || "",
+          tags: contact.tags,
+          stage: classifyPipelineStage(contact.tags, {
+            paymentPending: pendingEmails.has(contact.email.toLowerCase()),
+          }),
+          ghlContactId: contact.ghlContactId,
+        }) satisfies PipelineCard,
+    );
+}
+
+export async function setPipelineStage(viewer: CrmViewer, contactId: string, stage: PipelineStageId) {
+  const found = await getContact(viewer, contactId);
+  if (!found) {
+    return { ok: false as const, error: "Contact not found." };
+  }
+
+  const contact = await ensureGhlLink(found);
+  const result = await setContactTags(viewer, contact.id, tagsForPipelineStage(contact.tags, stage));
+  if (!result.ok) {
+    return result;
+  }
+  if (contact.ghlContactId && !result.ghlSynced) {
+    return { ok: false as const, error: "Stage saved here, but GoHighLevel tag sync failed. Try again." };
+  }
+  return result;
 }
 
 export async function listViewerMetrics(viewer: CrmViewer): Promise<DashboardMetric[]> {

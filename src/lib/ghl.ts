@@ -236,6 +236,62 @@ export async function listGhlLocationContacts() {
   }
 }
 
+export async function searchGhlContactsByTags(tags: string[]) {
+  const settings = await getResolvedIntegrationSettings();
+  const token = settings.ghlApiKey;
+  const locationId = settings.ghlLocationId;
+  const wanted = [...new Set(tags.map((tag) => tag.trim()).filter(Boolean))];
+
+  if (!token || !locationId || wanted.length === 0) {
+    return [] as GhlRemoteContact[];
+  }
+
+  const contacts: GhlRemoteContact[] = [];
+  const seen = new Set<string>();
+
+  const addPage = (page: GhlRemoteContact[]) => {
+    for (const contact of page) {
+      const id = String(contact.id ?? "").trim();
+      if (!id || seen.has(id)) {
+        continue;
+      }
+      seen.add(id);
+      contacts.push(contact);
+    }
+    return page.length;
+  };
+
+  for (const tag of wanted) {
+    try {
+      for (let page = 1; page <= 20; page += 1) {
+        const response = await fetch("https://services.leadconnectorhq.com/contacts/search", {
+          method: "POST",
+          headers: ghlHeaders(token, true),
+          cache: "no-store",
+          body: JSON.stringify({
+            locationId,
+            page,
+            pageLimit: 100,
+            filters: [{ field: "tags", operator: "eq", value: tag }],
+          }),
+        });
+        if (!response.ok) {
+          break;
+        }
+
+        const payload = (await response.json()) as unknown;
+        if (addPage(asContactList(payload)) < 100) {
+          break;
+        }
+      }
+    } catch (error) {
+      console.error("GHL tag search failed", tag, error);
+    }
+  }
+
+  return contacts;
+}
+
 export async function listGhlLocationTags() {
   const settings = await getResolvedIntegrationSettings();
   const token = settings.ghlApiKey;
@@ -338,6 +394,29 @@ export async function lookupGhlContact(email?: string, phone?: string) {
     return payload.contact ?? payload.contacts?.[0] ?? null;
   } catch (error) {
     console.error("GHL contact lookup failed", error);
+    return null;
+  }
+}
+
+export async function getGhlContactById(contactId: string) {
+  const settings = await getResolvedIntegrationSettings();
+  const token = settings.ghlApiKey;
+  if (!token || !contactId) {
+    return null;
+  }
+
+  try {
+    const response = await fetch(`https://services.leadconnectorhq.com/contacts/${contactId}`, {
+      headers: ghlHeaders(token),
+      cache: "no-store",
+    });
+    if (!response.ok) {
+      return null;
+    }
+    const payload = (await response.json()) as { contact?: GhlRemoteContact };
+    return payload.contact ?? null;
+  } catch (error) {
+    console.error("GHL contact fetch failed", error);
     return null;
   }
 }

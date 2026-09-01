@@ -1,4 +1,4 @@
-import { CreditCard, GraduationCap, Handshake, Plug, Users } from "lucide-react";
+import { Columns3, CreditCard, GraduationCap, Handshake, Plug, Users } from "lucide-react";
 import Link from "next/link";
 
 import { AccountProfileDashboard } from "@/components/dashboard/account-profile-dashboard";
@@ -274,6 +274,12 @@ export default async function DashboardPage() {
               label: "Registrants",
               description: "Verify member and contact sign-ups after they finish their profile.",
               icon: Users,
+            },
+            {
+              href: "/dashboard/pipeline",
+              label: "Pipeline",
+              description: "Kanban of leads, payment checks, First Batch, and Second Batch.",
+              icon: Columns3,
             },
             {
               href: "/dashboard/payments",
