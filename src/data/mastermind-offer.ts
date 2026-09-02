@@ -155,6 +155,26 @@ export const mastermindOffer = {
   ],
   testimonials: [
     {
+      name: "LUCKY CAIGOY",
+      title: "Member",
+      driveId: "178Er6w_FlwgwkFmL95qhe41sCJGnaH9X",
+    },
+    {
+      name: "DANIEL MALICDEM",
+      title: "Member",
+      driveId: "1sT9h3_k-LCVvXcRdKX0E6ZTD9mlCjyng",
+    },
+    {
+      name: "RENZ ACUT",
+      title: "Member",
+      driveId: "1rkqyimSdN1rmyaoy6LnITek-6YyAn4gI",
+    },
+    {
+      name: "MEIZ",
+      title: "Member",
+      driveId: "1yMnB3TahpfkqI33wwmdavJwZ27OM3Hms",
+    },
+    {
       name: "ROY REMULTA",
       title: "Former Catholic Priest",
       video: "https://assets.cdn.filesafe.space/Col3j2B7jRDX5y8J5bgN/media/6987134ed017c30155082e9b.mp4",
