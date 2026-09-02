@@ -229,11 +229,11 @@ export function EliteOfferPage() {
 
       <section className="elite-section elite-reveal">
         <div className="elite-shell">
-          <p className="elite-kicker elite-center">TESTIMONIALS</p>
-          <h2>Real people. Higher standards.</h2>
+          <p className="elite-kicker elite-center">RESULTS WALL</p>
+          <h2>Overwhelming proof. Real members. Playing now.</h2>
           <p className="elite-center elite-sub" style={{ marginInline: "auto" }}>
-            Walang overnight-success promise dito. Real stories from people who chose structure, accountability, and
-            consistent action.
+            This is the volume of results inside JDC Mastermind — story after story, already rolling. Turn sound on when
+            you are ready. The wall does not wait.
           </p>
           <EliteTestimonialsCarousel items={mastermindOffer.testimonials} />
           <p className="elite-center" style={{ marginTop: "1.5rem" }}>

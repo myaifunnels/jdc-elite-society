@@ -10,10 +10,11 @@ export type EliteTestimonial = {
 };
 
 function mediaSrc(item: EliteTestimonial) {
+  if (item.video) return item.video;
   if (item.driveId) {
     return `https://drive.usercontent.google.com/download?id=${item.driveId}&export=download&confirm=t`;
   }
-  return item.video ?? "";
+  return "";
 }
 
 function slotFor(offset: number, total: number) {
@@ -25,6 +26,7 @@ function slotFor(offset: number, total: number) {
 
 export function EliteTestimonialsCarousel({ items }: { items: readonly EliteTestimonial[] }) {
   const stageRef = useRef<HTMLDivElement>(null);
+  const videoRefs = useRef<Map<string, HTMLVideoElement>>(new Map());
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
   const [muted, setMuted] = useState(true);
@@ -45,25 +47,35 @@ export function EliteTestimonialsCarousel({ items }: { items: readonly EliteTest
     }
     const timer = window.setInterval(() => {
       setIndex((current) => (current + 1) % total);
-    }, 12000);
+    }, 9000);
     return () => window.clearInterval(timer);
   }, [paused, total]);
 
   useEffect(() => {
-    const videos = stageRef.current?.querySelectorAll("video") ?? [];
-    videos.forEach((video) => {
+    const visible = new Set(
+      slides.filter((slide) => slide.slot !== "hidden").map((slide) => slide.item.name),
+    );
+
+    videoRefs.current.forEach((video, name) => {
       video.muted = muted;
-      video.defaultMuted = muted;
+      video.defaultMuted = true;
       video.playsInline = true;
-      const play = video.play();
-      if (play) {
-        play.catch(() => {
-          video.muted = true;
-          void video.play();
-        });
+      video.setAttribute("playsinline", "");
+      video.setAttribute("webkit-playsinline", "");
+      if (visible.has(name)) {
+        video.loop = true;
+        const play = video.play();
+        if (play) {
+          play.catch(() => {
+            video.muted = true;
+            void video.play();
+          });
+        }
+      } else {
+        video.pause();
       }
     });
-  }, [index, muted]);
+  }, [index, muted, slides]);
 
   function go(step: number) {
     setIndex((current) => (current + step + total) % total);
@@ -76,48 +88,64 @@ export function EliteTestimonialsCarousel({ items }: { items: readonly EliteTest
       onMouseLeave={() => setPaused(false)}
     >
       <div className="elite-testimonial-stage" aria-live="polite" ref={stageRef}>
-        {slides.map(({ item, slot }) => (
-          <figure
-            className="elite-glass elite-testimonial-card"
-            data-slot={slot}
-            key={item.name}
-            aria-hidden={slot === "hidden"}
-          >
-            <button
-              type="button"
-              className="elite-testimonial-hit"
-              tabIndex={slot === "hidden" ? -1 : 0}
-              aria-label={`Show ${item.name}`}
-              onClick={() => {
-                if (slot === "left") go(-1);
-                if (slot === "right") go(1);
-              }}
-            />
-            <div className="elite-testimonial-media">
-              {slot === "hidden" ? null : (
-                <video autoPlay muted loop playsInline preload="auto">
-                  <source src={mediaSrc(item)} />
-                </video>
-              )}
-            </div>
-            <figcaption>
-              <strong>{item.name}</strong>
-              <span>{item.title}</span>
-            </figcaption>
-            {slot === "center" ? (
+        {slides.map(({ item, slot }) => {
+          const src = mediaSrc(item);
+          return (
+            <figure
+              className="elite-glass elite-testimonial-card"
+              data-slot={slot}
+              key={item.name}
+              aria-hidden={slot === "hidden"}
+            >
               <button
                 type="button"
-                className="elite-testimonial-sound"
-                onClick={() => setMuted((current) => !current)}
-                aria-label={muted ? "Unmute testimonials" : "Mute testimonials"}
-              >
-                {muted ? "Sound on" : "Mute"}
-              </button>
-            ) : (
-              <div className="elite-testimonial-veil" aria-hidden />
-            )}
-          </figure>
-        ))}
+                className="elite-testimonial-hit"
+                tabIndex={slot === "hidden" ? -1 : 0}
+                aria-label={`Show ${item.name}`}
+                onClick={() => {
+                  if (slot === "left") go(-1);
+                  if (slot === "right") go(1);
+                }}
+              />
+              <div className="elite-testimonial-media">
+                {src ? (
+                  <video
+                    ref={(node) => {
+                      if (node) {
+                        videoRefs.current.set(item.name, node);
+                      } else {
+                        videoRefs.current.delete(item.name);
+                      }
+                    }}
+                    src={src}
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    preload={slot === "hidden" ? "metadata" : "auto"}
+                    controls={false}
+                  />
+                ) : null}
+              </div>
+              <figcaption>
+                <strong>{item.name}</strong>
+                <span>{item.title}</span>
+              </figcaption>
+              {slot === "center" ? (
+                <button
+                  type="button"
+                  className="elite-testimonial-sound"
+                  onClick={() => setMuted((current) => !current)}
+                  aria-label={muted ? "Unmute testimonials" : "Mute testimonials"}
+                >
+                  {muted ? "Sound on" : "Mute"}
+                </button>
+              ) : (
+                <div className="elite-testimonial-veil" aria-hidden />
+              )}
+            </figure>
+          );
+        })}
       </div>
 
       <div className="elite-testimonial-nav">

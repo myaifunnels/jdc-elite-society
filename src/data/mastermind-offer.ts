@@ -157,22 +157,22 @@ export const mastermindOffer = {
     {
       name: "LUCKY CAIGOY",
       title: "Member",
-      driveId: "178Er6w_FlwgwkFmL95qhe41sCJGnaH9X",
+      video: "/elite/testimonials/lucky-caigoy.mp4",
     },
     {
       name: "DANIEL MALICDEM",
       title: "Member",
-      driveId: "1sT9h3_k-LCVvXcRdKX0E6ZTD9mlCjyng",
+      video: "/elite/testimonials/daniel-malicdem.mp4",
     },
     {
       name: "RENZ ACUT",
       title: "Member",
-      driveId: "1rkqyimSdN1rmyaoy6LnITek-6YyAn4gI",
+      video: "/elite/testimonials/renz-acut.mp4",
     },
     {
       name: "MEIZ",
       title: "Member",
-      driveId: "1yMnB3TahpfkqI33wwmdavJwZ27OM3Hms",
+      video: "/elite/testimonials/meiz.mp4",
     },
     {
       name: "ROY REMULTA",
