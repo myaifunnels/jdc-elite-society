@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 export type EliteTestimonial = {
   name: string;
@@ -9,8 +9,11 @@ export type EliteTestimonial = {
   driveId?: string;
 };
 
-function drivePreviewUrl(id: string) {
-  return `https://drive.google.com/file/d/${id}/preview`;
+function mediaSrc(item: EliteTestimonial) {
+  if (item.driveId) {
+    return `https://drive.usercontent.google.com/download?id=${item.driveId}&export=download&confirm=t`;
+  }
+  return item.video ?? "";
 }
 
 function slotFor(offset: number, total: number) {
@@ -21,8 +24,10 @@ function slotFor(offset: number, total: number) {
 }
 
 export function EliteTestimonialsCarousel({ items }: { items: readonly EliteTestimonial[] }) {
+  const stageRef = useRef<HTMLDivElement>(null);
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
+  const [muted, setMuted] = useState(true);
   const total = items.length;
 
   const slides = useMemo(
@@ -40,9 +45,25 @@ export function EliteTestimonialsCarousel({ items }: { items: readonly EliteTest
     }
     const timer = window.setInterval(() => {
       setIndex((current) => (current + 1) % total);
-    }, 5200);
+    }, 12000);
     return () => window.clearInterval(timer);
   }, [paused, total]);
+
+  useEffect(() => {
+    const videos = stageRef.current?.querySelectorAll("video") ?? [];
+    videos.forEach((video) => {
+      video.muted = muted;
+      video.defaultMuted = muted;
+      video.playsInline = true;
+      const play = video.play();
+      if (play) {
+        play.catch(() => {
+          video.muted = true;
+          void video.play();
+        });
+      }
+    });
+  }, [index, muted]);
 
   function go(step: number) {
     setIndex((current) => (current + step + total) % total);
@@ -54,7 +75,7 @@ export function EliteTestimonialsCarousel({ items }: { items: readonly EliteTest
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
-      <div className="elite-testimonial-stage" aria-live="polite">
+      <div className="elite-testimonial-stage" aria-live="polite" ref={stageRef}>
         {slides.map(({ item, slot }) => (
           <figure
             className="elite-glass elite-testimonial-card"
@@ -73,22 +94,9 @@ export function EliteTestimonialsCarousel({ items }: { items: readonly EliteTest
               }}
             />
             <div className="elite-testimonial-media">
-              {slot === "hidden" ? null : item.driveId ? (
-                <iframe
-                  title={`${item.name} testimonial`}
-                  src={drivePreviewUrl(item.driveId)}
-                  allow="autoplay; encrypted-media; fullscreen"
-                  allowFullScreen
-                />
-              ) : (
-                <video
-                  controls={slot === "center"}
-                  playsInline
-                  preload={slot === "center" ? "metadata" : "none"}
-                  onPlay={() => setPaused(true)}
-                  onPause={() => setPaused(false)}
-                >
-                  <source src={item.video} />
+              {slot === "hidden" ? null : (
+                <video autoPlay muted loop playsInline preload="auto">
+                  <source src={mediaSrc(item)} />
                 </video>
               )}
             </div>
@@ -96,7 +104,18 @@ export function EliteTestimonialsCarousel({ items }: { items: readonly EliteTest
               <strong>{item.name}</strong>
               <span>{item.title}</span>
             </figcaption>
-            {slot !== "center" ? <div className="elite-testimonial-veil" aria-hidden /> : null}
+            {slot === "center" ? (
+              <button
+                type="button"
+                className="elite-testimonial-sound"
+                onClick={() => setMuted((current) => !current)}
+                aria-label={muted ? "Unmute testimonials" : "Mute testimonials"}
+              >
+                {muted ? "Sound on" : "Mute"}
+              </button>
+            ) : (
+              <div className="elite-testimonial-veil" aria-hidden />
+            )}
           </figure>
         ))}
       </div>
