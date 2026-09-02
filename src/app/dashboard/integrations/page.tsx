@@ -159,6 +159,10 @@ export default async function IntegrationsPage({
               publicUrl={settings.r2PublicUrl}
               accessKeyConfigured={Boolean(settings.r2AccessKeyId)}
             />
+            <p className="app-store-detail-meta" style={{ marginTop: "0.75rem" }}>
+              The dashboard loads photos and receipts through a signed R2 request, so the bucket can stay private.
+              Public URL is still used when emailing a receipt link.
+            </p>
             {r2Ready ? (
               <div className="mt-6 border-t border-[var(--line)] pt-6">
                 <p className="text-sm font-semibold">Migrate existing files</p>

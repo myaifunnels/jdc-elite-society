@@ -3,6 +3,8 @@
 import { Camera } from "lucide-react";
 import { useRef, useState } from "react";
 
+import { mediaSrc } from "@/lib/media";
+
 const ACCEPTED_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
 const MAX_BYTES = 5 * 1024 * 1024;
 
@@ -13,7 +15,7 @@ export function PhotoUploadField({
   defaultUrl?: string;
   required?: boolean;
 }) {
-  const [preview, setPreview] = useState(defaultUrl);
+  const [preview, setPreview] = useState(mediaSrc(defaultUrl) ?? "");
   const [error, setError] = useState("");
   const [dragging, setDragging] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);

@@ -1,5 +1,7 @@
 import type { Map as LeafletMap } from "leaflet";
 
+import { isDisplayableImageSrc, mediaSrc } from "@/lib/media";
+
 export const MAP_PHOTO_PIN_SIZE = 22;
 export const MAP_MARKER_WIDTH = 18;
 export const MAP_MARKER_HEIGHT = 26;
@@ -18,8 +20,12 @@ export function escapeMapHtml(value: string) {
     .replaceAll('"', "&quot;");
 }
 
+export function mapPinHasPhoto(photoUrl?: string) {
+  return isDisplayableImageSrc(photoUrl);
+}
+
 export function mapPinHtml(input: { name: string; photoUrl?: string; accent?: string }) {
-  const photo = input.photoUrl?.trim();
+  const photo = isDisplayableImageSrc(input.photoUrl) ? mediaSrc(input.photoUrl) : undefined;
   const size = MAP_PHOTO_PIN_SIZE;
   if (photo) {
     return `<span class="partner-map-pin has-photo"><img src="${escapeMapHtml(photo)}" alt="" width="${size}" height="${size}" /></span>`;

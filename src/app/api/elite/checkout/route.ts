@@ -179,7 +179,6 @@ export async function POST(request: Request) {
       tags,
       bestDescribesYou: "JDC Mastermind buyer",
       programInterest: "JDC Mastermind",
-      photoUrl: receiptUrl,
       source: affiliate ? `Mastermind offer · ${affiliate.code}` : "Mastermind offer",
     });
     leadId = lead.id;

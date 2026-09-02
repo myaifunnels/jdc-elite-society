@@ -4,7 +4,7 @@ import "leaflet/dist/leaflet.css";
 import Link from "next/link";
 import { useEffect, useRef } from "react";
 
-import { fitMapToPhilippines, mapPinHtml, mapPinIconOptions } from "@/lib/map-view";
+import { fitMapToPhilippines, mapPinHasPhoto, mapPinHtml, mapPinIconOptions } from "@/lib/map-view";
 import { PartnerMapPin } from "@/lib/types";
 
 function escapeHtml(value: string) {
@@ -46,7 +46,7 @@ export function PartnersMap({ partners }: { partners: PartnerMapPin[] }) {
       }).addTo(map);
 
       partners.forEach((partner) => {
-        const hasPhoto = Boolean(partner.photoUrl?.trim());
+        const hasPhoto = mapPinHasPhoto(partner.photoUrl);
         const marker = L.marker([partner.lat, partner.lng], {
           icon: L.divIcon({
             ...mapPinIconOptions(hasPhoto),
