@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 
 export type EliteTestimonial = {
   name: string;
@@ -41,13 +41,38 @@ function PauseIcon() {
   );
 }
 
+function applyClip(video: HTMLVideoElement, slot: string, shouldHear: boolean) {
+  video.playsInline = true;
+  video.setAttribute("playsinline", "");
+  video.setAttribute("webkit-playsinline", "");
+  video.loop = true;
+  video.defaultMuted = !shouldHear;
+  video.muted = !shouldHear;
+  video.volume = shouldHear ? 1 : 0;
+
+  if (slot === "hidden") {
+    video.pause();
+    return;
+  }
+
+  if (video.paused) {
+    const play = video.play();
+    if (play) {
+      play.catch(() => {
+        video.muted = true;
+        video.volume = 0;
+        void video.play();
+      });
+    }
+  }
+}
+
 export function EliteTestimonialsCarousel({ items }: { items: readonly EliteTestimonial[] }) {
-  const videoRefs = useRef<Map<string, HTMLVideoElement>>(new Map());
+  const stageRef = useRef<HTMLDivElement>(null);
   const [index, setIndex] = useState(0);
   const [hoverPaused, setHoverPaused] = useState(false);
   const [soundOn, setSoundOn] = useState(false);
   const total = items.length;
-  const activeName = items[index]?.name;
 
   const slides = useMemo(
     () =>
@@ -68,47 +93,22 @@ export function EliteTestimonialsCarousel({ items }: { items: readonly EliteTest
     return () => window.clearInterval(timer);
   }, [hoverPaused, soundOn, total]);
 
-  useEffect(() => {
-    videoRefs.current.forEach((video, name) => {
-      const slot = slides.find((slide) => slide.item.name === name)?.slot ?? "hidden";
-      const isCenter = slot === "center";
-      const isVisible = slot !== "hidden";
-      const shouldHear = soundOn && isCenter && name === activeName;
-
-      video.playsInline = true;
-      video.setAttribute("playsinline", "");
-      video.setAttribute("webkit-playsinline", "");
-      video.loop = true;
-      video.defaultMuted = true;
-      video.muted = !shouldHear;
-      video.volume = shouldHear ? 1 : 0;
-
-      if (isVisible) {
-        const play = video.play();
-        if (play) {
-          play.catch(() => {
-            video.muted = true;
-            video.volume = 0;
-            if (isCenter) {
-              setSoundOn(false);
-            }
-            void video.play();
-          });
-        }
-      } else {
-        video.pause();
-        video.muted = true;
-        video.volume = 0;
-      }
+  useLayoutEffect(() => {
+    const videos = stageRef.current?.querySelectorAll("video") ?? [];
+    videos.forEach((video) => {
+      const slot = video.closest(".elite-testimonial-card")?.getAttribute("data-slot") ?? "hidden";
+      applyClip(video, slot, soundOn && slot === "center");
     });
-  }, [activeName, slides, soundOn]);
+  });
 
   function go(step: number) {
+    setSoundOn(false);
     setIndex((current) => (current + step + total) % total);
   }
 
-  function toggleCenterAudio() {
-    setSoundOn((current) => !current);
+  function showItem(itemIndex: number) {
+    setSoundOn(false);
+    setIndex(itemIndex);
   }
 
   return (
@@ -117,15 +117,16 @@ export function EliteTestimonialsCarousel({ items }: { items: readonly EliteTest
       onMouseEnter={() => setHoverPaused(true)}
       onMouseLeave={() => setHoverPaused(false)}
     >
-      <div className="elite-testimonial-stage" aria-live="polite">
+      <div className="elite-testimonial-stage" aria-live="polite" ref={stageRef}>
         {slides.map(({ item, slot }) => {
           const src = mediaSrc(item);
           const isCenter = slot === "center";
+          const shouldHear = isCenter && soundOn;
           return (
             <figure
               className="elite-glass elite-testimonial-card"
               data-slot={slot}
-              data-sound={isCenter && soundOn ? "on" : "off"}
+              data-sound={shouldHear ? "on" : "off"}
               key={item.name}
               aria-hidden={slot === "hidden"}
             >
@@ -142,20 +143,23 @@ export function EliteTestimonialsCarousel({ items }: { items: readonly EliteTest
               <div className="elite-testimonial-media">
                 {src ? (
                   <video
-                    ref={(node) => {
-                      if (node) {
-                        videoRefs.current.set(item.name, node);
-                      } else {
-                        videoRefs.current.delete(item.name);
-                      }
-                    }}
                     src={src}
-                    autoPlay
-                    muted
+                    autoPlay={slot !== "hidden"}
+                    muted={!shouldHear}
                     loop
                     playsInline
-                    preload={slot === "hidden" ? "metadata" : "auto"}
+                    preload={slot === "hidden" ? "none" : "auto"}
                     controls={false}
+                    onLoadedData={(event) => applyClip(event.currentTarget, slot, shouldHear)}
+                    onPlay={(event) => {
+                      if (slot === "hidden") {
+                        event.currentTarget.pause();
+                      }
+                      if (!shouldHear) {
+                        event.currentTarget.muted = true;
+                        event.currentTarget.volume = 0;
+                      }
+                    }}
                   />
                 ) : null}
                 {isCenter ? (
@@ -163,9 +167,10 @@ export function EliteTestimonialsCarousel({ items }: { items: readonly EliteTest
                     type="button"
                     className="elite-testimonial-play"
                     data-state={soundOn ? "pause" : "play"}
-                    onClick={toggleCenterAudio}
+                    onClick={() => setSoundOn((current) => !current)}
                     aria-label={soundOn ? `Mute ${item.name}` : `Play audio for ${item.name}`}
                   >
+                    <span className="elite-testimonial-play-spin" aria-hidden />
                     <span className="elite-testimonial-play-pulse" aria-hidden />
                     <span className="elite-testimonial-play-pulse elite-testimonial-play-pulse-delay" aria-hidden />
                     <span className="elite-testimonial-play-core">
@@ -197,7 +202,7 @@ export function EliteTestimonialsCarousel({ items }: { items: readonly EliteTest
               className="elite-testimonial-dot"
               data-active={itemIndex === index}
               aria-label={`Show ${item.name}`}
-              onClick={() => setIndex(itemIndex)}
+              onClick={() => showItem(itemIndex)}
             />
           ))}
         </div>
