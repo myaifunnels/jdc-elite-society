@@ -73,13 +73,12 @@ export function EliteTestimonialsCarousel({ items }: { items: readonly EliteTest
               }}
             />
             <div className="elite-testimonial-media">
-              {item.driveId ? (
+              {slot === "hidden" ? null : item.driveId ? (
                 <iframe
                   title={`${item.name} testimonial`}
                   src={drivePreviewUrl(item.driveId)}
                   allow="autoplay; encrypted-media; fullscreen"
                   allowFullScreen
-                  loading={slot === "center" ? "eager" : "lazy"}
                 />
               ) : (
                 <video
