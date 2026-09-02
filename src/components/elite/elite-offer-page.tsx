@@ -232,8 +232,8 @@ export function EliteOfferPage() {
           <p className="elite-kicker elite-center">RESULTS WALL</p>
           <h2>Overwhelming proof. Real members. Playing now.</h2>
           <p className="elite-center elite-sub" style={{ marginInline: "auto" }}>
-            This is the volume of results inside JDC Mastermind — story after story, already rolling. Turn sound on when
-            you are ready. The wall does not wait.
+            This is the volume of results inside JDC Mastermind — story after story, already rolling. Hit play on the
+            video in front to hear that member. Only that clip has audio.
           </p>
           <EliteTestimonialsCarousel items={mastermindOffer.testimonials} />
           <p className="elite-center" style={{ marginTop: "1.5rem" }}>
