@@ -107,6 +107,26 @@ export async function getSessionUser(): Promise<SessionUser | null> {
 
 export const sessionCookieName = SESSION_COOKIE;
 
+function sessionCookieOptions(maxAge?: number) {
+  return {
+    httpOnly: true,
+    sameSite: "lax" as const,
+    path: "/",
+    secure: process.env.NODE_ENV === "production",
+    maxAge,
+  };
+}
+
+export async function clearAuthCookies() {
+  const cookieStore = await cookies();
+  const expired = sessionCookieOptions(0);
+
+  cookieStore.set(SESSION_COOKIE, "", { ...expired, expires: new Date(0) });
+  cookieStore.set(impersonatorCookieName, "", { ...expired, expires: new Date(0) });
+  cookieStore.delete(SESSION_COOKIE);
+  cookieStore.delete(impersonatorCookieName);
+}
+
 export async function getImpersonator() {
   const cookieStore = await cookies();
   const sessionUser = await getSessionUser();

@@ -26,7 +26,13 @@ import { invalidateRegistrantCrmSync, upsertContactFromAccount } from "@/lib/crm
 import { syncContactToGhl } from "@/lib/ghl";
 import { grantInstantUniversityAccess } from "@/lib/member-access";
 import { approveEliteCheckoutOrdersForUser } from "@/lib/elite-checkout-store";
-import { requireCapability, requireSessionUser, sessionCookieName, impersonatorCookieName } from "@/lib/session";
+import {
+  clearAuthCookies,
+  requireCapability,
+  requireSessionUser,
+  sessionCookieName,
+  impersonatorCookieName,
+} from "@/lib/session";
 import {
   completeProfileSchema,
   forgotPasswordSchema,
@@ -390,8 +396,8 @@ export async function changeSignedInPassword(
 }
 
 export async function logout() {
-  const cookieStore = await cookies();
-  cookieStore.delete(sessionCookieName);
-  cookieStore.delete(impersonatorCookieName);
+  await clearAuthCookies();
+  revalidatePath("/", "layout");
+  revalidatePath("/dashboard", "layout");
   redirect("/");
 }

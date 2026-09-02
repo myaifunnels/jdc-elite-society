@@ -155,7 +155,7 @@ function SidebarPanel({
           <ThemeToggle />
         </div>
 
-        <form action={logout}>
+        <form action={logout} className="w-full">
           <button type="submit" className="macos-btn macos-btn-secondary pressable w-full gap-2">
             <LogOut size={14} aria-hidden />
             Sign out

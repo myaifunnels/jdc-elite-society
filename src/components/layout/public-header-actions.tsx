@@ -204,8 +204,8 @@ function AccountMenu({ account, onNavigate }: { account: AccountSummary; onNavig
             <UserRound size={15} aria-hidden />
             Account
           </Link>
-          <form action={logout}>
-            <button type="submit" className="site-account-dropdown-link is-danger" onClick={close}>
+          <form action={logout} className="site-account-signout">
+            <button type="submit" className="site-account-dropdown-link is-danger">
               <LogOut size={15} aria-hidden />
               Sign out
             </button>
@@ -298,8 +298,8 @@ export function PublicHeaderActions({
             <Link href="/dashboard/profile" className="pressable" onClick={() => setOpen(false)}>
               Account
             </Link>
-            <form action={logout}>
-              <button type="submit" className="pressable site-nav-drawer-signout" onClick={() => setOpen(false)}>
+            <form action={logout} className="site-account-signout">
+              <button type="submit" className="pressable site-nav-drawer-signout">
                 Sign out
               </button>
             </form>

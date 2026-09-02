@@ -538,6 +538,11 @@ a,
   background: color-mix(in srgb, var(--brand) 12%, transparent);
 }
 
+.site-account-signout {
+  width: 100%;
+  margin: 0;
+}
+
 .site-account-dropdown-link.is-danger {
   color: #dc2626;
 }
