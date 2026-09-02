@@ -155,6 +155,26 @@ export const mastermindOffer = {
   ],
   testimonials: [
     {
+      name: "LUCKY CAIGOY",
+      title: "Member",
+      video: "/elite/testimonials/lucky-caigoy.mp4",
+    },
+    {
+      name: "DANIEL MALICDEM",
+      title: "Member",
+      video: "/elite/testimonials/daniel-malicdem.mp4",
+    },
+    {
+      name: "RENZ ACUT",
+      title: "Member",
+      video: "/elite/testimonials/renz-acut.mp4",
+    },
+    {
+      name: "MEIZ",
+      title: "Member",
+      video: "/elite/testimonials/meiz.mp4",
+    },
+    {
       name: "ROY REMULTA",
       title: "Former Catholic Priest",
       video: "https://assets.cdn.filesafe.space/Col3j2B7jRDX5y8J5bgN/media/6987134ed017c30155082e9b.mp4",
