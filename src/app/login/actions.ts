@@ -15,6 +15,7 @@ import {
   findUserByEmailOrPhone,
   issueTemporaryPassword,
   requestPasswordReset,
+  resetPasswordWithCode,
   resetPasswordWithToken,
   setMemberPaymentVerified,
   setUserAvatar,
@@ -31,7 +32,6 @@ import {
   requireCapability,
   requireSessionUser,
   sessionCookieName,
-  impersonatorCookieName,
 } from "@/lib/session";
 import {
   completeProfileSchema,
@@ -316,22 +316,22 @@ export async function requestPasswordResetAccount(
   formData: FormData,
 ): Promise<AuthFormState> {
   const parsed = forgotPasswordSchema.safeParse({
-    email: String(formData.get("email") ?? "").trim(),
+    identifier: String(formData.get("identifier") ?? "").trim(),
   });
 
   if (!parsed.success) {
     const firstError = Object.values(parsed.error.flatten().fieldErrors)[0]?.[0];
-    return { error: firstError || "Enter the email on the account." };
+    return { error: firstError || "Enter the email or mobile number on the account." };
   }
 
   try {
-    await requestPasswordReset(parsed.data.email);
+    await requestPasswordReset(parsed.data.identifier);
   } catch (error) {
     console.error("Password reset request failed", error);
   }
 
   return {
-    success: "If that email is on an account, we sent a reset link. Check your inbox and spam folder.",
+    success: "If that email or mobile is on an account, we sent a reset link and a 6-digit text code. Check inbox, spam, and SMS.",
   };
 }
 
@@ -341,6 +341,8 @@ export async function resetPasswordAccount(
 ): Promise<AuthFormState> {
   const parsed = resetPasswordSchema.safeParse({
     token: String(formData.get("token") ?? "").trim(),
+    identifier: String(formData.get("identifier") ?? "").trim(),
+    code: String(formData.get("code") ?? "").trim(),
     password: String(formData.get("password") ?? ""),
     confirmPassword: String(formData.get("confirmPassword") ?? ""),
   });
@@ -350,7 +352,9 @@ export async function resetPasswordAccount(
     return { error: firstError || "Check the new password and try again." };
   }
 
-  const updated = await resetPasswordWithToken(parsed.data.token, parsed.data.password);
+  const updated = parsed.data.token.trim().length >= 20
+    ? await resetPasswordWithToken(parsed.data.token, parsed.data.password)
+    : await resetPasswordWithCode(parsed.data.identifier, parsed.data.code, parsed.data.password);
 
   if (!updated) {
     return { error: "This reset link is invalid or has expired. Request a new one." };

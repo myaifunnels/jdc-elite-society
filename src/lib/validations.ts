@@ -124,19 +124,28 @@ export const loginSchema = z.object({
 });
 
 export const forgotPasswordSchema = z.object({
-  email: z.email("Enter a valid email."),
+  identifier: z.string().trim().min(5, "Enter the email or mobile number on the account."),
 });
 
 export const resetPasswordSchema = z
   .object({
-    token: z.string().min(20, "This reset link is missing or incomplete."),
+    token: z.string().optional().default(""),
+    identifier: z.string().optional().default(""),
+    code: z.string().optional().default(""),
     password: z.string().min(8, "Use at least 8 characters."),
     confirmPassword: z.string().min(8, "Confirm your new password."),
   })
   .refine((value) => value.password === value.confirmPassword, {
     message: "Those passwords do not match.",
     path: ["confirmPassword"],
-  });
+  })
+  .refine(
+    (value) => value.token.trim().length >= 20 || (value.identifier.trim().length >= 5 && value.code.replace(/\D/g, "").length === 6),
+    {
+      message: "Use the email reset link, or enter your email/mobile and the 6-digit text code.",
+      path: ["code"],
+    },
+  );
 
 export const elitePaymentMethods = ["BPI Bank", "GCash"] as const;
 

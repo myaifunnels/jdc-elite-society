@@ -64,9 +64,12 @@ export async function approveMastermindPayment(
     await setMemberPaymentVerified(order.userId, true);
     await approveEliteCheckoutOrder(order.id, admin.id);
     await grantCourseAccess(order.fullName, order.email, order.mobile);
-    notifyPaymentApproved({ name: order.fullName, email: order.email, phone: order.mobile }).catch((error) =>
-      console.error("Payment-approved SMS failed", error),
-    );
+    notifyPaymentApproved({
+      id: order.userId,
+      name: order.fullName,
+      email: order.email,
+      phone: order.mobile,
+    }).catch((error) => console.error("Payment-approved notify failed", error));
     invalidateRegistrantCrmSync();
     revalidatePaymentPaths();
     return { success: "Payment approved and member access updated." };
@@ -91,9 +94,12 @@ export async function rejectMastermindPayment(
     await setMemberPaymentVerified(order.userId, false);
     await rejectEliteCheckoutOrder(order.id, admin.id);
     await revokeCourseAccess(order.email, order.mobile);
-    notifyPaymentRejected({ name: order.fullName, email: order.email, phone: order.mobile }).catch((error) =>
-      console.error("Payment-rejected SMS failed", error),
-    );
+    notifyPaymentRejected({
+      id: order.userId,
+      name: order.fullName,
+      email: order.email,
+      phone: order.mobile,
+    }).catch((error) => console.error("Payment-rejected notify failed", error));
     invalidateRegistrantCrmSync();
     revalidatePaymentPaths();
     return { success: "Payment rejected. Their University, courses, and group access are locked until this is resolved." };

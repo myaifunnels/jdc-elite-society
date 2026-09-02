@@ -8,7 +8,7 @@ import { getSessionUser } from "@/lib/session";
 
 export const metadata: Metadata = {
   title: "Forgot password",
-  description: "Request a Coach JDC password reset link.",
+  description: "Request a Coach JDC password reset by email or text.",
 };
 
 export default async function ForgotPasswordPage() {

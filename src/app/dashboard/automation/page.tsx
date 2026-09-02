@@ -10,6 +10,7 @@ import {
 import { SmsTemplateCard } from "@/components/dashboard/sms-template-card";
 import { getResolvedIntegrationSettings } from "@/lib/integrations-store";
 import { requireCapability } from "@/lib/session";
+import { SMS_TEMPLATE_GROUPS } from "@/lib/sms-templates";
 import { listSmsTemplates } from "@/lib/sms-templates-store";
 import { cn } from "@/lib/utils";
 
@@ -20,11 +21,13 @@ export default async function AutomationPage() {
   const tab: AutomationTab = "sms";
   const settings = await getResolvedIntegrationSettings();
   const templates = await listSmsTemplates();
+  const byKey = new Map(templates.filter((item) => item.key).map((item) => [item.key, item]));
+  const custom = templates.filter((item) => item.isCustom);
 
   return (
     <DashboardShell
       title="Automation"
-      description="The SMS copy sent for every buyer and team activity in the system — edit the wording, set the from number, and test a send."
+      description="SMS copy for JDC Elite Society, account, and support — texts send through GHL, then TextBee, then Twilio. Edit wording here, then test a send."
     >
       <div className="macos-toolbar" style={{ padding: "0 0 0.9rem" }}>
         <div className="macos-segment" style={{ gridTemplateColumns: "1fr", width: "min(14rem, 100%)" }}>
@@ -43,16 +46,32 @@ export default async function AutomationPage() {
           <SendTestSmsForm templates={templates.map((item) => ({ id: item.id, label: item.label, body: item.body }))} />
         </MacosWindow>
 
-        <div className="dashboard-span-2 sms-template-list">
-          {templates.map((template) => (
-            <SmsTemplateCard key={template.id} template={template} />
-          ))}
-        </div>
+        {SMS_TEMPLATE_GROUPS.map((group) => (
+          <div key={group.id} className="dashboard-span-2 sms-template-group">
+            <h2 className="sms-template-group-title">{group.label}</h2>
+            <div className="sms-template-list">
+              {group.keys.map((key) => {
+                const template = byKey.get(key);
+                return template ? <SmsTemplateCard key={template.id} template={template} /> : null;
+              })}
+            </div>
+          </div>
+        ))}
+
+        {custom.length ? (
+          <div className="dashboard-span-2 sms-template-group">
+            <h2 className="sms-template-group-title">Custom</h2>
+            <div className="sms-template-list">
+              {custom.map((template) => (
+                <SmsTemplateCard key={template.id} template={template} />
+              ))}
+            </div>
+          </div>
+        ) : null}
 
         <MacosWindow title="Add a custom template" className="dashboard-span-2">
           <p className="macos-lead" style={{ textAlign: "left" }}>
-            Not tied to any automatic activity — use it as a saved starting point in the test-send tool above, for
-            manual outreach.
+            Not tied to an automatic activity — use it as a saved starting point in the test-send tool above.
           </p>
           <AddSmsTemplateForm />
         </MacosWindow>

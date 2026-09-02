@@ -6,6 +6,7 @@ import { MacosBootScreen } from "@/components/dashboard/macos-boot-screen";
 import { MacosRouteProgress } from "@/components/dashboard/macos-route-progress";
 import { AccessMap } from "@/lib/access";
 import { BrandingSettings } from "@/lib/branding";
+import type { AppNotification } from "@/lib/notification-store";
 import { membershipLabel } from "@/lib/membership";
 import { AuthUser } from "@/lib/types";
 import { hasUniversityAccess } from "@/lib/university-access";
@@ -15,12 +16,14 @@ export function DashboardFrame({
   access,
   branding,
   impersonator,
+  notifications,
   children,
 }: {
   user: AuthUser;
   access: AccessMap;
   branding: BrandingSettings;
   impersonator?: AuthUser | null;
+  notifications: AppNotification[];
   children: React.ReactNode;
 }) {
   return (
@@ -41,6 +44,7 @@ export function DashboardFrame({
           universityLocked={!hasUniversityAccess(user)}
           branding={branding}
           access={access}
+          notifications={notifications}
         />
         <div className="dashboard-app-main min-w-0">
           {impersonator ? <ImpersonationBanner user={user} impersonator={impersonator} /> : null}

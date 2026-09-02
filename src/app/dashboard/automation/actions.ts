@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { saveIntegrationSettings } from "@/lib/integrations-store";
 import { requireCapability } from "@/lib/session";
 import { sendSms } from "@/lib/sms";
-import { renderTemplate, type SmsTemplateKey } from "@/lib/sms-templates";
+import { isSmsTemplateKey, renderTemplate } from "@/lib/sms-templates";
 import {
   deleteSmsTemplate,
   resetSmsTemplate,
@@ -34,7 +34,8 @@ export async function saveSmsTemplateAction(
 ): Promise<AutomationFormState> {
   await requireCapability("automation");
   const id = String(formData.get("id") ?? "").trim() || undefined;
-  const key = (String(formData.get("key") ?? "").trim() || null) as SmsTemplateKey | null;
+  const rawKey = String(formData.get("key") ?? "").trim();
+  const key = isSmsTemplateKey(rawKey) ? rawKey : null;
   const label = String(formData.get("label") ?? "").trim();
   const body = String(formData.get("body") ?? "");
 
@@ -55,8 +56,8 @@ export async function resetSmsTemplateAction(
   formData: FormData,
 ): Promise<AutomationFormState> {
   await requireCapability("automation");
-  const key = String(formData.get("key") ?? "").trim() as SmsTemplateKey;
-  if (!key) {
+  const key = String(formData.get("key") ?? "").trim();
+  if (!isSmsTemplateKey(key)) {
     return { error: "Missing template." };
   }
   await resetSmsTemplate(key);
@@ -99,6 +100,12 @@ export async function sendTestSmsAction(
     paymentMethod: "GCash",
     hours: "1 online hour",
     format: "Online · 1 hour",
+    code: "482193",
+    subject: "Payment help",
+    preview: "Need help with my receipt",
+    status: "Awaiting your reply",
+    category: "Payment",
+    email: "member@coachjdc.org",
   });
 
   const result = await sendSms({ to, body: rendered, name: "Test Buyer" });

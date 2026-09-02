@@ -1,4 +1,5 @@
 import { mastermindOffer } from "@/data/mastermind-offer";
+import { notifyAdminsOfPurchase } from "@/lib/activity-notify";
 import { notifyEmails, sendEmail } from "@/lib/mail";
 import { eliteSiteUrl, siteUrl } from "@/lib/site";
 import { notifyPhone, sendSms } from "@/lib/sms";
@@ -80,6 +81,10 @@ export async function notifyMastermindPurchase(input: MastermindNotice) {
       name: "JDC Team Alerts",
       email: notifyEmails()[0] || mastermindOffer.support.email,
     }),
+    notifyAdminsOfPurchase({
+      title: `Mastermind payment · ${input.name}`,
+      body: `${input.priceLabel} via ${input.paymentMethod}`,
+    }),
   ]);
 }
 
@@ -156,15 +161,27 @@ export async function notifyCoachingOfferPurchase(input: CoachingOfferNotice) {
       name: "JDC Team Alerts",
       email: notifyEmails()[0] || mastermindOffer.support.email,
     }),
+    notifyAdminsOfPurchase({
+      title: `Coaching add-on · ${input.name}`,
+      body: `${input.priceLabel} · ${formatLabel}`,
+    }),
   ]);
 }
 
-export async function notifyPaymentApproved(input: { name: string; email: string; phone: string }) {
+export async function notifyPaymentApproved(input: { id?: string; name: string; email: string; phone: string }) {
+  const { notifyMemberPaymentDecision } = await import("@/lib/activity-notify");
   const body = renderTemplate(await getSmsTemplateBody("payment_approved"), { name: input.name });
-  await sendSms({ to: input.phone, body, name: input.name, email: input.email });
+  await Promise.allSettled([
+    sendSms({ to: input.phone, body, name: input.name, email: input.email }),
+    notifyMemberPaymentDecision({ ...input, approved: true }),
+  ]);
 }
 
-export async function notifyPaymentRejected(input: { name: string; email: string; phone: string }) {
+export async function notifyPaymentRejected(input: { id?: string; name: string; email: string; phone: string }) {
+  const { notifyMemberPaymentDecision } = await import("@/lib/activity-notify");
   const body = renderTemplate(await getSmsTemplateBody("payment_rejected"), { name: input.name });
-  await sendSms({ to: input.phone, body, name: input.name, email: input.email });
+  await Promise.allSettled([
+    sendSms({ to: input.phone, body, name: input.name, email: input.email }),
+    notifyMemberPaymentDecision({ ...input, approved: false }),
+  ]);
 }

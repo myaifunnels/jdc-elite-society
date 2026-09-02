@@ -23,9 +23,11 @@ import {
 
 import { logout } from "@/app/login/actions";
 import { SiteLogo } from "@/components/branding/site-logo";
+import { NotificationBell } from "@/components/dashboard/notification-bell";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { AccessMap, Capability, dashboardHomeHref } from "@/lib/access";
 import { BrandingSettings } from "@/lib/branding";
+import type { AppNotification } from "@/lib/notification-store";
 import { DashboardRole } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -72,6 +74,7 @@ function SidebarPanel({
   universityLocked,
   branding,
   access,
+  notifications,
   titleId,
   onNavigate,
   showClose = false,
@@ -83,6 +86,7 @@ function SidebarPanel({
   universityLocked?: boolean;
   branding: BrandingSettings;
   access: AccessMap;
+  notifications: AppNotification[];
   titleId: string;
   onNavigate?: () => void;
   showClose?: boolean;
@@ -152,7 +156,10 @@ function SidebarPanel({
                 : role}
             </p>
           </div>
-          <ThemeToggle />
+          <div className="flex items-center gap-1">
+            <NotificationBell items={notifications} />
+            <ThemeToggle />
+          </div>
         </div>
 
         <form action={logout} className="w-full">
@@ -174,6 +181,7 @@ export function DashboardSidebar({
   universityLocked,
   branding,
   access,
+  notifications,
 }: {
   role: DashboardRole;
   userName: string;
@@ -182,6 +190,7 @@ export function DashboardSidebar({
   universityLocked?: boolean;
   branding: BrandingSettings;
   access: AccessMap;
+  notifications: AppNotification[];
 }) {
   const [open, setOpen] = useState(false);
   const titleId = useId();
@@ -224,6 +233,7 @@ export function DashboardSidebar({
       <div className="dashboard-mobile-bar sticky top-0 z-30 flex items-center justify-between gap-3 px-4 py-3 lg:hidden">
         <SiteLogo branding={branding} href={dashboardHomeHref(access)} compact />
         <div className="flex items-center gap-2">
+          <NotificationBell items={notifications} />
           <ThemeToggle />
           <button
             type="button"
@@ -265,6 +275,7 @@ export function DashboardSidebar({
           universityLocked={universityLocked}
           branding={branding}
           access={access}
+          notifications={notifications}
           titleId={titleId}
           onNavigate={close}
           showClose
@@ -283,6 +294,7 @@ export function DashboardSidebar({
           universityLocked={universityLocked}
           branding={branding}
           access={access}
+          notifications={notifications}
           titleId={`${titleId}-desktop`}
         />
       </aside>

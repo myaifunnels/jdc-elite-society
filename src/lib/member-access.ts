@@ -10,9 +10,7 @@ import { formatInternationalPhone } from "@/lib/countries";
 import { createLead } from "@/lib/crm-store";
 import { grantCommunityAndMastermindAccess } from "@/lib/ghl-community";
 import { toE164Phone } from "@/lib/identity";
-import { sendEmail } from "@/lib/mail";
-import { sendSms } from "@/lib/sms";
-import { eliteSiteUrl, siteUrl } from "@/lib/site";
+import { notifyUniversityWelcome } from "@/lib/activity-notify";
 
 const AD_REGISTRANTS = [
   {
@@ -99,27 +97,12 @@ export async function grantInstantUniversityAccess(input: {
 
   const shouldNotify = input.notify ?? created;
   if (shouldNotify) {
-    await sendEmail({
-      to: email,
-      subject: "Your JDC Elite Society University access is open",
-      html: `
-        <p>Hi ${input.name.split(" ")[0] || "there"},</p>
-        <p>Your University access is on. Open the JDC Elite Society community and JDC Mastermind Sessions 1 and 2 here:</p>
-        <p><a href="${siteUrl}/dashboard/university">${siteUrl}/dashboard/university</a></p>
-        <p>Sign in with <strong>${email}</strong>. If you have not set a password yet, use the temporary password <strong>${TEMPORARY_MEMBER_PASSWORD}</strong> and change it on first login.</p>
-        <p>Community: <a href="https://community.coachjdc.org">community.coachjdc.org</a></p>
-        <p>Offer page: <a href="${eliteSiteUrl}">${eliteSiteUrl}</a></p>
-      `,
-    }).catch((error) => console.error("University welcome email failed", error));
-
-    if (phone) {
-      await sendSms({
-        to: phone,
-        name: input.name,
-        email,
-        body: `JDC Elite Society: University is open. Mastermind Sessions 1 & 2 are in your dashboard. Sign in at ${siteUrl.replace("https://", "")}/login`,
-      }).catch((error) => console.error("University welcome SMS failed", error));
-    }
+    await notifyUniversityWelcome({
+      id: user.id,
+      name: input.name,
+      email,
+      phone,
+    }).catch((error) => console.error("University welcome notify failed", error));
   }
 
   return { email, userId: user.id, tags: community.tags, granted: community.granted, created };

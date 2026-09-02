@@ -958,26 +958,58 @@ async function persistUserUpdate(user: AuthUserRecord) {
   }
 }
 
-export async function requestPasswordReset(email: string) {
+export async function requestPasswordReset(identifier: string) {
   await ensureSeedUsers();
-  const user = await findUserByEmail(email);
+  const raw = identifier.trim();
+  const looksLikeEmail = raw.includes("@");
+  const user = looksLikeEmail
+    ? await findUserByEmail(raw)
+    : await findUserByEmailOrPhone("", raw);
 
   if (!user) {
-    await hashPassword(`${email}:missing`);
+    await hashPassword(`${raw}:missing`);
     return;
   }
 
   const { createPasswordResetToken } = await import("@/lib/password-reset");
-  const { sendPasswordResetEmail } = await import("@/lib/mail");
+  const { notifyPasswordReset } = await import("@/lib/activity-notify");
   const { siteUrl } = await import("@/lib/site");
-  const token = await createPasswordResetToken(getPool(), user.id);
-  await sendPasswordResetEmail(user.email, `${siteUrl}/reset-password?token=${encodeURIComponent(token)}`);
+  const { token, code } = await createPasswordResetToken(getPool(), user.id);
+  await notifyPasswordReset({
+    name: user.name,
+    email: user.email,
+    phone: user.phone,
+    code,
+    resetUrl: `${siteUrl}/reset-password?token=${encodeURIComponent(token)}`,
+  });
 }
 
 export async function resetPasswordWithToken(token: string, password: string) {
   const { consumePasswordResetToken } = await import("@/lib/password-reset");
   const userId = await consumePasswordResetToken(getPool(), token);
 
+  if (!userId) {
+    return false;
+  }
+
+  await updateUserPasswordHash(userId, await hashPassword(password));
+  return true;
+}
+
+export async function resetPasswordWithCode(identifier: string, code: string, password: string) {
+  await ensureSeedUsers();
+  const raw = identifier.trim();
+  const looksLikeEmail = raw.includes("@");
+  const user = looksLikeEmail
+    ? await findUserByEmail(raw)
+    : await findUserByEmailOrPhone("", raw);
+
+  if (!user) {
+    return false;
+  }
+
+  const { consumePasswordResetCode } = await import("@/lib/password-reset");
+  const userId = await consumePasswordResetCode(getPool(), user.id, code.replace(/\D/g, ""));
   if (!userId) {
     return false;
   }

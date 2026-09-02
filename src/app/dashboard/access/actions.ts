@@ -12,6 +12,7 @@ import {
   deleteUser,
   findUserByEmail,
   getPublicUserById,
+  requestPasswordReset,
   setUserActive,
   updateUserRole,
 } from "@/lib/auth-store";
@@ -110,6 +111,11 @@ export async function grantContactPortalAction(formData: FormData) {
       paymentVerified: true,
     });
     await saveUserAccess(user.id, "contact", {});
+  }
+
+  const portal = await findUserByEmail(email);
+  if (portal && !portal.passwordSet) {
+    await requestPasswordReset(email);
   }
 
   revalidatePath("/dashboard/access");

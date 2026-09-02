@@ -195,6 +195,10 @@ export default async function IntegrationsPage({
             <p className="app-store-detail-meta">
               Device: <code>{settings.textbeeDeviceId || "not set"}</code>
             </p>
+            <p className="macos-lead" style={{ textAlign: "left" }}>
+              Texts try GoHighLevel first, then TextBee, then Twilio. Forgot-password codes, Elite checkout, payment
+              review, University welcome, and Support messages all use this chain.
+            </p>
             <TextBeeIntegrationForm configured={textbeeReady} deviceId={settings.textbeeDeviceId} />
           </>
         ) : null}

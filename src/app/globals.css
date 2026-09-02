@@ -3035,6 +3035,128 @@ html:not(.dark) .auth-field {
   grid-template-columns: repeat(auto-fill, minmax(20rem, 1fr));
 }
 
+.sms-template-group {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.sms-template-group-title {
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 650;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.notification-bell {
+  position: relative;
+}
+
+.notification-badge {
+  position: absolute;
+  top: -0.15rem;
+  right: -0.15rem;
+  min-width: 1.05rem;
+  height: 1.05rem;
+  padding: 0 0.22rem;
+  border-radius: 999px;
+  background: #ff3b30;
+  color: #fff;
+  font-size: 0.62rem;
+  font-weight: 700;
+  line-height: 1.05rem;
+  text-align: center;
+}
+
+.notification-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  border: 0;
+  background: transparent;
+}
+
+.notification-panel {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 0.45rem);
+  z-index: 70;
+  width: min(20.5rem, calc(100vw - 2rem));
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface-elevated);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.22);
+}
+
+.dashboard-mobile-bar .notification-panel {
+  bottom: auto;
+  top: calc(100% + 0.45rem);
+}
+
+.notification-panel header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.7rem 0.85rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.notification-panel header strong {
+  font-size: 0.82rem;
+}
+
+.notification-empty,
+.notification-panel ul button,
+.notification-footer {
+  display: block;
+  width: 100%;
+  padding: 0.7rem 0.85rem;
+  text-align: left;
+}
+
+.notification-empty,
+.notification-panel ul button span,
+.notification-panel ul button em {
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.notification-panel ul {
+  max-height: 18rem;
+  overflow: auto;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.notification-panel ul button {
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  background: transparent;
+  cursor: pointer;
+}
+
+.notification-panel ul button strong,
+.notification-panel ul button span,
+.notification-panel ul button em {
+  display: block;
+}
+
+.notification-panel ul button.is-unread {
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+}
+
+.notification-footer {
+  border-top: 1px solid var(--line);
+  color: var(--accent);
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
 .sms-template-card {
   display: grid;
   gap: 0.6rem;

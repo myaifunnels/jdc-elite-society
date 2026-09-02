@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 
+import { findUserById } from "@/lib/auth-store";
 import { hasAccess } from "@/lib/access";
 import { resolveAccess } from "@/lib/access-store";
 import { getEliteCheckoutOrder, updateEliteCheckoutReceipt } from "@/lib/elite-checkout-store";
@@ -49,6 +50,14 @@ export async function createTicketAction(
       relatedOrderId,
       initialMessage: message,
     });
+    const { notifySupportTicketOpened } = await import("@/lib/activity-notify");
+    notifySupportTicketOpened({
+      member: { id: user.id, name: user.name, email: user.email, phone: user.phone },
+      subject,
+      category,
+      preview: message,
+      ticketId: ticket.id,
+    }).catch((error) => console.error("Support ticket notify failed", error));
     revalidatePath("/dashboard/support");
     return { success: "Your support ticket was created.", ticketId: ticket.id };
   } catch (error) {
@@ -91,6 +100,20 @@ export async function replyToTicketAction(
       body,
       newStatus,
     });
+    const member = isAdmin ? await findUserById(ticket.userId) : user;
+    const { notifySupportReply } = await import("@/lib/activity-notify");
+    notifySupportReply({
+      member: {
+        id: ticket.userId,
+        name: ticket.userName,
+        email: ticket.userEmail,
+        phone: member?.phone ?? "",
+      },
+      subject: ticket.subject,
+      preview: body,
+      ticketId,
+      fromAdmin: isAdmin,
+    }).catch((error) => console.error("Support reply notify failed", error));
     revalidatePath("/dashboard/support");
     revalidatePath(`/dashboard/support?ticket=${ticketId}`);
     return { success: "Message sent.", ticketId };
@@ -114,6 +137,23 @@ export async function updateTicketStatusAction(
 
   try {
     await updateSupportTicketStatus(ticketId, status);
+    const ticket = await getSupportTicket(ticketId);
+    if (ticket) {
+      const member = await findUserById(ticket.userId);
+      const { notifySupportStatus } = await import("@/lib/activity-notify");
+      const { supportStatusLabel } = await import("@/lib/support-labels");
+      notifySupportStatus({
+        member: {
+          id: ticket.userId,
+          name: ticket.userName,
+          email: ticket.userEmail,
+          phone: member?.phone ?? "",
+        },
+        subject: ticket.subject,
+        status: supportStatusLabel(status),
+        ticketId,
+      }).catch((error) => console.error("Support status notify failed", error));
+    }
     revalidatePath("/dashboard/support");
     return { success: "Ticket status updated.", ticketId };
   } catch (error) {
@@ -142,6 +182,13 @@ export async function reuploadReceiptAction(
   try {
     const receiptUrl = await storePaymentReceipt(receipt, user.email);
     await updateEliteCheckoutReceipt(orderId, { receiptName: receipt.name, receiptUrl });
+    const { notifyReceiptReupload } = await import("@/lib/activity-notify");
+    notifyReceiptReupload({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      phone: user.phone,
+    }).catch((error) => console.error("Receipt reupload notify failed", error));
     revalidatePath("/dashboard/university");
     revalidatePath("/dashboard/support");
     return { success: "Receipt uploaded. Our team will review it shortly." };
