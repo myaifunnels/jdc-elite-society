@@ -18,6 +18,7 @@ export const navItems: NavItem[] = [
       { href: "/programs/90-day-blueprint", label: "90-Day Blueprint" },
     ],
   },
+  { href: "/webinars", label: "WEBINAR" },
   { href: "/about", label: "About" },
   { href: "/contact", label: "Contact" },
 ];
