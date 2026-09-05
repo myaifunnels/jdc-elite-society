@@ -448,3 +448,47 @@ export async function sendGhlSms(contactId: string, message: string) {
     return { skipped: false as const, ok: false as const };
   }
 }
+
+export async function scheduleGhlMessage(input: {
+  type: "Email" | "SMS";
+  contactId: string;
+  message: string;
+  scheduledAt: string;
+  subject?: string;
+  html?: string;
+  emailTo?: string;
+  toNumber?: string;
+}) {
+  const settings = await getResolvedIntegrationSettings();
+  const token = settings.ghlApiKey;
+  if (!token || !input.contactId || new Date(input.scheduledAt).getTime() <= Date.now()) {
+    return { skipped: true as const, ok: false as const };
+  }
+
+  try {
+    const response = await fetch("https://services.leadconnectorhq.com/conversations/messages", {
+      method: "POST",
+      headers: ghlHeaders(token, true),
+      body: JSON.stringify({
+        type: input.type,
+        contactId: input.contactId,
+        message: input.message,
+        subject: input.subject,
+        html: input.html,
+        emailTo: input.emailTo,
+        toNumber: input.toNumber,
+        scheduledTimestamp: Math.floor(new Date(input.scheduledAt).getTime() / 1000),
+        status: "pending",
+      }),
+    });
+    if (!response.ok) {
+      console.error("GHL scheduled message failed", response.status, await response.text());
+      return { skipped: false as const, ok: false as const };
+    }
+    const payload = (await response.json()) as { messageId?: string; emailMessageId?: string };
+    return { skipped: false as const, ok: true as const, messageId: payload.messageId ?? payload.emailMessageId ?? "" };
+  } catch (error) {
+    console.error("GHL scheduled message error", error);
+    return { skipped: false as const, ok: false as const };
+  }
+}

@@ -54,6 +54,8 @@ services:
         sync: false
       - key: TEXTBEE_DEVICE_ID
         sync: false
+      - key: PASSIVE_INCOME_ZOOM_URL
+        sync: false
 databases:
   - name: coach-jdc-platform-db
     databaseName: coach_jdc_platform
