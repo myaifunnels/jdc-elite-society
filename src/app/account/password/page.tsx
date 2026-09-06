@@ -21,8 +21,8 @@ export default async function AccountPasswordPage() {
   const branding = await getResolvedBrandingSettings();
 
   return (
-    <AuthPageShell>
-      <SetPasswordForm branding={branding} email={user.email} photoUrl={user.facebookPhotoUrl} />
+    <AuthPageShell branding={branding}>
+      <SetPasswordForm email={user.email} photoUrl={user.facebookPhotoUrl} />
     </AuthPageShell>
   );
 }

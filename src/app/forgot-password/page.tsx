@@ -21,8 +21,8 @@ export default async function ForgotPasswordPage() {
   const branding = await getResolvedBrandingSettings();
 
   return (
-    <AuthPageShell>
-      <ForgotPasswordForm branding={branding} />
+    <AuthPageShell branding={branding}>
+      <ForgotPasswordForm />
     </AuthPageShell>
   );
 }

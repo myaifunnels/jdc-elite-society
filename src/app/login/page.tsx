@@ -26,8 +26,8 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   const branding = await getResolvedBrandingSettings();
 
   return (
-    <AuthPageShell>
-      <AuthPanel branding={branding} mode="login" email={params.email ?? ""} />
+    <AuthPageShell branding={branding}>
+      <AuthPanel mode="login" email={params.email ?? ""} />
     </AuthPageShell>
   );
 }

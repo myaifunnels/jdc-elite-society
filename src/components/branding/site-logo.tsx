@@ -3,7 +3,7 @@ import Link from "next/link";
 import { BrandingSettings, resolveLogoHref } from "@/lib/branding";
 import { cn } from "@/lib/utils";
 
-function JdcWordmark({ compact = false }: { compact?: boolean }) {
+export function JdcWordmark({ compact = false }: { compact?: boolean }) {
   return (
     <span className={cn("jdc-wordmark", compact && "is-compact")} aria-hidden="true">
       <span className="jdc-letter">j</span>

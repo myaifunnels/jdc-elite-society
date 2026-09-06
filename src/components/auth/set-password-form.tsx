@@ -4,9 +4,7 @@ import { Eye, EyeOff, Lock } from "lucide-react";
 import { useActionState, useState } from "react";
 
 import { AuthFormState, changeSignedInPassword } from "@/app/login/actions";
-import { SiteLogo } from "@/components/branding/site-logo";
 import { PhotoUploadField } from "@/components/forms/photo-upload-field";
-import { BrandingSettings } from "@/lib/branding";
 
 const initialState: AuthFormState = {};
 
@@ -50,11 +48,9 @@ function PasswordField({
 }
 
 export function SetPasswordForm({
-  branding,
   email,
   photoUrl = "",
 }: {
-  branding: BrandingSettings;
   email: string;
   photoUrl?: string;
 }) {
@@ -66,7 +62,6 @@ export function SetPasswordForm({
         <p className="macos-title">Finish Setting Up</p>
       </header>
       <div className="macos-body">
-        <SiteLogo branding={branding} href="/" compact={Boolean(branding.logoUrl)} />
         <form action={action} className="auth-form auth-form-login" encType="multipart/form-data">
           <p className="macos-lead">
             You&apos;re signed in as {email}. Add your profile photo, then set a password only you know.

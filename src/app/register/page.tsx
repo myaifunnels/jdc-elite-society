@@ -21,8 +21,8 @@ export default async function RegisterPage() {
   const branding = await getResolvedBrandingSettings();
 
   return (
-    <AuthPageShell>
-      <AuthPanel branding={branding} mode="register" />
+    <AuthPageShell branding={branding}>
+      <AuthPanel mode="register" />
     </AuthPageShell>
   );
 }

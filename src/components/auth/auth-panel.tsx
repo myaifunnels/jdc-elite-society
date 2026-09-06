@@ -7,10 +7,8 @@ import { type ReactNode, useState } from "react";
 import { useActionState } from "react";
 
 import { AuthFormState, loginAccount, registerAccount } from "@/app/login/actions";
-import { SiteLogo } from "@/components/branding/site-logo";
 import { PhoneField } from "@/components/forms/phone-field";
 import { StickyForm } from "@/components/forms/sticky-form";
-import { BrandingSettings } from "@/lib/branding";
 
 const initialState: AuthFormState = {};
 
@@ -42,11 +40,9 @@ function AuthField({
 }
 
 export function AuthPanel({
-  branding,
   mode,
   email = "",
 }: {
-  branding: BrandingSettings;
   mode: "login" | "register";
   email?: string;
 }) {
@@ -79,8 +75,6 @@ export function AuthPanel({
       </div>
 
       <div className="macos-body">
-        <SiteLogo branding={branding} href="/" compact={Boolean(branding.logoUrl)} />
-
         <div className="macos-mark" aria-hidden>
           <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
             <circle cx="9" cy="9" r="6.5" stroke="currentColor" strokeWidth="1.6" />

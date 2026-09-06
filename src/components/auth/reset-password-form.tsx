@@ -5,18 +5,10 @@ import Link from "next/link";
 import { useActionState } from "react";
 
 import { AuthFormState, resetPasswordAccount } from "@/app/login/actions";
-import { SiteLogo } from "@/components/branding/site-logo";
-import { BrandingSettings } from "@/lib/branding";
 
 const initialState: AuthFormState = {};
 
-export function ResetPasswordForm({
-  branding,
-  token,
-}: {
-  branding: BrandingSettings;
-  token: string;
-}) {
+export function ResetPasswordForm({ token }: { token: string }) {
   const [state, action, pending] = useActionState(resetPasswordAccount, initialState);
   const hasLink = token.trim().length >= 20;
 
@@ -26,7 +18,6 @@ export function ResetPasswordForm({
         <p className="macos-title">Reset Password</p>
       </header>
       <div className="macos-body">
-        <SiteLogo branding={branding} href="/" compact={Boolean(branding.logoUrl)} />
         <form action={action} className="auth-form auth-form-login">
           <p className="macos-lead">
             {hasLink

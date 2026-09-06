@@ -26,8 +26,8 @@ export default async function ResetPasswordPage({
   const branding = await getResolvedBrandingSettings();
 
   return (
-    <AuthPageShell>
-      <ResetPasswordForm branding={branding} token={token} />
+    <AuthPageShell branding={branding}>
+      <ResetPasswordForm token={token} />
     </AuthPageShell>
   );
 }

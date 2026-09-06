@@ -5,13 +5,11 @@ import Link from "next/link";
 import { useActionState } from "react";
 
 import { AuthFormState, requestPasswordResetAccount } from "@/app/login/actions";
-import { SiteLogo } from "@/components/branding/site-logo";
 import { StickyForm } from "@/components/forms/sticky-form";
-import { BrandingSettings } from "@/lib/branding";
 
 const initialState: AuthFormState = {};
 
-export function ForgotPasswordForm({ branding }: { branding: BrandingSettings }) {
+export function ForgotPasswordForm() {
   const [state, action, pending] = useActionState(requestPasswordResetAccount, initialState);
 
   return (
@@ -20,7 +18,6 @@ export function ForgotPasswordForm({ branding }: { branding: BrandingSettings })
         <p className="macos-title">Forgot Password</p>
       </header>
       <div className="macos-body">
-        <SiteLogo branding={branding} href="/" compact={Boolean(branding.logoUrl)} />
         <StickyForm storageKey="coach-jdc-forgot-password" action={action} className="auth-form auth-form-login">
           <p className="macos-lead">
             Enter the email or mobile number on your JDC Elite Society account. We will send a reset link to email and a
