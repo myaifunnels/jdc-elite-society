@@ -24,7 +24,6 @@ import {
 import { logout } from "@/app/login/actions";
 import { SiteLogo } from "@/components/branding/site-logo";
 import { NotificationBell } from "@/components/dashboard/notification-bell";
-import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { AccessMap, Capability, dashboardHomeHref } from "@/lib/access";
 import { BrandingSettings } from "@/lib/branding";
 import type { AppNotification } from "@/lib/notification-store";
@@ -158,7 +157,6 @@ function SidebarPanel({
           </div>
           <div className="flex items-center gap-1">
             <NotificationBell items={notifications} />
-            <ThemeToggle />
           </div>
         </div>
 
@@ -234,7 +232,6 @@ export function DashboardSidebar({
         <SiteLogo branding={branding} href={dashboardHomeHref(access)} compact />
         <div className="flex items-center gap-2">
           <NotificationBell items={notifications} />
-          <ThemeToggle />
           <button
             type="button"
             className="glass-icon-btn pressable inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full"

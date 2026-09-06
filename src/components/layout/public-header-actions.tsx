@@ -6,7 +6,6 @@ import { useEffect, useRef, useState } from "react";
 
 import { logout } from "@/app/login/actions";
 import { ContactAvatar } from "@/components/dashboard/contact-avatar";
-import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { navItems } from "@/data/site-content";
 import { NavItem, NavSubItem } from "@/lib/types";
 
@@ -256,7 +255,6 @@ export function PublicHeaderActions({
       </nav>
 
       <div className="site-header-tools">
-        <ThemeToggle />
         {account ? (
           <AccountMenu account={account} />
         ) : (

@@ -42,55 +42,6 @@
   color-scheme: dark;
 }
 
-html:not(.dark) {
-  --background: var(--custom-light-background);
-  --foreground: #0e1626;
-  --heading: #07101c;
-  --card: color-mix(in srgb, var(--custom-light-surface) 82%, transparent);
-  --surface: color-mix(in srgb, var(--custom-light-surface) 88%, transparent);
-  --surface-elevated: color-mix(in srgb, var(--custom-light-surface) 94%, white);
-  --muted: #4b5568;
-  --line: rgba(11, 18, 32, 0.1);
-  --line-strong: rgba(23, 105, 255, 0.22);
-  --brand: var(--custom-brand);
-  --brand-dark: var(--custom-brand-dark);
-  --brand-soft: color-mix(in srgb, var(--brand) 16%, transparent);
-  --glow: color-mix(in srgb, var(--custom-light-glow) 80%, transparent);
-  --shadow-xl:
-    0 28px 90px rgba(15, 23, 42, 0.12),
-    0 0 32px color-mix(in srgb, var(--brand) 10%, transparent),
-    inset 0 1px 0 rgba(255, 255, 255, 0.86);
-  --shadow-lg:
-    0 16px 40px rgba(15, 23, 42, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.8);
-  color-scheme: light;
-}
-
-.dark {
-  --background: var(--custom-dark-background);
-  --foreground: #f5f7ff;
-  --heading: #f5f7ff;
-  --card: color-mix(in srgb, var(--custom-dark-surface) 72%, transparent);
-  --surface: color-mix(in srgb, var(--custom-dark-surface) 80%, transparent);
-  --surface-elevated: color-mix(in srgb, var(--custom-dark-surface) 92%, #000);
-  --muted: #7d879d;
-  --line: rgba(159, 188, 255, 0.14);
-  --line-strong: rgba(159, 188, 255, 0.28);
-  --brand: var(--custom-brand);
-  --brand-dark: var(--custom-brand-dark);
-  --brand-soft: color-mix(in srgb, var(--brand) 22%, transparent);
-  --glow: color-mix(in srgb, var(--custom-dark-glow) 72%, transparent);
-  --shadow-xl:
-    0 30px 90px rgba(0, 0, 0, 0.5),
-    0 0 48px color-mix(in srgb, var(--brand) 16%, transparent),
-    inset 0 1px 0 rgba(255, 255, 255, 0.06);
-  --shadow-lg:
-    0 16px 40px rgba(0, 0, 0, 0.36),
-    0 0 24px color-mix(in srgb, var(--brand) 10%, transparent),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
-  color-scheme: dark;
-}
-
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -120,8 +71,8 @@ body {
   min-height: -webkit-fill-available;
   overflow-x: hidden;
   background:
-    radial-gradient(circle at 78% -8%, color-mix(in srgb, var(--brand) 18%, transparent), transparent 33rem),
-    radial-gradient(circle at 8% 34%, color-mix(in srgb, var(--brand-dark) 8%, transparent), transparent 30rem),
+    linear-gradient(160deg, color-mix(in srgb, var(--brand) 9%, transparent) 0%, transparent 48%),
+    radial-gradient(130% 95% at 18% -12%, color-mix(in srgb, var(--brand-dark) 9%, transparent), transparent 72%),
     var(--background);
   color: var(--foreground);
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", var(--font-geist-sans), sans-serif;
@@ -544,10 +495,6 @@ a,
 }
 
 .site-account-dropdown-link.is-danger {
-  color: #dc2626;
-}
-
-.dark .site-account-dropdown-link.is-danger {
   color: #fca5a5;
 }
 
@@ -567,13 +514,9 @@ a,
   width: 100%;
   border: 0;
   background: transparent;
-  color: #dc2626;
+  color: #fca5a5;
   cursor: pointer;
   text-align: left;
-}
-
-.dark .site-nav-drawer-signout {
-  color: #fca5a5;
 }
 
 .site-header-tools {
@@ -735,11 +678,6 @@ a,
     inset 0 1px rgba(255, 255, 255, 0.16);
   backdrop-filter: blur(36px) saturate(180%);
   -webkit-backdrop-filter: blur(36px) saturate(180%);
-}
-
-html:not(.dark) .card-surface,
-html:not(.dark) .glass-panel {
-  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.1), inset 0 1px rgba(255, 255, 255, 0.5);
 }
 
 .visual-frame {
@@ -1867,7 +1805,7 @@ html:not(.dark) .glass-panel {
 
 .site-footer {
   background:
-    radial-gradient(circle at 12% 0%, color-mix(in srgb, var(--brand) 18%, transparent), transparent 32%),
+    linear-gradient(165deg, color-mix(in srgb, var(--brand) 12%, transparent) 0%, transparent 50%),
     linear-gradient(180deg, #000 0%, #070b12 100%);
   color: #9aa3b2;
   padding: 4rem 0 calc(1.5rem + var(--safe-bottom));
@@ -2108,20 +2046,8 @@ html:not(.dark) .glass-panel {
 .auth-screen-centered {
   overflow: hidden;
   background:
-    radial-gradient(ellipse at 18% 12%, #7dd3fc 0%, transparent 36%),
-    radial-gradient(ellipse at 82% 18%, #818cf8 0%, transparent 32%),
-    radial-gradient(ellipse at 70% 88%, #fb7185 0%, transparent 34%),
-    radial-gradient(ellipse at 20% 90%, #34d399 0%, transparent 30%),
-    linear-gradient(180deg, #8ec5ff 0%, #c4b5fd 42%, #fda4af 100%);
-}
-
-html.dark .auth-screen-centered,
-.dark .auth-screen-centered {
-  background:
-    radial-gradient(ellipse at 18% 12%, rgba(56, 189, 248, 0.45) 0%, transparent 36%),
-    radial-gradient(ellipse at 82% 18%, rgba(99, 102, 241, 0.4) 0%, transparent 32%),
-    radial-gradient(ellipse at 70% 88%, rgba(244, 63, 94, 0.28) 0%, transparent 34%),
-    radial-gradient(ellipse at 20% 90%, rgba(16, 185, 129, 0.22) 0%, transparent 30%),
+    linear-gradient(155deg, rgba(56, 189, 248, 0.16) 0%, transparent 46%),
+    linear-gradient(-20deg, rgba(99, 102, 241, 0.14) 0%, transparent 50%),
     linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
 }
 
@@ -2162,14 +2088,12 @@ html.dark .auth-screen-centered,
 .macos-window::before {
   content: "";
   position: absolute;
-  top: -0.4rem;
-  left: 50%;
+  inset: -20% -10% auto -10%;
   z-index: 0;
-  width: 10rem;
-  height: 4.6rem;
-  transform: translateX(-50%);
-  background: radial-gradient(circle, color-mix(in srgb, white 80%, var(--brand)) 0%, color-mix(in srgb, var(--brand) 50%, transparent) 40%, transparent 72%);
-  filter: blur(6px);
+  height: 60%;
+  background: linear-gradient(160deg, color-mix(in srgb, white 30%, var(--brand)) 0%, transparent 68%);
+  opacity: 0.4;
+  filter: blur(18px);
   pointer-events: none;
 }
 
@@ -2194,10 +2118,9 @@ html.dark .auth-screen-centered,
   place-items: center;
   padding: 2rem 1rem 3rem;
   background:
-    radial-gradient(ellipse 80% 48% at 50% -8%, color-mix(in srgb, var(--brand) 48%, transparent), transparent 58%),
-    radial-gradient(circle at 50% 8%, color-mix(in srgb, #8ec0ff 22%, transparent), transparent 28%),
-    radial-gradient(circle at 12% 92%, color-mix(in srgb, var(--brand-dark) 22%, transparent), transparent 36%),
-    linear-gradient(180deg, color-mix(in srgb, var(--brand) 10%, transparent), transparent 40%);
+    linear-gradient(165deg, color-mix(in srgb, var(--brand) 16%, transparent) 0%, transparent 55%),
+    linear-gradient(-15deg, color-mix(in srgb, var(--brand-dark) 12%, transparent) 0%, transparent 60%),
+    var(--background);
 }
 
 .auth-form-login {
@@ -2214,17 +2137,21 @@ html.dark .auth-screen-centered,
 
 .auth-success {
   margin: 0;
-  color: #15803d;
+  color: #86efac;
   font-size: 0.84rem;
   line-height: 1.45;
 }
 
-.dark .auth-success {
-  color: #86efac;
+.macos-titlebar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.85rem 1.25rem 0.6rem;
 }
 
-.macos-titlebar {
-  display: none;
+.macos-app-window .macos-titlebar {
+  justify-content: flex-start;
+  padding: 1rem 1.4rem 0;
 }
 
 .macos-heading {
@@ -2278,6 +2205,15 @@ html.dark .auth-screen-centered,
   color: color-mix(in srgb, var(--foreground) 82%, var(--muted));
 }
 
+.macos-app-window .macos-title {
+  text-align: left;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
 .macos-toolbar {
   display: grid;
   place-items: center;
@@ -2291,8 +2227,12 @@ html.dark .auth-screen-centered,
   padding: 0.22rem;
   border-radius: 999px;
   border: 1px solid color-mix(in srgb, white 14%, var(--brand) 10%);
-  background: color-mix(in srgb, #04102a 38%, transparent);
-  box-shadow: none;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.02) 100%),
+    color-mix(in srgb, #04102a 46%, transparent);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 
 .macos-segment button,
@@ -2489,10 +2429,6 @@ html.dark .auth-screen-centered,
   font-size: 0.75rem;
   font-weight: 600;
   color: var(--foreground);
-}
-
-html:not(.dark) .auth-field {
-  background: color-mix(in srgb, #0b1224 7%, white 22%);
 }
 
 .auth-field:not(:has(.auth-field-copy)) {
@@ -2905,13 +2841,9 @@ html:not(.dark) .auth-field {
 
 .photo-upload-error {
   margin: 0;
-  color: #dc2626;
+  color: #fca5a5;
   font-size: 0.76rem;
   line-height: 1.4;
-}
-
-.dark .photo-upload-error {
-  color: #fca5a5;
 }
 
 .contact-avatar.is-xl {
@@ -3001,10 +2933,6 @@ html:not(.dark) .auth-field {
 }
 
 .payment-row-note.is-warn {
-  color: #dc2626;
-}
-
-.dark .payment-row-note.is-warn {
   color: #fca5a5;
 }
 
@@ -3280,19 +3208,11 @@ html:not(.dark) .auth-field {
 
 .status-pill.is-verified {
   background: color-mix(in srgb, #16a34a 18%, transparent);
-  color: #15803d;
-}
-
-.dark .status-pill.is-verified {
   color: #86efac;
 }
 
 .status-pill.is-rejected {
   background: color-mix(in srgb, #dc2626 16%, transparent);
-  color: #b91c1c;
-}
-
-.dark .status-pill.is-rejected {
   color: #fca5a5;
 }
 
@@ -3685,9 +3605,8 @@ html[data-membership="spartan"] {
 
 html[data-membership="spartan"] .auth-screen-centered {
   background:
-    radial-gradient(ellipse at 18% 12%, rgba(229, 9, 20, 0.45) 0%, transparent 36%),
-    radial-gradient(ellipse at 82% 18%, rgba(178, 7, 16, 0.38) 0%, transparent 32%),
-    radial-gradient(ellipse at 70% 88%, rgba(20, 20, 20, 0.55) 0%, transparent 34%),
+    linear-gradient(155deg, rgba(229, 9, 20, 0.18) 0%, transparent 46%),
+    linear-gradient(-20deg, rgba(20, 20, 20, 0.32) 0%, transparent 55%),
     linear-gradient(180deg, #1a1a1a 0%, #141414 100%);
 }
 
@@ -3702,9 +3621,8 @@ html[data-membership="both"] {
 
 html[data-membership="both"] .auth-screen-centered {
   background:
-    radial-gradient(ellipse at 18% 12%, rgba(0, 123, 255, 0.5) 0%, transparent 36%),
-    radial-gradient(ellipse at 82% 18%, rgba(229, 9, 20, 0.42) 0%, transparent 32%),
-    radial-gradient(ellipse at 70% 88%, rgba(0, 34, 170, 0.28) 0%, transparent 34%),
+    linear-gradient(155deg, rgba(0, 123, 255, 0.2) 0%, transparent 46%),
+    linear-gradient(-20deg, rgba(229, 9, 20, 0.16) 0%, transparent 50%),
     linear-gradient(180deg, #0f172a 0%, #141414 100%);
 }
 
@@ -3743,19 +3661,7 @@ html[data-membership="both"] .macos-btn-primary {
   min-height: 100dvh;
   padding: 0;
   background:
-    radial-gradient(circle at 18% 0%, color-mix(in srgb, var(--brand) 22%, transparent), transparent 28%),
-    linear-gradient(180deg, #cfd6e4 0%, #aeb8c9 42%, #8d99b0 100%);
-}
-
-html:not(.dark) .dashboard-desktop {
-  background:
-    radial-gradient(circle at 12% 0%, #dce6f8, transparent 36%),
-    linear-gradient(180deg, #e8eef7 0%, #c5d0e0 100%);
-}
-
-.dark .dashboard-desktop {
-  background:
-    radial-gradient(circle at 18% 0%, color-mix(in srgb, var(--brand) 28%, transparent), transparent 32%),
+    linear-gradient(155deg, color-mix(in srgb, var(--brand) 14%, transparent) 0%, transparent 50%),
     linear-gradient(180deg, #1a2030 0%, #0b1018 100%);
 }
 
@@ -4146,12 +4052,26 @@ html:not(.dark) .dashboard-desktop {
   align-items: center;
   gap: 0.75rem;
   padding: 0.65rem 0.6rem;
-  border-radius: 10px;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.04) 0%, transparent 100%);
   color: var(--foreground);
+  transition: background 180ms var(--ease-out), border-color 180ms var(--ease-out), transform 180ms var(--ease-out);
 }
 
 .dashboard-quick-link-row:hover {
-  background: color-mix(in srgb, var(--surface) 70%, white 8%);
+  border-color: color-mix(in srgb, white 16%, var(--line));
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.02) 100%),
+    color-mix(in srgb, var(--surface) 70%, white 8%);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dashboard-quick-link-row {
+    transition: none;
+  }
 }
 
 .dashboard-quick-link-row svg:first-child {
@@ -4186,9 +4106,15 @@ html:not(.dark) .dashboard-desktop {
 
 .dashboard-disclosure {
   overflow: hidden;
+  isolation: isolate;
   border: 1px solid color-mix(in srgb, var(--chrome-bright) 22%, transparent);
   border-radius: 18px;
-  background: color-mix(in srgb, var(--surface-elevated) 72%, transparent);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.06) 0%, transparent 40%),
+    color-mix(in srgb, var(--surface-elevated) 72%, transparent);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
 .dashboard-disclosure summary {
@@ -4198,10 +4124,10 @@ html:not(.dark) .dashboard-desktop {
   min-height: 2.4rem;
   padding: 0.7rem 1.05rem;
   background: linear-gradient(180deg, color-mix(in srgb, var(--chrome-bright) 10%, transparent), transparent 70%), color-mix(in srgb, var(--surface) 62%, transparent);
-  color: color-mix(in srgb, var(--foreground) 82%, var(--muted));
+  color: color-mix(in srgb, var(--foreground) 90%, var(--muted));
   cursor: pointer;
   font-size: 0.82rem;
-  font-weight: 600;
+  font-weight: 700;
   list-style: none;
 }
 
@@ -5087,8 +5013,8 @@ html:not(.dark) .dashboard-desktop {
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(120% 90% at 0% 0%, color-mix(in srgb, var(--brand) 28%, transparent), transparent 55%),
-    radial-gradient(80% 70% at 100% 0%, color-mix(in srgb, var(--brand-dark, var(--brand)) 18%, transparent), transparent 50%);
+    linear-gradient(150deg, color-mix(in srgb, var(--brand) 18%, transparent) 0%, transparent 55%),
+    linear-gradient(-25deg, color-mix(in srgb, var(--brand-dark, var(--brand)) 12%, transparent) 0%, transparent 50%);
   pointer-events: none;
 }
 
@@ -5331,14 +5257,8 @@ html:not(.dark) .dashboard-desktop {
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(120% 80% at 50% -10%, #4a6088, transparent 52%),
+    linear-gradient(165deg, #4a6088 0%, transparent 55%),
     linear-gradient(180deg, #1c2333 0%, #0b1018 100%);
-}
-
-html:not(.dark) .macos-boot-wallpaper {
-  background:
-    radial-gradient(120% 80% at 50% -10%, #9eb4d8, transparent 55%),
-    linear-gradient(180deg, #6d7c94 0%, #2d3544 100%);
 }
 
 .macos-boot-card {
@@ -6120,7 +6040,7 @@ html:not(.dark) .macos-boot-wallpaper {
   flex-direction: column;
   gap: 0.75rem;
   background:
-    radial-gradient(circle at 12% 0%, color-mix(in srgb, var(--brand) 8%, transparent), transparent 40%),
+    linear-gradient(160deg, color-mix(in srgb, var(--brand) 6%, transparent) 0%, transparent 45%),
     color-mix(in srgb, var(--custom-dark-surface) 96%, #000);
 }
 

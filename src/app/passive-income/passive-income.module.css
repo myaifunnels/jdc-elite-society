@@ -1,6 +1,6 @@
 .page { position:relative; min-height:100svh; overflow:hidden; background:#050a14; color:#f8fbff; font-family:var(--font-geist-sans),Arial,sans-serif; }
 .backdrop { position:absolute; inset:0; background:linear-gradient(90deg,rgba(4,9,19,.98) 0%,rgba(4,9,19,.9) 44%,rgba(4,9,19,.62) 68%,rgba(4,9,19,.82) 100%),linear-gradient(0deg,rgba(4,9,19,.78),transparent 45%),url("/media/coach-room.jpg") center 38%/cover no-repeat; transform:scale(1.015); }
-.glow { position:absolute; inset:auto auto -16rem -12rem; width:42rem; height:42rem; border-radius:50%; background:rgba(25,112,255,.19); filter:blur(80px); }
+.glow { position:absolute; inset:auto -8% -25% -14%; height:55%; background:linear-gradient(15deg,rgba(25,112,255,.22) 0%,transparent 72%); filter:blur(60px); }
 .shell { position:relative; z-index:1; width:min(1180px,calc(100% - 40px)); margin:0 auto; padding:28px 0 48px; }
 .header { display:flex; align-items:center; justify-content:space-between; gap:18px; }
 .brand { display:inline-flex; align-items:center; gap:10px; color:#fff; text-decoration:none; font-size:12px; font-weight:800; letter-spacing:.17em; }
