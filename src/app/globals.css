@@ -2125,11 +2125,21 @@ a,
   min-height: 100dvh;
   flex-direction: column;
   gap: 1.5rem;
+  overflow-x: hidden;
   padding: max(1.75rem, var(--safe-top)) max(1.75rem, var(--safe-right)) max(1.75rem, var(--safe-bottom))
     max(1.75rem, var(--safe-left));
+  background: var(--background);
+}
+
+.auth-fullscreen-form::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: -25%;
   background:
-    linear-gradient(165deg, color-mix(in srgb, var(--brand) 10%, transparent) 0%, transparent 55%),
-    var(--background);
+    linear-gradient(125deg, color-mix(in srgb, var(--brand) 20%, transparent) 0%, transparent 42%, color-mix(in srgb, var(--brand-dark) 16%, transparent) 68%, transparent 100%);
+  animation: auth-gradient-drift 26s ease-in-out infinite;
+  pointer-events: none;
 }
 
 .auth-fullscreen-form > .site-logo {
@@ -2173,9 +2183,7 @@ a,
   display: none;
   overflow: hidden;
   isolation: isolate;
-  background:
-    linear-gradient(155deg, color-mix(in srgb, var(--brand) 26%, transparent) 0%, transparent 55%),
-    linear-gradient(180deg, #04102a 0%, #01050f 100%);
+  background: linear-gradient(180deg, #04102a 0%, #01050f 100%);
 }
 
 @media (min-width: 900px) {
@@ -2184,6 +2192,16 @@ a,
     align-items: center;
     justify-content: center;
   }
+}
+
+.auth-fullscreen-visual::before {
+  content: "";
+  position: absolute;
+  inset: -35%;
+  background:
+    linear-gradient(120deg, color-mix(in srgb, var(--brand) 40%, transparent) 0%, transparent 35%, color-mix(in srgb, var(--elite-blue-bright, #57a5ff) 32%, transparent) 58%, transparent 82%);
+  animation: auth-gradient-drift 22s ease-in-out infinite;
+  pointer-events: none;
 }
 
 .auth-fullscreen-grid {
@@ -2203,26 +2221,55 @@ a,
   z-index: 1;
   display: grid;
   justify-items: center;
-  gap: 0.75rem;
+  gap: 1rem;
   text-align: center;
 }
 
-.auth-fullscreen-brandmark .jdc-wordmark {
-  font-size: 4.75rem;
+.auth-fullscreen-logo {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.6rem;
+}
+
+.auth-fullscreen-logo .jdc-wordmark {
+  font-size: 4.5rem;
+}
+
+.auth-fullscreen-logo-society {
+  color: var(--elite-text, #f5f7ff);
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 1.85rem;
+  font-weight: 500;
+  letter-spacing: -0.02em;
 }
 
 .auth-fullscreen-tagline {
   margin: 0;
   color: color-mix(in srgb, white 72%, var(--brand-soft, var(--brand)));
-  font-size: 0.92rem;
+  font-size: 0.86rem;
   font-weight: 700;
-  letter-spacing: 0.34em;
+  letter-spacing: 0.3em;
   text-transform: uppercase;
+}
+
+@keyframes auth-gradient-drift {
+  0%,
+  100% {
+    transform: translate(-3%, -2%) rotate(0deg) scale(1);
+  }
+  50% {
+    transform: translate(3%, 2%) rotate(5deg) scale(1.08);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .auth-fullscreen-grid {
     opacity: 0.1;
+  }
+
+  .auth-fullscreen-form::before,
+  .auth-fullscreen-visual::before {
+    animation: none;
   }
 }
 
@@ -2450,11 +2497,14 @@ a,
 
 .macos-actions {
   display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  padding-top: 0.25rem;
+  flex-direction: column-reverse;
+  align-items: stretch;
+  gap: 0.9rem;
+  padding-top: 0.4rem;
+}
+
+.macos-actions .macos-btn-primary {
+  width: 100%;
 }
 
 .macos-btn {
@@ -3321,7 +3371,7 @@ a,
 
 .macos-actions .auth-switch-copy {
   margin: 0;
-  text-align: left;
+  text-align: center;
   font-size: 0.8rem;
   font-weight: 500;
 }

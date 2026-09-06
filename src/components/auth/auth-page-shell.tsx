@@ -24,8 +24,11 @@ export function AuthPageShell({
       <div className="auth-fullscreen-visual" aria-hidden="true">
         <div className="auth-fullscreen-grid" />
         <div className="auth-fullscreen-brandmark">
-          <JdcWordmark />
-          <p className="auth-fullscreen-tagline">JDC Elite Society</p>
+          <div className="auth-fullscreen-logo">
+            <JdcWordmark />
+            <span className="auth-fullscreen-logo-society">Elite Society</span>
+          </div>
+          <p className="auth-fullscreen-tagline">Premium Coaching · Mentorship · Community</p>
         </div>
       </div>
     </div>
