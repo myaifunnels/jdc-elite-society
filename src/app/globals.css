@@ -4152,6 +4152,19 @@ html[data-membership="both"] .macos-btn-primary {
   display: none;
 }
 
+.dashboard-sidebar-profile {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+.dashboard-sidebar-profile .contact-avatar {
+  flex: none;
+  box-shadow:
+    0 0 0 2px color-mix(in srgb, var(--brand) 55%, transparent),
+    0 6px 18px color-mix(in srgb, var(--brand) 25%, transparent);
+}
+
 .dashboard-nav-item {
   position: relative;
   display: inline-flex;
@@ -4850,6 +4863,36 @@ html[data-membership="both"] .macos-btn-primary {
   font-size: 2.1rem;
   font-weight: 650;
   letter-spacing: -0.04em;
+}
+
+.dashboard-metric-with-ring {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.radial-metric {
+  flex: none;
+  color: var(--metric-accent, var(--brand));
+  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--metric-accent, var(--brand)) 55%, transparent));
+}
+
+.radial-metric-value {
+  animation: radialFill 900ms var(--ease-out) both;
+  transition: stroke-dashoffset 400ms var(--ease-out);
+}
+
+@keyframes radialFill {
+  from {
+    stroke-dashoffset: var(--radial-dasharray);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .radial-metric-value {
+    animation: none;
+  }
 }
 
 .dashboard-metric-title {

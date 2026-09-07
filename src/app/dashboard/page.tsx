@@ -11,6 +11,7 @@ import { PartnersMap } from "@/components/dashboard/partners-map";
 import { QuickLinksCard } from "@/components/dashboard/quick-links-card";
 import { dashboardMetrics } from "@/data/crm";
 import { PendingMemberHome } from "@/components/dashboard/pending-member-home";
+import { RadialMetric } from "@/components/dashboard/radial-metric";
 import { UniversityCommunityEmbed } from "@/components/dashboard/university-community-embed";
 import { UniversityCourseGrid } from "@/components/dashboard/university-course-grid";
 import { adminPartnershipSnapshot } from "@/lib/affiliate-store";
@@ -224,13 +225,23 @@ export default async function DashboardPage() {
       description="Full admin access: contacts, partner coverage, the Partnership Program, integrations, and site settings."
     >
       <div className="dashboard-widget-grid">
-        {dashboardMetrics.map((metric) => (
-          <article key={metric.label} className="dashboard-metric-card">
-            <p className="macos-kicker">{metric.label}</p>
-            <p className="dashboard-metric-value">{metric.value}</p>
-            <p className="dashboard-metric-copy">{metric.detail}</p>
-          </article>
-        ))}
+        {dashboardMetrics.map((metric) => {
+          const percent = metric.value.endsWith("%") ? Number.parseFloat(metric.value) : null;
+          return (
+            <article key={metric.label} className="dashboard-metric-card">
+              <p className="macos-kicker">{metric.label}</p>
+              {percent !== null && Number.isFinite(percent) ? (
+                <div className="dashboard-metric-with-ring">
+                  <p className="dashboard-metric-value">{metric.value}</p>
+                  <RadialMetric percent={percent} />
+                </div>
+              ) : (
+                <p className="dashboard-metric-value">{metric.value}</p>
+              )}
+              <p className="dashboard-metric-copy">{metric.detail}</p>
+            </article>
+          );
+        })}
 
         <MacosWindow title="Support tickets" className="dashboard-span-2">
           <SupportAnalytics metrics={supportMetrics} />

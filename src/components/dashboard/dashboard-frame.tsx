@@ -41,6 +41,7 @@ export function DashboardFrame({
         <DashboardSidebar
           role={user.role}
           userName={user.name}
+          userPhotoUrl={user.facebookPhotoUrl}
           membershipLabel={membershipLabel(user.memberships)}
           accountStatus={user.accountStatus}
           universityLocked={!hasUniversityAccess(user)}

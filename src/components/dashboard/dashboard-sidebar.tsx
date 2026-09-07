@@ -25,6 +25,7 @@ import {
 
 import { logout } from "@/app/login/actions";
 import { SiteLogo } from "@/components/branding/site-logo";
+import { ContactAvatar } from "@/components/dashboard/contact-avatar";
 import { NotificationBell } from "@/components/dashboard/notification-bell";
 import { AccessMap, Capability, dashboardHomeHref } from "@/lib/access";
 import { BrandingSettings } from "@/lib/branding";
@@ -72,6 +73,7 @@ function isActivePath(pathname: string, href: string) {
 function SidebarPanel({
   role,
   userName,
+  userPhotoUrl,
   membershipLabel,
   accountStatus,
   universityLocked,
@@ -85,6 +87,7 @@ function SidebarPanel({
 }: {
   role: DashboardRole;
   userName: string;
+  userPhotoUrl?: string;
   membershipLabel: string;
   accountStatus?: string;
   universityLocked?: boolean;
@@ -118,10 +121,14 @@ function SidebarPanel({
         <SiteLogo branding={branding} href={homeHref} compact />
       </div>
 
-      <div className="px-4">
-        <p id={titleId} className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-[var(--muted)]">
-          {role === "member" || role === "contact" ? membershipLabel : role} workspace
-        </p>
+      <div className="dashboard-sidebar-profile px-3 pb-3">
+        <ContactAvatar name={userName} photoUrl={userPhotoUrl} size="lg" />
+        <div className="min-w-0">
+          <p className="truncate text-sm font-semibold">{userName}</p>
+          <p id={titleId} className="truncate text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[var(--muted)]">
+            {role === "member" || role === "contact" ? membershipLabel : role} workspace
+          </p>
+        </div>
       </div>
 
       <nav aria-label="Dashboard" className="mt-3 grid gap-1 px-2">
@@ -180,6 +187,7 @@ function SidebarPanel({
 export function DashboardSidebar({
   role,
   userName,
+  userPhotoUrl,
   membershipLabel,
   accountStatus,
   universityLocked,
@@ -190,6 +198,7 @@ export function DashboardSidebar({
 }: {
   role: DashboardRole;
   userName: string;
+  userPhotoUrl?: string;
   membershipLabel: string;
   accountStatus?: string;
   universityLocked?: boolean;
@@ -275,6 +284,7 @@ export function DashboardSidebar({
         <SidebarPanel
           role={role}
           userName={userName}
+          userPhotoUrl={userPhotoUrl}
           membershipLabel={membershipLabel}
           accountStatus={accountStatus}
           universityLocked={universityLocked}
@@ -295,6 +305,7 @@ export function DashboardSidebar({
         <SidebarPanel
           role={role}
           userName={userName}
+          userPhotoUrl={userPhotoUrl}
           membershipLabel={membershipLabel}
           accountStatus={accountStatus}
           universityLocked={universityLocked}
