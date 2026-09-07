@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight, Building2, Lock, Mail, Smartphone, UserRound } from "lucide-react";
+import { ArrowRight, Building2, Lock, Smartphone, UserRound } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { type ReactNode, useState } from "react";
@@ -127,7 +127,6 @@ export function AuthPanel({
           <StickyForm storageKey="coach-jdc-member-login" action={loginAction} className="auth-form auth-form-login">
             <AuthField
               label="Email"
-              icon={<Mail size={15} aria-hidden />}
               action={
                 <button type="submit" className="macos-go" disabled={loginPending} aria-label="Sign in">
                   <ArrowRight size={16} />
@@ -175,8 +174,9 @@ export function AuthPanel({
                   Create Account
                 </Link>
               </p>
-              <button type="submit" className="macos-btn macos-btn-primary" disabled={loginPending}>
-                {loginPending ? "Signing In..." : "Sign In"}
+              <button type="submit" className="macos-btn macos-btn-primary auth-submit-btn" disabled={loginPending}>
+                <span>{loginPending ? "Signing In..." : "Sign In"}</span>
+                <ArrowRight size={17} aria-hidden />
               </button>
             </div>
           </StickyForm>
@@ -196,7 +196,7 @@ export function AuthPanel({
                 defaultValue={fields?.name ?? ""}
               />
             </AuthField>
-            <AuthField label="Email" icon={<Mail size={15} aria-hidden />}>
+            <AuthField label="Email">
               <input
                 name="email"
                 type="email"
@@ -264,8 +264,9 @@ export function AuthPanel({
                   Sign In
                 </Link>
               </p>
-              <button type="submit" className="macos-btn macos-btn-primary" disabled={registerPending}>
-                {registerPending ? "Creating Account..." : "Create Account"}
+              <button type="submit" className="macos-btn macos-btn-primary auth-submit-btn" disabled={registerPending}>
+                <span>{registerPending ? "Creating Account..." : "Create Account"}</span>
+                <ArrowRight size={17} aria-hidden />
               </button>
             </div>
           </StickyForm>

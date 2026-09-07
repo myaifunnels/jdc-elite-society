@@ -41,6 +41,9 @@ type AppEntry = {
   tagline: string;
   logo: ComponentType<{ size?: number }>;
   connected: boolean;
+  /** A quick one-line readout of the key field(s) for this app, shown right on the overview
+   * card so an admin can see what's configured without clicking in. */
+  fieldsSummary: string;
 };
 
 export default async function IntegrationsPage({
@@ -66,6 +69,7 @@ export default async function IntegrationsPage({
       tagline: "Live map previews on contact dashboards.",
       logo: GoogleMapsLogo,
       connected: mapsReady,
+      fieldsSummary: `Embed key: ${settings.googleMapsEmbedKey ? maskSecret(settings.googleMapsEmbedKey) : "not set"}`,
     },
     {
       id: "googleAuth",
@@ -73,6 +77,7 @@ export default async function IntegrationsPage({
       tagline: "Lets members sign in or register with Google on Login/Register.",
       logo: GoogleLogo,
       connected: googleAuthReady,
+      fieldsSummary: `Client ID: ${settings.googleClientId || "not set"}`,
     },
     {
       id: "facebookAuth",
@@ -80,6 +85,7 @@ export default async function IntegrationsPage({
       tagline: "Lets members sign in or register with Facebook on Login/Register.",
       logo: FacebookLogo,
       connected: facebookAuthReady,
+      fieldsSummary: `App ID: ${settings.facebookAppId || "not set"}`,
     },
     {
       id: "r2",
@@ -87,6 +93,7 @@ export default async function IntegrationsPage({
       tagline: "Stores profile photos and payment receipts.",
       logo: CloudflareLogo,
       connected: r2Ready,
+      fieldsSummary: `Bucket: ${settings.r2Bucket || "not set"}`,
     },
     {
       id: "ghl",
@@ -94,6 +101,7 @@ export default async function IntegrationsPage({
       tagline: "Syncs contacts, tags, pipeline stages, and course access.",
       logo: GoHighLevelLogo,
       connected: ghlReady,
+      fieldsSummary: `Location: ${settings.ghlLocationId || "not set"}`,
     },
     {
       id: "textbee",
@@ -101,6 +109,7 @@ export default async function IntegrationsPage({
       tagline: "SMS gateway for buyer and team alerts.",
       logo: TextBeeLogo,
       connected: textbeeReady,
+      fieldsSummary: `Device ID: ${settings.textbeeDeviceId || "not set"}`,
     },
   ];
 
@@ -117,16 +126,19 @@ export default async function IntegrationsPage({
             const Logo = app.logo;
             return (
               <Link key={app.id} href={`/dashboard/integrations?app=${app.id}`} className="app-store-card">
-                <span className="app-store-icon">
-                  <Logo size={48} />
+                <span className="app-store-card-top">
+                  <span className="app-store-icon">
+                    <Logo size={48} />
+                  </span>
+                  <span className={app.connected ? "status-pill is-verified" : "status-pill is-quiet"}>
+                    {app.connected ? "Connected" : "Not connected"}
+                  </span>
                 </span>
                 <span className="app-store-copy">
                   <strong>{app.name}</strong>
                   <small>{app.tagline}</small>
                 </span>
-                <span className={app.connected ? "status-pill is-verified" : "status-pill is-quiet"}>
-                  {app.connected ? "Connected" : "Not connected"}
-                </span>
+                <span className="app-store-fields">{app.fieldsSummary}</span>
               </Link>
             );
           })}
