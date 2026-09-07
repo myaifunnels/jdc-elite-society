@@ -5,6 +5,7 @@ import { GOOGLE_OAUTH_COOKIE } from "@/app/api/auth/google/route";
 import { findOrCreateGoogleUser } from "@/lib/auth-store";
 import { getResolvedIntegrationSettings } from "@/lib/integrations-store";
 import { readSignedValue } from "@/lib/session";
+import { siteUrl } from "@/lib/site";
 
 type GoogleTokenResponse = {
   access_token?: string;
@@ -66,7 +67,7 @@ export async function GET(request: NextRequest) {
     return failure(request, "google_not_configured");
   }
 
-  const redirectUri = new URL("/api/auth/google/callback", request.nextUrl.origin).toString();
+  const redirectUri = new URL("/api/auth/google/callback", siteUrl).toString();
 
   try {
     const tokenResponse = await fetch("https://oauth2.googleapis.com/token", {

@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { getResolvedIntegrationSettings } from "@/lib/integrations-store";
 import { signValue } from "@/lib/session";
+import { siteUrl } from "@/lib/site";
 
 // Short-lived cookie that carries the OAuth `state` across the redirect
 // round-trip to Facebook and back. Signed with the same HMAC helper the
@@ -23,7 +24,7 @@ export async function GET(request: NextRequest) {
   }
 
   const state = randomBytes(16).toString("hex");
-  const redirectUri = new URL("/api/auth/facebook/callback", request.nextUrl.origin).toString();
+  const redirectUri = new URL("/api/auth/facebook/callback", siteUrl).toString();
 
   const authorizeUrl = new URL(`https://www.facebook.com/${FACEBOOK_GRAPH_VERSION}/dialog/oauth`);
   authorizeUrl.searchParams.set("client_id", appId);

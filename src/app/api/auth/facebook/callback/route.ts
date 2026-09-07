@@ -5,6 +5,7 @@ import { FACEBOOK_OAUTH_COOKIE } from "@/app/api/auth/facebook/route";
 import { findOrCreateFacebookUser } from "@/lib/auth-store";
 import { getResolvedIntegrationSettings } from "@/lib/integrations-store";
 import { readSignedValue } from "@/lib/session";
+import { siteUrl } from "@/lib/site";
 
 const FACEBOOK_GRAPH_VERSION = "v21.0";
 
@@ -68,7 +69,7 @@ export async function GET(request: NextRequest) {
     return failure(request, "facebook_not_configured");
   }
 
-  const redirectUri = new URL("/api/auth/facebook/callback", request.nextUrl.origin).toString();
+  const redirectUri = new URL("/api/auth/facebook/callback", siteUrl).toString();
 
   try {
     const tokenUrl = new URL(`https://graph.facebook.com/${FACEBOOK_GRAPH_VERSION}/oauth/access_token`);

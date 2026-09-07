@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { getResolvedIntegrationSettings } from "@/lib/integrations-store";
 import { signValue } from "@/lib/session";
+import { siteUrl } from "@/lib/site";
 
 // Short-lived cookie that carries the OAuth `state` + PKCE `code_verifier`
 // across the redirect round-trip to Google and back. Signed with the same
@@ -23,7 +24,7 @@ export async function GET(request: NextRequest) {
   const codeVerifier = randomBytes(32).toString("base64url");
   const codeChallenge = createHash("sha256").update(codeVerifier).digest("base64url");
 
-  const redirectUri = new URL("/api/auth/google/callback", request.nextUrl.origin).toString();
+  const redirectUri = new URL("/api/auth/google/callback", siteUrl).toString();
 
   const authorizeUrl = new URL("https://accounts.google.com/o/oauth2/v2/auth");
   authorizeUrl.searchParams.set("client_id", clientId);
