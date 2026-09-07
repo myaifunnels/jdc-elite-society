@@ -41,6 +41,16 @@ function availableWebinars(allWebinars: WebinarRecord[], registeredWebinarIds: S
     .sort((a, b) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime());
 }
 
+/** Every webinar with a replay available, newest first — replays are open to anyone (same as the
+ * public /webinars library), not gated behind having registered, so this covers a member who
+ * missed the live session entirely. Excludes anything already shown with its own "Watch replay"
+ * button in "Your registrations" to avoid listing the same episode twice. */
+function replayLibrary(allWebinars: WebinarRecord[], confirmedWebinarIds: Set<string>) {
+  return allWebinars
+    .filter((webinar) => webinar.replayUrl && !confirmedWebinarIds.has(webinar.id))
+    .sort((a, b) => new Date(b.scheduledAt).getTime() - new Date(a.scheduledAt).getTime());
+}
+
 export default async function MyWebinarsPage() {
   const { user } = await requireCapability("myWebinars");
   const registrants = await listRegistrantsByUserId(user.id, user.email);
@@ -56,12 +66,19 @@ export default async function MyWebinarsPage() {
   );
 
   const registeredWebinarIds = new Set(entries.map((entry) => entry.webinar.id));
+  const confirmedWebinarIds = new Set(
+    entries.filter((entry) => entry.registrant.status === "confirmed").map((entry) => entry.webinar.id),
+  );
   const allWebinars = await listWebinars();
   const upNext = availableWebinars(allWebinars, registeredWebinarIds);
+  const replays = replayLibrary(allWebinars, confirmedWebinarIds);
 
   return (
-    <DashboardShell title="Webinars" description="Every webinar you've registered for, and what's coming up next.">
-      {entries.length === 0 && upNext.length === 0 ? (
+    <DashboardShell
+      title="Webinars"
+      description="Every webinar you've registered for, what's coming up next, and replays you can watch anytime."
+    >
+      {entries.length === 0 && upNext.length === 0 && replays.length === 0 ? (
         <div className="card-surface p-8 text-center text-[var(--muted)]">
           <p className="m-0">No webinars yet — check back soon.</p>
           <Link href="/webinars" className="button-primary pressable mt-4 inline-flex">
@@ -146,6 +163,33 @@ export default async function MyWebinarsPage() {
                     className="button-primary pressable mt-auto inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-extrabold"
                   >
                     Reserve my seat
+                  </Link>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
+      {replays.length > 0 ? (
+        <section className="mt-8 grid gap-3">
+          <h3 className="m-0 text-lg font-bold tracking-[-0.02em]">Replays</h3>
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {replays.map((webinar) => (
+              <article key={webinar.id} className="card-surface interactive-card flex flex-col overflow-hidden">
+                <EpisodeThumb webinar={webinar} className="h-36 w-full" />
+                <div className="flex flex-1 flex-col gap-2 p-5">
+                  <strong className="text-[1rem] leading-snug">{webinar.title}</strong>
+                  <p className="m-0 flex items-center gap-2 text-xs text-[var(--muted)]">
+                    <CalendarDays aria-hidden size={14} className="text-[var(--brand)]" />
+                    {formatDateTimeLabel(webinar.scheduledAt)} &middot; Manila Time
+                  </p>
+                  <Link
+                    href={`/webinars/${webinar.id}/replay`}
+                    className="button-secondary pressable mt-auto inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-extrabold"
+                  >
+                    <Video aria-hidden size={16} />
+                    Watch replay
                   </Link>
                 </div>
               </article>
