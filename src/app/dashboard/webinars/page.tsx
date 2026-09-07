@@ -21,15 +21,38 @@ function upcomingWebinars(webinars: WebinarRecord[], featuredId: string | undefi
 
 export default async function WebinarsAdminPage() {
   await requireCapability("webinars");
-  const [webinars, featured, pendingOverflow] = await Promise.all([
+
+  // Every function called here already has its own internal try/catch that falls back to an
+  // empty/cached result rather than throwing — but Promise.all still rejects the whole page if
+  // any single one of them somehow does throw, and one bad registrant lookup out of many
+  // shouldn't take the entire admin page down. Promise.allSettled + safe defaults means a
+  // transient failure degrades to "this one section is empty" instead of a hard crash.
+  const [webinarsResult, featuredResult, pendingOverflowResult] = await Promise.allSettled([
     listWebinars(),
     getFeaturedWebinar(),
     listPendingOverflowRegistrants(),
   ]);
 
+  const webinars = webinarsResult.status === "fulfilled" ? webinarsResult.value : [];
+  const featured = featuredResult.status === "fulfilled" ? featuredResult.value : null;
+  const pendingOverflow = pendingOverflowResult.status === "fulfilled" ? pendingOverflowResult.value : [];
+
+  if (webinarsResult.status === "rejected") {
+    console.error("Failed to load webinars for admin page", webinarsResult.reason);
+  }
+  if (featuredResult.status === "rejected") {
+    console.error("Failed to load the featured webinar for admin page", featuredResult.reason);
+  }
+  if (pendingOverflowResult.status === "rejected") {
+    console.error("Failed to load pending overflow registrants for admin page", pendingOverflowResult.reason);
+  }
+
+  const registrantEntries = await Promise.allSettled(
+    webinars.map(async (webinar) => [webinar.id, await listRegistrants(webinar.id)] as const),
+  );
   const registrantsByWebinarId = new Map<string, WebinarRegistrant[]>(
-    await Promise.all(
-      webinars.map(async (webinar) => [webinar.id, await listRegistrants(webinar.id)] as const),
+    registrantEntries.map((entry, index) =>
+      entry.status === "fulfilled" ? entry.value : ([webinars[index].id, []] as const),
     ),
   );
   const titleByWebinarId = new Map(webinars.map((webinar) => [webinar.id, webinar.title]));

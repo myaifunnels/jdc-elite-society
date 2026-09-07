@@ -10,9 +10,10 @@ import { WebinarCountdown } from "@/components/webinars/webinar-countdown";
 import { WebinarParticles } from "@/components/webinars/webinar-particles";
 import { WebinarRegisterPanel } from "@/components/webinars/webinar-register-panel";
 import { EpisodeThumb } from "@/components/webinars/webinar-thumb";
+import { getSessionUser } from "@/lib/session";
 import { WEBINAR_OVERFLOW_PRICE } from "@/lib/webinars";
 import { getFeaturedWebinar, listWebinars } from "@/lib/webinars-store";
-import { getFreeSeatsLeft, listRegistrants } from "@/lib/webinar-registrants-store";
+import { findRegistrantByUserAndWebinar, getFreeSeatsLeft, listRegistrants } from "@/lib/webinar-registrants-store";
 
 export const metadata: Metadata = {
   title: "Webinars | Coach JDC",
@@ -75,10 +76,14 @@ export default async function WebinarsPage() {
   const [webinars, featured] = await Promise.all([listWebinars(), getFeaturedWebinar()]);
   const otherEpisodes = featured ? webinars.filter((item) => item.id !== featured.id) : webinars;
 
-  const [freeSeatsLeft, registrants] = featured
-    ? await Promise.all([getFreeSeatsLeft(featured), listRegistrants(featured.id)])
-    : [0, []];
+  const [freeSeatsLeft, registrants, sessionUser] = featured
+    ? await Promise.all([getFreeSeatsLeft(featured), listRegistrants(featured.id), getSessionUser()])
+    : [0, [], null];
   const confirmedRegistrants = registrants.filter((item) => item.status === "confirmed");
+  const myRegistration =
+    featured && sessionUser
+      ? await findRegistrantByUserAndWebinar(featured.id, sessionUser.id, sessionUser.email)
+      : null;
 
   return (
     <div className="min-h-screen">
@@ -185,6 +190,10 @@ export default async function WebinarsPage() {
                     webinarId={featured.id}
                     freeSeatsLeft={freeSeatsLeft}
                     overflowPrice={WEBINAR_OVERFLOW_PRICE}
+                    joinUrl={featured.ctaHref || undefined}
+                    existingRegistration={
+                      myRegistration ? { tier: myRegistration.tier, status: myRegistration.status } : null
+                    }
                   />
                   <div className="flex flex-col gap-3">
                     {confirmedRegistrants.length > 0 ? (

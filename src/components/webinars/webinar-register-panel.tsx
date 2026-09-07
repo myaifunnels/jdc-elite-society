@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { FormEvent, useRef, useState } from "react";
 
 import { mastermindOffer } from "@/data/mastermind-offer";
+import { ZoomLogo } from "@/components/dashboard/integration-logos";
 import { WebinarRegisterModal } from "@/components/webinars/webinar-register-modal";
 
 const PHOTO_TYPES = "image/jpeg,image/png,image/webp,image/gif";
@@ -29,10 +30,18 @@ export function WebinarRegisterPanel({
   webinarId,
   freeSeatsLeft,
   overflowPrice,
+  joinUrl,
+  existingRegistration,
 }: {
   webinarId: string;
   freeSeatsLeft: number;
   overflowPrice: number;
+  /** Where "Join via Zoom" should link once someone's seat is confirmed — the webinar's own
+   * ctaHref, since that's already the flexible admin-set link field (Zoom, or anywhere else). */
+  joinUrl?: string;
+  /** The signed-in visitor's existing registration for this webinar, if any — looked up
+   * server-side by session/email so a returning registrant never sees "Register" again. */
+  existingRegistration?: { tier: "free" | "paid_overflow"; status: string } | null;
 }) {
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
@@ -146,6 +155,33 @@ export function WebinarRegisterPanel({
     }
   }
 
+  if (existingRegistration?.status === "confirmed") {
+    return joinUrl ? (
+      <Link
+        href={joinUrl}
+        target="_blank"
+        rel="noreferrer"
+        className="button-primary pressable inline-flex min-h-[3rem] items-center justify-center gap-2 px-6 text-sm font-extrabold sm:w-auto"
+      >
+        <ZoomLogo size={20} />
+        Join via Zoom
+      </Link>
+    ) : (
+      <div className="inline-flex items-center gap-2 rounded-full border border-emerald-300/30 bg-emerald-400/10 px-4 py-2.5 text-sm font-extrabold text-emerald-200">
+        <ZoomLogo size={20} />
+        You&rsquo;re registered — the Zoom link is on its way to your email.
+      </div>
+    );
+  }
+
+  if (existingRegistration?.status === "pending") {
+    return (
+      <div className="inline-flex items-center gap-2 rounded-full border border-amber-300/30 bg-amber-400/10 px-4 py-2.5 text-sm font-extrabold text-amber-200">
+        Payment received — pending verification.
+      </div>
+    );
+  }
+
   return (
     <>
       <button
@@ -153,7 +189,7 @@ export function WebinarRegisterPanel({
         className="button-primary pressable inline-flex min-h-[3rem] items-center justify-center gap-2 px-6 text-sm font-extrabold sm:w-auto"
         onClick={() => setOpen(true)}
       >
-        {isOverflow ? `Reserve overflow seat · ₱${overflowPrice}` : "Register now"}
+        {isOverflow ? `Reserve overflow seat · ₱${overflowPrice}` : "Reserve my Seat"}
       </button>
 
       <WebinarRegisterModal open={open} onClose={resetAndClose} title="Reserve your seat">
@@ -181,9 +217,21 @@ export function WebinarRegisterPanel({
               </p>
             )}
             <div className="mt-3 flex flex-col gap-2 sm:flex-row">
-              <button type="button" className="button-primary pressable" onClick={goToDashboard}>
-                Go to my dashboard
-              </button>
+              {(outcome === "free_confirmed" || outcome === "overflow_confirmed") && joinUrl ? (
+                <Link
+                  href={joinUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="button-primary pressable inline-flex items-center justify-center gap-2"
+                >
+                  <ZoomLogo size={18} />
+                  Join via Zoom
+                </Link>
+              ) : (
+                <button type="button" className="button-primary pressable" onClick={goToDashboard}>
+                  Go to my dashboard
+                </button>
+              )}
               <button type="button" className="button-secondary pressable" onClick={resetAndClose}>
                 Stay on this page
               </button>
@@ -389,7 +437,7 @@ export function WebinarRegisterPanel({
                     ? "Submitting..."
                     : isOverflow
                       ? `Reserve overflow seat · ₱${overflowPrice}`
-                      : "Reserve your free seat"}
+                      : "Reserve my Seat"}
                 </button>
               </form>
             )}
