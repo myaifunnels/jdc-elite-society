@@ -4134,15 +4134,29 @@ html[data-membership="both"] .macos-btn-primary {
 .dashboard-sidebar {
   position: relative;
   z-index: 5;
+  --foreground: #f4f8ff;
+  --heading: #f4f8ff;
+  --muted: color-mix(in srgb, #f4f8ff 64%, transparent);
+  --line: color-mix(in srgb, white 22%, transparent);
   background:
-    linear-gradient(180deg, color-mix(in srgb, white 22%, transparent) 0%, transparent 40%),
-    color-mix(in srgb, var(--surface) 62%, white 22%);
-  border-right: 1px solid color-mix(in srgb, white 55%, transparent);
-  backdrop-filter: blur(36px) saturate(200%);
-  -webkit-backdrop-filter: blur(36px) saturate(200%);
+    linear-gradient(165deg,
+      color-mix(in srgb, white 20%, transparent) 0%,
+      transparent 32%
+    ),
+    linear-gradient(190deg,
+      color-mix(in srgb, var(--brand-dark) 92%, black 10%) 0%,
+      var(--brand-dark) 24%,
+      var(--brand) 62%,
+      color-mix(in srgb, var(--brand) 55%, white 30%) 100%
+    );
+  border-right: 1px solid color-mix(in srgb, white 30%, transparent);
+  backdrop-filter: blur(44px) saturate(220%);
+  -webkit-backdrop-filter: blur(44px) saturate(220%);
   box-shadow:
-    10px 0 36px rgba(15, 23, 42, 0.16),
-    inset -1px 0 0 color-mix(in srgb, white 60%, transparent);
+    14px 0 44px rgba(4, 10, 28, 0.4),
+    inset -1px 0 0 color-mix(in srgb, white 40%, transparent),
+    inset 0 1px 0 color-mix(in srgb, white 32%, transparent);
+  color: var(--foreground);
 }
 
 .dashboard-sidebar-head {
@@ -4162,16 +4176,24 @@ html[data-membership="both"] .macos-btn-primary {
   flex-direction: column;
   align-items: center;
   gap: 0.6rem;
-  padding-top: 0.4rem;
-  padding-bottom: 0.6rem;
+  margin: 0.2rem 0.85rem 0.9rem;
+  padding: 1.1rem 1rem 1.15rem;
+  border-radius: 20px;
+  border: 1px solid color-mix(in srgb, white 30%, transparent);
+  background: color-mix(in srgb, white 12%, transparent);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  box-shadow:
+    0 14px 30px rgba(4, 10, 28, 0.22),
+    inset 0 1px 0 color-mix(in srgb, white 40%, transparent);
   text-align: center;
 }
 
 .dashboard-sidebar-profile .contact-avatar {
   flex: none;
   box-shadow:
-    0 0 0 3px color-mix(in srgb, var(--brand) 55%, transparent),
-    0 10px 26px color-mix(in srgb, var(--brand) 28%, transparent);
+    0 0 0 3px color-mix(in srgb, white 65%, transparent),
+    0 10px 26px rgba(4, 10, 28, 0.35);
 }
 
 .dashboard-nav-item {
@@ -4180,55 +4202,36 @@ html[data-membership="both"] .macos-btn-primary {
   min-height: 2.5rem;
   align-items: center;
   gap: 0.75rem;
-  border-radius: 10px;
+  border-radius: 12px;
   padding: 0 0.85rem;
   color: var(--muted);
   font-size: 0.92rem;
   font-weight: 600;
   text-decoration: none;
   transition: background 160ms var(--ease-out), color 160ms var(--ease-out), transform 160ms var(--ease-out),
-    padding-left 160ms var(--ease-out);
-}
-
-.dashboard-nav-item::before {
-  content: "";
-  position: absolute;
-  left: -0.7rem;
-  top: 18%;
-  bottom: 18%;
-  width: 3px;
-  border-radius: 0 3px 3px 0;
-  background: var(--brand);
-  opacity: 0;
-  transform: scaleY(0.4);
-  transition: opacity 160ms var(--ease-out), transform 160ms var(--ease-out);
+    box-shadow 160ms var(--ease-out);
 }
 
 .dashboard-nav-item:hover {
-  background: color-mix(in srgb, var(--surface-elevated) 84%, white);
+  background: color-mix(in srgb, white 16%, transparent);
   color: var(--foreground);
-  padding-left: 0.85rem;
 }
 
 .dashboard-nav-item.is-active {
-  background:
-    linear-gradient(90deg, color-mix(in srgb, var(--brand) 14%, transparent), transparent 70%),
-    color-mix(in srgb, var(--surface-elevated) 84%, white);
+  background: color-mix(in srgb, white 26%, transparent);
   color: var(--foreground);
+  box-shadow:
+    0 6px 16px rgba(4, 10, 28, 0.22),
+    inset 0 1px 0 color-mix(in srgb, white 55%, transparent),
+    inset 0 0 0 1px color-mix(in srgb, white 35%, transparent);
 }
 
 .dashboard-nav-item.is-active svg:not(.dashboard-nav-lock) {
-  color: var(--brand);
-}
-
-.dashboard-nav-item.is-active::before {
-  opacity: 1;
-  transform: scaleY(1);
+  color: var(--foreground);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .dashboard-nav-item,
-  .dashboard-nav-item::before {
+  .dashboard-nav-item {
     transition: none;
   }
 }
