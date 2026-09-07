@@ -19,6 +19,24 @@ function upcomingWebinars(webinars: WebinarRecord[], featuredId: string | undefi
     .sort((a, b) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime());
 }
 
+/** Invokes a section's render function directly (as a plain call, not JSX) so a synchronous
+ * throw anywhere inside it — including in the child components it renders — is caught right
+ * here instead of taking the whole page down. One broken card/section degrades to an inline
+ * message; everything else on the page keeps working. Logs the real error server-side, since
+ * this admin page currently can't be fully verified against production data locally. */
+function renderSafely(label: string, render: () => React.ReactNode): React.ReactNode {
+  try {
+    return render();
+  } catch (error) {
+    console.error(`Webinars admin: failed to render "${label}"`, error);
+    return (
+      <p className="card-surface p-4 text-sm text-red-300">
+        Couldn&rsquo;t display {label} ({error instanceof Error ? error.message : "unknown error"}).
+      </p>
+    );
+  }
+}
+
 export default async function WebinarsAdminPage() {
   await requireCapability("webinars");
 
@@ -91,24 +109,26 @@ export default async function WebinarsAdminPage() {
           </p>
         </section>
 
-        {featured ? (
-          <WebinarAdminHero webinar={featured} registrants={registrantsByWebinarId.get(featured.id) ?? []} />
-        ) : (
-          <p className="card-surface p-8 text-center text-sm text-[var(--muted)]">
-            No webinars yet. Schedule your first one above.
-          </p>
-        )}
+        {featured
+          ? renderSafely("the featured webinar", () =>
+              WebinarAdminHero({ webinar: featured, registrants: registrantsByWebinarId.get(featured.id) ?? [] }),
+            )
+          : (
+            <p className="card-surface p-8 text-center text-sm text-[var(--muted)]">
+              No webinars yet. Schedule your first one above.
+            </p>
+          )}
 
         <section className="grid gap-3">
           <h3 className="m-0 text-lg font-bold tracking-[-0.02em]">Upcoming</h3>
           {upcoming.length > 0 ? (
             <div className="grid gap-3">
               {upcoming.map((webinar) => (
-                <WebinarAdminUpcomingRow
-                  key={webinar.id}
-                  webinar={webinar}
-                  registrants={registrantsByWebinarId.get(webinar.id) ?? []}
-                />
+                <div key={webinar.id}>
+                  {renderSafely(`"${webinar.title || "a webinar"}"`, () =>
+                    WebinarAdminUpcomingRow({ webinar, registrants: registrantsByWebinarId.get(webinar.id) ?? [] }),
+                  )}
+                </div>
               ))}
             </div>
           ) : (
@@ -121,11 +141,11 @@ export default async function WebinarsAdminPage() {
           {webinars.length > 0 ? (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
               {webinars.map((webinar) => (
-                <WebinarAdminGridCard
-                  key={webinar.id}
-                  webinar={webinar}
-                  registrants={registrantsByWebinarId.get(webinar.id) ?? []}
-                />
+                <div key={webinar.id}>
+                  {renderSafely(`"${webinar.title || "a webinar"}"`, () =>
+                    WebinarAdminGridCard({ webinar, registrants: registrantsByWebinarId.get(webinar.id) ?? [] }),
+                  )}
+                </div>
               ))}
             </div>
           ) : (
