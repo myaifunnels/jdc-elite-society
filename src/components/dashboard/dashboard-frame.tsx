@@ -9,7 +9,6 @@ import { BrandingSettings } from "@/lib/branding";
 import type { AppNotification } from "@/lib/notification-store";
 import { membershipLabel } from "@/lib/membership";
 import { AuthUser } from "@/lib/types";
-import { hasUniversityAccess } from "@/lib/university-access";
 
 export function DashboardFrame({
   user,
@@ -41,10 +40,10 @@ export function DashboardFrame({
         <DashboardSidebar
           role={user.role}
           userName={user.name}
+          userEmail={user.email}
           userPhotoUrl={user.facebookPhotoUrl}
           membershipLabel={membershipLabel(user.memberships)}
           accountStatus={user.accountStatus}
-          universityLocked={!hasUniversityAccess(user)}
           hasWebinarRegistrations={hasWebinarRegistrations}
           branding={branding}
           access={access}

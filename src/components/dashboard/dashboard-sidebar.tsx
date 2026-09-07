@@ -9,7 +9,6 @@ import {
   GraduationCap,
   Handshake,
   LayoutDashboard,
-  Lock,
   LogOut,
   Menu,
   MessageCircle,
@@ -73,10 +72,10 @@ function isActivePath(pathname: string, href: string) {
 function SidebarPanel({
   role,
   userName,
+  userEmail,
   userPhotoUrl,
   membershipLabel,
   accountStatus,
-  universityLocked,
   hasWebinarRegistrations,
   branding,
   access,
@@ -87,10 +86,10 @@ function SidebarPanel({
 }: {
   role: DashboardRole;
   userName: string;
+  userEmail?: string;
   userPhotoUrl?: string;
   membershipLabel: string;
   accountStatus?: string;
-  universityLocked?: boolean;
   hasWebinarRegistrations?: boolean;
   branding: BrandingSettings;
   access: AccessMap;
@@ -121,21 +120,24 @@ function SidebarPanel({
         <SiteLogo branding={branding} href={homeHref} compact />
       </div>
 
-      <div className="dashboard-sidebar-profile px-3 pb-3">
-        <ContactAvatar name={userName} photoUrl={userPhotoUrl} size="lg" />
-        <div className="min-w-0">
-          <p className="truncate text-sm font-semibold">{userName}</p>
-          <p id={titleId} className="truncate text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[var(--muted)]">
+      <div className="dashboard-sidebar-profile px-4 pb-4">
+        <ContactAvatar name={userName} photoUrl={userPhotoUrl} size="xl" />
+        <div className="min-w-0 max-w-full text-center">
+          <p className="truncate text-base font-semibold">{userName}</p>
+          {userEmail ? <p className="truncate text-xs text-[var(--muted)]">{userEmail}</p> : null}
+          <p
+            id={titleId}
+            className="mt-1.5 truncate text-[0.66rem] font-semibold uppercase tracking-[0.16em] text-[var(--muted)]"
+          >
             {role === "member" || role === "contact" ? membershipLabel : role} workspace
           </p>
         </div>
       </div>
 
-      <nav aria-label="Dashboard" className="mt-3 grid gap-1 px-2">
+      <nav aria-label="Dashboard" className="mt-3 grid gap-1.5 px-3">
         {navItems(access).map((item) => {
           const Icon = item.icon;
           const active = isActivePath(pathname, item.href);
-          const locked = item.href === "/dashboard/university" && universityLocked;
 
           return (
             <Link
@@ -143,31 +145,26 @@ function SidebarPanel({
               href={item.href}
               aria-current={active ? "page" : undefined}
               onClick={onNavigate}
-              className={cn("dashboard-nav-item pressable", active && "is-active", locked && "is-locked")}
+              className={cn("dashboard-nav-item pressable", active && "is-active")}
             >
-              <Icon size={16} aria-hidden />
+              <Icon size={18} aria-hidden />
               {item.label}
-              {locked ? <Lock size={13} className="dashboard-nav-lock" aria-hidden /> : null}
-              {locked ? <span className="sr-only">Locked until payment is verified</span> : null}
             </Link>
           );
         })}
         <Link href="/" onClick={onNavigate} className="dashboard-nav-item pressable">
-          <Globe size={16} aria-hidden />
+          <Globe size={18} aria-hidden />
           Back to main website
         </Link>
       </nav>
 
       <div className="mt-auto grid gap-3 border-t border-[var(--line)] p-3">
         <div className="flex items-center justify-between gap-3">
-          <div className="min-w-0">
-            <p className="truncate text-sm font-semibold">{userName}</p>
-            <p className="truncate text-xs text-[var(--muted)]">
-              {role === "member" || role === "contact"
-                ? `${role} · ${accountStatus === "verified" ? "Verified" : "Pending"}`
-                : role}
-            </p>
-          </div>
+          <p className="truncate text-xs font-semibold text-[var(--muted)]">
+            {role === "member" || role === "contact"
+              ? `${role} · ${accountStatus === "verified" ? "Verified" : "Pending"}`
+              : role}
+          </p>
           <div className="flex items-center gap-1">
             <NotificationBell items={notifications} />
           </div>
@@ -187,10 +184,10 @@ function SidebarPanel({
 export function DashboardSidebar({
   role,
   userName,
+  userEmail,
   userPhotoUrl,
   membershipLabel,
   accountStatus,
-  universityLocked,
   hasWebinarRegistrations,
   branding,
   access,
@@ -198,10 +195,10 @@ export function DashboardSidebar({
 }: {
   role: DashboardRole;
   userName: string;
+  userEmail?: string;
   userPhotoUrl?: string;
   membershipLabel: string;
   accountStatus?: string;
-  universityLocked?: boolean;
   hasWebinarRegistrations?: boolean;
   branding: BrandingSettings;
   access: AccessMap;
@@ -277,17 +274,17 @@ export function DashboardSidebar({
         aria-hidden={!open}
         inert={!open}
         className={cn(
-          "dashboard-sidebar fixed inset-y-0 left-0 z-50 flex w-[16.5rem] flex-col overflow-y-auto transition-transform duration-200 ease-out lg:hidden",
+          "dashboard-sidebar fixed inset-y-0 left-0 z-50 flex w-[18.5rem] flex-col overflow-y-auto transition-transform duration-200 ease-out lg:hidden",
           open ? "translate-x-0" : "-translate-x-full",
         )}
       >
         <SidebarPanel
           role={role}
           userName={userName}
+          userEmail={userEmail}
           userPhotoUrl={userPhotoUrl}
           membershipLabel={membershipLabel}
           accountStatus={accountStatus}
-          universityLocked={universityLocked}
           hasWebinarRegistrations={hasWebinarRegistrations}
           branding={branding}
           access={access}
@@ -300,15 +297,15 @@ export function DashboardSidebar({
 
       <aside
         aria-labelledby={`${titleId}-desktop`}
-        className="dashboard-sidebar hidden w-[16.5rem] shrink-0 flex-col overflow-y-auto lg:flex"
+        className="dashboard-sidebar hidden w-[19.5rem] shrink-0 flex-col overflow-y-auto lg:flex"
       >
         <SidebarPanel
           role={role}
           userName={userName}
+          userEmail={userEmail}
           userPhotoUrl={userPhotoUrl}
           membershipLabel={membershipLabel}
           accountStatus={accountStatus}
-          universityLocked={universityLocked}
           hasWebinarRegistrations={hasWebinarRegistrations}
           branding={branding}
           access={access}
