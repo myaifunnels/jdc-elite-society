@@ -132,7 +132,7 @@ export default async function WebinarReplayPage({
             </section>
           </div>
 
-          <aside className="fade-up-delay-1 grid content-start gap-3">
+          <aside className="fade-up-delay-1 grid min-w-0 content-start gap-3">
             <p className="eyebrow m-0">Up next</p>
             <div className="grid gap-3">
               {upNext.length === 0 ? (
