@@ -121,7 +121,7 @@ function SidebarPanel({
       </div>
 
       <div className="dashboard-sidebar-profile px-4 pb-4">
-        <ContactAvatar name={userName} photoUrl={userPhotoUrl} size="xl" />
+        <ContactAvatar name={userName} photoUrl={userPhotoUrl} size="lg" />
         <div className="min-w-0 max-w-full text-center">
           <p className="truncate text-base font-semibold">{userName}</p>
           {userEmail ? <p className="truncate text-xs text-[var(--muted)]">{userEmail}</p> : null}

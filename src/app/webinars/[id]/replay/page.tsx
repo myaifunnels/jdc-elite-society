@@ -6,8 +6,11 @@ import { notFound } from "next/navigation";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
 import { WebinarAvatarRow } from "@/components/webinars/webinar-avatar-row";
+import { WebinarCommentForm, WebinarCommentList } from "@/components/webinars/webinar-comments";
 import { EpisodeThumb } from "@/components/webinars/webinar-thumb";
+import { getSessionUser } from "@/lib/session";
 import { getEmbeddableVideo } from "@/lib/video-embed";
+import { listComments } from "@/lib/webinar-comments-store";
 import { formatWebinarDateLabel, formatWebinarTimeLabel } from "@/lib/webinars";
 import { getWebinar, listWebinars } from "@/lib/webinars-store";
 import { listRegistrants } from "@/lib/webinar-registrants-store";
@@ -40,7 +43,12 @@ export default async function WebinarReplayPage({
     notFound();
   }
 
-  const [allWebinars, registrants] = await Promise.all([listWebinars(), listRegistrants(webinar.id)]);
+  const [allWebinars, registrants, comments, sessionUser] = await Promise.all([
+    listWebinars(),
+    listRegistrants(webinar.id),
+    listComments(webinar.id),
+    getSessionUser(),
+  ]);
   const confirmedRegistrants = registrants.filter((item) => item.status === "confirmed");
   const upNext = allWebinars
     .filter((item) => item.id !== webinar.id)
@@ -104,6 +112,17 @@ export default async function WebinarReplayPage({
                 </div>
               ) : null}
             </div>
+
+            <section className="webinar-comments-section">
+              <h2 className="m-0 text-lg font-bold tracking-[-0.02em]">
+                Comments {comments.length > 0 ? `(${comments.length})` : ""}
+              </h2>
+              <WebinarCommentForm
+                webinarId={webinar.id}
+                currentUser={sessionUser ? { name: sessionUser.name, photoUrl: sessionUser.facebookPhotoUrl } : null}
+              />
+              <WebinarCommentList comments={comments} />
+            </section>
           </div>
 
           <aside className="fade-up-delay-1 grid content-start gap-3">
