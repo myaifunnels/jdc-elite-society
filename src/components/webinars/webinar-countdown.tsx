@@ -18,15 +18,17 @@ function splitDuration(ms: number) {
 
 function Tile({ value, label }: { value: number; label: string }) {
   return (
-    <div className="flex w-[4.2rem] flex-col items-center gap-1 rounded-2xl border border-white/15 bg-white/[0.06] py-2.5 backdrop-blur-xl sm:w-[4.8rem]">
+    <div className="flex w-[3.1rem] flex-none flex-col items-center gap-1 rounded-2xl border border-white/15 bg-white/[0.06] py-2 backdrop-blur-xl sm:w-[4.8rem] sm:py-2.5">
       <span
         key={value}
-        className="fade-up text-[1.5rem] font-extrabold leading-none tracking-[-0.02em] text-white sm:text-[1.8rem]"
+        className="fade-up text-[1.1rem] font-extrabold leading-none tracking-[-0.02em] text-white sm:text-[1.8rem]"
         style={{ animationDuration: "260ms" }}
       >
         {String(value).padStart(2, "0")}
       </span>
-      <span className="text-[0.6rem] font-bold uppercase tracking-[0.14em] text-white/60">{label}</span>
+      <span className="text-[0.52rem] font-bold uppercase tracking-[0.1em] text-white/60 sm:text-[0.6rem] sm:tracking-[0.14em]">
+        {label}
+      </span>
     </div>
   );
 }
@@ -204,13 +206,13 @@ export function WebinarCountdown({ scheduledAt }: { scheduledAt: string }) {
   const { days, hours, minutes, seconds } = splitDuration(diff);
 
   return (
-    <div className="flex items-center gap-2 sm:gap-2.5" role="timer" aria-live="off">
+    <div className="flex flex-wrap items-center gap-1.5 sm:gap-2.5" role="timer" aria-live="off">
       <Tile value={days} label="Days" />
-      <span className="text-lg font-bold text-white/30">:</span>
+      <span className="text-base font-bold text-white/30 sm:text-lg">:</span>
       <Tile value={hours} label="Hrs" />
-      <span className="text-lg font-bold text-white/30">:</span>
+      <span className="text-base font-bold text-white/30 sm:text-lg">:</span>
       <Tile value={minutes} label="Min" />
-      <span className="text-lg font-bold text-white/30">:</span>
+      <span className="text-base font-bold text-white/30 sm:text-lg">:</span>
       <Tile value={seconds} label="Sec" />
       <button
         type="button"

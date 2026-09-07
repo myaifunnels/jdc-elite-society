@@ -1500,7 +1500,7 @@ a,
 
 @media (max-width: 640px) {
   :root {
-    --page-pad: 1.75rem;
+    --page-pad: 1.15rem;
   }
 
   .section-space {
@@ -1558,6 +1558,15 @@ a,
 @media (min-width: 1100px) {
   .hero-video-wrap.is-pip {
     width: min(22vw, 20rem) !important;
+  }
+}
+
+/* Narrow phones (iPhone SE/mini and smaller Android widths) get tighter edge margins so
+   content has room to breathe instead of fighting the same 1.75rem gutter used everywhere
+   else — the closer-to-native-app feel iOS apps get from ~16px screen margins. */
+@media (max-width: 400px) {
+  :root {
+    --page-pad: 0.9rem;
   }
 }
 
