@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useId, useState } from "react";
 import {
+  Clapperboard,
   Globe,
   GraduationCap,
   Handshake,
@@ -45,6 +46,7 @@ const navCatalog: Array<{
   { href: "/dashboard/access", label: "Access", icon: Shield, capability: "access" },
   { href: "/dashboard/integrations", label: "Integrations", icon: Plug, capability: "integrations" },
   { href: "/dashboard/automation", label: "Automation", icon: Zap, capability: "automation" },
+  { href: "/dashboard/webinars", label: "Webinars", icon: Clapperboard, capability: "webinars" },
   { href: "/dashboard/settings", label: "Settings", icon: Settings2, capability: "settings" },
 ];
 

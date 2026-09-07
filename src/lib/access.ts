@@ -14,6 +14,7 @@ export type Capability =
   | "registrations"
   | "integrations"
   | "automation"
+  | "webinars"
   | "settings"
   | "access"
   | "partnership"
@@ -41,6 +42,7 @@ export const CAPABILITIES: Array<{ id: Capability; label: string; detail: string
   { id: "registrations", label: "Registrants", detail: "Verify member sign-ups and payment on the Contacts registrants tab." },
   { id: "integrations", label: "Integrations", detail: "GHL, Maps, and R2 credentials." },
   { id: "automation", label: "Automation", detail: "SMS templates and the from-number used for buyer/team texts." },
+  { id: "webinars", label: "Webinars", detail: "Manage the public webinar list, featured episode, and CTAs." },
   { id: "settings", label: "Site settings", detail: "Branding and design system." },
   { id: "access", label: "Access control", detail: "Change roles and permission defaults." },
   { id: "partnership", label: "Partnership", detail: "Affiliate link, tree, and payouts." },
@@ -67,6 +69,7 @@ export const ROLE_DEFAULTS: Record<AccessRole, AccessMap> = {
     registrations: true,
     integrations: true,
     automation: true,
+    webinars: true,
     settings: true,
     access: true,
     partnership: true,
@@ -84,6 +87,7 @@ export const ROLE_DEFAULTS: Record<AccessRole, AccessMap> = {
     registrations: false,
     integrations: false,
     automation: false,
+    webinars: false,
     settings: false,
     access: false,
     partnership: false,
@@ -101,6 +105,7 @@ export const ROLE_DEFAULTS: Record<AccessRole, AccessMap> = {
     registrations: false,
     integrations: false,
     automation: false,
+    webinars: false,
     settings: false,
     access: false,
     partnership: false,
@@ -118,6 +123,7 @@ export const ROLE_DEFAULTS: Record<AccessRole, AccessMap> = {
     registrations: false,
     integrations: false,
     automation: false,
+    webinars: false,
     settings: false,
     access: false,
     partnership: false,
