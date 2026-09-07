@@ -8,6 +8,7 @@ export type WebinarRegistrantStatus = "confirmed" | "pending" | "rejected";
 export type WebinarRegistrant = {
   id: string;
   webinarId: string;
+  userId: string;
   name: string;
   email: string;
   phone: string;
@@ -21,6 +22,7 @@ export type WebinarRegistrant = {
 
 export type CreateRegistrantInput = {
   webinarId: string;
+  userId?: string;
   name: string;
   email: string;
   phone: string;
@@ -64,9 +66,14 @@ async function ensureTable(client: Pool) {
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )
   `);
+  await client.query(`ALTER TABLE webinar_registrants ADD COLUMN IF NOT EXISTS user_id TEXT NOT NULL DEFAULT ''`);
   await client.query(`
     CREATE INDEX IF NOT EXISTS webinar_registrants_webinar_idx
     ON webinar_registrants (webinar_id, status, tier)
+  `);
+  await client.query(`
+    CREATE INDEX IF NOT EXISTS webinar_registrants_user_idx
+    ON webinar_registrants (user_id)
   `);
   tableReady = true;
 }
@@ -75,6 +82,7 @@ function mapRow(row: Record<string, unknown>): WebinarRegistrant {
   return {
     id: String(row.id),
     webinarId: String(row.webinar_id),
+    userId: String(row.user_id ?? ""),
     name: String(row.name ?? ""),
     email: String(row.email ?? ""),
     phone: String(row.phone ?? ""),
@@ -132,6 +140,7 @@ export async function createRegistrant(input: CreateRegistrantInput): Promise<We
   const registrant: WebinarRegistrant = {
     id: `reg-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
     webinarId: input.webinarId,
+    userId: input.userId ?? "",
     name: input.name,
     email: input.email.toLowerCase(),
     phone: input.phone,
@@ -153,12 +162,13 @@ export async function createRegistrant(input: CreateRegistrantInput): Promise<We
     await client.query(
       `
       INSERT INTO webinar_registrants (
-        id, webinar_id, name, email, phone, photo_url, tier, status, payment_receipt_url, amount_paid, created_at
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+        id, webinar_id, user_id, name, email, phone, photo_url, tier, status, payment_receipt_url, amount_paid, created_at
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
       `,
       [
         registrant.id,
         registrant.webinarId,
+        registrant.userId,
         registrant.name,
         registrant.email,
         registrant.phone,
@@ -207,6 +217,37 @@ export async function updateRegistrantStatus(
 
   if (memoryIndex < 0) throw new Error("Registrant not found.");
   return memoryRegistrants[memoryIndex];
+}
+
+/** Every registration tied to a given account, newest first — matched by userId, and (for
+ * registrations created before the userId column existed) by the account's email as a fallback. */
+export async function listRegistrantsByUserId(userId: string, email?: string): Promise<WebinarRegistrant[]> {
+  const normalizedEmail = email?.trim().toLowerCase() ?? "";
+  const client = getPool();
+  if (!client) {
+    return memoryRegistrants
+      .filter((item) => item.userId === userId || (normalizedEmail && item.email === normalizedEmail))
+      .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
+  }
+
+  try {
+    await ensureTable(client);
+    const result = normalizedEmail
+      ? await client.query(
+          "SELECT * FROM webinar_registrants WHERE user_id = $1 OR email = $2 ORDER BY created_at DESC",
+          [userId, normalizedEmail],
+        )
+      : await client.query(
+          "SELECT * FROM webinar_registrants WHERE user_id = $1 ORDER BY created_at DESC",
+          [userId],
+        );
+    return result.rows.map(mapRow);
+  } catch (error) {
+    console.error("Failed to load webinar registrants for user", error);
+    return memoryRegistrants
+      .filter((item) => item.userId === userId || (normalizedEmail && item.email === normalizedEmail))
+      .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
+  }
 }
 
 /** Global queue of paid-overflow registrations awaiting admin review, across every webinar. */

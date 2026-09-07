@@ -146,16 +146,37 @@ export default async function WebinarsPage() {
                   {featured.title}
                 </h1>
 
-                <div className="fade-up-delay-1 flex flex-wrap gap-x-5 gap-y-2 text-sm font-bold text-white/85">
-                  <span className="flex items-center gap-2">Hosted by {featured.hostName || "Coach JDC"}</span>
-                  <span className="flex items-center gap-2">
-                    <CalendarDays aria-hidden className="w-4 text-[var(--brand)]" />
-                    {formatDateLabel(featured.scheduledAt)}
-                  </span>
-                  <span className="flex items-center gap-2">
-                    <Video aria-hidden className="w-4 text-[var(--brand)]" />
-                    {formatTimeLabel(featured.scheduledAt)} &middot; Philippine Time (GMT+8)
-                  </span>
+                <p className="fade-up-delay-1 m-0 text-sm font-bold text-white/85">
+                  Hosted by {featured.hostName || "Coach JDC"}
+                </p>
+
+                <div
+                  className="fade-up-delay-1 flex flex-wrap items-stretch gap-3 rounded-2xl border border-white/15 bg-white/[0.07] p-4 backdrop-blur-xl sm:inline-flex sm:w-auto"
+                  aria-label="Event date and time"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="flex h-11 w-11 flex-none items-center justify-center rounded-xl border border-white/15 bg-black/30 text-[var(--brand)]">
+                      <CalendarDays aria-hidden className="w-5" />
+                    </span>
+                    <div>
+                      <p className="m-0 text-[0.65rem] font-extrabold uppercase tracking-[0.1em] text-white/50">Date</p>
+                      <p className="m-0 text-base font-extrabold text-white sm:text-lg">
+                        {formatDateLabel(featured.scheduledAt)}
+                      </p>
+                    </div>
+                  </div>
+                  <div aria-hidden className="hidden w-px self-stretch bg-white/15 sm:block" />
+                  <div className="flex items-center gap-3">
+                    <span className="flex h-11 w-11 flex-none items-center justify-center rounded-xl border border-white/15 bg-black/30 text-[var(--brand)]">
+                      <Video aria-hidden className="w-5" />
+                    </span>
+                    <div>
+                      <p className="m-0 text-[0.65rem] font-extrabold uppercase tracking-[0.1em] text-white/50">Time</p>
+                      <p className="m-0 text-base font-extrabold text-white sm:text-lg">
+                        {formatTimeLabel(featured.scheduledAt)} &middot; GMT+8
+                      </p>
+                    </div>
+                  </div>
                 </div>
 
                 {featured.tagline ? (
@@ -185,14 +206,6 @@ export default async function WebinarsPage() {
                           photoUrl: item.photoUrl,
                         }))}
                       />
-                    ) : null}
-                    {featured.ctaHref && featured.ctaLabel ? (
-                      <Link
-                        href={featured.ctaHref}
-                        className="inline-flex items-center gap-1.5 text-sm font-bold text-white/60 underline decoration-white/30 underline-offset-4 hover:text-white"
-                      >
-                        {featured.ctaLabel} <ArrowRight aria-hidden className="w-3.5" />
-                      </Link>
                     ) : null}
                   </div>
                 </div>

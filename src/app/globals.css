@@ -1720,6 +1720,110 @@ a,
   }
 }
 
+.webinar-register-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0;
+  background: rgba(2, 4, 10, 0.72);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  animation: webinarModalBackdropIn 200ms var(--ease-out) both;
+}
+
+@media (min-width: 640px) {
+  .webinar-register-modal-backdrop {
+    align-items: center;
+    padding: 1.5rem;
+  }
+}
+
+.webinar-register-modal {
+  width: 100%;
+  max-width: 30rem;
+  max-height: min(92vh, 44rem);
+  overflow-y: auto;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-top-left-radius: 1.5rem;
+  border-top-right-radius: 1.5rem;
+  background: color-mix(in srgb, #0a0f1c 88%, var(--brand) 6%);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  padding: 1.5rem;
+  animation: webinarModalIn 260ms var(--ease-out) both;
+}
+
+@media (min-width: 640px) {
+  .webinar-register-modal {
+    border-radius: 1.5rem;
+  }
+}
+
+.webinar-register-modal-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.webinar-register-modal-close {
+  display: inline-flex;
+  height: 2.25rem;
+  width: 2.25rem;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+}
+
+.webinar-register-confirm {
+  display: grid;
+  gap: 0.25rem;
+}
+
+@keyframes webinarModalBackdropIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes webinarModalIn {
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (min-width: 640px) {
+  @keyframes webinarModalIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px) scale(0.97);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+}
+
 @keyframes floatSlow {
   0%,
   100% {
@@ -1789,7 +1893,9 @@ a,
   .hero-play.is-waiting::before,
   .hero-play.is-waiting::after,
   .hero-play svg,
-  .hero-video-wrap.is-pip {
+  .hero-video-wrap.is-pip,
+  .webinar-register-modal-backdrop,
+  .webinar-register-modal {
     animation: none !important;
   }
 
