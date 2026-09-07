@@ -5,6 +5,8 @@ import { WebinarAdminHero } from "@/components/dashboard/webinar-admin-hero";
 import { getFeaturedWebinar, listWebinars } from "@/lib/webinars-store";
 import { listPendingOverflowRegistrants, listRegistrants } from "@/lib/webinar-registrants-store";
 
+const CLIENT_BOUNDARY_MESSAGE = "from the server but";
+
 /**
  * Manually walks a React element tree, calling each function component directly instead of
  * going through react-dom/server (which Next.js's App Router refuses to let route files import
@@ -12,30 +14,39 @@ import { listPendingOverflowRegistrants, listRegistrants } from "@/lib/webinar-r
  * an element description; Foo's body doesn't run until something actually renders it). This is
  * the only way, short of a real browser/SSR pass, to force nested child components to actually
  * execute so a throw deep in the tree surfaces here instead of staying invisible.
- * Skips any component whose displayName/function name suggests it uses hooks (a plain call
- * outside React's real render loop would violate the Rules of Hooks and throw its own unrelated
- * error) — WebinarAdminActions is the only such component in this tree.
+ *
+ * Client Components (WebinarAdminActions, next/link's Link, etc.) are compiled to opaque
+ * "server reference" objects that can't be name-matched or called directly — attempting to call
+ * one throws "Attempted to call X() from the server but X is on the client". That's an artifact
+ * of this diagnostic technique, not a real bug (React's actual reconciler handles this boundary
+ * correctly), so it's caught and treated as "stop walking here, assume fine" rather than reported.
  */
-function walk(node: unknown, skip: Set<string>): void {
+function walk(node: unknown): void {
   if (node == null || typeof node !== "object") return;
   if (Array.isArray(node)) {
-    for (const item of node) walk(item, skip);
+    for (const item of node) walk(item);
     return;
   }
   const el = node as { type?: unknown; props?: { children?: unknown } };
   if (typeof el.type === "function") {
-    const name = el.type.name || "";
-    if (skip.has(name)) return;
-    const result = (el.type as (props: unknown) => unknown)((el as { props?: unknown }).props ?? {});
-    walk(result, skip);
+    let result: unknown;
+    try {
+      result = (el.type as (props: unknown) => unknown)((el as { props?: unknown }).props ?? {});
+    } catch (error) {
+      if (error instanceof Error && error.message.includes(CLIENT_BOUNDARY_MESSAGE)) {
+        return;
+      }
+      throw error;
+    }
+    walk(result);
     return;
   }
-  if (el.props?.children) walk(el.props.children, skip);
+  if (el.props?.children) walk(el.props.children);
 }
 
 function renderDeep(label: string, element: unknown, steps: Array<{ step: string; ok: boolean; detail?: unknown }>) {
   try {
-    walk(element, new Set(["WebinarAdminActions"]));
+    walk(element);
     steps.push({ step: label, ok: true });
   } catch (error) {
     steps.push({ step: label, ok: false, detail: describeError(error) });
