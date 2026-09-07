@@ -1,11 +1,16 @@
 import type { Metadata } from "next";
-import { ArrowRight, CalendarDays, Users, Video } from "lucide-react";
+import { ArrowRight, CalendarDays, Video } from "lucide-react";
 import Link from "next/link";
 
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
+import { WebinarAvatarRow } from "@/components/webinars/webinar-avatar-row";
+import { WebinarCountdown } from "@/components/webinars/webinar-countdown";
+import { WebinarRegisterPanel } from "@/components/webinars/webinar-register-panel";
 import type { WebinarRecord } from "@/lib/webinars";
+import { WEBINAR_OVERFLOW_PRICE } from "@/lib/webinars";
 import { getFeaturedWebinar, listWebinars } from "@/lib/webinars-store";
+import { getFreeSeatsLeft, listRegistrants } from "@/lib/webinar-registrants-store";
 
 export const metadata: Metadata = {
   title: "Webinars | Coach JDC",
@@ -63,102 +68,135 @@ function EpisodeThumb({ webinar, className }: { webinar: WebinarRecord; classNam
   return <GradientThumb webinar={webinar} className={className} />;
 }
 
+function SeatsPill({ freeSeatsLeft, totalSeats }: { freeSeatsLeft: number; totalSeats: number }) {
+  if (freeSeatsLeft <= 0) {
+    return (
+      <span className="inline-flex items-center gap-2 rounded-full border border-amber-300/40 bg-amber-400/15 px-4 py-2 text-xs font-extrabold uppercase tracking-[0.06em] text-amber-200 backdrop-blur-md">
+        Fully booked &middot; ₱{WEBINAR_OVERFLOW_PRICE} overflow seats available
+      </span>
+    );
+  }
+
+  const ratio = totalSeats > 0 ? freeSeatsLeft / totalSeats : 1;
+  const isLow = ratio <= 0.15;
+
+  return (
+    <span
+      className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-xs font-extrabold uppercase tracking-[0.06em] backdrop-blur-md ${
+        isLow
+          ? "border-orange-300/40 bg-orange-400/15 text-orange-200"
+          : "border-emerald-300/30 bg-emerald-400/10 text-emerald-200"
+      }`}
+    >
+      <i
+        aria-hidden
+        className={`inline-block h-1.5 w-1.5 rounded-full ${isLow ? "bg-orange-300" : "bg-emerald-300"}`}
+      />
+      {freeSeatsLeft} free {freeSeatsLeft === 1 ? "seat" : "seats"} left
+    </span>
+  );
+}
+
 export default async function WebinarsPage() {
   const [webinars, featured] = await Promise.all([listWebinars(), getFeaturedWebinar()]);
   const otherEpisodes = featured ? webinars.filter((item) => item.id !== featured.id) : webinars;
+
+  const [freeSeatsLeft, registrants] = featured
+    ? await Promise.all([getFreeSeatsLeft(featured), listRegistrants(featured.id)])
+    : [0, []];
+  const confirmedRegistrants = registrants.filter((item) => item.status === "confirmed");
 
   return (
     <div className="min-h-screen">
       <SiteHeader />
       <main>
-        <section className="section-space border-b border-[var(--line)]">
-          <div className="container-shell fade-up">
-            <p className="eyebrow">Coach JDC live training</p>
-            <h1
-              className="mt-4 max-w-3xl text-[clamp(2.6rem,6vw,4.6rem)] leading-[0.98] tracking-[-0.045em]"
-              style={{ fontFamily: "var(--font-display), Georgia, serif" }}
-            >
-              Webinars built for people ready to do the work.
-            </h1>
-            <p className="mt-5 max-w-xl text-[var(--muted)] text-[clamp(1rem,1.6vw,1.15rem)] leading-relaxed">
-              Practical live sessions on business, leadership, and building income with a system you can repeat.
-            </p>
-          </div>
-        </section>
-
         {featured ? (
-          <section className="section-space" aria-labelledby="featured-webinar">
-            <div className="container-shell">
-              <div className="fade-up mb-8 flex flex-wrap items-end justify-between gap-6">
-                <div>
-                  <p className="eyebrow">Latest webinar</p>
-                  <h2 id="featured-webinar" className="mt-2 text-[clamp(1.8rem,3.6vw,2.6rem)] tracking-[-0.03em]">
-                    {featured.seasonLabel || "Season 1"} &middot; Episode {featured.episodeNumber}
-                  </h2>
+          <section className="relative overflow-hidden border-b border-[var(--line)]" aria-labelledby="featured-webinar">
+            <div className="relative min-h-[640px] w-full sm:min-h-[720px]">
+              {featured.thumbnailUrl ? (
+                <div
+                  className="absolute inset-0 bg-cover bg-center"
+                  style={{ backgroundImage: `url('${featured.thumbnailUrl}')` }}
+                  role="img"
+                  aria-label={featured.title}
+                />
+              ) : (
+                <div className="absolute inset-0 bg-[linear-gradient(150deg,color-mix(in_srgb,var(--brand)_32%,#050b18)_0%,#050b18_75%)]">
+                  <div className="absolute inset-0 opacity-40 [background:radial-gradient(65%_65%_at_25%_15%,rgba(255,255,255,0.14),transparent)]" />
                 </div>
-                <span className="inline-flex items-center gap-2 rounded-full border border-[var(--line-strong)] bg-[var(--brand-soft)] px-4 py-2.5 text-sm font-bold text-[var(--foreground)]">
-                  <i
-                    aria-hidden
-                    className="inline-block h-2 w-2 rounded-full bg-[var(--brand)] shadow-[0_0_0_0.3rem_var(--brand-soft)]"
-                  />
-                  Live online
-                </span>
-              </div>
+              )}
 
-              <article className="fade-up-delay-1 card-surface grid overflow-hidden md:grid-cols-[minmax(0,1.05fr)_minmax(380px,0.95fr)]">
-                <EpisodeThumb webinar={featured} className="relative min-h-[320px] md:min-h-[560px]" />
+              {/* Dark gradient scrim, anchored toward the bottom-left where the content sits — same
+                  full-bleed legibility technique as .elite-hero-scrim in src/app/elite/elite.css. */}
+              <div
+                aria-hidden
+                className="absolute inset-0 [background:linear-gradient(0deg,rgba(2,4,10,0.96)_8%,rgba(2,4,10,0.62)_42%,rgba(2,4,10,0.18)_72%,rgba(2,4,10,0.05)_100%),linear-gradient(90deg,rgba(2,4,10,0.7)_0%,rgba(2,4,10,0.2)_55%,transparent_90%)]"
+              />
 
-                <div className="flex flex-col justify-center p-8 md:p-14">
-                  <p className="eyebrow m-0 !tracking-[0.14em] text-sm">
-                    Hosted by {featured.hostName || "Coach JDC"}
+              <div className="container-shell relative flex min-h-[640px] flex-col justify-end gap-6 py-12 sm:min-h-[720px] sm:py-16">
+                <div className="fade-up flex flex-wrap items-center gap-3">
+                  <p className="eyebrow m-0 text-white/70">Latest webinar</p>
+                  <SeatsPill freeSeatsLeft={freeSeatsLeft} totalSeats={featured.totalSeats} />
+                </div>
+
+                <h1
+                  className="fade-up-delay-1 max-w-3xl text-[clamp(2.4rem,5.6vw,4.2rem)] leading-[0.98] tracking-[-0.045em] text-white"
+                  style={{ fontFamily: "var(--font-display), Georgia, serif" }}
+                >
+                  {featured.title}
+                </h1>
+
+                <div className="fade-up-delay-1 flex flex-wrap gap-x-5 gap-y-2 text-sm font-bold text-white/85">
+                  <span className="flex items-center gap-2">Hosted by {featured.hostName || "Coach JDC"}</span>
+                  <span className="flex items-center gap-2">
+                    <CalendarDays aria-hidden className="w-4 text-[var(--brand)]" />
+                    {formatDateLabel(featured.scheduledAt)}
+                  </span>
+                  <span className="flex items-center gap-2">
+                    <Video aria-hidden className="w-4 text-[var(--brand)]" />
+                    {formatTimeLabel(featured.scheduledAt)} &middot; Philippine Time (GMT+8)
+                  </span>
+                </div>
+
+                {featured.tagline ? (
+                  <p className="fade-up-delay-1 m-0 max-w-xl text-[1.05rem] font-bold text-white">
+                    {featured.tagline}
                   </p>
-                  <h3
-                    className="mt-3 mb-2 text-[clamp(1.9rem,3.6vw,3rem)] leading-[1.05] tracking-[-0.04em]"
-                    style={{ fontFamily: "var(--font-display), Georgia, serif" }}
-                  >
-                    {featured.title}
-                  </h3>
-                  {featured.tagline ? (
-                    <p className="m-0 mb-3 text-[1.05rem] font-bold text-[var(--foreground)]">{featured.tagline}</p>
-                  ) : null}
-                  {featured.description ? (
-                    <p className="m-0 text-[var(--muted)] leading-relaxed">{featured.description}</p>
-                  ) : null}
+                ) : null}
+                {featured.description ? (
+                  <p className="fade-up-delay-1 m-0 max-w-xl leading-relaxed text-white/75">{featured.description}</p>
+                ) : null}
 
-                  <div className="mt-6 flex flex-wrap gap-x-5 gap-y-3 text-sm font-bold text-[var(--foreground)]">
-                    <span className="flex items-center gap-2">
-                      <CalendarDays aria-hidden className="w-4 text-[var(--brand)]" />
-                      {formatDateLabel(featured.scheduledAt)}
-                    </span>
-                    <span className="flex items-center gap-2">
-                      <Video aria-hidden className="w-4 text-[var(--brand)]" />
-                      {formatTimeLabel(featured.scheduledAt)} &middot; Philippine Time (GMT+8)
-                    </span>
-                  </div>
-
-                  {featured.hostTitle ? (
-                    <p className="mt-4 text-sm text-[var(--muted)]">
-                      {featured.hostName || "Coach JDC"} &middot; {featured.hostTitle}
-                    </p>
-                  ) : null}
-
-                  {featured.ctaHref && featured.ctaLabel ? (
-                    <Link
-                      href={featured.ctaHref}
-                      className="button-primary pressable mt-8 inline-flex min-h-[3.25rem] items-center justify-center gap-2 self-start px-6 text-sm font-extrabold"
-                    >
-                      {featured.ctaLabel} <ArrowRight aria-hidden className="w-4" />
-                    </Link>
-                  ) : null}
-
-                  {featured.interestedCount > 0 ? (
-                    <p className="mt-3 flex items-center gap-2 text-xs text-[var(--muted)]">
-                      <Users aria-hidden className="w-3.5" />
-                      {featured.interestedCount} people interested
-                    </p>
-                  ) : null}
+                <div className="fade-up-delay-2">
+                  <WebinarCountdown scheduledAt={featured.scheduledAt} />
                 </div>
-              </article>
+
+                <div className="fade-up-delay-2 flex flex-col gap-4 sm:flex-row sm:items-start">
+                  <WebinarRegisterPanel
+                    webinarId={featured.id}
+                    freeSeatsLeft={freeSeatsLeft}
+                    overflowPrice={WEBINAR_OVERFLOW_PRICE}
+                  />
+                  <div className="flex flex-col gap-3">
+                    {confirmedRegistrants.length > 0 ? (
+                      <WebinarAvatarRow
+                        registrants={confirmedRegistrants.map((item) => ({
+                          name: item.name,
+                          photoUrl: item.photoUrl,
+                        }))}
+                      />
+                    ) : null}
+                    {featured.ctaHref && featured.ctaLabel ? (
+                      <Link
+                        href={featured.ctaHref}
+                        className="inline-flex items-center gap-1.5 text-sm font-bold text-white/60 underline decoration-white/30 underline-offset-4 hover:text-white"
+                      >
+                        {featured.ctaLabel} <ArrowRight aria-hidden className="w-3.5" />
+                      </Link>
+                    ) : null}
+                  </div>
+                </div>
+              </div>
             </div>
           </section>
         ) : (
@@ -185,7 +223,7 @@ export default async function WebinarsPage() {
                 {otherEpisodes.map((webinar) => (
                   <article
                     key={webinar.id}
-                    className="card-surface flex w-[280px] flex-none flex-col overflow-hidden"
+                    className="card-surface interactive-card flex w-[280px] flex-none flex-col overflow-hidden hover:-translate-y-1 hover:shadow-[0_20px_50px_rgba(0,0,0,0.28)]"
                   >
                     <EpisodeThumb webinar={webinar} className="h-40 w-full" />
                     <div className="flex flex-1 flex-col p-5">

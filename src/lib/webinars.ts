@@ -13,6 +13,7 @@ export type WebinarRecord = {
   ctaHref: string;
   interestedCount: number;
   isFeatured: boolean;
+  totalSeats: number;
   createdAt: string;
   updatedAt: string;
 };
@@ -20,3 +21,6 @@ export type WebinarRecord = {
 export type WebinarInput = Partial<Omit<WebinarRecord, "id" | "createdAt" | "updatedAt">> & {
   id?: string;
 };
+
+/** Price (PHP) for an overflow seat once a webinar's free seats are gone. */
+export const WEBINAR_OVERFLOW_PRICE = 499;
