@@ -2657,6 +2657,26 @@ a,
   font-weight: 600;
   white-space: nowrap;
   cursor: pointer;
+  transition: transform 150ms var(--ease-out), box-shadow 200ms var(--ease-out), filter 150ms ease, opacity 150ms ease;
+}
+
+.macos-btn:hover:not(:disabled) {
+  filter: brightness(1.06);
+}
+
+.macos-btn:active:not(:disabled) {
+  transform: scale(0.975);
+}
+
+.macos-btn:disabled {
+  cursor: default;
+  opacity: 0.7;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .macos-btn {
+    transition: none;
+  }
 }
 
 .macos-btn-primary {
@@ -2674,6 +2694,17 @@ a,
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.35),
     0 10px 22px color-mix(in srgb, var(--brand) 38%, transparent);
+}
+
+.macos-btn-primary:hover:not(:disabled) {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.4),
+    0 14px 28px color-mix(in srgb, var(--brand) 48%, transparent);
+  transform: translateY(-1px);
+}
+
+.macos-btn-primary:active:not(:disabled) {
+  transform: translateY(0) scale(0.975);
 }
 
 .macos-btn-secondary {
@@ -4122,6 +4153,7 @@ html[data-membership="both"] .macos-btn-primary {
 }
 
 .dashboard-nav-item {
+  position: relative;
   display: inline-flex;
   min-height: 2rem;
   align-items: center;
@@ -4132,12 +4164,51 @@ html[data-membership="both"] .macos-btn-primary {
   font-size: 0.84rem;
   font-weight: 600;
   text-decoration: none;
+  transition: background 160ms var(--ease-out), color 160ms var(--ease-out), transform 160ms var(--ease-out),
+    padding-left 160ms var(--ease-out);
 }
 
-.dashboard-nav-item:hover,
-.dashboard-nav-item.is-active {
+.dashboard-nav-item::before {
+  content: "";
+  position: absolute;
+  left: -0.7rem;
+  top: 18%;
+  bottom: 18%;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: var(--brand);
+  opacity: 0;
+  transform: scaleY(0.4);
+  transition: opacity 160ms var(--ease-out), transform 160ms var(--ease-out);
+}
+
+.dashboard-nav-item:hover {
   background: color-mix(in srgb, var(--surface-elevated) 84%, white);
   color: var(--foreground);
+  padding-left: 0.85rem;
+}
+
+.dashboard-nav-item.is-active {
+  background:
+    linear-gradient(90deg, color-mix(in srgb, var(--brand) 14%, transparent), transparent 70%),
+    color-mix(in srgb, var(--surface-elevated) 84%, white);
+  color: var(--foreground);
+}
+
+.dashboard-nav-item.is-active svg:not(.dashboard-nav-lock) {
+  color: var(--brand);
+}
+
+.dashboard-nav-item.is-active::before {
+  opacity: 1;
+  transform: scaleY(1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dashboard-nav-item,
+  .dashboard-nav-item::before {
+    transition: none;
+  }
 }
 
 .dashboard-nav-item.is-locked {
@@ -4418,6 +4489,31 @@ html[data-membership="both"] .macos-btn-primary {
   grid-template-columns: 1fr;
 }
 
+/* Every dashboard page builds its grid from the same handful of server-rendered widgets, so a
+   staggered entrance here gives the whole dashboard some life on every navigation without
+   touching a single page's markup. Capped at 10 stops — anything past that just uses the last
+   delay, which still reads as "arriving together" rather than un-animated. */
+.dashboard-widget-grid > * {
+  animation: fadeUp 480ms var(--ease-out) both;
+}
+
+.dashboard-widget-grid > *:nth-child(1) { animation-delay: 0ms; }
+.dashboard-widget-grid > *:nth-child(2) { animation-delay: 40ms; }
+.dashboard-widget-grid > *:nth-child(3) { animation-delay: 80ms; }
+.dashboard-widget-grid > *:nth-child(4) { animation-delay: 120ms; }
+.dashboard-widget-grid > *:nth-child(5) { animation-delay: 160ms; }
+.dashboard-widget-grid > *:nth-child(6) { animation-delay: 200ms; }
+.dashboard-widget-grid > *:nth-child(7) { animation-delay: 240ms; }
+.dashboard-widget-grid > *:nth-child(8) { animation-delay: 280ms; }
+.dashboard-widget-grid > *:nth-child(9) { animation-delay: 320ms; }
+.dashboard-widget-grid > *:nth-child(n + 10) { animation-delay: 360ms; }
+
+@media (prefers-reduced-motion: reduce) {
+  .dashboard-widget-grid > * {
+    animation: none;
+  }
+}
+
 @media (min-width: 768px) {
   .dashboard-widget-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -4682,11 +4778,13 @@ html[data-membership="both"] .macos-btn-primary {
 }
 
 .dashboard-metric-card {
+  position: relative;
   display: grid;
   align-content: start;
   gap: 0.35rem;
   min-height: 8.5rem;
   padding: 1rem 1.05rem;
+  overflow: hidden;
   border: 1px solid color-mix(in srgb, var(--chrome-bright) 16%, transparent);
   border-radius: 18px;
   background:
@@ -4700,6 +4798,51 @@ html[data-membership="both"] .macos-btn-primary {
   -webkit-backdrop-filter: blur(24px) saturate(170%);
   text-decoration: none;
   color: inherit;
+  transition: transform 220ms var(--ease-out), box-shadow 220ms var(--ease-out), border-color 220ms var(--ease-out);
+}
+
+/* A quiet accent strip that cycles color per card so a row of metrics reads as distinct
+   figures at a glance instead of one repeated gray tile. Pure decoration — no markup change
+   needed since it targets whichever cards already exist in a .dashboard-widget-grid. */
+.dashboard-metric-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 3px;
+  background: var(--metric-accent, var(--brand));
+  opacity: 0.85;
+}
+
+.dashboard-widget-grid .dashboard-metric-card:nth-of-type(4n + 1) {
+  --metric-accent: var(--brand);
+}
+
+.dashboard-widget-grid .dashboard-metric-card:nth-of-type(4n + 2) {
+  --metric-accent: #34d399;
+}
+
+.dashboard-widget-grid .dashboard-metric-card:nth-of-type(4n + 3) {
+  --metric-accent: #f59e0b;
+}
+
+.dashboard-widget-grid .dashboard-metric-card:nth-of-type(4n + 4) {
+  --metric-accent: #a78bfa;
+}
+
+.dashboard-metric-card:hover,
+.dashboard-metric-card:focus-visible {
+  transform: translateY(-3px);
+  border-color: color-mix(in srgb, var(--metric-accent, var(--brand)) 45%, var(--chrome-bright) 20%);
+  box-shadow:
+    14px 22px 40px rgba(0, 0, 0, 0.34),
+    -3px -5px 14px rgba(255, 255, 255, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dashboard-metric-card {
+    transition: none;
+  }
 }
 
 .dashboard-metric-value {
@@ -4735,10 +4878,18 @@ html[data-membership="both"] .macos-btn-primary {
   border-radius: 10px;
   color: inherit;
   text-decoration: none;
+  transition: background 160ms var(--ease-out), transform 160ms var(--ease-out);
 }
 
 .dashboard-contact-row:not(.is-plain):hover {
   background: color-mix(in srgb, var(--brand-soft) 70%, transparent);
+  transform: translateX(2px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dashboard-contact-row {
+    transition: none;
+  }
 }
 
 .dashboard-contact-row strong,
