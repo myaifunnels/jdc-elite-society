@@ -13,8 +13,7 @@ const quickLinks = [
   { href: "/elite", label: "JDC Mastermind" },
   { href: "/about", label: "About Coach JDC" },
   { href: "/about", label: "Success Stories" },
-  { href: "/#faq", label: "FAQ" },
-  { href: "/#register", label: "Register" },
+  { href: "/register", label: "Register" },
   { href: "/login", label: "Sign in" },
 ];
 

@@ -1,10 +1,8 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
-import { programs } from "@/data/programs";
 import { siteContent } from "@/data/site-content";
 
 const HERO_VIDEO_SRC =
@@ -263,37 +261,6 @@ export function HeroBillboard() {
               {siteContent.secondaryCta.label}
             </Link>
           </div>
-        </div>
-      </div>
-
-      <div className="hero-row container-shell">
-        <div className="hero-row-head">
-          <h2>Featured programs</h2>
-          <Link href="/programs" className="pressable hero-row-cta">
-            See all programs
-          </Link>
-        </div>
-        <div className="hero-row-track">
-          {programs.slice(0, 4).map((program) => (
-            <Link
-              key={program.slug}
-              href={program.slug === "jdc-mastermind" ? "/elite" : `/programs/${program.slug}`}
-              className="hero-title-card"
-            >
-              <Image
-                src={program.image}
-                alt={program.imageAlt}
-                fill
-                sizes="(max-width: 640px) 82vw, (max-width: 1100px) 40vw, 25vw"
-                className="hero-title-card-image"
-              />
-              <div className="hero-title-card-copy">
-                <p>Program</p>
-                <strong>{program.title}</strong>
-                <span>{program.shortDescription}</span>
-              </div>
-            </Link>
-          ))}
         </div>
       </div>
     </section>
