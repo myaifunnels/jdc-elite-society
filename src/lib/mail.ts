@@ -1,3 +1,4 @@
+import { logCommunication } from "@/lib/communication-log-store";
 import { getResolvedIntegrationSettings } from "@/lib/integrations-store";
 import { siteUrl } from "@/lib/site";
 
@@ -61,6 +62,12 @@ export async function sendEmail(input: {
     console.error("Failed to send email", response.status, detail);
     return { sent: false as const };
   }
+
+  await Promise.all(
+    to.map((address) =>
+      logCommunication({ channel: "email", to: address, subject: input.subject, body: input.html }),
+    ),
+  );
 
   return { sent: true as const };
 }

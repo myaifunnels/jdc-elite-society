@@ -1,3 +1,4 @@
+import { logCommunication } from "@/lib/communication-log-store";
 import { lookupGhlContact, sendGhlSms, syncContactToGhl } from "@/lib/ghl";
 import { toE164Phone } from "@/lib/identity";
 import { isTextBeeReady } from "@/lib/integrations";
@@ -89,17 +90,20 @@ export async function sendSms(input: { to: string; body: string; name?: string; 
   if (contactId) {
     const ghl = await sendGhlSms(contactId, input.body);
     if (ghl.ok) {
+      await logCommunication({ channel: "sms", to, body: input.body });
       return { sent: true as const };
     }
   }
 
   const textbee = await sendTextBeeSms(to, input.body);
   if (textbee.sent) {
+    await logCommunication({ channel: "sms", to, body: input.body });
     return { sent: true as const };
   }
 
   const twilio = await sendTwilioSms(to, input.body);
   if (twilio.sent) {
+    await logCommunication({ channel: "sms", to, body: input.body });
     return { sent: true as const };
   }
 

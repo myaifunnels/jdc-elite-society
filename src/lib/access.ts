@@ -6,6 +6,7 @@ export type Capability =
   | "dashboard"
   | "university"
   | "profile"
+  | "inbox"
   | "support"
   | "support.admin"
   | "contacts.view"
@@ -35,6 +36,7 @@ export const CAPABILITIES: Array<{ id: Capability; label: string; detail: string
   { id: "dashboard", label: "Dashboard home", detail: "See the signed-in workspace home." },
   { id: "university", label: "University", detail: "Open the membership community embed." },
   { id: "profile", label: "Account profile", detail: "Edit their own profile and membership card." },
+  { id: "inbox", label: "Inbox", detail: "See every email and text notification sent to their account." },
   { id: "support", label: "Support", detail: "Open support tickets and message the team." },
   { id: "support.admin", label: "Support admin", detail: "View and respond to all support tickets." },
   { id: "contacts.view", label: "Contacts", detail: "Open the contacts workspace." },
@@ -63,6 +65,7 @@ export const ROLE_DEFAULTS: Record<AccessRole, AccessMap> = {
     dashboard: true,
     university: true,
     profile: true,
+    inbox: true,
     support: true,
     "support.admin": true,
     "contacts.view": true,
@@ -82,6 +85,7 @@ export const ROLE_DEFAULTS: Record<AccessRole, AccessMap> = {
     dashboard: true,
     university: true,
     profile: true,
+    inbox: true,
     support: true,
     "support.admin": false,
     "contacts.view": true,
@@ -101,6 +105,7 @@ export const ROLE_DEFAULTS: Record<AccessRole, AccessMap> = {
     dashboard: false,
     university: true,
     profile: true,
+    inbox: true,
     support: true,
     "support.admin": false,
     "contacts.view": false,
@@ -120,6 +125,7 @@ export const ROLE_DEFAULTS: Record<AccessRole, AccessMap> = {
     dashboard: false,
     university: true,
     profile: true,
+    inbox: true,
     support: true,
     "support.admin": false,
     "contacts.view": false,

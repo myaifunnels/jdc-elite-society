@@ -4981,6 +4981,85 @@ html[data-membership="both"] .macos-btn-primary {
   padding: 0.85rem 1.05rem 1.05rem;
 }
 
+.inbox-item summary {
+  gap: 0.75rem;
+}
+
+.inbox-item-summary {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.inbox-channel-pill {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 0.3rem;
+  border-radius: 999px;
+  padding: 0.18rem 0.55rem;
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.inbox-channel-pill.is-email {
+  background: color-mix(in srgb, var(--brand) 18%, transparent);
+  color: var(--brand);
+}
+
+.inbox-channel-pill.is-sms {
+  background: color-mix(in srgb, #f5a300 20%, transparent);
+  color: #f5a300;
+}
+
+.inbox-item-subject {
+  overflow: hidden;
+  min-width: 0;
+  flex: 1;
+  color: var(--foreground);
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 700;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.inbox-item-date {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 0.3rem;
+  color: var(--muted);
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.inbox-email-body {
+  max-width: 100%;
+  overflow-x: auto;
+  color: var(--muted);
+  font-size: 0.85rem;
+  line-height: 1.6;
+}
+
+.inbox-email-body img {
+  max-width: 100%;
+  height: auto;
+}
+
+@media (max-width: 640px) {
+  .inbox-item-date {
+    display: none;
+  }
+}
+
 .app-store-grid {
   display: grid;
   gap: 1rem;
