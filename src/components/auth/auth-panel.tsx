@@ -55,10 +55,6 @@ export function AuthPanel({
 
   return (
     <div className={mode === "login" ? "macos-window is-signin" : "macos-window"}>
-      <header className="macos-titlebar">
-        <p className="macos-title">{mode === "login" ? "Sign In" : "Register"}</p>
-      </header>
-
       <div className="macos-toolbar">
         <div className="macos-segment" role="tablist" aria-label="Account">
           <button type="button" className={mode === "login" ? "is-active" : ""} onClick={() => router.replace("/login")}>
@@ -75,12 +71,6 @@ export function AuthPanel({
       </div>
 
       <div className="macos-body">
-        <div className="macos-mark" aria-hidden>
-          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-            <circle cx="9" cy="9" r="6.5" stroke="currentColor" strokeWidth="1.6" />
-            <circle cx="9" cy="9" r="2.4" fill="currentColor" />
-          </svg>
-        </div>
         <h1 className="macos-heading">{mode === "login" ? "Welcome back" : "Join Elite"}</h1>
         <p className="macos-lead">
           {mode === "login"

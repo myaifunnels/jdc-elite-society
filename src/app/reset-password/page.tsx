@@ -3,7 +3,6 @@ import { redirect } from "next/navigation";
 
 import { AuthPageShell } from "@/components/auth/auth-page-shell";
 import { ResetPasswordForm } from "@/components/auth/reset-password-form";
-import { getResolvedBrandingSettings } from "@/lib/branding-store";
 import { getSessionUser } from "@/lib/session";
 
 export const metadata: Metadata = {
@@ -23,10 +22,9 @@ export default async function ResetPasswordPage({
   }
 
   const { token = "" } = await searchParams;
-  const branding = await getResolvedBrandingSettings();
 
   return (
-    <AuthPageShell branding={branding}>
+    <AuthPageShell>
       <ResetPasswordForm token={token} />
     </AuthPageShell>
   );

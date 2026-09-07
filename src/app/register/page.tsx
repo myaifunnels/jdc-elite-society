@@ -3,7 +3,6 @@ import { redirect } from "next/navigation";
 
 import { AuthPageShell } from "@/components/auth/auth-page-shell";
 import { AuthPanel } from "@/components/auth/auth-panel";
-import { getResolvedBrandingSettings } from "@/lib/branding-store";
 import { getSessionUser } from "@/lib/session";
 
 export const metadata: Metadata = {
@@ -18,10 +17,8 @@ export default async function RegisterPage() {
     redirect(user.passwordSet ? "/dashboard" : "/account/password");
   }
 
-  const branding = await getResolvedBrandingSettings();
-
   return (
-    <AuthPageShell branding={branding}>
+    <AuthPageShell>
       <AuthPanel mode="register" />
     </AuthPageShell>
   );
