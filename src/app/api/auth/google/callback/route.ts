@@ -20,8 +20,8 @@ type GoogleUserInfo = {
   picture?: string;
 };
 
-function failure(request: NextRequest, code: string) {
-  const response = NextResponse.redirect(new URL(`/login?error=${code}`, request.url));
+function failure(code: string) {
+  const response = NextResponse.redirect(new URL(`/login?error=${code}`, siteUrl));
   // Always clear the temporary cookie so it can never be replayed, whether
   // this callback succeeds or fails.
   response.cookies.set(GOOGLE_OAUTH_COOKIE, "", {
@@ -40,31 +40,31 @@ export async function GET(request: NextRequest) {
   const state = request.nextUrl.searchParams.get("state");
 
   if (!code || !state) {
-    return failure(request, "google_failed");
+    return failure("google_failed");
   }
 
   const rawCookie = request.cookies.get(GOOGLE_OAUTH_COOKIE)?.value;
   const signedValue = readSignedValue(rawCookie);
   if (!signedValue) {
-    return failure(request, "google_failed");
+    return failure("google_failed");
   }
 
   let stored: { state?: string; codeVerifier?: string };
   try {
     stored = JSON.parse(signedValue);
   } catch {
-    return failure(request, "google_failed");
+    return failure("google_failed");
   }
 
   if (!stored.state || !stored.codeVerifier || stored.state !== state) {
-    return failure(request, "google_failed");
+    return failure("google_failed");
   }
 
   const settings = await getResolvedIntegrationSettings();
   const clientId = settings.googleClientId;
   const clientSecret = settings.googleClientSecret;
   if (!clientId || !clientSecret) {
-    return failure(request, "google_not_configured");
+    return failure("google_not_configured");
   }
 
   const redirectUri = new URL("/api/auth/google/callback", siteUrl).toString();
@@ -85,7 +85,7 @@ export async function GET(request: NextRequest) {
 
     const tokenData = (await tokenResponse.json()) as GoogleTokenResponse;
     if (!tokenResponse.ok || !tokenData.access_token) {
-      return failure(request, "google_failed");
+      return failure("google_failed");
     }
 
     const userInfoResponse = await fetch("https://openidconnect.googleapis.com/v1/userinfo", {
@@ -93,19 +93,19 @@ export async function GET(request: NextRequest) {
     });
 
     if (!userInfoResponse.ok) {
-      return failure(request, "google_failed");
+      return failure("google_failed");
     }
 
     const profile = (await userInfoResponse.json()) as GoogleUserInfo;
 
     if (!profile.sub || !profile.email) {
-      return failure(request, "google_failed");
+      return failure("google_failed");
     }
 
     // Only explicit `false` is a rejection - Google omits this field for some
     // legacy scopes/tokens, and an absent value should not be treated as unverified.
     if (profile.email_verified === false) {
-      return failure(request, "google_email_unverified");
+      return failure("google_email_unverified");
     }
 
     const user = await findOrCreateGoogleUser({
@@ -116,12 +116,12 @@ export async function GET(request: NextRequest) {
     });
 
     if (!user || !user.active) {
-      return failure(request, "google_failed");
+      return failure("google_failed");
     }
 
     await setSessionCookie(user.id, true);
 
-    const response = NextResponse.redirect(new URL("/dashboard?welcome=1", request.url));
+    const response = NextResponse.redirect(new URL("/dashboard?welcome=1", siteUrl));
     response.cookies.set(GOOGLE_OAUTH_COOKIE, "", {
       httpOnly: true,
       sameSite: "lax",
@@ -133,6 +133,6 @@ export async function GET(request: NextRequest) {
     return response;
   } catch (error) {
     console.error("Google OAuth callback failed", error);
-    return failure(request, "google_failed");
+    return failure("google_failed");
   }
 }

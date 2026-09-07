@@ -22,8 +22,8 @@ type FacebookUserInfo = {
   error?: { message?: string };
 };
 
-function failure(request: NextRequest, code: string) {
-  const response = NextResponse.redirect(new URL(`/login?error=${code}`, request.url));
+function failure(code: string) {
+  const response = NextResponse.redirect(new URL(`/login?error=${code}`, siteUrl));
   // Always clear the temporary cookie so it can never be replayed, whether
   // this callback succeeds or fails.
   response.cookies.set(FACEBOOK_OAUTH_COOKIE, "", {
@@ -42,31 +42,31 @@ export async function GET(request: NextRequest) {
   const state = request.nextUrl.searchParams.get("state");
 
   if (!code || !state) {
-    return failure(request, "facebook_failed");
+    return failure("facebook_failed");
   }
 
   const rawCookie = request.cookies.get(FACEBOOK_OAUTH_COOKIE)?.value;
   const signedValue = readSignedValue(rawCookie);
   if (!signedValue) {
-    return failure(request, "facebook_failed");
+    return failure("facebook_failed");
   }
 
   let stored: { state?: string };
   try {
     stored = JSON.parse(signedValue);
   } catch {
-    return failure(request, "facebook_failed");
+    return failure("facebook_failed");
   }
 
   if (!stored.state || stored.state !== state) {
-    return failure(request, "facebook_failed");
+    return failure("facebook_failed");
   }
 
   const settings = await getResolvedIntegrationSettings();
   const appId = settings.facebookAppId;
   const appSecret = settings.facebookAppSecret;
   if (!appId || !appSecret) {
-    return failure(request, "facebook_not_configured");
+    return failure("facebook_not_configured");
   }
 
   const redirectUri = new URL("/api/auth/facebook/callback", siteUrl).toString();
@@ -81,7 +81,7 @@ export async function GET(request: NextRequest) {
     const tokenResponse = await fetch(tokenUrl);
     const tokenData = (await tokenResponse.json()) as FacebookTokenResponse;
     if (!tokenResponse.ok || !tokenData.access_token) {
-      return failure(request, "facebook_failed");
+      return failure("facebook_failed");
     }
 
     const profileUrl = new URL(`https://graph.facebook.com/${FACEBOOK_GRAPH_VERSION}/me`);
@@ -92,7 +92,7 @@ export async function GET(request: NextRequest) {
     const profile = (await profileResponse.json()) as FacebookUserInfo;
 
     if (!profileResponse.ok || !profile.id) {
-      return failure(request, "facebook_failed");
+      return failure("facebook_failed");
     }
 
     const user = await findOrCreateFacebookUser({
@@ -103,12 +103,12 @@ export async function GET(request: NextRequest) {
     });
 
     if (!user || !user.active) {
-      return failure(request, "facebook_failed");
+      return failure("facebook_failed");
     }
 
     await setSessionCookie(user.id, true);
 
-    const response = NextResponse.redirect(new URL("/dashboard?welcome=1", request.url));
+    const response = NextResponse.redirect(new URL("/dashboard?welcome=1", siteUrl));
     response.cookies.set(FACEBOOK_OAUTH_COOKIE, "", {
       httpOnly: true,
       sameSite: "lax",
@@ -120,6 +120,6 @@ export async function GET(request: NextRequest) {
     return response;
   } catch (error) {
     console.error("Facebook OAuth callback failed", error);
-    return failure(request, "facebook_failed");
+    return failure("facebook_failed");
   }
 }

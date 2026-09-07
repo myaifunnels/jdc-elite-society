@@ -1,5 +1,5 @@
 import { randomBytes } from "node:crypto";
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
 import { getResolvedIntegrationSettings } from "@/lib/integrations-store";
 import { signValue } from "@/lib/session";
@@ -15,12 +15,12 @@ export const FACEBOOK_OAUTH_COOKIE = "coach-jdc-facebook-oauth";
 const FACEBOOK_OAUTH_COOKIE_MAX_AGE = 60 * 10; // 10 minutes
 const FACEBOOK_GRAPH_VERSION = "v21.0";
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   const settings = await getResolvedIntegrationSettings();
   const appId = settings.facebookAppId;
 
   if (!appId) {
-    return NextResponse.redirect(new URL("/login?error=facebook_not_configured", request.url));
+    return NextResponse.redirect(new URL("/login?error=facebook_not_configured", siteUrl));
   }
 
   const state = randomBytes(16).toString("hex");
