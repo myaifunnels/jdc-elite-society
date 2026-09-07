@@ -2,11 +2,20 @@
 
 import { X } from "lucide-react";
 import { useEffect, useId, useRef } from "react";
+import { createPortal } from "react-dom";
 
 /** Minimal accessible dialog: backdrop (click to close), Escape closes, focus moves into the
  * modal on open and is restored to the trigger on close. Built inline for the webinar hero
  * since no shared Modal/Dialog component exists elsewhere in this codebase yet (checked
- * src/components/** for `role="dialog"`, `<dialog>`, and Modal/Dialog components). */
+ * src/components/** for `role="dialog"`, `<dialog>`, and Modal/Dialog components).
+ *
+ * Rendered via a portal into document.body rather than in place: a `position: fixed` backdrop
+ * only sizes/positions itself against the viewport when every ancestor has no transform/filter/
+ * backdrop-filter/perspective (any of those makes that ancestor the fixed-position containing
+ * block instead). This dialog gets opened from triggers nested inside `.interactive-card`,
+ * which applies `transform: translateY(-6px)` on `:hover` — if the pointer is still over the
+ * card when the trigger is clicked, that hover transform is active and the un-portaled dialog
+ * would size itself to the card's box instead of the viewport. */
 export function WebinarRegisterModal({
   open,
   onClose,
@@ -77,7 +86,7 @@ export function WebinarRegisterModal({
 
   if (!open) return null;
 
-  return (
+  return createPortal(
     <div className="webinar-register-modal-backdrop" onClick={onClose}>
       <div
         ref={dialogRef}
@@ -103,6 +112,7 @@ export function WebinarRegisterModal({
         </div>
         {children}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

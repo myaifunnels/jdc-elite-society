@@ -278,6 +278,7 @@ export function DashboardSidebar({
           open ? "translate-x-0" : "-translate-x-full",
         )}
       >
+        <span className="dashboard-sidebar-glow-mid" aria-hidden />
         <SidebarPanel
           role={role}
           userName={userName}
@@ -299,6 +300,7 @@ export function DashboardSidebar({
         aria-labelledby={`${titleId}-desktop`}
         className="dashboard-sidebar hidden w-[19.5rem] shrink-0 flex-col overflow-y-auto lg:flex"
       >
+        <span className="dashboard-sidebar-glow-mid" aria-hidden />
         <SidebarPanel
           role={role}
           userName={userName}

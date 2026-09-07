@@ -4134,29 +4134,88 @@ html[data-membership="both"] .macos-btn-primary {
 .dashboard-sidebar {
   position: relative;
   z-index: 5;
+  overflow-x: hidden;
   --foreground: #f4f8ff;
   --heading: #f4f8ff;
-  --muted: color-mix(in srgb, #f4f8ff 64%, transparent);
-  --line: color-mix(in srgb, white 22%, transparent);
-  background:
-    linear-gradient(165deg,
-      color-mix(in srgb, white 20%, transparent) 0%,
-      transparent 32%
-    ),
-    linear-gradient(190deg,
-      color-mix(in srgb, var(--brand-dark) 92%, black 10%) 0%,
-      var(--brand-dark) 24%,
-      var(--brand) 62%,
-      color-mix(in srgb, var(--brand) 55%, white 30%) 100%
-    );
-  border-right: 1px solid color-mix(in srgb, white 30%, transparent);
-  backdrop-filter: blur(44px) saturate(220%);
-  -webkit-backdrop-filter: blur(44px) saturate(220%);
+  --muted: color-mix(in srgb, #f4f8ff 60%, transparent);
+  --line: color-mix(in srgb, white 14%, transparent);
+  background: linear-gradient(190deg, #04060d 0%, #05080f 45%, #030509 100%);
+  border-right: 1px solid color-mix(in srgb, white 12%, transparent);
+  backdrop-filter: blur(44px) saturate(200%);
+  -webkit-backdrop-filter: blur(44px) saturate(200%);
   box-shadow:
-    14px 0 44px rgba(4, 10, 28, 0.4),
-    inset -1px 0 0 color-mix(in srgb, white 40%, transparent),
-    inset 0 1px 0 color-mix(in srgb, white 32%, transparent);
+    14px 0 44px rgba(2, 4, 12, 0.6),
+    inset -1px 0 0 color-mix(in srgb, white 10%, transparent);
   color: var(--foreground);
+}
+
+.dashboard-sidebar::before,
+.dashboard-sidebar::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  border-radius: 999px;
+  filter: blur(58px);
+  pointer-events: none;
+}
+
+.dashboard-sidebar::before {
+  top: -12%;
+  left: -35%;
+  width: 75%;
+  height: 38%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--brand) 75%, white 12%) 0%, transparent 72%);
+  opacity: 0.5;
+  animation: sidebarGlowDriftA 18s ease-in-out infinite;
+}
+
+.dashboard-sidebar::after {
+  bottom: -6%;
+  right: -30%;
+  width: 80%;
+  height: 42%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--brand-dark) 85%, var(--brand) 25%) 0%, transparent 72%);
+  opacity: 0.45;
+  animation: sidebarGlowDriftB 22s ease-in-out infinite;
+}
+
+.dashboard-sidebar-glow-mid {
+  display: block;
+  position: absolute;
+  z-index: -1;
+  top: 38%;
+  left: 10%;
+  width: 60%;
+  height: 30%;
+  border-radius: 999px;
+  filter: blur(64px);
+  opacity: 0.28;
+  background: radial-gradient(circle, color-mix(in srgb, var(--brand) 60%, #57d1ff 30%) 0%, transparent 72%);
+  animation: sidebarGlowDriftC 26s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes sidebarGlowDriftA {
+  0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.42; }
+  50% { transform: translate(14%, 18%) scale(1.2); opacity: 0.62; }
+}
+
+@keyframes sidebarGlowDriftB {
+  0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.4; }
+  50% { transform: translate(-10%, -14%) scale(1.15); opacity: 0.58; }
+}
+
+@keyframes sidebarGlowDriftC {
+  0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.22; }
+  50% { transform: translate(8%, -10%) scale(1.25); opacity: 0.38; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dashboard-sidebar::before,
+  .dashboard-sidebar::after,
+  .dashboard-sidebar-glow-mid {
+    animation: none;
+  }
 }
 
 .dashboard-sidebar-head {
