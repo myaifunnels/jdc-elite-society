@@ -72,7 +72,14 @@ export default async function WebinarReplayPage({
                   allowFullScreen
                 />
               ) : embed.type === "video" ? (
-                <video src={embed.src} controls className="replay-video" />
+                <video
+                  src={embed.src}
+                  controls
+                  playsInline
+                  preload="metadata"
+                  poster={webinar.thumbnailUrl || undefined}
+                  className="replay-video"
+                />
               ) : (
                 <Link href={embed.src} target="_blank" rel="noreferrer" className="replay-video replay-video-fallback">
                   <PlayCircle aria-hidden size={56} />

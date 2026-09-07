@@ -4316,15 +4316,20 @@ html[data-membership="both"] .macos-btn-primary {
   overflow: hidden;
 }
 
-/* The mobile drawer variant of .dashboard-sidebar also carries Tailwind's `fixed` class, but
-   that utility and this handwritten rule have equal specificity (one class each) — whichever
-   comes later in the generated stylesheet wins, and this rule (written after the Tailwind
-   import) was silently downgrading the drawer from `position: fixed` to `position: relative`,
-   dropping it into normal document flow as a ~750px-tall flex item and pushing all real page
-   content below the viewport on mobile. The ID selector below always wins regardless of source
-   order, so the drawer stays fixed no matter what this class does. */
+/* The mobile drawer variant of .dashboard-sidebar also carries Tailwind's `fixed` and `z-50`
+   classes, but those utilities and this handwritten rule have equal specificity (one class
+   each) — whichever comes later in the generated stylesheet wins, and this rule (written after
+   the Tailwind import) was silently downgrading the drawer from `position: fixed` to
+   `position: relative` (pushing all page content off-screen — fixed previously) AND from
+   `z-index: 50` down to `z-index: 5`, putting the fixed full-screen backdrop button (z-index 40)
+   ABOVE the drawer instead of below it — which is exactly why the open drawer looked dimmed
+   (seen through the backdrop's black tint) and every nav link was unclickable (the backdrop
+   button, not the link, was catching the tap and just closing the drawer). The ID selector below
+   always wins regardless of source order, so the drawer keeps its real position/stacking no
+   matter what this class does. */
 #dashboard-sidebar-mobile {
   position: fixed;
+  z-index: 50;
 }
 
 .dashboard-sidebar {
