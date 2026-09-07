@@ -75,7 +75,9 @@ function registerError(error: string, formData: FormData): AuthFormState {
   };
 }
 
-async function setSessionCookie(userId: string, remember = true) {
+// Exported so the Google OAuth callback route (src/app/api/auth/google/callback/route.ts)
+// can complete a login the same way loginAccount/registerAccount do.
+export async function setSessionCookie(userId: string, remember = true) {
   const cookieStore = await cookies();
   cookieStore.set(sessionCookieName, userId, {
     httpOnly: true,
