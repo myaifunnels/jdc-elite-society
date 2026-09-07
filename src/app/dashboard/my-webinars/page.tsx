@@ -87,6 +87,17 @@ export default async function MyWebinarsPage() {
                       Join via Zoom
                     </Link>
                   ) : null}
+                  {registrant.status === "confirmed" && webinar.replayUrl ? (
+                    <Link
+                      href={webinar.replayUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="button-secondary pressable inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-extrabold"
+                    >
+                      <Video aria-hidden size={16} />
+                      Watch replay
+                    </Link>
+                  ) : null}
                   <Link
                     href="/webinars"
                     className="inline-flex items-center gap-1.5 text-sm font-bold text-[var(--brand)]"

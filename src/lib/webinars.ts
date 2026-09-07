@@ -9,11 +9,11 @@ export type WebinarRecord = {
   hostTitle: string;
   scheduledAt: string;
   thumbnailUrl: string;
-  ctaLabel: string;
-  ctaHref: string;
-  /** Where "Join via Zoom" links once a registrant's seat is confirmed — separate from ctaHref,
-   * which is a more general (and for the seeded event, non-Zoom) external link. */
+  /** Where "Join via Zoom" links once a registrant's seat is confirmed. */
   zoomLink: string;
+  /** Replay video link (e.g. YouTube/Vimeo/Drive), shown once the live session is over —
+   * on the public "All episodes" library card and on a registrant's My Webinars dashboard. */
+  replayUrl: string;
   interestedCount: number;
   isFeatured: boolean;
   totalSeats: number;

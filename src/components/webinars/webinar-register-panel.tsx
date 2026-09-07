@@ -45,7 +45,7 @@ export function WebinarRegisterPanel({
   freeSeatsLeft: number;
   overflowPrice: number;
   /** Where "Join via Zoom" should link once someone's seat is confirmed — the webinar's own
-   * ctaHref, since that's already the flexible admin-set link field (Zoom, or anywhere else). */
+   * zoomLink field. */
   joinUrl?: string;
   /** The signed-in visitor's existing registration for this webinar, if any — looked up
    * server-side by session/email so a returning registrant never sees "Register" again. */

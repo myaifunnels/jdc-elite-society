@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { ArrowRight, CalendarDays, Video } from "lucide-react";
+import { CalendarDays, Video } from "lucide-react";
 import Link from "next/link";
 
 import { SiteFooter } from "@/components/layout/site-footer";
@@ -258,12 +258,14 @@ export default async function WebinarsPage() {
                         <CalendarDays aria-hidden className="w-3.5 text-[var(--brand)]" />
                         {formatDateLabel(webinar.scheduledAt)}
                       </p>
-                      {webinar.ctaHref && webinar.ctaLabel ? (
+                      {webinar.replayUrl ? (
                         <Link
-                          href={webinar.ctaHref}
+                          href={webinar.replayUrl}
+                          target="_blank"
+                          rel="noreferrer"
                           className="mt-auto inline-flex items-center gap-1.5 pt-4 text-sm font-bold text-[var(--brand)]"
                         >
-                          {webinar.ctaLabel} <ArrowRight aria-hidden className="w-3.5" />
+                          <Video aria-hidden className="w-3.5" /> Watch replay
                         </Link>
                       ) : null}
                     </div>

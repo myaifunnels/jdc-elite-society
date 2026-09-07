@@ -35,8 +35,6 @@ export async function saveWebinarAction(
 
   const id = String(formData.get("id") ?? "").trim() || undefined;
   const title = String(formData.get("title") ?? "").trim();
-  const ctaLabel = String(formData.get("ctaLabel") ?? "").trim();
-  const ctaHref = String(formData.get("ctaHref") ?? "").trim();
   const scheduledAtRaw = String(formData.get("scheduledAt") ?? "").trim();
   const episodeNumberRaw = String(formData.get("episodeNumber") ?? "").trim();
   const interestedCountRaw = String(formData.get("interestedCount") ?? "").trim();
@@ -44,12 +42,6 @@ export async function saveWebinarAction(
 
   if (!title) {
     return { error: "Give this webinar a title." };
-  }
-  if (!ctaLabel) {
-    return { error: "Give the CTA button a label." };
-  }
-  if (!ctaHref) {
-    return { error: "Give the CTA button a link." };
   }
 
   const scheduledAt = toIsoDateTime(scheduledAtRaw);
@@ -73,9 +65,8 @@ export async function saveWebinarAction(
       hostTitle: String(formData.get("hostTitle") ?? "").trim(),
       scheduledAt,
       thumbnailUrl: String(formData.get("thumbnailUrl") ?? "").trim(),
-      ctaLabel,
-      ctaHref,
       zoomLink: String(formData.get("zoomLink") ?? "").trim(),
+      replayUrl: String(formData.get("replayUrl") ?? "").trim(),
       interestedCount: Number.isFinite(interestedCount) && interestedCount > 0 ? interestedCount : 0,
       isFeatured: formData.get("isFeatured") === "on",
       totalSeats: Number.isFinite(totalSeats) && totalSeats >= 0 ? totalSeats : 100,

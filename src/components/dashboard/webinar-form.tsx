@@ -235,38 +235,22 @@ export function WebinarForm({
           </p>
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
-          <div className="grid gap-1.5">
-            <label className={FIELD_LABEL} htmlFor="ctaLabel">
-              Secondary CTA label
-            </label>
-            <input
-              id="ctaLabel"
-              name="ctaLabel"
-              defaultValue={webinar?.ctaLabel ?? "Reserve your free seat"}
-              className={FIELD_INPUT}
-              required
-            />
-          </div>
-
-          <div className="grid gap-1.5">
-            <label className={FIELD_LABEL} htmlFor="ctaHref">
-              Secondary CTA link
-            </label>
-            <input
-              id="ctaHref"
-              name="ctaHref"
-              defaultValue={webinar?.ctaHref}
-              placeholder="/passive-income or any other page"
-              className={FIELD_INPUT}
-              required
-            />
-          </div>
+        <div className="grid gap-1.5">
+          <label className={FIELD_LABEL} htmlFor="replayUrl">
+            Replay video link (optional)
+          </label>
+          <input
+            id="replayUrl"
+            name="replayUrl"
+            defaultValue={webinar?.replayUrl}
+            placeholder="https://youtube.com/... or your replay video URL"
+            className={FIELD_INPUT}
+          />
+          <p className="m-0 text-[0.7rem] text-white/40">
+            Once the live session is over, drop the replay link here — it shows as &ldquo;Watch
+            replay&rdquo; on the public episode card and on a registrant&rsquo;s My Webinars dashboard.
+          </p>
         </div>
-        <p className="m-0 -mt-1 text-[0.7rem] text-white/40">
-          Used on the &ldquo;All episodes&rdquo; cards for non-featured webinars, since those don&rsquo;t have
-          their own registration flow yet.
-        </p>
       </div>
 
       <label className="flex items-center gap-2 text-sm font-semibold text-white">

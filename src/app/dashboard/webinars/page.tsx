@@ -78,7 +78,7 @@ export default async function WebinarsAdminPage() {
   return (
     <DashboardShell
       title="Webinars"
-      description="Manage the episodes shown on the public /webinars page — the featured hero, all-episode library, and each one's CTA button."
+      description="Manage the episodes shown on the public /webinars page — the featured hero, all-episode library, and each one's replay link."
       actions={<ScheduleWebinarButton />}
     >
       <div className="grid gap-8">
