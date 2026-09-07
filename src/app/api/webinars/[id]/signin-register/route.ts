@@ -3,7 +3,7 @@ import { z } from "zod";
 
 import { authenticateUser } from "@/lib/auth-store";
 import { sessionCookieName } from "@/lib/session";
-import { notifyWebinarRegistrationConfirmed } from "@/lib/webinar-notify";
+import { confirmWebinarRegistration } from "@/lib/webinar-notify";
 import { getWebinar } from "@/lib/webinars-store";
 import {
   createRegistrant,
@@ -121,8 +121,8 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
       tier: "free",
     });
     if (registrant.status === "confirmed") {
-      notifyWebinarRegistrationConfirmed(webinar, registrant).catch((error) =>
-        console.error("Webinar registration confirmation notify failed", error),
+      confirmWebinarRegistration(webinar, registrant).catch((error) =>
+        console.error("Webinar registration confirmation failed", error),
       );
     }
     return withSession(

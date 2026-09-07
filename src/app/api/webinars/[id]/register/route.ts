@@ -5,7 +5,7 @@ import { TEMPORARY_MEMBER_PASSWORD } from "@/lib/auth-constants";
 import { createUser, findUserByEmailOrPhone, issueTemporaryPassword } from "@/lib/auth-store";
 import { storeRegistrantPhoto, storeWebinarReceipt } from "@/lib/r2-upload";
 import { getSessionUser, sessionCookieName } from "@/lib/session";
-import { notifyWebinarRegistrationConfirmed } from "@/lib/webinar-notify";
+import { confirmWebinarRegistration } from "@/lib/webinar-notify";
 import { WEBINAR_OVERFLOW_PRICE } from "@/lib/webinars";
 import { getWebinar } from "@/lib/webinars-store";
 import { createRegistrant, getFreeSeatsLeft } from "@/lib/webinar-registrants-store";
@@ -144,8 +144,8 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
         tier: "free",
       });
       if (registrant.status === "confirmed") {
-        notifyWebinarRegistrationConfirmed(webinar, registrant).catch((error) =>
-          console.error("Webinar registration confirmation notify failed", error),
+        confirmWebinarRegistration(webinar, registrant).catch((error) =>
+          console.error("Webinar registration confirmation failed", error),
         );
       }
       return withSession(

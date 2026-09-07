@@ -1,4 +1,7 @@
-export const UNIVERSITY_COMMUNITY_URL = "https://community.coachjdc.org";
+// Deep-links straight into the JDC community group's Discussion feed instead of the bare domain
+// (which just shows a login screen with no group context), so anyone opening University lands
+// exactly where the conversation is happening.
+export const UNIVERSITY_COMMUNITY_URL = "https://community.coachjdc.org/communities/groups/jdc-community/home";
 
 export type UniversityLesson = {
   title: string;

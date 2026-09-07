@@ -3,7 +3,8 @@
 import { revalidatePath } from "next/cache";
 
 import { requireCapability } from "@/lib/session";
-import { deleteWebinar, saveWebinar, setFeaturedWebinar } from "@/lib/webinars-store";
+import { confirmWebinarRegistration } from "@/lib/webinar-notify";
+import { deleteWebinar, getWebinar, saveWebinar, setFeaturedWebinar } from "@/lib/webinars-store";
 import { updateRegistrantStatus } from "@/lib/webinar-registrants-store";
 
 export type WebinarFormState = { error?: string; success?: string };
@@ -140,7 +141,13 @@ export async function approveOverflowRegistrantAction(
   if (!id) return { error: "Missing registrant." };
 
   try {
-    await updateRegistrantStatus(id, "confirmed");
+    const registrant = await updateRegistrantStatus(id, "confirmed");
+    const webinar = await getWebinar(registrant.webinarId);
+    if (webinar) {
+      confirmWebinarRegistration(webinar, registrant).catch((error) =>
+        console.error("Webinar registration confirmation failed", error),
+      );
+    }
   } catch (error) {
     return { error: error instanceof Error ? error.message : "I couldn't approve that registration." };
   }

@@ -1,5 +1,6 @@
 import { renderEmailTemplate } from "@/lib/email-templates-store";
 import { sendEmail } from "@/lib/mail";
+import { grantInstantUniversityAccess } from "@/lib/member-access";
 import { sendSms } from "@/lib/sms";
 import { renderTemplate } from "@/lib/sms-templates";
 import { getSmsTemplateBody } from "@/lib/sms-templates-store";
@@ -10,7 +11,7 @@ import { formatWebinarDateLabel, formatWebinarTimeLabel, type WebinarRecord } fr
  * with that webinar's own date, time, and Zoom link. Uses the single "webinar_registration_confirmed"
  * template (Dashboard > Automation > Webinars), so every future webinar automatically gets this
  * confirmation with no extra setup. */
-export async function notifyWebinarRegistrationConfirmed(
+async function notifyWebinarRegistrationConfirmed(
   webinar: WebinarRecord,
   registrant: { name: string; email: string; phone: string },
 ) {
@@ -33,5 +34,30 @@ export async function notifyWebinarRegistrationConfirmed(
       ? sendSms({ to: registrant.phone, body: renderTemplate(smsBody, vars), name: registrant.name, email: registrant.email })
       : Promise.resolve(),
     registrant.email ? sendEmail({ to: registrant.email, subject: email.subject, html: email.html }) : Promise.resolve(),
+  ]);
+}
+
+/**
+ * Runs everything a confirmed webinar registration should trigger: University/community access
+ * (every registrant gets the same standing as a paid Mastermind buyer — this grants membership
+ * on the external community platform via GHL and flips paymentVerified locally, see
+ * src/lib/member-access.ts) plus the webinar's own registration-confirmed SMS/email with its
+ * date, time, and Zoom link. `notify: false` on the access grant avoids also sending the generic
+ * "University is open" message right alongside the webinar-specific one.
+ */
+export async function confirmWebinarRegistration(
+  webinar: WebinarRecord,
+  registrant: { name: string; email: string; phone: string },
+) {
+  await Promise.allSettled([
+    grantInstantUniversityAccess({
+      name: registrant.name,
+      email: registrant.email,
+      phone: registrant.phone,
+      source: `Webinar registration · ${webinar.title}`,
+      extraTags: ["Webinar registrant"],
+      notify: false,
+    }),
+    notifyWebinarRegistrationConfirmed(webinar, registrant),
   ]);
 }
