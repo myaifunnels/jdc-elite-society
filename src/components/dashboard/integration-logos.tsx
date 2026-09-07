@@ -71,3 +71,21 @@ export function TextBeeLogo({ size = 28 }: LogoProps) {
     </svg>
   );
 }
+
+/** Zoom-blue rounded tile with an abstracted camera mark — evokes Zoom without reproducing its
+ * literal logo artwork. Used on the public webinars hero next to the "Live on Zoom" copy. */
+export function ZoomLogo({ size = 28 }: LogoProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 40 40" fill="none" aria-hidden="true">
+      <defs>
+        <linearGradient id="zoom-grad" x1="0" y1="0" x2="40" y2="40">
+          <stop offset="0" stopColor="#4A8CFF" />
+          <stop offset="1" stopColor="#2D6CDF" />
+        </linearGradient>
+      </defs>
+      <rect width="40" height="40" rx="10" fill="url(#zoom-grad)" />
+      <rect x="9" y="14" width="16" height="12" rx="3" fill="#FFFFFF" />
+      <path d="M27 18.2 32 15v10l-5-3.2Z" fill="#FFFFFF" />
+    </svg>
+  );
+}

@@ -250,6 +250,23 @@ export async function listRegistrantsByUserId(userId: string, email?: string): P
   }
 }
 
+/** A single account's existing registration for one specific webinar, if any — matched by
+ * userId first, falling back to email (same fallback listRegistrantsByUserId uses). Used by the
+ * sign-in-then-register flow so signing in twice for the same webinar never double-registers. */
+export async function findRegistrantByUserAndWebinar(
+  webinarId: string,
+  userId: string,
+  email?: string,
+): Promise<WebinarRegistrant | null> {
+  const normalizedEmail = email?.trim().toLowerCase() ?? "";
+  const all = await listRegistrants(webinarId);
+  return (
+    all.find(
+      (item) => (userId && item.userId === userId) || (normalizedEmail && item.email === normalizedEmail),
+    ) ?? null
+  );
+}
+
 /** Global queue of paid-overflow registrations awaiting admin review, across every webinar. */
 export async function listPendingOverflowRegistrants(): Promise<WebinarRegistrant[]> {
   const client = getPool();

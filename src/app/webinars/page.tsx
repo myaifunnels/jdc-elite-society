@@ -4,10 +4,12 @@ import Link from "next/link";
 
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
+import { ZoomLogo } from "@/components/dashboard/integration-logos";
 import { WebinarAvatarRow } from "@/components/webinars/webinar-avatar-row";
 import { WebinarCountdown } from "@/components/webinars/webinar-countdown";
+import { WebinarParticles } from "@/components/webinars/webinar-particles";
 import { WebinarRegisterPanel } from "@/components/webinars/webinar-register-panel";
-import type { WebinarRecord } from "@/lib/webinars";
+import { EpisodeThumb } from "@/components/webinars/webinar-thumb";
 import { WEBINAR_OVERFLOW_PRICE } from "@/lib/webinars";
 import { getFeaturedWebinar, listWebinars } from "@/lib/webinars-store";
 import { getFreeSeatsLeft, listRegistrants } from "@/lib/webinar-registrants-store";
@@ -38,34 +40,6 @@ function formatTimeLabel(iso: string) {
     hour: "numeric",
     minute: "2-digit",
   }).format(date);
-}
-
-function GradientThumb({ webinar, className }: { webinar: WebinarRecord; className?: string }) {
-  return (
-    <div
-      className={`relative flex flex-col justify-between overflow-hidden bg-[linear-gradient(150deg,color-mix(in_srgb,var(--brand)_38%,#050b18)_0%,#050b18_70%)] p-6 ${className ?? ""}`}
-    >
-      <div className="absolute inset-0 opacity-40 [background:radial-gradient(60%_60%_at_20%_10%,rgba(255,255,255,0.16),transparent)]" />
-      <span className="relative rounded-full border border-white/20 bg-black/30 px-3 py-1.5 text-[0.68rem] font-extrabold uppercase tracking-[0.1em] text-white/80 backdrop-blur-md">
-        {webinar.seasonLabel || "Season 1"} &middot; Ep {webinar.episodeNumber}
-      </span>
-      <p className="relative m-0 text-lg font-bold leading-snug text-white">{webinar.title}</p>
-    </div>
-  );
-}
-
-function EpisodeThumb({ webinar, className }: { webinar: WebinarRecord; className?: string }) {
-  if (webinar.thumbnailUrl) {
-    return (
-      <div
-        className={`bg-cover bg-center ${className ?? ""}`}
-        style={{ backgroundImage: `url('${webinar.thumbnailUrl}')` }}
-        role="img"
-        aria-label={webinar.title}
-      />
-    );
-  }
-  return <GradientThumb webinar={webinar} className={className} />;
 }
 
 function SeatsPill({ freeSeatsLeft, totalSeats }: { freeSeatsLeft: number; totalSeats: number }) {
@@ -126,12 +100,18 @@ export default async function WebinarsPage() {
                 </div>
               )}
 
-              {/* Dark gradient scrim, anchored toward the bottom-left where the content sits — same
-                  full-bleed legibility technique as .elite-hero-scrim in src/app/elite/elite.css. */}
+              {/* Netflix-style hero scrim: dominant left-to-right darkening (strongly dark over the
+                  text/registration column on the left, fading to a much clearer view of the
+                  background image on the right), plus a lighter bottom-anchored vertical layer so
+                  the countdown/register button — which sit near the bottom — stay legible. Same
+                  scrim code path runs for both the real thumbnail and the GradientThumb fallback
+                  above so there's no visual seam if an admin adds a thumbnail later. */}
               <div
                 aria-hidden
-                className="absolute inset-0 [background:linear-gradient(0deg,rgba(2,4,10,0.96)_8%,rgba(2,4,10,0.62)_42%,rgba(2,4,10,0.18)_72%,rgba(2,4,10,0.05)_100%),linear-gradient(90deg,rgba(2,4,10,0.7)_0%,rgba(2,4,10,0.2)_55%,transparent_90%)]"
+                className="absolute inset-0 [background:linear-gradient(90deg,rgba(2,4,10,0.97)_0%,rgba(2,4,10,0.86)_32%,rgba(2,4,10,0.48)_58%,rgba(2,4,10,0.12)_82%,rgba(2,4,10,0.02)_100%),linear-gradient(0deg,rgba(2,4,10,0.7)_0%,rgba(2,4,10,0.32)_28%,transparent_58%)]"
               />
+
+              <WebinarParticles />
 
               <div className="container-shell relative flex min-h-[640px] flex-col justify-end gap-6 py-12 sm:min-h-[720px] sm:py-16">
                 <div className="fade-up flex flex-wrap items-center gap-3">
@@ -173,8 +153,16 @@ export default async function WebinarsPage() {
                     <div>
                       <p className="m-0 text-[0.65rem] font-extrabold uppercase tracking-[0.1em] text-white/50">Time</p>
                       <p className="m-0 text-base font-extrabold text-white sm:text-lg">
-                        {formatTimeLabel(featured.scheduledAt)} &middot; GMT+8
+                        {formatTimeLabel(featured.scheduledAt)} &middot; Manila Time
                       </p>
+                    </div>
+                  </div>
+                  <div aria-hidden className="hidden w-px self-stretch bg-white/15 sm:block" />
+                  <div className="flex items-center gap-3">
+                    <ZoomLogo size={44} />
+                    <div>
+                      <p className="m-0 text-[0.65rem] font-extrabold uppercase tracking-[0.1em] text-white/50">Where</p>
+                      <p className="m-0 text-base font-extrabold text-white sm:text-lg">Live on Zoom</p>
                     </div>
                   </div>
                 </div>
