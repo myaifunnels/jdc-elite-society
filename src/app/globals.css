@@ -4316,6 +4316,17 @@ html[data-membership="both"] .macos-btn-primary {
   overflow: hidden;
 }
 
+/* The mobile drawer variant of .dashboard-sidebar also carries Tailwind's `fixed` class, but
+   that utility and this handwritten rule have equal specificity (one class each) — whichever
+   comes later in the generated stylesheet wins, and this rule (written after the Tailwind
+   import) was silently downgrading the drawer from `position: fixed` to `position: relative`,
+   dropping it into normal document flow as a ~750px-tall flex item and pushing all real page
+   content below the viewport on mobile. The ID selector below always wins regardless of source
+   order, so the drawer stays fixed no matter what this class does. */
+#dashboard-sidebar-mobile {
+  position: fixed;
+}
+
 .dashboard-sidebar {
   position: relative;
   z-index: 5;
