@@ -79,7 +79,6 @@ export function MacosBootScreen({
       <div className="macos-boot-wallpaper" aria-hidden />
       <div className="macos-boot-card">
         <ContactAvatar name={name} photoUrl={photoUrl} size="xl" />
-        <p className="macos-boot-kicker">Coach JDC</p>
         <h2>Welcome back, {firstName}</h2>
         <p>Opening your workspace</p>
         <div className="macos-boot-track" aria-hidden>

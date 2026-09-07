@@ -5671,15 +5671,6 @@ html[data-membership="both"] .macos-btn-primary {
   animation: macos-boot-in 0.55s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.macos-boot-kicker {
-  margin: 0.35rem 0 0;
-  color: rgba(255, 255, 255, 0.62);
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-}
-
 .macos-boot-card h2 {
   margin: 0;
   font-size: 1.45rem;

@@ -294,21 +294,21 @@ async function listMediaVideos(token: string, locationId: string) {
     }
   };
 
-  for (let offset = 0; offset < 500; offset += 100) {
-    const page = await listMediaPage(token, locationId, { offset: String(offset) });
-    if (!page.length) {
-      break;
-    }
-    addFiles(page);
-    if (page.length < 100) {
-      break;
-    }
-  }
-
+  // Pagination pages are independent requests, so fetch every offset concurrently instead of
+  // awaiting them one at a time — a sequential loop here previously meant a slow/unresponsive
+  // GHL endpoint added its per-call timeout up to 5 times in a row (the classic cause of a
+  // dashboard page that never seems to finish loading).
+  const offsets = [0, 100, 200, 300, 400];
   const courseQueries = universityCourses.map((course) => course.ghlName);
-  const searched = await Promise.all(
-    courseQueries.map((query) => listMediaPage(token, locationId, { query, offset: "0" })),
-  );
+
+  const [pagedResults, searched] = await Promise.all([
+    Promise.all(offsets.map((offset) => listMediaPage(token, locationId, { offset: String(offset) }))),
+    Promise.all(courseQueries.map((query) => listMediaPage(token, locationId, { query, offset: "0" }))),
+  ]);
+
+  for (const page of pagedResults) {
+    addFiles(page);
+  }
   for (const page of searched) {
     addFiles(page);
   }
@@ -378,15 +378,14 @@ async function loadGhlCoursePayloads(token: string, locationId: string) {
   return { products: [...products.values()], roots };
 }
 
-export const listUniversityCourses = cache(async function listUniversityCourses(): Promise<UniversityCourse[]> {
-  const settings = await getResolvedIntegrationSettings();
-  const token = settings.ghlApiKey;
-  const locationId = settings.ghlLocationId;
+// Even with the per-call timeout in fetchJson, this function makes dozens of GHL requests
+// (course payloads, product details, media pagination) — most run concurrently, but a
+// consistently slow GHL API can still stack up well past what feels like a stuck page. This
+// caps the *whole* lookup at one fixed budget so the dashboard always finishes loading on time,
+// falling back to the static course list if GHL hasn't answered by then.
+const GHL_COURSES_BUDGET_MS = 8_000;
 
-  if (!token || !locationId) {
-    return universityCourses;
-  }
-
+async function fetchGhlCourses(token: string, locationId: string): Promise<UniversityCourse[]> {
   const [{ products, roots }, mediaFiles] = await Promise.all([
     loadGhlCoursePayloads(token, locationId),
     listMediaVideos(token, locationId),
@@ -430,4 +429,21 @@ export const listUniversityCourses = cache(async function listUniversityCourses(
       lessons: withMedia.length ? withMedia : course.lessons,
     };
   });
+}
+
+export const listUniversityCourses = cache(async function listUniversityCourses(): Promise<UniversityCourse[]> {
+  const settings = await getResolvedIntegrationSettings();
+  const token = settings.ghlApiKey;
+  const locationId = settings.ghlLocationId;
+
+  if (!token || !locationId) {
+    return universityCourses;
+  }
+
+  return Promise.race([
+    fetchGhlCourses(token, locationId),
+    new Promise<UniversityCourse[]>((resolve) =>
+      setTimeout(() => resolve(universityCourses), GHL_COURSES_BUDGET_MS),
+    ),
+  ]);
 });
