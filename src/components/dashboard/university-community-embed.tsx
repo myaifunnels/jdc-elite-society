@@ -1,3 +1,4 @@
+import { GraduationCap } from "lucide-react";
 import Link from "next/link";
 
 import { UNIVERSITY_COMMUNITY_URL } from "@/data/university";
@@ -31,15 +32,17 @@ export function UniversityCommunityEmbed({
           </a>
         </>
       ) : (
-        <div className="macos-body">
-          <p className="macos-lead" style={{ textAlign: "left" }}>
-            University is locked because payment was not verified or was rejected. Access returns when the team restores it.
-          </p>
-          <div className="macos-actions">
-            <Link href={verifyHref} className="macos-btn macos-btn-primary">
-              Back to dashboard
-            </Link>
+        <div className="university-locked-state">
+          <div className="university-locked-icon" aria-hidden="true">
+            <GraduationCap size={28} strokeWidth={1.75} />
           </div>
+          <h3 className="university-locked-title">University is locked</h3>
+          <p className="university-locked-copy">
+            Payment was not verified or was rejected. Access returns automatically once the team restores it.
+          </p>
+          <Link href={verifyHref} className="macos-btn macos-btn-primary university-locked-action">
+            Back to dashboard
+          </Link>
         </div>
       )}
     </section>

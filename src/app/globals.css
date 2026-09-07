@@ -4496,6 +4496,51 @@ html[data-membership="both"] .macos-btn-primary {
   box-shadow: 0 8px 20px rgba(15, 23, 42, 0.18);
 }
 
+.university-locked-state {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.85rem;
+  padding: 2.5rem 1.75rem;
+  text-align: center;
+}
+
+.university-locked-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--danger, #ef4444) 14%, transparent);
+  color: var(--danger, #ef4444);
+}
+
+.university-locked-title {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--foreground);
+}
+
+.university-locked-copy {
+  margin: 0;
+  max-width: 30rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.university-locked-action {
+  margin-top: 0.35rem;
+  width: auto;
+  min-width: 10rem;
+}
+
 .dashboard-widget-grid {
   display: grid;
   gap: 0.9rem;
