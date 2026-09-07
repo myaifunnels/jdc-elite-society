@@ -1841,6 +1841,57 @@ a,
   color: rgba(255, 255, 255, 0.65);
 }
 
+.replay-video-frame {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  background: #000;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+}
+
+.replay-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+.replay-video-fallback {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  color: #fff;
+  text-decoration: none;
+  background: linear-gradient(150deg, color-mix(in srgb, var(--brand) 38%, #050b18) 0%, #050b18 70%);
+  font-weight: 800;
+}
+
+.replay-upnext-card {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: var(--card);
+  text-decoration: none;
+  color: inherit;
+}
+
+.replay-upnext-thumb {
+  height: 3.5rem;
+  width: 5.5rem;
+  flex: none;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
 @keyframes webinarSeatsShimmer {
   from {
     transform: translateX(-120%);

@@ -260,9 +260,7 @@ export default async function WebinarsPage() {
                       </p>
                       {webinar.replayUrl ? (
                         <Link
-                          href={webinar.replayUrl}
-                          target="_blank"
-                          rel="noreferrer"
+                          href={`/webinars/${webinar.id}/replay`}
                           className="mt-auto inline-flex items-center gap-1.5 pt-4 text-sm font-bold text-[var(--brand)]"
                         >
                           <Video aria-hidden className="w-3.5" /> Watch replay

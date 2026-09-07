@@ -89,9 +89,7 @@ export default async function MyWebinarsPage() {
                   ) : null}
                   {registrant.status === "confirmed" && webinar.replayUrl ? (
                     <Link
-                      href={webinar.replayUrl}
-                      target="_blank"
-                      rel="noreferrer"
+                      href={`/webinars/${webinar.id}/replay`}
                       className="button-secondary pressable inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-extrabold"
                     >
                       <Video aria-hidden size={16} />
