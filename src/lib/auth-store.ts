@@ -1172,7 +1172,7 @@ async function persistUserUpdate(user: AuthUserRecord) {
   }
 }
 
-export async function requestPasswordReset(identifier: string) {
+export async function requestPasswordReset(identifier: string, channel: "email" | "sms" = "email") {
   await ensureSeedUsers();
   const raw = identifier.trim();
   const looksLikeEmail = raw.includes("@");
@@ -1195,6 +1195,7 @@ export async function requestPasswordReset(identifier: string) {
     phone: user.phone,
     code,
     resetUrl: `${siteUrl}/reset-password?token=${encodeURIComponent(token)}`,
+    channel,
   });
 }
 

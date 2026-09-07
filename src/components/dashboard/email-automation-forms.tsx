@@ -11,25 +11,38 @@ import {
 
 const initialState: AutomationFormState = {};
 
-export function EmailFromAddressForm({ value }: { value: string }) {
+export function EmailFromAddressForm({ name, address }: { name: string; address: string }) {
   const [state, action, pending] = useActionState(saveEmailFromAddressAction, initialState);
 
   return (
     <form action={action} className="grid gap-2" style={{ maxWidth: "26rem" }}>
+      <label className="sms-template-label" htmlFor="emailFromName">
+        Default sender name
+      </label>
+      <input
+        id="emailFromName"
+        name="emailFromName"
+        defaultValue={name}
+        placeholder="Coach JDC"
+        className="sms-template-input"
+      />
+
       <label className="sms-template-label" htmlFor="emailFromAddress">
         Default from address
       </label>
       <input
         id="emailFromAddress"
         name="emailFromAddress"
-        defaultValue={value}
-        placeholder="Coach JDC <noreply@coachjdc.org>"
+        defaultValue={address}
+        placeholder="noreply@coachjdc.org"
         className="sms-template-input"
       />
-      <p className="sms-template-hint">Sends through Resend. Accepts a plain address or a &quot;Name &lt;address&gt;&quot; format.</p>
+      <p className="sms-template-hint">
+        Sends through Resend as &quot;{name || "Coach JDC"} &lt;{address || "noreply@coachjdc.org"}&gt;&quot;.
+      </p>
       <div className="sms-template-actions">
         <button type="submit" className="macos-btn macos-btn-primary" disabled={pending}>
-          {pending ? "Saving..." : "Save from address"}
+          {pending ? "Saving..." : "Save sender name & address"}
         </button>
       </div>
       {state.error ? <p className="auth-error">{state.error}</p> : null}

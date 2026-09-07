@@ -3,7 +3,16 @@ import { siteUrl } from "@/lib/site";
 
 async function mailFrom() {
   const settings = await getResolvedIntegrationSettings();
-  return settings.emailFromAddress || "Coach JDC <noreply@coachjdc.org>";
+  const address = settings.emailFromAddress || "noreply@coachjdc.org";
+
+  // Older saved values (or MAIL_FROM set directly as an env var) may already be the full
+  // "Name <address>" form — use those verbatim rather than double-wrapping them.
+  if (address.includes("<")) {
+    return address;
+  }
+
+  const name = settings.emailFromName || "Coach JDC";
+  return `${name} <${address}>`;
 }
 
 export function notifyEmails() {

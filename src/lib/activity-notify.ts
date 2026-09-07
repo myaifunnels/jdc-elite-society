@@ -54,7 +54,18 @@ export async function notifyPasswordReset(input: {
   phone: string;
   code: string;
   resetUrl: string;
+  /** Which channel the visitor asked for on the forgot-password form — only that one is sent,
+   * instead of always blasting both a reset-link email and a code text. */
+  channel: "email" | "sms";
 }) {
+  if (input.channel === "sms") {
+    if (!input.phone) {
+      return;
+    }
+    await sendTemplatedSms("password_reset", { name: input.name, code: input.code }, input.phone, input);
+    return;
+  }
+
   const firstName = input.name.split(" ")[0] || "there";
   const { subject, html } = await renderEmailTemplate("password_reset", {
     name: firstName,
@@ -62,12 +73,7 @@ export async function notifyPasswordReset(input: {
     resetUrl: input.resetUrl,
     siteUrl,
   });
-  await Promise.allSettled([
-    sendEmail({ to: input.email, subject, html }),
-    input.phone
-      ? sendTemplatedSms("password_reset", { name: input.name, code: input.code }, input.phone, input)
-      : Promise.resolve(),
-  ]);
+  await sendEmail({ to: input.email, subject, html });
 }
 
 export async function notifyUniversityWelcome(input: Person) {

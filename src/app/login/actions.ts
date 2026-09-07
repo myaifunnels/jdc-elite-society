@@ -326,14 +326,19 @@ export async function requestPasswordResetAccount(
     return { error: firstError || "Enter the email or mobile number on the account." };
   }
 
+  const channel = String(formData.get("channel") ?? "email") === "sms" ? "sms" : "email";
+
   try {
-    await requestPasswordReset(parsed.data.identifier);
+    await requestPasswordReset(parsed.data.identifier, channel);
   } catch (error) {
     console.error("Password reset request failed", error);
   }
 
   return {
-    success: "If that email or mobile is on an account, we sent a reset link and a 6-digit text code. Check inbox, spam, and SMS.",
+    success:
+      channel === "sms"
+        ? "If that email or mobile is on an account, we texted a 6-digit reset code to the mobile number on file."
+        : "If that email or mobile is on an account, we emailed a reset link. Check inbox and spam.",
   };
 }
 

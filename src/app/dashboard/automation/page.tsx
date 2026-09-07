@@ -101,7 +101,7 @@ export default async function AutomationPage({
       ) : (
         <div className="dashboard-widget-grid">
           <MacosWindow title="From address" className="dashboard-span-2">
-            <EmailFromAddressForm value={settings.emailFromAddress} />
+            <EmailFromAddressForm name={settings.emailFromName} address={settings.emailFromAddress} />
           </MacosWindow>
 
           <MacosWindow title="Send a test email" className="dashboard-span-2">

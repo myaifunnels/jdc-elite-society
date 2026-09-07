@@ -14,6 +14,7 @@ export type IntegrationSettings = {
   textbeeApiKey: string;
   textbeeDeviceId: string;
   smsFromNumber: string;
+  emailFromName: string;
   emailFromAddress: string;
 };
 
@@ -33,6 +34,7 @@ export const emptyIntegrationSettings: IntegrationSettings = {
   textbeeApiKey: "",
   textbeeDeviceId: "",
   smsFromNumber: "",
+  emailFromName: "",
   emailFromAddress: "",
 };
 
@@ -53,6 +55,7 @@ export function envIntegrationSettings(): IntegrationSettings {
     textbeeApiKey: process.env.TEXTBEE_API_KEY ?? "",
     textbeeDeviceId: process.env.TEXTBEE_DEVICE_ID ?? "",
     smsFromNumber: process.env.TWILIO_FROM ?? "",
+    emailFromName: process.env.MAIL_FROM_NAME ?? "",
     emailFromAddress: process.env.MAIL_FROM || process.env.RESEND_FROM || "",
   };
 }
@@ -77,6 +80,7 @@ export function mergeIntegrationSettings(
     textbeeApiKey: saved?.textbeeApiKey || env.textbeeApiKey,
     textbeeDeviceId: saved?.textbeeDeviceId || env.textbeeDeviceId,
     smsFromNumber: saved?.smsFromNumber || env.smsFromNumber,
+    emailFromName: saved?.emailFromName || env.emailFromName,
     emailFromAddress: saved?.emailFromAddress || env.emailFromAddress,
   };
 }

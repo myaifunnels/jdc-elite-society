@@ -147,13 +147,14 @@ export async function saveEmailFromAddressAction(
   formData: FormData,
 ): Promise<AutomationFormState> {
   await requireCapability("automation");
+  const emailFromName = String(formData.get("emailFromName") ?? "").trim();
   const emailFromAddress = String(formData.get("emailFromAddress") ?? "").trim();
   if (!emailFromAddress) {
     return { error: "Enter a from address." };
   }
-  await saveIntegrationSettings({ emailFromAddress });
+  await saveIntegrationSettings({ emailFromName, emailFromAddress });
   revalidatePath("/dashboard/automation");
-  return { success: "From address saved." };
+  return { success: "Sender name and from address saved." };
 }
 
 export async function saveEmailTemplateAction(
