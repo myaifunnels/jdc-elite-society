@@ -1,10 +1,8 @@
-import { Plus } from "lucide-react";
-
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
+import { ScheduleWebinarButton } from "@/components/dashboard/schedule-webinar-button";
 import { WebinarAdminGridCard } from "@/components/dashboard/webinar-admin-grid-card";
 import { WebinarAdminHero } from "@/components/dashboard/webinar-admin-hero";
 import { WebinarAdminUpcomingRow } from "@/components/dashboard/webinar-admin-upcoming-row";
-import { WebinarFormModal } from "@/components/dashboard/webinar-form-modal";
 import { WebinarOverflowCard } from "@/components/dashboard/webinar-overflow-card";
 import { requireCapability } from "@/lib/session";
 import { getFeaturedWebinar, listWebinars } from "@/lib/webinars-store";
@@ -81,20 +79,7 @@ export default async function WebinarsAdminPage() {
     <DashboardShell
       title="Webinars"
       description="Manage the episodes shown on the public /webinars page — the featured hero, all-episode library, and each one's CTA button."
-      actions={
-        <WebinarFormModal
-          trigger={(open) => (
-            <button
-              type="button"
-              className="button-primary pressable inline-flex items-center gap-2 px-4 py-2.5 text-sm font-extrabold"
-              onClick={open}
-            >
-              <Plus aria-hidden size={16} />
-              Schedule webinar
-            </button>
-          )}
-        />
-      }
+      actions={<ScheduleWebinarButton />}
     >
       <div className="grid gap-8">
         <section className="grid gap-2">
