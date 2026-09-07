@@ -84,6 +84,10 @@ async function ensureTable(client: Pool) {
     ALTER TABLE integration_settings
     ADD COLUMN IF NOT EXISTS facebook_app_secret TEXT
   `);
+  await client.query(`
+    ALTER TABLE integration_settings
+    ADD COLUMN IF NOT EXISTS email_from_address TEXT
+  `);
   tableReady = true;
 }
 
@@ -108,6 +112,7 @@ function mapRow(row: Record<string, unknown> | undefined): IntegrationSettings |
     textbeeApiKey: String(row.textbee_api_key ?? ""),
     textbeeDeviceId: String(row.textbee_device_id ?? ""),
     smsFromNumber: String(row.sms_from_number ?? ""),
+    emailFromAddress: String(row.email_from_address ?? ""),
   };
 }
 
@@ -155,6 +160,7 @@ export async function saveIntegrationSettings(
     textbeeApiKey: incoming.textbeeApiKey || current.textbeeApiKey,
     textbeeDeviceId: incoming.textbeeDeviceId || current.textbeeDeviceId,
     smsFromNumber: incoming.smsFromNumber || current.smsFromNumber,
+    emailFromAddress: incoming.emailFromAddress || current.emailFromAddress,
   };
 
   memoryStore.current = next;
@@ -182,9 +188,10 @@ export async function saveIntegrationSettings(
           google_client_secret,
           facebook_app_id,
           facebook_app_secret,
+          email_from_address,
           updated_at
         )
-        VALUES (1, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, NOW())
+        VALUES (1, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, NOW())
         ON CONFLICT (id) DO UPDATE SET
           google_maps_embed_key = EXCLUDED.google_maps_embed_key,
           r2_account_id = EXCLUDED.r2_account_id,
@@ -201,6 +208,7 @@ export async function saveIntegrationSettings(
           google_client_secret = EXCLUDED.google_client_secret,
           facebook_app_id = EXCLUDED.facebook_app_id,
           facebook_app_secret = EXCLUDED.facebook_app_secret,
+          email_from_address = EXCLUDED.email_from_address,
           updated_at = NOW()
         `,
         [
@@ -219,6 +227,7 @@ export async function saveIntegrationSettings(
           next.googleClientSecret,
           next.facebookAppId,
           next.facebookAppSecret,
+          next.emailFromAddress,
         ],
       );
     } catch (error) {

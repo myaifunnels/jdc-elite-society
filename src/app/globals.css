@@ -3294,10 +3294,65 @@ a,
   justify-items: start;
 }
 
-.sms-template-list {
+.template-list {
   display: grid;
-  gap: 1rem;
-  grid-template-columns: repeat(auto-fill, minmax(20rem, 1fr));
+  gap: 0.6rem;
+}
+
+.template-row {
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--chrome-bright) 16%, transparent);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--surface-elevated) 72%, transparent);
+}
+
+.template-row summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  list-style: none;
+}
+
+.template-row summary::-webkit-details-marker {
+  display: none;
+}
+
+.template-row[open] summary {
+  border-bottom: 1px solid color-mix(in srgb, var(--chrome-bright) 16%, transparent);
+}
+
+.template-row-main {
+  display: grid;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.template-row-main strong {
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+
+.template-row-main p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.74rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.template-row-meta {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.template-row-body {
+  padding: 0.9rem 1rem 1.1rem;
 }
 
 .sms-template-group {

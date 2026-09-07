@@ -1,5 +1,6 @@
 import { mastermindOffer } from "@/data/mastermind-offer";
 import { listAllUsers } from "@/lib/auth-store";
+import { renderEmailTemplate } from "@/lib/email-templates-store";
 import { notifyEmails, sendEmail } from "@/lib/mail";
 import { createNotifications } from "@/lib/notification-store";
 import { notifyPhone, sendSms } from "@/lib/sms";
@@ -54,19 +55,15 @@ export async function notifyPasswordReset(input: {
   code: string;
   resetUrl: string;
 }) {
+  const firstName = input.name.split(" ")[0] || "there";
+  const { subject, html } = await renderEmailTemplate("password_reset", {
+    name: firstName,
+    code: input.code,
+    resetUrl: input.resetUrl,
+    siteUrl,
+  });
   await Promise.allSettled([
-    sendEmail({
-      to: input.email,
-      subject: "Reset your JDC Elite Society password",
-      html: `
-        <p>Hi ${input.name.split(" ")[0] || "there"},</p>
-        <p>Use this link to choose a new password. It expires in one hour.</p>
-        <p><a href="${input.resetUrl}">Reset password</a></p>
-        <p>Or enter this code on the reset page: <strong>${input.code}</strong></p>
-        <p>If you did not ask for this, you can ignore the message.</p>
-        <p>${siteUrl}</p>
-      `,
-    }),
+    sendEmail({ to: input.email, subject, html }),
     input.phone
       ? sendTemplatedSms("password_reset", { name: input.name, code: input.code }, input.phone, input)
       : Promise.resolve(),
@@ -74,18 +71,14 @@ export async function notifyPasswordReset(input: {
 }
 
 export async function notifyUniversityWelcome(input: Person) {
+  const firstName = input.name.split(" ")[0] || "there";
+  const { subject, html } = await renderEmailTemplate("university_welcome", {
+    name: firstName,
+    email: input.email,
+    siteUrl,
+  });
   await Promise.allSettled([
-    sendEmail({
-      to: input.email,
-      subject: "Your JDC Elite Society University access is open",
-      html: `
-        <p>Hi ${input.name.split(" ")[0] || "there"},</p>
-        <p>Your University access is on. Open JDC Mastermind Sessions 1 and 2 here:</p>
-        <p><a href="${siteUrl}/dashboard/university">${siteUrl}/dashboard/university</a></p>
-        <p>Sign in with <strong>${input.email}</strong>. If you have not set a password yet, use Forgot password on the sign-in page.</p>
-        <p>Community: <a href="https://community.coachjdc.org">community.coachjdc.org</a></p>
-      `,
-    }),
+    sendEmail({ to: input.email, subject, html }),
     input.phone
       ? sendTemplatedSms("university_welcome", { name: input.name }, input.phone, input)
       : Promise.resolve(),
@@ -109,6 +102,18 @@ export async function notifySupportTicketOpened(input: {
 }) {
   const href = `/dashboard/support?ticket=${encodeURIComponent(input.ticketId)}`;
   const preview = input.preview.slice(0, 140);
+  const url = `${siteUrl}${href}`;
+  const [memberEmail, teamEmail] = await Promise.all([
+    renderEmailTemplate("support_ticket_member", { name: input.member.name, subject: input.subject, preview, url }),
+    renderEmailTemplate("support_ticket_team", {
+      name: input.member.name,
+      email: input.member.email,
+      subject: input.subject,
+      category: input.category,
+      preview,
+      url,
+    }),
+  ]);
   await Promise.allSettled([
     sendTemplatedSms(
       "support_ticket_member",
@@ -121,17 +126,8 @@ export async function notifySupportTicketOpened(input: {
       subject: input.subject,
       category: input.category,
     }),
-    sendEmail({
-      to: input.member.email,
-      subject: `We received your support request: ${input.subject}`,
-      html: `<p>Hi ${input.member.name},</p><p>We received <strong>${input.subject}</strong>.</p><p>${preview}</p><p><a href="${siteUrl}${href}">Open Support</a></p>`,
-    }),
-    sendEmail({
-      to: notifyEmails(),
-      subject: `New support ticket · ${input.member.name} · ${input.subject}`,
-      html: `<p>New support ticket from ${input.member.name} (${input.member.email}).</p><p>Category: ${input.category}</p><p>${preview}</p><p><a href="${siteUrl}${href}">Open Support</a></p>`,
-      replyTo: input.member.email,
-    }),
+    sendEmail({ to: input.member.email, subject: memberEmail.subject, html: memberEmail.html }),
+    sendEmail({ to: notifyEmails(), subject: teamEmail.subject, html: teamEmail.html, replyTo: input.member.email }),
     input.member.id
       ? createNotifications([input.member.id], {
           title: "Support ticket sent",
@@ -158,8 +154,15 @@ export async function notifySupportReply(input: {
 }) {
   const href = `/dashboard/support?ticket=${encodeURIComponent(input.ticketId)}`;
   const preview = input.preview.slice(0, 140);
+  const url = `${siteUrl}${href}`;
 
   if (input.fromAdmin) {
+    const memberEmail = await renderEmailTemplate("support_reply_member", {
+      name: input.member.name,
+      subject: input.subject,
+      preview,
+      url,
+    });
     await Promise.allSettled([
       sendTemplatedSms(
         "support_reply_member",
@@ -167,11 +170,7 @@ export async function notifySupportReply(input: {
         input.member.phone ?? "",
         input.member,
       ),
-      sendEmail({
-        to: input.member.email,
-        subject: `JDC Support replied: ${input.subject}`,
-        html: `<p>Hi ${input.member.name},</p><p>Our team replied on <strong>${input.subject}</strong>.</p><p>${preview}</p><p><a href="${siteUrl}${href}">Open Support</a></p>`,
-      }),
+      sendEmail({ to: input.member.email, subject: memberEmail.subject, html: memberEmail.html }),
       input.member.id
         ? createNotifications([input.member.id], {
             title: "Support replied",
@@ -184,14 +183,15 @@ export async function notifySupportReply(input: {
     return;
   }
 
+  const teamEmail = await renderEmailTemplate("support_reply_team", {
+    name: input.member.name,
+    subject: input.subject,
+    preview,
+    url,
+  });
   await Promise.allSettled([
     sendTeamSms("support_reply_team", { name: input.member.name, subject: input.subject, preview }),
-    sendEmail({
-      to: notifyEmails(),
-      subject: `Support reply · ${input.member.name} · ${input.subject}`,
-      html: `<p>${input.member.name} replied on ${input.subject}.</p><p>${preview}</p><p><a href="${siteUrl}${href}">Open Support</a></p>`,
-      replyTo: input.member.email,
-    }),
+    sendEmail({ to: notifyEmails(), subject: teamEmail.subject, html: teamEmail.html, replyTo: input.member.email }),
     notifyAdminsInApp({
       title: `Reply from ${input.member.name}`,
       body: preview,
@@ -208,6 +208,13 @@ export async function notifySupportStatus(input: {
   ticketId: string;
 }) {
   const href = `/dashboard/support?ticket=${encodeURIComponent(input.ticketId)}`;
+  const url = `${siteUrl}${href}`;
+  const memberEmail = await renderEmailTemplate("support_status_member", {
+    name: input.member.name,
+    subject: input.subject,
+    status: input.status,
+    url,
+  });
   await Promise.allSettled([
     sendTemplatedSms(
       "support_status_member",
@@ -215,11 +222,7 @@ export async function notifySupportStatus(input: {
       input.member.phone ?? "",
       input.member,
     ),
-    sendEmail({
-      to: input.member.email,
-      subject: `Your support ticket is ${input.status}`,
-      html: `<p>Hi ${input.member.name},</p><p>Ticket <strong>${input.subject}</strong> is now <strong>${input.status}</strong>.</p><p><a href="${siteUrl}${href}">Open Support</a></p>`,
-    }),
+    sendEmail({ to: input.member.email, subject: memberEmail.subject, html: memberEmail.html }),
     input.member.id
       ? createNotifications([input.member.id], {
           title: `Ticket ${input.status}`,
@@ -232,14 +235,10 @@ export async function notifySupportStatus(input: {
 }
 
 export async function notifyReceiptReupload(input: Person) {
+  const teamEmail = await renderEmailTemplate("receipt_reupload_team", { name: input.name, email: input.email, siteUrl });
   await Promise.allSettled([
     sendTeamSms("receipt_reupload_team", { name: input.name, email: input.email }),
-    sendEmail({
-      to: notifyEmails(),
-      subject: `Receipt re-uploaded · ${input.name}`,
-      html: `<p>${input.name} (${input.email}) uploaded a new Mastermind receipt.</p><p><a href="${siteUrl}/dashboard/contacts">Open Contacts</a></p>`,
-      replyTo: input.email,
-    }),
+    sendEmail({ to: notifyEmails(), subject: teamEmail.subject, html: teamEmail.html, replyTo: input.email }),
     notifyAdminsInApp({
       title: "New receipt uploaded",
       body: `${input.name} sent a payment receipt for review.`,
@@ -260,14 +259,12 @@ export async function notifyAdminsOfPurchase(input: { title: string; body: strin
 
 export async function notifyMemberPaymentDecision(input: Person & { approved: boolean }) {
   const href = "/dashboard/university";
+  const decisionEmail = await renderEmailTemplate(input.approved ? "payment_approved" : "payment_rejected", {
+    name: input.name,
+    siteUrl,
+  });
   await Promise.allSettled([
-    sendEmail({
-      to: input.email,
-      subject: input.approved ? "Your JDC Mastermind payment is verified" : "We could not verify your receipt",
-      html: input.approved
-        ? `<p>Hi ${input.name},</p><p>Your payment is verified. University access is fully active.</p><p><a href="${siteUrl}${href}">Open University</a></p>`
-        : `<p>Hi ${input.name},</p><p>We could not verify your receipt. University access is on hold. Open Support to send a new receipt.</p><p><a href="${siteUrl}/dashboard/support">Open Support</a></p>`,
-    }),
+    sendEmail({ to: input.email, subject: decisionEmail.subject, html: decisionEmail.html }),
     input.id
       ? createNotifications([input.id], {
           title: input.approved ? "Payment verified" : "Receipt needs another look",

@@ -1,7 +1,9 @@
+import { getResolvedIntegrationSettings } from "@/lib/integrations-store";
 import { siteUrl } from "@/lib/site";
 
-function mailFrom() {
-  return process.env.MAIL_FROM || process.env.RESEND_FROM || "Coach JDC <noreply@coachjdc.org>";
+async function mailFrom() {
+  const settings = await getResolvedIntegrationSettings();
+  return settings.emailFromAddress || "Coach JDC <noreply@coachjdc.org>";
 }
 
 export function notifyEmails() {
@@ -37,7 +39,7 @@ export async function sendEmail(input: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      from: mailFrom(),
+      from: await mailFrom(),
       to,
       subject: input.subject,
       html: input.html,

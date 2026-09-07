@@ -1,5 +1,6 @@
 import { mastermindOffer } from "@/data/mastermind-offer";
 import { notifyAdminsOfPurchase } from "@/lib/activity-notify";
+import { renderEmailTemplate } from "@/lib/email-templates-store";
 import { notifyEmails, sendEmail } from "@/lib/mail";
 import { eliteSiteUrl, siteUrl } from "@/lib/site";
 import { notifyPhone, sendSms } from "@/lib/sms";
@@ -19,38 +20,29 @@ export type MastermindNotice = {
 
 export async function notifyMastermindPurchase(input: MastermindNotice) {
   const contactsUrl = `${siteUrl}/dashboard/contacts`;
-  const tagList = input.tags.map((tag) => `<li>${tag}</li>`).join("");
+  const tagsHtml = input.tags.map((tag) => `<li>${tag}</li>`).join("");
+  const receiptHtml = input.receiptUrl ? `<a href="${input.receiptUrl}">Open receipt</a>` : "Filename only";
 
-  const buyerHtml = `
-    <p>Salamat, ${input.name}.</p>
-    <p>Natanggap na namin ang iyong JDC Mastermind payment (${input.priceLabel}) — <strong>bukas na agad ang iyong access</strong>, hindi mo na kailangang maghintay.</p>
-    <p>Sa background, bini-verify pa rin namin ang iyong resibo. Habang tapos na ang setup mo, makikita mo na:</p>
-    <ul>
-      <li>Access sa iyong JDC dashboard, ngayon din</li>
-      <li>Access links para sa JDC Mastermind Sessions</li>
-      <li>Invitation sa JDC Elite Society Portal (${mastermindOffer.communityUrl})</li>
-    </ul>
-    <p>I-check ang inbox at spam/promotions. May tanong? Message kami sa ${mastermindOffer.support.email} o ${mastermindOffer.support.phone}.</p>
-    <p>— Coach JDC at ang JDC Elite Society Team</p>
-  `;
-
-  const teamHtml = `
-    <p>New JDC Mastermind payment submitted.</p>
-    <ul>
-      <li><strong>Name:</strong> ${input.name}</li>
-      <li><strong>Email:</strong> ${input.email}</li>
-      <li><strong>Mobile:</strong> ${input.phone}</li>
-      <li><strong>Method:</strong> ${input.paymentMethod}</li>
-      <li><strong>Amount:</strong> ${input.priceLabel}</li>
-      <li><strong>Coupon:</strong> ${input.couponCode || "None"}</li>
-      <li><strong>Receipt:</strong> ${input.receiptUrl ? `<a href="${input.receiptUrl}">Open receipt</a>` : "Filename only"}</li>
-    </ul>
-    <p>Tags</p>
-    <ul>${tagList}</ul>
-    <p><a href="${contactsUrl}">Open contacts</a> · <a href="${eliteSiteUrl}">Elite offer</a></p>
-  `;
-
-  const [buyerSmsBody, teamSmsBody] = await Promise.all([
+  const [buyerEmail, teamEmail, buyerSmsBody, teamSmsBody] = await Promise.all([
+    renderEmailTemplate("mastermind_purchase_buyer", {
+      name: input.name,
+      price: input.priceLabel,
+      communityUrl: mastermindOffer.communityUrl,
+      supportEmail: mastermindOffer.support.email,
+      supportPhone: mastermindOffer.support.phone,
+    }),
+    renderEmailTemplate("mastermind_purchase_team", {
+      name: input.name,
+      email: input.email,
+      phone: input.phone,
+      paymentMethod: input.paymentMethod,
+      price: input.priceLabel,
+      couponCode: input.couponCode || "None",
+      receiptHtml,
+      tagsHtml,
+      contactsUrl,
+      eliteUrl: eliteSiteUrl,
+    }),
     getSmsTemplateBody("mastermind_purchase_buyer"),
     getSmsTemplateBody("mastermind_purchase_team"),
   ]);
@@ -62,18 +54,8 @@ export async function notifyMastermindPurchase(input: MastermindNotice) {
   });
 
   await Promise.allSettled([
-    sendEmail({
-      to: input.email,
-      subject: "Natanggap na namin ang iyong JDC Mastermind payment",
-      html: buyerHtml,
-      replyTo: mastermindOffer.support.email,
-    }),
-    sendEmail({
-      to: notifyEmails(),
-      subject: `New Mastermind payment · ${input.name} · ${input.priceLabel}`,
-      html: teamHtml,
-      replyTo: input.email,
-    }),
+    sendEmail({ to: input.email, subject: buyerEmail.subject, html: buyerEmail.html, replyTo: mastermindOffer.support.email }),
+    sendEmail({ to: notifyEmails(), subject: teamEmail.subject, html: teamEmail.html, replyTo: input.email }),
     sendSms({ to: input.phone, body: buyerSms, name: input.name, email: input.email }),
     sendSms({
       to: notifyPhone(),
@@ -102,35 +84,30 @@ export type CoachingOfferNotice = {
 
 export async function notifyCoachingOfferPurchase(input: CoachingOfferNotice) {
   const contactsUrl = `${siteUrl}/dashboard/contacts`;
-  const tagList = input.tags.map((tag) => `<li>${tag}</li>`).join("");
+  const tagsHtml = input.tags.map((tag) => `<li>${tag}</li>`).join("");
+  const receiptHtml = input.receiptUrl ? `<a href="${input.receiptUrl}">Open receipt</a>` : "Filename only";
   const formatLabel = input.coachingMode === "in-person" ? "Face-to-Face" : "Online";
   const hoursLabel = `${input.coachingHours} ${formatLabel.toLowerCase()} hour${input.coachingHours === 1 ? "" : "s"}`;
 
-  const buyerHtml = `
-    <p>Salamat, ${input.name}.</p>
-    <p>Natanggap na namin ang iyong 1-on-1 Coaching payment (${input.priceLabel}) para sa ${hoursLabel} kasama si Coach Jayson Dela Cruz.</p>
-    <p>Bini-verify namin ang resibo sa background. Ang JDC Team ay mag-me-message sa iyo para i-schedule ang session mo.</p>
-    <p>May tanong? Message kami sa ${mastermindOffer.support.email} o ${mastermindOffer.support.phone}.</p>
-    <p>— Coach JDC at ang JDC Elite Society Team</p>
-  `;
-
-  const teamHtml = `
-    <p>New 1-on-1 Coaching add-on purchase.</p>
-    <ul>
-      <li><strong>Name:</strong> ${input.name}</li>
-      <li><strong>Email:</strong> ${input.email}</li>
-      <li><strong>Mobile:</strong> ${input.phone}</li>
-      <li><strong>Format:</strong> ${formatLabel} · ${hoursLabel}</li>
-      <li><strong>Method:</strong> ${input.paymentMethod}</li>
-      <li><strong>Amount:</strong> ${input.priceLabel}</li>
-      <li><strong>Receipt:</strong> ${input.receiptUrl ? `<a href="${input.receiptUrl}">Open receipt</a>` : "Filename only"}</li>
-    </ul>
-    <p>Tags</p>
-    <ul>${tagList}</ul>
-    <p><a href="${contactsUrl}">Open contacts</a></p>
-  `;
-
-  const [buyerSmsBody, teamSmsBody] = await Promise.all([
+  const [buyerEmail, teamEmail, buyerSmsBody, teamSmsBody] = await Promise.all([
+    renderEmailTemplate("coaching_offer_buyer", {
+      name: input.name,
+      price: input.priceLabel,
+      hours: hoursLabel,
+      supportEmail: mastermindOffer.support.email,
+      supportPhone: mastermindOffer.support.phone,
+    }),
+    renderEmailTemplate("coaching_offer_team", {
+      name: input.name,
+      email: input.email,
+      phone: input.phone,
+      format: `${formatLabel} · ${hoursLabel}`,
+      paymentMethod: input.paymentMethod,
+      price: input.priceLabel,
+      receiptHtml,
+      tagsHtml,
+      contactsUrl,
+    }),
     getSmsTemplateBody("coaching_offer_buyer"),
     getSmsTemplateBody("coaching_offer_team"),
   ]);
@@ -142,18 +119,8 @@ export async function notifyCoachingOfferPurchase(input: CoachingOfferNotice) {
   });
 
   await Promise.allSettled([
-    sendEmail({
-      to: input.email,
-      subject: "Natanggap na namin ang iyong 1-on-1 Coaching payment",
-      html: buyerHtml,
-      replyTo: mastermindOffer.support.email,
-    }),
-    sendEmail({
-      to: notifyEmails(),
-      subject: `New Coaching add-on · ${input.name} · ${input.priceLabel}`,
-      html: teamHtml,
-      replyTo: input.email,
-    }),
+    sendEmail({ to: input.email, subject: buyerEmail.subject, html: buyerEmail.html, replyTo: mastermindOffer.support.email }),
+    sendEmail({ to: notifyEmails(), subject: teamEmail.subject, html: teamEmail.html, replyTo: input.email }),
     sendSms({ to: input.phone, body: buyerSms, name: input.name, email: input.email }),
     sendSms({
       to: notifyPhone(),

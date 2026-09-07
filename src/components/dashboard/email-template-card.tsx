@@ -3,20 +3,21 @@
 import { useActionState, useState } from "react";
 
 import {
-  deleteSmsTemplateAction,
-  resetSmsTemplateAction,
-  saveSmsTemplateAction,
+  deleteEmailTemplateAction,
+  resetEmailTemplateAction,
+  saveEmailTemplateAction,
   type AutomationFormState,
 } from "@/app/dashboard/automation/actions";
-import type { SmsTemplate } from "@/lib/sms-templates";
+import type { EmailTemplate } from "@/lib/email-templates";
 
 const initialState: AutomationFormState = {};
 
-export function SmsTemplateCard({ template }: { template: SmsTemplate }) {
-  const [saveState, saveAction, savePending] = useActionState(saveSmsTemplateAction, initialState);
-  const [resetState, resetAction, resetPending] = useActionState(resetSmsTemplateAction, initialState);
-  const [deleteState, deleteAction, deletePending] = useActionState(deleteSmsTemplateAction, initialState);
-  const [body, setBody] = useState(template.body);
+export function EmailTemplateCard({ template }: { template: EmailTemplate }) {
+  const [saveState, saveAction, savePending] = useActionState(saveEmailTemplateAction, initialState);
+  const [resetState, resetAction, resetPending] = useActionState(resetEmailTemplateAction, initialState);
+  const [deleteState, deleteAction, deletePending] = useActionState(deleteEmailTemplateAction, initialState);
+  const [subject, setSubject] = useState(template.subject);
+  const [html, setHtml] = useState(template.html);
 
   return (
     <details className="template-row">
@@ -27,7 +28,7 @@ export function SmsTemplateCard({ template }: { template: SmsTemplate }) {
         </span>
         <span className="template-row-meta">
           {template.isCustom ? <span className="status-pill is-quiet">Custom</span> : null}
-          <span className="status-pill is-quiet">SMS</span>
+          <span className="status-pill is-quiet">Email</span>
         </span>
       </summary>
 
@@ -42,16 +43,28 @@ export function SmsTemplateCard({ template }: { template: SmsTemplate }) {
           <input type="hidden" name="id" value={template.id} />
           <input type="hidden" name="key" value={template.key ?? ""} />
           <input type="hidden" name="label" value={template.label} />
-          <label className="sms-template-label" htmlFor={`body-${template.id}`}>
-            Message
+
+          <label className="sms-template-label" htmlFor={`subject-${template.id}`}>
+            Subject
+          </label>
+          <input
+            id={`subject-${template.id}`}
+            name="subject"
+            className="sms-template-input"
+            value={subject}
+            onChange={(event) => setSubject(event.target.value)}
+          />
+
+          <label className="sms-template-label" htmlFor={`html-${template.id}`}>
+            Body (HTML)
           </label>
           <textarea
-            id={`body-${template.id}`}
-            name="body"
+            id={`html-${template.id}`}
+            name="html"
             className="sms-template-textarea"
-            rows={5}
-            value={body}
-            onChange={(event) => setBody(event.target.value)}
+            rows={8}
+            value={html}
+            onChange={(event) => setHtml(event.target.value)}
           />
           <div className="sms-template-actions">
             <button type="submit" className="macos-btn macos-btn-primary" disabled={savePending}>
@@ -63,7 +76,10 @@ export function SmsTemplateCard({ template }: { template: SmsTemplate }) {
                 formAction={resetAction}
                 className="macos-btn macos-btn-secondary"
                 disabled={resetPending}
-                onClick={() => setBody(template.body)}
+                onClick={() => {
+                  setSubject(template.subject);
+                  setHtml(template.html);
+                }}
               >
                 {resetPending ? "Resetting..." : "Reset to default"}
               </button>
