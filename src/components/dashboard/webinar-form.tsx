@@ -155,6 +155,21 @@ export function WebinarForm({
         <p className="sms-template-hint">Shown as &ldquo;N people interested&rdquo;. Leave 0 to hide it.</p>
       </div>
 
+      <div className="grid gap-1.5">
+        <label className="sms-template-label" htmlFor="totalSeats">
+          Total free seats
+        </label>
+        <input
+          id="totalSeats"
+          name="totalSeats"
+          type="number"
+          min={0}
+          defaultValue={webinar?.totalSeats ?? 100}
+          className="sms-template-input"
+        />
+        <p className="sms-template-hint">Once confirmed free registrants reach this number, new signups switch to the paid overflow flow.</p>
+      </div>
+
       <div className="grid gap-1.5 sm:col-span-2">
         <label className="sms-template-label" htmlFor="thumbnailUrl">
           Thumbnail image URL (optional)

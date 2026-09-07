@@ -28,6 +28,7 @@ export async function GET(request: Request) {
       !hasAccess(access, "registrations") &&
       !hasAccess(access, "contacts.view") &&
       !hasAccess(access, "contacts.all") &&
+      !hasAccess(access, "webinars") &&
       user.role !== "admin"
     ) {
       return NextResponse.json({ error: "Not allowed." }, { status: 403 });

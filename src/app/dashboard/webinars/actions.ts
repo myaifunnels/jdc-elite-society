@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 
 import { requireCapability } from "@/lib/session";
 import { deleteWebinar, saveWebinar, setFeaturedWebinar } from "@/lib/webinars-store";
+import { updateRegistrantStatus } from "@/lib/webinar-registrants-store";
 
 export type WebinarFormState = { error?: string; success?: string };
 
@@ -27,6 +28,7 @@ export async function saveWebinarAction(
   const scheduledAtRaw = String(formData.get("scheduledAt") ?? "").trim();
   const episodeNumberRaw = String(formData.get("episodeNumber") ?? "").trim();
   const interestedCountRaw = String(formData.get("interestedCount") ?? "").trim();
+  const totalSeatsRaw = String(formData.get("totalSeats") ?? "").trim();
 
   if (!title) {
     return { error: "Give this webinar a title." };
@@ -45,6 +47,7 @@ export async function saveWebinarAction(
 
   const episodeNumber = Number.parseInt(episodeNumberRaw, 10);
   const interestedCount = Number.parseInt(interestedCountRaw, 10);
+  const totalSeats = Number.parseInt(totalSeatsRaw, 10);
 
   try {
     await saveWebinar({
@@ -62,6 +65,7 @@ export async function saveWebinarAction(
       ctaHref,
       interestedCount: Number.isFinite(interestedCount) && interestedCount > 0 ? interestedCount : 0,
       isFeatured: formData.get("isFeatured") === "on",
+      totalSeats: Number.isFinite(totalSeats) && totalSeats >= 0 ? totalSeats : 100,
     });
   } catch (error) {
     return { error: error instanceof Error ? error.message : "I couldn't save that webinar." };
@@ -112,4 +116,42 @@ export async function setFeaturedWebinarAction(
   revalidatePath("/dashboard/webinars");
   revalidatePath("/webinars");
   return { success: "Featured webinar updated." };
+}
+
+export async function approveOverflowRegistrantAction(
+  _prevState: WebinarFormState,
+  formData: FormData,
+): Promise<WebinarFormState> {
+  await requireCapability("webinars");
+  const id = String(formData.get("id") ?? "").trim();
+  if (!id) return { error: "Missing registrant." };
+
+  try {
+    await updateRegistrantStatus(id, "confirmed");
+  } catch (error) {
+    return { error: error instanceof Error ? error.message : "I couldn't approve that registration." };
+  }
+
+  revalidatePath("/dashboard/webinars");
+  revalidatePath("/webinars");
+  return { success: "Overflow seat approved." };
+}
+
+export async function rejectOverflowRegistrantAction(
+  _prevState: WebinarFormState,
+  formData: FormData,
+): Promise<WebinarFormState> {
+  await requireCapability("webinars");
+  const id = String(formData.get("id") ?? "").trim();
+  if (!id) return { error: "Missing registrant." };
+
+  try {
+    await updateRegistrantStatus(id, "rejected");
+  } catch (error) {
+    return { error: error instanceof Error ? error.message : "I couldn't reject that registration." };
+  }
+
+  revalidatePath("/dashboard/webinars");
+  revalidatePath("/webinars");
+  return { success: "Registration rejected." };
 }

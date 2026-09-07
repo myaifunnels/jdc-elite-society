@@ -157,6 +157,64 @@ export async function storeProfilePhoto(file: File, userId: string) {
   return `data:${file.type};base64,${body.toString("base64")}`;
 }
 
+export async function storeRegistrantPhoto(file: File, webinarId: string) {
+  if (!file.size) {
+    throw new Error("Upload a profile picture.");
+  }
+
+  if (!allowedTypes.has(file.type)) {
+    throw new Error("Upload a JPG, PNG, or WEBP photo.");
+  }
+
+  if (file.size > MAX_BYTES) {
+    throw new Error("Keep the photo under 5 MB.");
+  }
+
+  const body = Buffer.from(await file.arrayBuffer());
+  const settings = await getResolvedIntegrationSettings();
+  const safeWebinarId = webinarId.replace(/[^a-z0-9-]+/gi, "-").slice(0, 48);
+
+  if (isR2Ready(settings)) {
+    const key = `profiles/webinar-registrants/${safeWebinarId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${extensionFor(file.type)}`;
+    return putR2Object(settings, key, body, file.type);
+  }
+
+  if (body.length > DATA_URL_MAX_BYTES) {
+    throw new Error("Use a smaller photo, or connect Cloudflare R2 so we can store larger pictures.");
+  }
+
+  return `data:${file.type};base64,${body.toString("base64")}`;
+}
+
+export async function storeWebinarReceipt(file: File, email: string) {
+  if (!file.size) {
+    throw new Error("Upload your payment receipt.");
+  }
+
+  if (!receiptTypes.has(file.type)) {
+    throw new Error("Upload a JPG, PNG, WEBP, or PDF receipt.");
+  }
+
+  if (file.size > MAX_BYTES) {
+    throw new Error("Keep the receipt under 5 MB.");
+  }
+
+  const body = Buffer.from(await file.arrayBuffer());
+  const settings = await getResolvedIntegrationSettings();
+  const safeEmail = email.toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 48);
+
+  if (isR2Ready(settings)) {
+    const key = `receipts/webinar-overflow/${safeEmail}/${Date.now()}.${extensionFor(file.type)}`;
+    return putR2Object(settings, key, body, file.type);
+  }
+
+  if (body.length > DATA_URL_MAX_BYTES) {
+    throw new Error("Use a smaller receipt, or connect Cloudflare R2 so we can store larger files.");
+  }
+
+  return `data:${file.type};base64,${body.toString("base64")}`;
+}
+
 export async function storePaymentReceipt(file: File, email: string) {
   if (!file.size) {
     throw new Error("I-upload ang iyong resibo.");
