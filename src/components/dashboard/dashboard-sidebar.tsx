@@ -18,6 +18,7 @@ import {
   Shield,
   UserRound,
   Users,
+  Video,
   X,
   Zap,
 } from "lucide-react";
@@ -47,6 +48,7 @@ const navCatalog: Array<{
   { href: "/dashboard/integrations", label: "Integrations", icon: Plug, capability: "integrations" },
   { href: "/dashboard/automation", label: "Automation", icon: Zap, capability: "automation" },
   { href: "/dashboard/webinars", label: "Webinars", icon: Clapperboard, capability: "webinars" },
+  { href: "/dashboard/my-webinars", label: "Webinars", icon: Video, capability: "myWebinars" },
   { href: "/dashboard/settings", label: "Settings", icon: Settings2, capability: "settings" },
 ];
 
