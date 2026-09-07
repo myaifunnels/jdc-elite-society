@@ -60,11 +60,14 @@ const memoryRecords: ContactRecord[] = [...contactSeed];
 const hiddenEmails = new Set<string>();
 const GHL_SYNC_MS = 60_000;
 const REGISTRANT_HYDRATE_MS = 60_000;
+const PLACEHOLDER_ADDRESS_MS = 60_000;
 const TAG_CACHE_MS = 5 * 60 * 1000;
 export const CONTACTS_PAGE_SIZE = 25;
 let lastGhlSyncAt = 0;
 let lastRegistrantHydrateAt = 0;
 let registrantHydrating = false;
+let lastPlaceholderAddressAt = 0;
+let placeholderAddressRunning = false;
 let lastAddressSyncAt = 0;
 let lastTagFetchAt = 0;
 let cachedRemoteTags: string[] = [];
@@ -603,20 +606,34 @@ export function contactNeedsAddressConfirm(contact?: { tags?: string[] } | null)
 }
 
 async function applyPlaceholderAddresses() {
-  for (const record of [...memoryRecords]) {
-    if (!shouldUsePlaceholderAddress(record)) {
-      continue;
+  // hydrateCrm() runs this on every call, and several read paths (listContacts, listTagIndex,
+  // contactIdsByEmail) each call hydrateCrm independently within a single page request — without
+  // this throttle, a single /dashboard/contacts load was scanning and re-persisting the entire
+  // contact list two or three times over, which is what made the page (and, via the shared
+  // dashboard home widgets, the post-login redirect) noticeably slow.
+  if (placeholderAddressRunning || Date.now() - lastPlaceholderAddressAt < PLACEHOLDER_ADDRESS_MS) {
+    return;
+  }
+  placeholderAddressRunning = true;
+  try {
+    for (const record of [...memoryRecords]) {
+      if (!shouldUsePlaceholderAddress(record)) {
+        continue;
+      }
+      const located = withMapLocation(record);
+      if (
+        sameText(located.address, record.address) &&
+        located.lat === record.lat &&
+        located.lng === record.lng &&
+        hasAddressTag(record.tags, MAP_PLACEHOLDER_TAG)
+      ) {
+        continue;
+      }
+      await persistContact(located);
     }
-    const located = withMapLocation(record);
-    if (
-      sameText(located.address, record.address) &&
-      located.lat === record.lat &&
-      located.lng === record.lng &&
-      hasAddressTag(record.tags, MAP_PLACEHOLDER_TAG)
-    ) {
-      continue;
-    }
-    await persistContact(located);
+    lastPlaceholderAddressAt = Date.now();
+  } finally {
+    placeholderAddressRunning = false;
   }
 }
 

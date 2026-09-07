@@ -73,14 +73,17 @@ export default async function ContactsPage({
   const page = parsePage(raw.page);
   const registrantStatus = raw.status === "pending" || raw.status === "verified" ? raw.status : "all";
 
-  const matching = view === "registrants" || view === "pipeline" || !canSeeContacts ? [] : await listContacts(viewer, query);
+  // These four are independent reads (none derives from another), so run them concurrently
+  // instead of one after another — sequential awaits here were the main source of the Contacts
+  // page feeling slow, especially since listContacts/listTagIndex both hydrate the CRM store.
+  const canListContacts = view !== "registrants" && view !== "pipeline" && canSeeContacts;
+  const [matching, tags, pins, users] = await Promise.all([
+    canListContacts ? listContacts(viewer, query) : Promise.resolve([]),
+    canListContacts ? listTagIndex(viewer) : Promise.resolve([]),
+    view === "map" && canSeeContacts ? listContactMapPins(viewer, query, { geocode: true }) : Promise.resolve([]),
+    view === "roster" && user.role === "admin" ? listAllUsers() : Promise.resolve([]),
+  ]);
   const paged = paginate(matching, page, CONTACTS_PAGE_SIZE);
-  const tags = view === "registrants" || view === "pipeline" || !canSeeContacts ? [] : await listTagIndex(viewer);
-  const pins =
-    view === "map" && canSeeContacts
-      ? await listContactMapPins(viewer, query, { geocode: true })
-      : [];
-  const users = view === "roster" && user.role === "admin" ? await listAllUsers() : [];
   const usersByEmail = new Map(users.map((item) => [item.email.toLowerCase(), item]));
 
   const registrants = canSeeRegistrants && view === "registrants" ? await listMemberRegistrations() : [];

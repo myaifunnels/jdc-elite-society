@@ -184,6 +184,7 @@ export async function listGhlLocationContacts() {
         method: "POST",
         headers: ghlHeaders(token, true),
         cache: "no-store",
+        signal: AbortSignal.timeout(10_000),
         body: JSON.stringify({
           locationId,
           page,
@@ -215,6 +216,7 @@ export async function listGhlLocationContacts() {
       const response = await fetch(`https://services.leadconnectorhq.com/contacts/?${query.toString()}`, {
         headers: ghlHeaders(token),
         cache: "no-store",
+        signal: AbortSignal.timeout(10_000),
       });
       if (!response.ok) {
         break;

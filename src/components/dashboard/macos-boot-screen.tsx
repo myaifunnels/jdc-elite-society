@@ -47,9 +47,26 @@ export function MacosBootScreen({
       }, reduced ? 0 : 420);
     }, duration);
 
+    // Next's router.replace is a soft (RSC) transition — it keeps this screen on-screen until
+    // the target route's data is ready rather than showing a blank page. If the dashboard's
+    // server render is ever unexpectedly slow, that means this card can sit here looking frozen
+    // instead of a visible loading state. As a last resort, if the URL still has ?welcome=1 a
+    // good while after the soft navigation should have already replaced it, force a full page
+    // reload so the user is never stuck here indefinitely.
+    const hardFallback = window.setTimeout(() => {
+      if (window.location.search.includes("welcome=1")) {
+        // Deliberately a hard navigation, not router.replace: this only runs when the soft
+        // transition above has already failed to move on, so retrying the same mechanism
+        // wouldn't help.
+        // eslint-disable-next-line @next/next/no-location-assign-relative-destination
+        window.location.assign("/dashboard");
+      }
+    }, duration + 8000);
+
     return () => {
       window.cancelAnimationFrame(frame);
       window.clearTimeout(finish);
+      window.clearTimeout(hardFallback);
     };
   }, [welcome, router]);
 
