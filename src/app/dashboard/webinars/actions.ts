@@ -79,6 +79,7 @@ export async function saveWebinarAction(
       interestedCount: Number.isFinite(interestedCount) && interestedCount > 0 ? interestedCount : 0,
       isFeatured: formData.get("isFeatured") === "on",
       totalSeats: Number.isFinite(totalSeats) && totalSeats >= 0 ? totalSeats : 100,
+      grantsUniversityAccess: formData.get("grantsUniversityAccess") === "on",
     });
   } catch (error) {
     return { error: error instanceof Error ? error.message : "I couldn't save that webinar." };

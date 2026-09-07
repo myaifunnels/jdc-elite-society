@@ -39,25 +39,28 @@ async function notifyWebinarRegistrationConfirmed(
 
 /**
  * Runs everything a confirmed webinar registration should trigger: University/community access
- * (every registrant gets the same standing as a paid Mastermind buyer — this grants membership
- * on the external community platform via GHL and flips paymentVerified locally, see
- * src/lib/member-access.ts) plus the webinar's own registration-confirmed SMS/email with its
- * date, time, and Zoom link. `notify: false` on the access grant avoids also sending the generic
- * "University is open" message right alongside the webinar-specific one.
+ * when this webinar has it turned on (every such registrant gets the same standing as a paid
+ * Mastermind buyer — this grants membership on the external community platform via GHL and flips
+ * paymentVerified locally, see src/lib/member-access.ts), plus the webinar's own
+ * registration-confirmed SMS/email with its date, time, and Zoom link, sent either way.
+ * `notify: false` on the access grant avoids also sending the generic "University is open"
+ * message right alongside the webinar-specific one.
  */
 export async function confirmWebinarRegistration(
   webinar: WebinarRecord,
   registrant: { name: string; email: string; phone: string },
 ) {
   await Promise.allSettled([
-    grantInstantUniversityAccess({
-      name: registrant.name,
-      email: registrant.email,
-      phone: registrant.phone,
-      source: `Webinar registration · ${webinar.title}`,
-      extraTags: ["Webinar registrant"],
-      notify: false,
-    }),
+    webinar.grantsUniversityAccess
+      ? grantInstantUniversityAccess({
+          name: registrant.name,
+          email: registrant.email,
+          phone: registrant.phone,
+          source: `Webinar registration · ${webinar.title}`,
+          extraTags: ["Webinar registrant"],
+          notify: false,
+        })
+      : Promise.resolve(),
     notifyWebinarRegistrationConfirmed(webinar, registrant),
   ]);
 }

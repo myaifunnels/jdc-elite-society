@@ -17,6 +17,11 @@ export type WebinarRecord = {
   interestedCount: number;
   isFeatured: boolean;
   totalSeats: number;
+  /** Whether a confirmed registrant for this webinar gets University/community access (the same
+   * standing as a paid Mastermind buyer) alongside their registration-confirmed message. On by
+   * default; an admin can turn it off per webinar — e.g. a broad lead-gen webinar where they
+   * don't want to hand out full community access, versus a qualified one where they do. */
+  grantsUniversityAccess: boolean;
   createdAt: string;
   updatedAt: string;
 };

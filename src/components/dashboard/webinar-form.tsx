@@ -274,6 +274,22 @@ export function WebinarForm({
         Feature this webinar on the public page hero
       </label>
 
+      <div className="grid gap-1">
+        <label className="flex items-center gap-2 text-sm font-semibold text-white">
+          <input
+            type="checkbox"
+            name="grantsUniversityAccess"
+            defaultChecked={webinar ? webinar.grantsUniversityAccess : true}
+          />
+          Give registrants University access
+        </label>
+        <p className="m-0 text-[0.7rem] text-white/40">
+          When someone&rsquo;s seat is confirmed, also unlock University/community access for them —
+          the same standing as a paid Mastermind buyer. Turn this off for a broad lead-gen webinar
+          where you don&rsquo;t want to hand out full community access.
+        </p>
+      </div>
+
       <div className="mt-1 flex flex-wrap gap-2">
         <button
           type="submit"
