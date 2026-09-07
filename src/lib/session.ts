@@ -19,12 +19,15 @@ function cookieSecret() {
   return process.env.AUTH_SECRET || process.env.DATABASE_URL || "coach-jdc-dev-secret";
 }
 
-function signValue(value: string) {
+// Exported so other short-lived signed cookies (e.g. the OAuth state/PKCE
+// cookie in src/app/api/auth/google/route.ts) can reuse this exact HMAC
+// signing scheme instead of duplicating it.
+export function signValue(value: string) {
   const signature = createHmac("sha256", cookieSecret()).update(value).digest("hex").slice(0, 32);
   return `${value}.${signature}`;
 }
 
-function readSignedValue(raw: string | undefined) {
+export function readSignedValue(raw: string | undefined) {
   if (!raw) {
     return null;
   }
@@ -107,7 +110,7 @@ export async function getSessionUser(): Promise<SessionUser | null> {
 
 export const sessionCookieName = SESSION_COOKIE;
 
-function sessionCookieOptions(maxAge?: number) {
+export function sessionCookieOptions(maxAge?: number) {
   return {
     httpOnly: true,
     sameSite: "lax" as const,

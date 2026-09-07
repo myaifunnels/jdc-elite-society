@@ -74,6 +74,7 @@ function publicUser(user: AuthUserRecord): AuthUser {
     address: user.address,
     facebookProfileUrl: user.facebookProfileUrl,
     facebookPhotoUrl: user.facebookPhotoUrl,
+    googleId: user.googleId,
     createdAt: user.createdAt,
   };
 }
@@ -110,6 +111,7 @@ function mapRow(row: Record<string, unknown>): AuthUserRecord {
     address: String(row.address ?? ""),
     facebookProfileUrl: String(row.facebook_profile_url ?? ""),
     facebookPhotoUrl: String(row.facebook_photo_url ?? ""),
+    googleId: String(row.google_id ?? ""),
     passwordHash: String(row.password_hash ?? ""),
     createdAt: String(row.created_at ?? new Date().toISOString()),
   };
@@ -189,6 +191,10 @@ async function ensureTable(client: Pool) {
   await client.query(`
     ALTER TABLE site_users
     ADD COLUMN IF NOT EXISTS active_account BOOLEAN NOT NULL DEFAULT TRUE
+  `);
+  await client.query(`
+    ALTER TABLE site_users
+    ADD COLUMN IF NOT EXISTS google_id TEXT NOT NULL DEFAULT ''
   `);
   await client.query(`
     UPDATE site_users
@@ -412,6 +418,102 @@ export async function findUserById(id: string) {
   }
 }
 
+export async function findUserByGoogleId(googleId: string) {
+  if (!googleId) {
+    return null;
+  }
+
+  const client = getPool();
+  if (!client) {
+    return memoryUsers.find((user) => user.googleId === googleId) ?? null;
+  }
+
+  try {
+    await ensureTable(client);
+    const result = await client.query("SELECT * FROM site_users WHERE google_id = $1 LIMIT 1", [googleId]);
+    return result.rows[0] ? mapRow(result.rows[0]) : null;
+  } catch (error) {
+    console.error("Failed to load user by google id", error);
+    return memoryUsers.find((user) => user.googleId === googleId) ?? null;
+  }
+}
+
+async function linkGoogleId(userId: string, googleId: string) {
+  const memoryIndex = memoryUsers.findIndex((user) => user.id === userId);
+  if (memoryIndex >= 0) {
+    memoryUsers[memoryIndex] = { ...memoryUsers[memoryIndex], googleId };
+  }
+
+  const client = getPool();
+  if (!client) {
+    return;
+  }
+
+  try {
+    await ensureTable(client);
+    await client.query("UPDATE site_users SET google_id = $2 WHERE id = $1", [userId, googleId]);
+  } catch (error) {
+    console.error("Failed to link google id", error);
+  }
+}
+
+/**
+ * Finds an existing account for a "Continue with Google" sign-in, links a Google
+ * identity onto a matching password-based account, or provisions a brand-new
+ * account when neither exists.
+ */
+export async function findOrCreateGoogleUser(profile: {
+  googleId: string;
+  email: string;
+  name: string;
+  avatarUrl?: string;
+}) {
+  await ensureSeedUsers();
+
+  const email = profile.email.trim().toLowerCase();
+  const name = profile.name.trim() || email;
+
+  // 1. Returning Google user - looked up by the stable `sub` claim, not email,
+  // since a Google account's email can change.
+  const byGoogleId = await findUserByGoogleId(profile.googleId);
+  if (byGoogleId) {
+    return publicUser(byGoogleId);
+  }
+
+  // 2. Existing password-based account signing in with Google for the first
+  // time - link the Google id onto it without touching password/role/memberships.
+  const byEmail = await findUserByEmail(email);
+  if (byEmail) {
+    await linkGoogleId(byEmail.id, profile.googleId);
+    const updated = await findUserById(byEmail.id);
+    return publicUser(updated ?? { ...byEmail, googleId: profile.googleId });
+  }
+
+  // 3. Brand-new account. A Google-authenticated user doesn't need a password,
+  // so passwordSet is true (unlike other auto-created-account flows in this
+  // codebase that force a password-setup screen) and we generate an unguessable
+  // placeholder password string - mirroring the `pending:` sentinel pattern
+  // used by ensurePortalUserForContact - which createUser hashes normally.
+  const placeholderPassword = `pending:${randomBytes(24).toString("hex")}`;
+  const created = await createUser({
+    name,
+    email,
+    password: placeholderPassword,
+    role: "member",
+    memberships: ["jes"],
+    profileComplete: false,
+    paymentVerified: false,
+    passwordSet: true,
+    // Reusing the Facebook-named avatar field for Google's picture URL too -
+    // every avatar-rendering component already reads facebookPhotoUrl, and
+    // this is an existing naming quirk in this codebase, not something to fix here.
+    facebookPhotoUrl: profile.avatarUrl ?? "",
+    googleId: profile.googleId,
+  });
+
+  return created;
+}
+
 export async function createUser(input: {
   name: string;
   email: string;
@@ -425,6 +527,7 @@ export async function createUser(input: {
   address?: string;
   facebookProfileUrl?: string;
   facebookPhotoUrl?: string;
+  googleId?: string;
   memberships?: Membership[];
   profileComplete?: boolean;
   paymentVerified?: boolean;
@@ -462,6 +565,7 @@ export async function createUser(input: {
     address: input.address ?? "",
     facebookProfileUrl: input.facebookProfileUrl ?? "",
     facebookPhotoUrl: input.facebookPhotoUrl ?? "",
+    googleId: input.googleId ?? "",
     passwordHash: await hashPassword(input.password),
     createdAt: new Date().toISOString(),
   };
@@ -478,9 +582,9 @@ export async function createUser(input: {
           id, name, email, role, password_hash, created_at, best_describes_you,
           date_of_birth, address, facebook_profile_url, facebook_photo_url, memberships,
           phone, phone_country, company, profile_complete, payment_verified, password_set,
-          affiliate_access, affiliate_programs, active_account
+          affiliate_access, affiliate_programs, active_account, google_id
         )
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22)
         `,
         [
           user.id,
@@ -504,6 +608,7 @@ export async function createUser(input: {
           user.affiliateAccess,
           serializeAffiliatePrograms(user.affiliatePrograms),
           user.active,
+          user.googleId,
         ],
       );
     } catch (error) {
@@ -563,6 +668,7 @@ export async function ensurePortalUserForContact(input: {
     address: input.address ?? "",
     facebookProfileUrl: "",
     facebookPhotoUrl: input.facebookPhotoUrl ?? "",
+    googleId: "",
     passwordHash: `pending:${randomBytes(16).toString("hex")}`,
     createdAt: new Date().toISOString(),
   };
@@ -929,7 +1035,8 @@ async function persistUserUpdate(user: AuthUserRecord) {
         profile_complete = $15,
         payment_verified = $16,
         password_set = $17,
-        active_account = $18
+        active_account = $18,
+        google_id = $19
       WHERE id = $1
       `,
       [
@@ -951,6 +1058,7 @@ async function persistUserUpdate(user: AuthUserRecord) {
         user.paymentVerified,
         user.passwordSet,
         user.active,
+        user.googleId ?? "",
       ],
     );
   } catch (error) {

@@ -56,6 +56,7 @@ export type AuthUser = {
   address?: string;
   facebookProfileUrl?: string;
   facebookPhotoUrl?: string;
+  googleId?: string;
   createdAt: string;
 };
 
