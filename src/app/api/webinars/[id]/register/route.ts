@@ -8,7 +8,11 @@ import { getSessionUser, sessionCookieName } from "@/lib/session";
 import { confirmWebinarRegistration } from "@/lib/webinar-notify";
 import { WEBINAR_OVERFLOW_PRICE } from "@/lib/webinars";
 import { getWebinar } from "@/lib/webinars-store";
-import { createRegistrant, getFreeSeatsLeft } from "@/lib/webinar-registrants-store";
+import {
+  createRegistrant,
+  findRegistrantByUserAndWebinar,
+  getFreeSeatsLeft,
+} from "@/lib/webinar-registrants-store";
 
 const schema = z.object({
   name: z.string().trim().min(2, "Enter your full name.").max(100),
@@ -98,6 +102,24 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
       // proceed without a linked account rather than failing the registration.
       console.error("Failed to auto-create webinar registrant account", error);
     }
+  }
+
+  // This account may already be registered for this webinar — a double-click, a resubmitted
+  // form after a network hiccup, or simply registering again while already signed in. Report
+  // the existing registration instead of creating a second one (same idempotent guard the
+  // sign-in-then-register flow already uses in signin-register/route.ts).
+  const existingRegistration = userId
+    ? await findRegistrantByUserAndWebinar(webinar.id, userId, parsed.data.email)
+    : null;
+  if (existingRegistration) {
+    return withSession(
+      NextResponse.json({
+        ok: true,
+        tier: existingRegistration.tier,
+        status: existingRegistration.status,
+        needsPasswordSetup,
+      }),
+    );
   }
 
   // Never trust the client's idea of which tier applies — always recompute from the current

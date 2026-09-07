@@ -124,15 +124,26 @@ export async function listRegistrants(webinarId: string): Promise<WebinarRegistr
   }
 }
 
+/** One person occupies at most one seat — key by userId (falling back to email for
+ * pre-userId-column rows) so a duplicate registration row for the same person, however it got
+ * created, is never counted twice against the seat cap. */
+function countUniquePeople(registrants: WebinarRegistrant[]): number {
+  const seen = new Set<string>();
+  for (const registrant of registrants) {
+    seen.add(registrant.userId || registrant.email);
+  }
+  return seen.size;
+}
+
 /** Both free-confirmed and paid-overflow-confirmed count as an occupied seat. */
 export async function countConfirmedRegistrants(webinarId: string): Promise<number> {
   const all = await listRegistrants(webinarId);
-  return all.filter((item) => item.status === "confirmed").length;
+  return countUniquePeople(all.filter((item) => item.status === "confirmed"));
 }
 
 async function countFreeConfirmedRegistrants(webinarId: string): Promise<number> {
   const all = await listRegistrants(webinarId);
-  return all.filter((item) => item.status === "confirmed" && item.tier === "free").length;
+  return countUniquePeople(all.filter((item) => item.status === "confirmed" && item.tier === "free"));
 }
 
 /** How many free seats remain. Never negative. This is the single source of truth the
@@ -226,15 +237,39 @@ export async function updateRegistrantStatus(
   return memoryRegistrants[memoryIndex];
 }
 
+const STATUS_RANK: Record<WebinarRegistrantStatus, number> = { confirmed: 2, pending: 1, rejected: 0 };
+
+/** Collapses multiple registrant rows for the same webinar down to one — a pre-existing gap in
+ * the public register route let an already-registered visitor (a double-click, a resubmitted
+ * form after a network hiccup, or registering again while already signed in) create a second row
+ * for the same webinar. The register route now guards against this going forward, but this keeps
+ * any duplicates already in the database from ever being shown: keeps whichever row is furthest
+ * along (confirmed > pending > rejected), and the most recent one for ties. */
+function dedupeByWebinar(registrants: WebinarRegistrant[]): WebinarRegistrant[] {
+  const best = new Map<string, WebinarRegistrant>();
+  for (const registrant of registrants) {
+    const current = best.get(registrant.webinarId);
+    if (
+      !current ||
+      STATUS_RANK[registrant.status] > STATUS_RANK[current.status] ||
+      (STATUS_RANK[registrant.status] === STATUS_RANK[current.status] && registrant.createdAt > current.createdAt)
+    ) {
+      best.set(registrant.webinarId, registrant);
+    }
+  }
+  return [...best.values()].sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
+}
+
 /** Every registration tied to a given account, newest first — matched by userId, and (for
- * registrations created before the userId column existed) by the account's email as a fallback. */
+ * registrations created before the userId column existed) by the account's email as a fallback.
+ * Collapsed to one row per webinar via dedupeByWebinar. */
 export async function listRegistrantsByUserId(userId: string, email?: string): Promise<WebinarRegistrant[]> {
   const normalizedEmail = email?.trim().toLowerCase() ?? "";
   const client = getPool();
   if (!client) {
-    return memoryRegistrants
-      .filter((item) => item.userId === userId || (normalizedEmail && item.email === normalizedEmail))
-      .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
+    return dedupeByWebinar(
+      memoryRegistrants.filter((item) => item.userId === userId || (normalizedEmail && item.email === normalizedEmail)),
+    );
   }
 
   try {
@@ -248,12 +283,12 @@ export async function listRegistrantsByUserId(userId: string, email?: string): P
           "SELECT * FROM webinar_registrants WHERE user_id = $1 ORDER BY created_at DESC",
           [userId],
         );
-    return result.rows.map(mapRow);
+    return dedupeByWebinar(result.rows.map(mapRow));
   } catch (error) {
     console.error("Failed to load webinar registrants for user", error);
-    return memoryRegistrants
-      .filter((item) => item.userId === userId || (normalizedEmail && item.email === normalizedEmail))
-      .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
+    return dedupeByWebinar(
+      memoryRegistrants.filter((item) => item.userId === userId || (normalizedEmail && item.email === normalizedEmail)),
+    );
   }
 }
 

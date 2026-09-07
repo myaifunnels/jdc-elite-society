@@ -17,6 +17,7 @@ export function DashboardFrame({
   branding,
   impersonator,
   notifications,
+  hasWebinarRegistrations,
   children,
 }: {
   user: AuthUser;
@@ -24,6 +25,7 @@ export function DashboardFrame({
   branding: BrandingSettings;
   impersonator?: AuthUser | null;
   notifications: AppNotification[];
+  hasWebinarRegistrations?: boolean;
   children: React.ReactNode;
 }) {
   return (
@@ -42,6 +44,7 @@ export function DashboardFrame({
           membershipLabel={membershipLabel(user.memberships)}
           accountStatus={user.accountStatus}
           universityLocked={!hasUniversityAccess(user)}
+          hasWebinarRegistrations={hasWebinarRegistrations}
           branding={branding}
           access={access}
           notifications={notifications}

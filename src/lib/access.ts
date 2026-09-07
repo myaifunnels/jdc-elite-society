@@ -176,8 +176,15 @@ export function overrideCount(overrides: AccessOverride) {
   return CAPABILITIES.filter((item) => typeof overrides[item.id] === "boolean").length;
 }
 
-export function dashboardHomeHref(access: AccessMap) {
+/**
+ * `hasWebinarRegistrations` sends a webinar registrant straight to their "My webinars" list
+ * instead of University — University may still show locked (profile/payment not complete just
+ * from registering for a webinar), so it's a dead end for them, while their webinar registration
+ * is exactly what they came here to find.
+ */
+export function dashboardHomeHref(access: AccessMap, hasWebinarRegistrations = false) {
   if (access.dashboard) return "/dashboard";
+  if (hasWebinarRegistrations && access.myWebinars) return "/dashboard/my-webinars";
   if (access.university) return "/dashboard/university";
   if (access.support) return "/dashboard/support";
   if (access.profile) return "/dashboard/profile";

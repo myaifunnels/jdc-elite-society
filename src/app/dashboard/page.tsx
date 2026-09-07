@@ -24,13 +24,15 @@ import { listEliteCheckoutOrdersForUser } from "@/lib/elite-checkout-store";
 import { hasUniversityAccess } from "@/lib/university-access";
 import { getSupportTicketMetrics } from "@/lib/support-store";
 import { SupportAnalytics } from "@/components/dashboard/support-analytics";
+import { listRegistrantsByUserId } from "@/lib/webinar-registrants-store";
 
 export default async function DashboardPage() {
   const user = await requireSessionUser();
   const access = await resolveAccess(user);
 
   if (!hasAccess(access, "dashboard")) {
-    redirect(dashboardHomeHref(access.resolved));
+    const registrations = await listRegistrantsByUserId(user.id, user.email);
+    redirect(dashboardHomeHref(access.resolved, registrations.length > 0));
   }
 
   if (!hasAccess(access, "contacts.view") && !hasAccess(access, "registrations")) {

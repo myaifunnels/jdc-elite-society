@@ -5,6 +5,7 @@ import { resolveAccess } from "@/lib/access-store";
 import { getResolvedBrandingSettings } from "@/lib/branding-store";
 import { listNotificationsForUser } from "@/lib/notification-store";
 import { getImpersonator, requireSessionUser } from "@/lib/session";
+import { listRegistrantsByUserId } from "@/lib/webinar-registrants-store";
 
 export default async function DashboardLayout({
   children,
@@ -14,10 +15,11 @@ export default async function DashboardLayout({
   if (!user.passwordSet && !impersonator) {
     redirect("/account/password");
   }
-  const [branding, access, notifications] = await Promise.all([
+  const [branding, access, notifications, registrations] = await Promise.all([
     getResolvedBrandingSettings(),
     resolveAccess(user),
     listNotificationsForUser(user.id, 16),
+    listRegistrantsByUserId(user.id, user.email),
   ]);
 
   return (
@@ -27,6 +29,7 @@ export default async function DashboardLayout({
       branding={branding}
       impersonator={impersonator}
       notifications={notifications}
+      hasWebinarRegistrations={registrations.length > 0}
     >
       {children}
     </DashboardFrame>

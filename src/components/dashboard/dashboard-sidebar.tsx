@@ -75,6 +75,7 @@ function SidebarPanel({
   membershipLabel,
   accountStatus,
   universityLocked,
+  hasWebinarRegistrations,
   branding,
   access,
   notifications,
@@ -87,6 +88,7 @@ function SidebarPanel({
   membershipLabel: string;
   accountStatus?: string;
   universityLocked?: boolean;
+  hasWebinarRegistrations?: boolean;
   branding: BrandingSettings;
   access: AccessMap;
   notifications: AppNotification[];
@@ -95,7 +97,7 @@ function SidebarPanel({
   showClose?: boolean;
 }) {
   const pathname = usePathname();
-  const homeHref = dashboardHomeHref(access);
+  const homeHref = dashboardHomeHref(access, hasWebinarRegistrations);
 
   return (
     <>
@@ -181,6 +183,7 @@ export function DashboardSidebar({
   membershipLabel,
   accountStatus,
   universityLocked,
+  hasWebinarRegistrations,
   branding,
   access,
   notifications,
@@ -190,6 +193,7 @@ export function DashboardSidebar({
   membershipLabel: string;
   accountStatus?: string;
   universityLocked?: boolean;
+  hasWebinarRegistrations?: boolean;
   branding: BrandingSettings;
   access: AccessMap;
   notifications: AppNotification[];
@@ -233,7 +237,7 @@ export function DashboardSidebar({
   return (
     <>
       <div className="dashboard-mobile-bar sticky top-0 z-30 flex items-center justify-between gap-3 px-4 py-3 lg:hidden">
-        <SiteLogo branding={branding} href={dashboardHomeHref(access)} compact />
+        <SiteLogo branding={branding} href={dashboardHomeHref(access, hasWebinarRegistrations)} compact />
         <div className="flex items-center gap-2">
           <NotificationBell items={notifications} />
           <button
@@ -274,6 +278,7 @@ export function DashboardSidebar({
           membershipLabel={membershipLabel}
           accountStatus={accountStatus}
           universityLocked={universityLocked}
+          hasWebinarRegistrations={hasWebinarRegistrations}
           branding={branding}
           access={access}
           notifications={notifications}
@@ -293,6 +298,7 @@ export function DashboardSidebar({
           membershipLabel={membershipLabel}
           accountStatus={accountStatus}
           universityLocked={universityLocked}
+          hasWebinarRegistrations={hasWebinarRegistrations}
           branding={branding}
           access={access}
           notifications={notifications}
