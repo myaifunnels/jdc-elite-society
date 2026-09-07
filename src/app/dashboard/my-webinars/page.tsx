@@ -2,6 +2,7 @@ import { CalendarDays, Video } from "lucide-react";
 import Link from "next/link";
 
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
+import { EpisodeThumb } from "@/components/webinars/webinar-thumb";
 import { requireCapability } from "@/lib/session";
 import { getWebinar } from "@/lib/webinars-store";
 import { listRegistrantsByUserId, type WebinarRegistrant } from "@/lib/webinar-registrants-store";
@@ -54,29 +55,33 @@ export default async function MyWebinarsPage() {
           </Link>
         </div>
       ) : (
-        <div className="sms-template-list">
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {entries.map(({ registrant, webinar }) => (
-            <article key={registrant.id} className="sms-template-card">
-              <div className="sms-template-card-head">
-                <div>
-                  <strong>{webinar.title}</strong>
-                  <p className="flex items-center gap-2">
-                    <CalendarDays aria-hidden size={14} className="text-[var(--brand)]" />
-                    {formatDateTimeLabel(webinar.scheduledAt)} &middot; GMT+8
-                  </p>
+            <article
+              key={registrant.id}
+              className="card-surface interactive-card flex flex-col overflow-hidden"
+            >
+              <EpisodeThumb webinar={webinar} className="h-36 w-full" />
+              <div className="flex flex-1 flex-col gap-2 p-5">
+                <div className="flex items-start justify-between gap-2">
+                  <strong className="text-[1rem] leading-snug">{webinar.title}</strong>
+                  <StatusPill status={registrant.status} />
                 </div>
-                <StatusPill status={registrant.status} />
+                <p className="m-0 flex items-center gap-2 text-xs text-[var(--muted)]">
+                  <CalendarDays aria-hidden size={14} className="text-[var(--brand)]" />
+                  {formatDateTimeLabel(webinar.scheduledAt)} &middot; Manila Time
+                </p>
+                <p className="m-0 text-xs text-[var(--muted)]">
+                  Seat type: {registrant.tier === "paid_overflow" ? "Overflow (paid)" : "Free"}
+                </p>
+                <Link
+                  href="/webinars"
+                  className="mt-auto inline-flex items-center gap-1.5 pt-3 text-sm font-bold text-[var(--brand)]"
+                >
+                  <Video aria-hidden size={14} />
+                  View webinar details
+                </Link>
               </div>
-              <p className="m-0 text-xs text-[var(--muted)]">
-                Seat type: {registrant.tier === "paid_overflow" ? "Overflow (paid)" : "Free"}
-              </p>
-              <Link
-                href="/webinars"
-                className="inline-flex items-center gap-1.5 text-sm font-bold text-[var(--brand)]"
-              >
-                <Video aria-hidden size={14} />
-                View webinar details
-              </Link>
             </article>
           ))}
         </div>
