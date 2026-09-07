@@ -63,6 +63,7 @@ async function fetchJson(url: string, token: string, init?: RequestInit) {
       ...init,
       headers: { ...ghlHeaders(token), ...(init?.headers ?? {}) },
       cache: "no-store",
+      signal: AbortSignal.timeout(10_000),
     });
     const payload = await response.json().catch(() => null);
     return { ok: response.ok, status: response.status, payload };

@@ -12,7 +12,12 @@ export type SmsTemplateKey =
   | "support_reply_member"
   | "support_reply_team"
   | "support_status_member"
-  | "receipt_reupload_team";
+  | "receipt_reupload_team"
+  | "webinar_registration_confirmed"
+  | "webinar_reminder_3d"
+  | "webinar_reminder_2d"
+  | "webinar_reminder_dayof"
+  | "webinar_reminder_start";
 
 export type SmsTemplateDefinition = {
   key: SmsTemplateKey;
@@ -52,6 +57,17 @@ export const SMS_TEMPLATE_GROUPS: Array<{ id: string; label: string; keys: SmsTe
     id: "support",
     label: "Support",
     keys: ["support_ticket_member", "support_ticket_team", "support_reply_member", "support_reply_team", "support_status_member"],
+  },
+  {
+    id: "webinars",
+    label: "Webinars",
+    keys: [
+      "webinar_registration_confirmed",
+      "webinar_reminder_3d",
+      "webinar_reminder_2d",
+      "webinar_reminder_dayof",
+      "webinar_reminder_start",
+    ],
   },
 ];
 
@@ -167,6 +183,46 @@ export const SMS_TEMPLATE_DEFINITIONS: SmsTemplateDefinition[] = [
     vars: ["name", "subject", "status"],
     defaultBody:
       "Hi {{name}},\n\nYour support ticket {{subject}} is now {{status}}.\n\nOpen Support on your dashboard for details.\n\nBest Regards,\n-Team JDC Elite Society",
+  },
+  {
+    key: "webinar_registration_confirmed",
+    label: "Webinar registration confirmed",
+    description: "Sent the moment someone registers for a webinar, whichever webinar it is.",
+    vars: ["name", "webinarTitle", "dateLabel", "timeLabel", "zoomLink"],
+    defaultBody:
+      "Hi {{name}},\n\nYou're in! {{webinarTitle}} is on {{dateLabel}} at {{timeLabel}} (Manila time).\n\nJoin link: {{zoomLink}}\n\nBest Regards,\n-Team JDC Elite Society",
+  },
+  {
+    key: "webinar_reminder_3d",
+    label: "Webinar reminder — 3 days before",
+    description: "Sent automatically 3 days before every webinar, to every confirmed registrant.",
+    vars: ["name", "webinarTitle", "dateLabel", "timeLabel", "zoomLink"],
+    defaultBody:
+      "Hi {{name}},\n\n{{webinarTitle}} is in 3 days — {{dateLabel}} at {{timeLabel}} (Manila time).\n\nJoin link: {{zoomLink}}\n\nBest Regards,\n-Team JDC Elite Society",
+  },
+  {
+    key: "webinar_reminder_2d",
+    label: "Webinar reminder — 2 days before",
+    description: "Sent automatically 2 days before every webinar, to every confirmed registrant.",
+    vars: ["name", "webinarTitle", "dateLabel", "timeLabel", "zoomLink"],
+    defaultBody:
+      "Hi {{name}},\n\n{{webinarTitle}} is in 2 days — {{dateLabel}} at {{timeLabel}} (Manila time).\n\nJoin link: {{zoomLink}}\n\nBest Regards,\n-Team JDC Elite Society",
+  },
+  {
+    key: "webinar_reminder_dayof",
+    label: "Webinar reminder — day of the webinar",
+    description: "Sent automatically the morning of every webinar, to every confirmed registrant.",
+    vars: ["name", "webinarTitle", "dateLabel", "timeLabel", "zoomLink"],
+    defaultBody:
+      "Hi {{name}},\n\nToday's the day! {{webinarTitle}} starts today at {{timeLabel}} (Manila time).\n\nJoin link: {{zoomLink}}\n\nBest Regards,\n-Team JDC Elite Society",
+  },
+  {
+    key: "webinar_reminder_start",
+    label: "Webinar reminder — starting now",
+    description: "Sent automatically at the exact start time of every webinar, to every confirmed registrant.",
+    vars: ["name", "webinarTitle", "timeLabel", "zoomLink"],
+    defaultBody:
+      "Hi {{name}},\n\n{{webinarTitle}} is starting now.\n\nJoin link: {{zoomLink}}\n\nBest Regards,\n-Team JDC Elite Society",
   },
 ];
 

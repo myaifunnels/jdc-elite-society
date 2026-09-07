@@ -47,6 +47,10 @@ const SAMPLE_VARS: Record<string, string> = {
   tagsHtml: "<li>Sample tag</li>",
   couponCode: "None",
   phone: "+639171234567",
+  webinarTitle: "How to Build Passive Income in Network Marketing",
+  dateLabel: "September 20, 2026",
+  timeLabel: "7:30 PM",
+  zoomLink: "https://zoom.us/j/sample",
 };
 
 export async function saveSmsFromNumberAction(

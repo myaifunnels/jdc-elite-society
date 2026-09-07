@@ -46,6 +46,17 @@ export const EMAIL_TEMPLATE_GROUPS: Array<{ id: string; label: string; keys: Ema
     label: "Support",
     keys: ["support_ticket_member", "support_ticket_team", "support_reply_member", "support_reply_team", "support_status_member"],
   },
+  {
+    id: "webinars",
+    label: "Webinars",
+    keys: [
+      "webinar_registration_confirmed",
+      "webinar_reminder_3d",
+      "webinar_reminder_2d",
+      "webinar_reminder_dayof",
+      "webinar_reminder_start",
+    ],
+  },
 ];
 
 export const EMAIL_TEMPLATE_DEFINITIONS: EmailTemplateDefinition[] = [
@@ -173,6 +184,51 @@ export const EMAIL_TEMPLATE_DEFINITIONS: EmailTemplateDefinition[] = [
     defaultSubject: "Your support ticket is {{status}}",
     defaultHtml:
       "<p>Hi {{name}},</p><p>Ticket <strong>{{subject}}</strong> is now <strong>{{status}}</strong>.</p><p><a href=\"{{url}}\">Open Support</a></p>",
+  },
+  {
+    key: "webinar_registration_confirmed",
+    label: "Webinar registration confirmed",
+    description: "Sent the moment someone registers for a webinar, whichever webinar it is. {{zoomLink}} and the date/time come from that webinar automatically.",
+    vars: ["name", "webinarTitle", "dateLabel", "timeLabel", "zoomLink", "siteUrl"],
+    defaultSubject: "You're registered: {{webinarTitle}}",
+    defaultHtml:
+      "<p>Hi {{name}},</p><p>You're in! <strong>{{webinarTitle}}</strong> is on <strong>{{dateLabel}}</strong> at <strong>{{timeLabel}}</strong> (Manila time).</p><p><a href=\"{{zoomLink}}\">Join on Zoom</a></p><p>We'll send you a few reminders before it starts — keep an eye on your email and phone.</p><p>{{siteUrl}}</p>",
+  },
+  {
+    key: "webinar_reminder_3d",
+    label: "Webinar reminder — 3 days before",
+    description: "Sent automatically 3 days before every webinar, to every confirmed registrant.",
+    vars: ["name", "webinarTitle", "dateLabel", "timeLabel", "zoomLink"],
+    defaultSubject: "3 days to go: {{webinarTitle}}",
+    defaultHtml:
+      "<p>Hi {{name}},</p><p><strong>{{webinarTitle}}</strong> is in 3 days — <strong>{{dateLabel}}</strong> at <strong>{{timeLabel}}</strong> (Manila time).</p><p><a href=\"{{zoomLink}}\">Join on Zoom</a></p>",
+  },
+  {
+    key: "webinar_reminder_2d",
+    label: "Webinar reminder — 2 days before",
+    description: "Sent automatically 2 days before every webinar, to every confirmed registrant.",
+    vars: ["name", "webinarTitle", "dateLabel", "timeLabel", "zoomLink"],
+    defaultSubject: "2 days to go: {{webinarTitle}}",
+    defaultHtml:
+      "<p>Hi {{name}},</p><p><strong>{{webinarTitle}}</strong> is in 2 days — <strong>{{dateLabel}}</strong> at <strong>{{timeLabel}}</strong> (Manila time).</p><p><a href=\"{{zoomLink}}\">Join on Zoom</a></p>",
+  },
+  {
+    key: "webinar_reminder_dayof",
+    label: "Webinar reminder — day of the webinar",
+    description: "Sent automatically the morning of every webinar, to every confirmed registrant.",
+    vars: ["name", "webinarTitle", "dateLabel", "timeLabel", "zoomLink"],
+    defaultSubject: "Today's the day: {{webinarTitle}}",
+    defaultHtml:
+      "<p>Hi {{name}},</p><p>Today's the day! <strong>{{webinarTitle}}</strong> starts today at <strong>{{timeLabel}}</strong> (Manila time).</p><p><a href=\"{{zoomLink}}\">Join on Zoom</a></p>",
+  },
+  {
+    key: "webinar_reminder_start",
+    label: "Webinar reminder — starting now",
+    description: "Sent automatically at the exact start time of every webinar, to every confirmed registrant.",
+    vars: ["name", "webinarTitle", "timeLabel", "zoomLink"],
+    defaultSubject: "{{webinarTitle}} is starting now",
+    defaultHtml:
+      "<p>Hi {{name}},</p><p><strong>{{webinarTitle}}</strong> is starting now.</p><p><a href=\"{{zoomLink}}\">Join on Zoom</a></p>",
   },
 ];
 

@@ -27,3 +27,26 @@ export type WebinarInput = Partial<Omit<WebinarRecord, "id" | "createdAt" | "upd
 
 /** Price (PHP) for an overflow seat once a webinar's free seats are gone. */
 export const WEBINAR_OVERFLOW_PRICE = 499;
+
+/** Manila-time date/time labels shared by the public webinars page and the registration
+ * confirmation/reminder messages, so a webinar's date always reads the same way everywhere. */
+export function formatWebinarDateLabel(iso: string) {
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return "";
+  return new Intl.DateTimeFormat("en-US", {
+    timeZone: "Asia/Manila",
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  }).format(date);
+}
+
+export function formatWebinarTimeLabel(iso: string) {
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return "";
+  return new Intl.DateTimeFormat("en-US", {
+    timeZone: "Asia/Manila",
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(date);
+}

@@ -1,5 +1,15 @@
 import { getResolvedIntegrationSettings } from "@/lib/integrations-store";
 
+/** GHL's API occasionally hangs instead of erroring. Every call here is awaited from a page
+ * render or a registration/login request, so an unbounded fetch would leave the visitor stuck
+ * on a loading screen indefinitely. A hard timeout turns that into a normal "skip and continue"
+ * failure instead. */
+const GHL_TIMEOUT_MS = 10_000;
+
+function ghlFetch(input: string, init: RequestInit = {}) {
+  return fetch(input, { ...init, signal: AbortSignal.timeout(GHL_TIMEOUT_MS) });
+}
+
 export type GhlContactInput = {
   name: string;
   email: string;
@@ -72,7 +82,7 @@ export async function syncContactToGhl(input: GhlContactInput) {
   };
 
   try {
-    const response = await fetch("https://services.leadconnectorhq.com/contacts/", {
+    const response = await ghlFetch("https://services.leadconnectorhq.com/contacts/", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -180,11 +190,10 @@ export async function listGhlLocationContacts() {
 
   try {
     for (let page = 1; page <= 20; page += 1) {
-      const response = await fetch("https://services.leadconnectorhq.com/contacts/search", {
+      const response = await ghlFetch("https://services.leadconnectorhq.com/contacts/search", {
         method: "POST",
         headers: ghlHeaders(token, true),
         cache: "no-store",
-        signal: AbortSignal.timeout(10_000),
         body: JSON.stringify({
           locationId,
           page,
@@ -213,10 +222,9 @@ export async function listGhlLocationContacts() {
       if (startAfterId) {
         query.set("startAfterId", startAfterId);
       }
-      const response = await fetch(`https://services.leadconnectorhq.com/contacts/?${query.toString()}`, {
+      const response = await ghlFetch(`https://services.leadconnectorhq.com/contacts/?${query.toString()}`, {
         headers: ghlHeaders(token),
         cache: "no-store",
-        signal: AbortSignal.timeout(10_000),
       });
       if (!response.ok) {
         break;
@@ -266,7 +274,7 @@ export async function searchGhlContactsByTags(tags: string[]) {
   for (const tag of wanted) {
     try {
       for (let page = 1; page <= 20; page += 1) {
-        const response = await fetch("https://services.leadconnectorhq.com/contacts/search", {
+        const response = await ghlFetch("https://services.leadconnectorhq.com/contacts/search", {
           method: "POST",
           headers: ghlHeaders(token, true),
           cache: "no-store",
@@ -304,7 +312,7 @@ export async function listGhlLocationTags() {
   }
 
   try {
-    const response = await fetch(`https://services.leadconnectorhq.com/locations/${locationId}/tags`, {
+    const response = await ghlFetch(`https://services.leadconnectorhq.com/locations/${locationId}/tags`, {
       headers: ghlHeaders(token),
       cache: "no-store",
     });
@@ -332,7 +340,7 @@ export async function addGhlContactTags(contactId: string, tags: string[]) {
   }
 
   try {
-    const response = await fetch(`https://services.leadconnectorhq.com/contacts/${contactId}/tags`, {
+    const response = await ghlFetch(`https://services.leadconnectorhq.com/contacts/${contactId}/tags`, {
       method: "POST",
       headers: ghlHeaders(token, true),
       body: JSON.stringify({ tags }),
@@ -356,7 +364,7 @@ export async function removeGhlContactTags(contactId: string, tags: string[]) {
   }
 
   try {
-    const response = await fetch(`https://services.leadconnectorhq.com/contacts/${contactId}/tags`, {
+    const response = await ghlFetch(`https://services.leadconnectorhq.com/contacts/${contactId}/tags`, {
       method: "DELETE",
       headers: ghlHeaders(token, true),
       body: JSON.stringify({ tags }),
@@ -385,7 +393,7 @@ export async function lookupGhlContact(email?: string, phone?: string) {
   if (phone) query.set("phone", phone);
 
   try {
-    const response = await fetch(`https://services.leadconnectorhq.com/contacts/lookup?${query.toString()}`, {
+    const response = await ghlFetch(`https://services.leadconnectorhq.com/contacts/lookup?${query.toString()}`, {
       headers: ghlHeaders(token),
       cache: "no-store",
     });
@@ -408,7 +416,7 @@ export async function getGhlContactById(contactId: string) {
   }
 
   try {
-    const response = await fetch(`https://services.leadconnectorhq.com/contacts/${contactId}`, {
+    const response = await ghlFetch(`https://services.leadconnectorhq.com/contacts/${contactId}`, {
       headers: ghlHeaders(token),
       cache: "no-store",
     });
@@ -431,7 +439,7 @@ export async function sendGhlSms(contactId: string, message: string) {
   }
 
   try {
-    const response = await fetch("https://services.leadconnectorhq.com/conversations/messages", {
+    const response = await ghlFetch("https://services.leadconnectorhq.com/conversations/messages", {
       method: "POST",
       headers: ghlHeaders(token, true),
       body: JSON.stringify({
@@ -468,7 +476,7 @@ export async function scheduleGhlMessage(input: {
   }
 
   try {
-    const response = await fetch("https://services.leadconnectorhq.com/conversations/messages", {
+    const response = await ghlFetch("https://services.leadconnectorhq.com/conversations/messages", {
       method: "POST",
       headers: ghlHeaders(token, true),
       body: JSON.stringify({

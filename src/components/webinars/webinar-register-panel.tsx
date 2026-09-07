@@ -11,10 +11,18 @@ import { WebinarRegisterModal } from "@/components/webinars/webinar-register-mod
 const PHOTO_TYPES = "image/jpeg,image/png,image/webp,image/gif";
 const RECEIPT_TYPES = "image/jpeg,image/png,image/webp,application/pdf";
 
-type RegisterResult = { ok: true; tier: "free" | "paid_overflow"; status?: string } | { ok: false; error: string };
+type RegisterResult =
+  | { ok: true; tier: "free" | "paid_overflow"; status?: string; needsPasswordSetup?: boolean }
+  | { ok: false; error: string; accountExists?: boolean; email?: string };
 type SignInResult =
-  | { ok: true; status: "registered"; tier: "free" | "paid_overflow" }
-  | { ok: true; status: "already_registered"; tier: "free" | "paid_overflow"; registrantStatus: string }
+  | { ok: true; status: "registered"; tier: "free" | "paid_overflow"; needsPasswordSetup?: boolean }
+  | {
+      ok: true;
+      status: "already_registered";
+      tier: "free" | "paid_overflow";
+      registrantStatus: string;
+      needsPasswordSetup?: boolean;
+    }
   | { ok: true; status: "needs_overflow_payment"; name: string; email: string; phone: string }
   | { ok: false; error: string };
 
@@ -63,6 +71,12 @@ export function WebinarRegisterPanel({
   const [signinPending, setSigninPending] = useState(false);
   const [signinError, setSigninError] = useState("");
 
+  // Set when the register form matches an email that already has an account — the API resets
+  // that account's password to the well-known temporary one (src/lib/auth-constants.ts) rather
+  // than silently attaching the registration, so this switches to the sign-in tab and tells the
+  // visitor how to get back in.
+  const [existingAccountEmail, setExistingAccountEmail] = useState("");
+
   function closeModal() {
     setOpen(false);
   }
@@ -72,6 +86,7 @@ export function WebinarRegisterPanel({
     setError("");
     setSigninError("");
     setPrefill(null);
+    setExistingAccountEmail("");
     setTab("register");
     closeModal();
   }
@@ -101,8 +116,19 @@ export function WebinarRegisterPanel({
       const response = await fetch(`/api/webinars/${webinarId}/register`, { method: "POST", body });
       const payload = (await response.json().catch(() => null)) as RegisterResult | null;
       if (!response.ok || !payload || !("ok" in payload) || !payload.ok) {
+        if (payload && "accountExists" in payload && payload.accountExists) {
+          setExistingAccountEmail(payload.email ?? "");
+          setTab("signin");
+          setPending(false);
+          return;
+        }
         setError((payload && "error" in payload && payload.error) || "We couldn't submit your registration. Try again.");
         setPending(false);
+        return;
+      }
+      if (payload.needsPasswordSetup) {
+        setOpen(false);
+        router.push("/account/password");
         return;
       }
       setOutcome(outcomeFor(payload.tier, payload.status));
@@ -140,6 +166,12 @@ export function WebinarRegisterPanel({
         setTab("register");
         setSigninPending(false);
         router.refresh();
+        return;
+      }
+
+      if (payload.needsPasswordSetup) {
+        setOpen(false);
+        router.push("/account/password");
         return;
       }
 
@@ -263,7 +295,9 @@ export function WebinarRegisterPanel({
             {tab === "signin" ? (
               <form onSubmit={onSignIn} className="grid gap-3">
                 <p className="m-0 text-sm text-white/70">
-                  Sign in and we&rsquo;ll reserve your seat for this webinar automatically.
+                  {existingAccountEmail
+                    ? "That email already has an account. Sign in with your email — first-time access uses the temporary password JDCELITESOCIETY, then you'll set a new password."
+                    : "Sign in and we’ll reserve your seat for this webinar automatically."}
                 </p>
 
                 <div className="grid gap-1.5">
@@ -275,6 +309,7 @@ export function WebinarRegisterPanel({
                     name="email"
                     type="email"
                     required
+                    defaultValue={existingAccountEmail}
                     className="rounded-lg border border-white/15 bg-black/30 px-3 py-2.5 text-sm text-white placeholder:text-white/35 outline-none focus:border-white/40"
                     placeholder="you@email.com"
                   />
@@ -437,7 +472,7 @@ export function WebinarRegisterPanel({
                     ? "Submitting..."
                     : isOverflow
                       ? `Reserve overflow seat · ₱${overflowPrice}`
-                      : "Reserve my Seat"}
+                      : "Reserve My Seat Now"}
                 </button>
               </form>
             )}

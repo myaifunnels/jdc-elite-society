@@ -16,7 +16,11 @@ function ghlHeaders(token: string) {
 
 async function fetchJson(url: string, token: string) {
   try {
-    const response = await fetch(url, { headers: ghlHeaders(token), cache: "no-store" });
+    const response = await fetch(url, {
+      headers: ghlHeaders(token),
+      cache: "no-store",
+      signal: AbortSignal.timeout(10_000),
+    });
     if (!response.ok) {
       return null;
     }

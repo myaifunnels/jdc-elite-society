@@ -17,6 +17,7 @@ export type WebinarRegistrant = {
   status: WebinarRegistrantStatus;
   paymentReceiptUrl: string;
   amountPaid: number;
+  remindersSent: string[];
   createdAt: string;
 };
 
@@ -67,6 +68,7 @@ async function ensureTable(client: Pool) {
     )
   `);
   await client.query(`ALTER TABLE webinar_registrants ADD COLUMN IF NOT EXISTS user_id TEXT NOT NULL DEFAULT ''`);
+  await client.query(`ALTER TABLE webinar_registrants ADD COLUMN IF NOT EXISTS reminders_sent TEXT NOT NULL DEFAULT ''`);
   await client.query(`
     CREATE INDEX IF NOT EXISTS webinar_registrants_webinar_idx
     ON webinar_registrants (webinar_id, status, tier)
@@ -91,6 +93,10 @@ function mapRow(row: Record<string, unknown>): WebinarRegistrant {
     status: row.status === "confirmed" ? "confirmed" : row.status === "rejected" ? "rejected" : "pending",
     paymentReceiptUrl: String(row.payment_receipt_url ?? ""),
     amountPaid: Number(row.amount_paid ?? 0),
+    remindersSent: String(row.reminders_sent ?? "")
+      .split(",")
+      .map((item) => item.trim())
+      .filter(Boolean),
     createdAt: new Date(String(row.created_at)).toISOString(),
   };
 }
@@ -149,6 +155,7 @@ export async function createRegistrant(input: CreateRegistrantInput): Promise<We
     status: input.tier === "free" ? "confirmed" : "pending",
     paymentReceiptUrl: input.paymentReceiptUrl ?? "",
     amountPaid: input.amountPaid ?? 0,
+    remindersSent: [],
     createdAt: new Date().toISOString(),
   };
 
@@ -265,6 +272,40 @@ export async function findRegistrantByUserAndWebinar(
       (item) => (userId && item.userId === userId) || (normalizedEmail && item.email === normalizedEmail),
     ) ?? null
   );
+}
+
+/** Records that a reminder stage (e.g. "3d", "2d", "dayof", "start") went out for this
+ * registrant, so the reminder sweep never sends the same stage twice. Idempotent — calling it
+ * again for a stage that's already recorded is a no-op. */
+export async function markReminderSent(id: string, stage: string): Promise<void> {
+  const memoryIndex = memoryRegistrants.findIndex((item) => item.id === id);
+  if (memoryIndex >= 0 && !memoryRegistrants[memoryIndex].remindersSent.includes(stage)) {
+    memoryRegistrants[memoryIndex] = {
+      ...memoryRegistrants[memoryIndex],
+      remindersSent: [...memoryRegistrants[memoryIndex].remindersSent, stage],
+    };
+  }
+
+  const client = getPool();
+  if (!client) return;
+
+  try {
+    await ensureTable(client);
+    await client.query(
+      `
+      UPDATE webinar_registrants
+      SET reminders_sent = CASE
+        WHEN reminders_sent = '' THEN $2
+        WHEN ',' || reminders_sent || ',' LIKE '%,' || $2 || ',%' THEN reminders_sent
+        ELSE reminders_sent || ',' || $2
+      END
+      WHERE id = $1
+      `,
+      [id, stage],
+    );
+  } catch (error) {
+    console.error("Failed to record webinar reminder", error);
+  }
 }
 
 /** Global queue of paid-overflow registrations awaiting admin review, across every webinar. */

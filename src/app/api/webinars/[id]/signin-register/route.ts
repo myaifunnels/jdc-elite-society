@@ -3,6 +3,7 @@ import { z } from "zod";
 
 import { authenticateUser } from "@/lib/auth-store";
 import { sessionCookieName } from "@/lib/session";
+import { notifyWebinarRegistrationConfirmed } from "@/lib/webinar-notify";
 import { getWebinar } from "@/lib/webinars-store";
 import {
   createRegistrant,
@@ -88,6 +89,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
         status: "already_registered",
         tier: existing.tier,
         registrantStatus: existing.status,
+        needsPasswordSetup: !user.passwordSet,
       }),
     );
   }
@@ -118,7 +120,19 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
       phone: user.phone,
       tier: "free",
     });
-    return withSession(NextResponse.json({ ok: true, status: "registered", tier: registrant.tier }));
+    if (registrant.status === "confirmed") {
+      notifyWebinarRegistrationConfirmed(webinar, registrant).catch((error) =>
+        console.error("Webinar registration confirmation notify failed", error),
+      );
+    }
+    return withSession(
+      NextResponse.json({
+        ok: true,
+        status: "registered",
+        tier: registrant.tier,
+        needsPasswordSetup: !user.passwordSet,
+      }),
+    );
   } catch (error) {
     return NextResponse.json(
       { ok: false, error: error instanceof Error ? error.message : "I couldn't save your registration." },

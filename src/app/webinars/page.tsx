@@ -11,7 +11,7 @@ import { WebinarParticles } from "@/components/webinars/webinar-particles";
 import { WebinarRegisterPanel } from "@/components/webinars/webinar-register-panel";
 import { EpisodeThumb } from "@/components/webinars/webinar-thumb";
 import { getSessionUser } from "@/lib/session";
-import { WEBINAR_OVERFLOW_PRICE } from "@/lib/webinars";
+import { WEBINAR_OVERFLOW_PRICE, formatWebinarDateLabel, formatWebinarTimeLabel } from "@/lib/webinars";
 import { getFeaturedWebinar, listWebinars } from "@/lib/webinars-store";
 import { findRegistrantByUserAndWebinar, getFreeSeatsLeft, listRegistrants } from "@/lib/webinar-registrants-store";
 
@@ -22,26 +22,8 @@ export const metadata: Metadata = {
   alternates: { canonical: "/webinars" },
 };
 
-function formatDateLabel(iso: string) {
-  const date = new Date(iso);
-  if (Number.isNaN(date.getTime())) return "";
-  return new Intl.DateTimeFormat("en-US", {
-    timeZone: "Asia/Manila",
-    month: "long",
-    day: "numeric",
-    year: "numeric",
-  }).format(date);
-}
-
-function formatTimeLabel(iso: string) {
-  const date = new Date(iso);
-  if (Number.isNaN(date.getTime())) return "";
-  return new Intl.DateTimeFormat("en-US", {
-    timeZone: "Asia/Manila",
-    hour: "numeric",
-    minute: "2-digit",
-  }).format(date);
-}
+const formatDateLabel = formatWebinarDateLabel;
+const formatTimeLabel = formatWebinarTimeLabel;
 
 function SeatsPill({ freeSeatsLeft }: { freeSeatsLeft: number }) {
   if (freeSeatsLeft <= 0) {

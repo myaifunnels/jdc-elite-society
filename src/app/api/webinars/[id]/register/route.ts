@@ -1,11 +1,11 @@
-import { randomBytes } from "node:crypto";
-
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { createUser, findUserByEmailOrPhone } from "@/lib/auth-store";
+import { TEMPORARY_MEMBER_PASSWORD } from "@/lib/auth-constants";
+import { createUser, findUserByEmailOrPhone, issueTemporaryPassword } from "@/lib/auth-store";
 import { storeRegistrantPhoto, storeWebinarReceipt } from "@/lib/r2-upload";
 import { getSessionUser, sessionCookieName } from "@/lib/session";
+import { notifyWebinarRegistrationConfirmed } from "@/lib/webinar-notify";
 import { WEBINAR_OVERFLOW_PRICE } from "@/lib/webinars";
 import { getWebinar } from "@/lib/webinars-store";
 import { createRegistrant, getFreeSeatsLeft } from "@/lib/webinar-registrants-store";
@@ -45,41 +45,58 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
 
   // Resolve which account this registration belongs to, in priority order:
   // 1. An already-logged-in visitor — use their session, no lookup needed.
-  // 2. An existing account matched by email or phone — link silently, no login required.
-  // 3. A brand-new person — auto-create a throwaway-password account and sign them in.
-  // This never influences seat tier and is purely additive to the existing seat logic below.
+  // 2. An existing account matched by email or phone — this is *their* account, so we never
+  //    silently attach a registration to it without proof of ownership. Instead, issue the
+  //    well-known temporary password (same one used everywhere else in this codebase — see
+  //    src/lib/auth-constants.ts) and tell the client to switch to the sign-in tab, which
+  //    completes the registration only after a successful login (see signin-register/route.ts).
+  // 3. A brand-new person — create their account with that same temporary password and sign
+  //    them in immediately (no identity to verify — the account didn't exist a moment ago), then
+  //    have the client route them through /account/password to upload a photo and set a real
+  //    password, exactly like every other auto-created account in this codebase.
   let userId = "";
   let newAccountId = "";
+  let needsPasswordSetup = false;
 
   const sessionUser = await getSessionUser();
   if (sessionUser) {
     userId = sessionUser.id;
+    needsPasswordSetup = !sessionUser.passwordSet;
   } else {
     const existingUser = await findUserByEmailOrPhone(parsed.data.email, parsed.data.phone);
     if (existingUser) {
-      userId = existingUser.id;
-    } else {
-      try {
-        const created = await createUser({
-          name: parsed.data.name,
-          email: parsed.data.email,
-          password: randomBytes(18).toString("hex"),
-          role: "member",
-          phone: parsed.data.phone,
-          memberships: ["jes"],
-          // A free webinar registration is not a paid membership — do not grant paid-content
-          // access (paymentVerified) or mark the profile complete just from registering.
-          profileComplete: false,
-          paymentVerified: false,
-          passwordSet: false,
-        });
-        userId = created.id;
-        newAccountId = created.id;
-      } catch (error) {
-        // If account creation races with another request for the same email/phone, just
-        // proceed without a linked account rather than failing the registration.
-        console.error("Failed to auto-create webinar registrant account", error);
+      if (existingUser.role !== "admin" && existingUser.role !== "partner") {
+        await issueTemporaryPassword(existingUser.id);
       }
+      return NextResponse.json({
+        ok: false,
+        accountExists: true,
+        email: existingUser.email,
+        error: "This email already has an account. Sign in to finish registering.",
+      });
+    }
+
+    try {
+      const created = await createUser({
+        name: parsed.data.name,
+        email: parsed.data.email,
+        password: TEMPORARY_MEMBER_PASSWORD,
+        role: "member",
+        phone: parsed.data.phone,
+        memberships: ["jes"],
+        // A free webinar registration is not a paid membership — do not grant paid-content
+        // access (paymentVerified) or mark the profile complete just from registering.
+        profileComplete: false,
+        paymentVerified: false,
+        passwordSet: false,
+      });
+      userId = created.id;
+      newAccountId = created.id;
+      needsPasswordSetup = true;
+    } catch (error) {
+      // If account creation races with another request for the same email/phone, just
+      // proceed without a linked account rather than failing the registration.
+      console.error("Failed to auto-create webinar registrant account", error);
     }
   }
 
@@ -126,7 +143,14 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
         photoUrl,
         tier: "free",
       });
-      return withSession(NextResponse.json({ ok: true, tier: registrant.tier, status: registrant.status }));
+      if (registrant.status === "confirmed") {
+        notifyWebinarRegistrationConfirmed(webinar, registrant).catch((error) =>
+          console.error("Webinar registration confirmation notify failed", error),
+        );
+      }
+      return withSession(
+        NextResponse.json({ ok: true, tier: registrant.tier, status: registrant.status, needsPasswordSetup }),
+      );
     } catch (error) {
       return NextResponse.json(
         { error: error instanceof Error ? error.message : "I couldn't save your registration." },
@@ -165,7 +189,9 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
       paymentReceiptUrl: receiptUrl,
       amountPaid: WEBINAR_OVERFLOW_PRICE,
     });
-    return withSession(NextResponse.json({ ok: true, tier: registrant.tier, status: registrant.status }));
+    return withSession(
+      NextResponse.json({ ok: true, tier: registrant.tier, status: registrant.status, needsPasswordSetup }),
+    );
   } catch (error) {
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "I couldn't save your registration." },
