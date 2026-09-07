@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 
-import { isGhlReady, isMapsReady, isR2Ready, isTextBeeReady } from "@/lib/integrations";
+import { isGhlReady, isGoogleAuthReady, isMapsReady, isR2Ready, isTextBeeReady } from "@/lib/integrations";
 import { getResolvedIntegrationSettings, saveIntegrationSettings } from "@/lib/integrations-store";
 import { migrateDataUrlFilesToR2 } from "@/lib/r2-migrate";
 import { requireCapability } from "@/lib/session";
@@ -34,6 +34,35 @@ export async function saveGoogleMapsIntegration(
   revalidatePath("/contact");
 
   return { success: "Google Maps key saved." };
+}
+
+export async function saveGoogleAuthIntegration(
+  _prevState: IntegrationFormState,
+  formData: FormData,
+): Promise<IntegrationFormState> {
+  await requireCapability("integrations");
+
+  const incoming = {
+    googleClientId: String(formData.get("googleClientId") ?? "").trim(),
+    googleClientSecret: String(formData.get("googleClientSecret") ?? "").trim(),
+  };
+  const current = await getResolvedIntegrationSettings();
+  const preview = {
+    ...current,
+    googleClientId: incoming.googleClientId || current.googleClientId,
+    googleClientSecret: incoming.googleClientSecret || current.googleClientSecret,
+  };
+
+  if (!isGoogleAuthReady(preview)) {
+    return { error: "Paste both the Google OAuth Client ID and Client Secret." };
+  }
+
+  await saveIntegrationSettings(incoming);
+  revalidatePath("/dashboard/integrations");
+  revalidatePath("/login");
+  revalidatePath("/register");
+
+  return { success: "Google Sign-In credentials saved." };
 }
 
 export async function saveR2Integration(

@@ -14,6 +14,31 @@ export function GoogleMapsLogo({ size = 28 }: LogoProps) {
   );
 }
 
+/** Multi-color Google "G" mark on a white tile — used for Google Sign-In credentials. */
+export function GoogleLogo({ size = 28 }: LogoProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 40 40" fill="none" aria-hidden="true">
+      <rect width="40" height="40" rx="10" fill="#FFFFFF" />
+      <path
+        fill="#EA4335"
+        d="M20 11.8c2.7 0 4.9.9 6.6 2.6l5-5C28.7 6.5 24.7 4.8 20 4.8 12.9 4.8 6.8 8.9 3.9 14.9l5.8 4.5C11.2 14.7 15.2 11.8 20 11.8z"
+      />
+      <path
+        fill="#4285F4"
+        d="M35.1 20.9c0-1.2-.1-2.4-.3-3.5H20v7h8.5c-.4 2.1-1.6 3.9-3.4 5.1l5.4 4.2c3.2-2.9 5-7.2 5-12.8z"
+      />
+      <path
+        fill="#FBBC05"
+        d="M9.7 22.6a10.9 10.9 0 0 1 0-5.2l-5.8-4.5a17.8 17.8 0 0 0 0 14.2l5.8-4.5z"
+      />
+      <path
+        fill="#34A853"
+        d="M20 36c4.7 0 8.7-1.5 11.6-4.2l-5.4-4.2c-1.5 1-3.6 1.7-6.2 1.7-4.8 0-8.8-2.9-10.3-7.1l-5.8 4.5C6.8 31.1 12.9 36 20 36z"
+      />
+    </svg>
+  );
+}
+
 /** Cloudflare-orange cloud mark. */
 export function CloudflareLogo({ size = 28 }: LogoProps) {
   return (

@@ -3,6 +3,7 @@ import type { ComponentType } from "react";
 
 import {
   GhlIntegrationForm,
+  GoogleAuthIntegrationForm,
   GoogleMapsIntegrationForm,
   R2IntegrationForm,
   TextBeeIntegrationForm,
@@ -11,17 +12,25 @@ import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import {
   CloudflareLogo,
   GoHighLevelLogo,
+  GoogleLogo,
   GoogleMapsLogo,
   TextBeeLogo,
 } from "@/components/dashboard/integration-logos";
 import { MigrateFilesToR2Button } from "@/components/dashboard/migrate-files-button";
 import { AddressMap } from "@/components/maps/address-map";
-import { isGhlReady, isMapsReady, isR2Ready, isTextBeeReady, maskSecret } from "@/lib/integrations";
+import {
+  isGhlReady,
+  isGoogleAuthReady,
+  isMapsReady,
+  isR2Ready,
+  isTextBeeReady,
+  maskSecret,
+} from "@/lib/integrations";
 import { getResolvedIntegrationSettings } from "@/lib/integrations-store";
 import { requireCapability } from "@/lib/session";
 import { siteUrl } from "@/lib/site";
 
-type AppId = "maps" | "r2" | "ghl" | "textbee";
+type AppId = "maps" | "googleAuth" | "r2" | "ghl" | "textbee";
 
 type AppEntry = {
   id: AppId;
@@ -41,6 +50,7 @@ export default async function IntegrationsPage({
 
   const settings = await getResolvedIntegrationSettings();
   const mapsReady = isMapsReady(settings);
+  const googleAuthReady = isGoogleAuthReady(settings);
   const r2Ready = isR2Ready(settings);
   const ghlReady = isGhlReady(settings);
   const textbeeReady = isTextBeeReady(settings);
@@ -52,6 +62,13 @@ export default async function IntegrationsPage({
       tagline: "Live map previews on contact dashboards.",
       logo: GoogleMapsLogo,
       connected: mapsReady,
+    },
+    {
+      id: "googleAuth",
+      name: "Google Sign-In",
+      tagline: "Lets members sign in or register with Google on Login/Register.",
+      logo: GoogleLogo,
+      connected: googleAuthReady,
     },
     {
       id: "r2",
@@ -144,6 +161,24 @@ export default async function IntegrationsPage({
                 <AddressMap address="Makati City, Metro Manila" embedKey={settings.googleMapsEmbedKey} />
               </div>
             </details>
+          </>
+        ) : null}
+
+        {active.id === "googleAuth" ? (
+          <>
+            <p className="app-store-detail-meta">
+              Client ID: <code>{settings.googleClientId || "not set"}</code> · Client Secret:{" "}
+              <code>{maskSecret(settings.googleClientSecret)}</code>
+            </p>
+            <GoogleAuthIntegrationForm configured={googleAuthReady} clientId={settings.googleClientId} />
+            <p className="app-store-detail-meta" style={{ marginTop: "1rem" }}>
+              In the Google Cloud Console, create an OAuth 2.0 Client ID (Web application) and add this
+              authorized redirect URI:
+              <br />
+              <code>{siteUrl}/api/auth/google/callback</code>
+              <br />
+              Then paste the Client ID and Client Secret above — no redeploy needed.
+            </p>
           </>
         ) : null}
 

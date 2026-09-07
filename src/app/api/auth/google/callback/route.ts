@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { setSessionCookie } from "@/app/login/actions";
 import { GOOGLE_OAUTH_COOKIE } from "@/app/api/auth/google/route";
 import { findOrCreateGoogleUser } from "@/lib/auth-store";
+import { getResolvedIntegrationSettings } from "@/lib/integrations-store";
 import { readSignedValue } from "@/lib/session";
 
 type GoogleTokenResponse = {
@@ -58,8 +59,9 @@ export async function GET(request: NextRequest) {
     return failure(request, "google_failed");
   }
 
-  const clientId = process.env.GOOGLE_CLIENT_ID;
-  const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+  const settings = await getResolvedIntegrationSettings();
+  const clientId = settings.googleClientId;
+  const clientSecret = settings.googleClientSecret;
   if (!clientId || !clientSecret) {
     return failure(request, "google_not_configured");
   }

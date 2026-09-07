@@ -1,6 +1,7 @@
 import { createHash, randomBytes } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 
+import { getResolvedIntegrationSettings } from "@/lib/integrations-store";
 import { signValue } from "@/lib/session";
 
 // Short-lived cookie that carries the OAuth `state` + PKCE `code_verifier`
@@ -11,7 +12,8 @@ export const GOOGLE_OAUTH_COOKIE = "coach-jdc-google-oauth";
 const GOOGLE_OAUTH_COOKIE_MAX_AGE = 60 * 10; // 10 minutes
 
 export async function GET(request: NextRequest) {
-  const clientId = process.env.GOOGLE_CLIENT_ID;
+  const settings = await getResolvedIntegrationSettings();
+  const clientId = settings.googleClientId;
 
   if (!clientId) {
     return NextResponse.redirect(new URL("/login?error=google_not_configured", request.url));

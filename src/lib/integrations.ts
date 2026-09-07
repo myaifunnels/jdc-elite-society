@@ -1,5 +1,7 @@
 export type IntegrationSettings = {
   googleMapsEmbedKey: string;
+  googleClientId: string;
+  googleClientSecret: string;
   r2AccountId: string;
   r2AccessKeyId: string;
   r2SecretAccessKey: string;
@@ -14,6 +16,8 @@ export type IntegrationSettings = {
 
 export const emptyIntegrationSettings: IntegrationSettings = {
   googleMapsEmbedKey: "",
+  googleClientId: "",
+  googleClientSecret: "",
   r2AccountId: "",
   r2AccessKeyId: "",
   r2SecretAccessKey: "",
@@ -29,6 +33,8 @@ export const emptyIntegrationSettings: IntegrationSettings = {
 export function envIntegrationSettings(): IntegrationSettings {
   return {
     googleMapsEmbedKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_EMBED_KEY ?? "",
+    googleClientId: process.env.GOOGLE_CLIENT_ID ?? "",
+    googleClientSecret: process.env.GOOGLE_CLIENT_SECRET ?? "",
     r2AccountId: process.env.R2_ACCOUNT_ID ?? "",
     r2AccessKeyId: process.env.R2_ACCESS_KEY_ID ?? "",
     r2SecretAccessKey: process.env.R2_SECRET_ACCESS_KEY ?? "",
@@ -48,6 +54,8 @@ export function mergeIntegrationSettings(
 ): IntegrationSettings {
   return {
     googleMapsEmbedKey: saved?.googleMapsEmbedKey || env.googleMapsEmbedKey,
+    googleClientId: saved?.googleClientId || env.googleClientId,
+    googleClientSecret: saved?.googleClientSecret || env.googleClientSecret,
     r2AccountId: saved?.r2AccountId || env.r2AccountId,
     r2AccessKeyId: saved?.r2AccessKeyId || env.r2AccessKeyId,
     r2SecretAccessKey: saved?.r2SecretAccessKey || env.r2SecretAccessKey,
@@ -73,6 +81,10 @@ export function isR2Ready(settings: IntegrationSettings) {
       settings.r2Bucket &&
       settings.r2PublicUrl,
   );
+}
+
+export function isGoogleAuthReady(settings: IntegrationSettings) {
+  return Boolean(settings.googleClientId && settings.googleClientSecret);
 }
 
 export function isGhlReady(settings: IntegrationSettings) {

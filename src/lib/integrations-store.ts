@@ -68,6 +68,14 @@ async function ensureTable(client: Pool) {
     ALTER TABLE integration_settings
     ADD COLUMN IF NOT EXISTS sms_from_number TEXT
   `);
+  await client.query(`
+    ALTER TABLE integration_settings
+    ADD COLUMN IF NOT EXISTS google_client_id TEXT
+  `);
+  await client.query(`
+    ALTER TABLE integration_settings
+    ADD COLUMN IF NOT EXISTS google_client_secret TEXT
+  `);
   tableReady = true;
 }
 
@@ -78,6 +86,8 @@ function mapRow(row: Record<string, unknown> | undefined): IntegrationSettings |
 
   return {
     googleMapsEmbedKey: String(row.google_maps_embed_key ?? ""),
+    googleClientId: String(row.google_client_id ?? ""),
+    googleClientSecret: String(row.google_client_secret ?? ""),
     r2AccountId: String(row.r2_account_id ?? ""),
     r2AccessKeyId: String(row.r2_access_key_id ?? ""),
     r2SecretAccessKey: String(row.r2_secret_access_key ?? ""),
@@ -121,6 +131,8 @@ export async function saveIntegrationSettings(
   const current = (await getSavedIntegrationSettings()) ?? emptyIntegrationSettings;
   const next: IntegrationSettings = {
     googleMapsEmbedKey: incoming.googleMapsEmbedKey || current.googleMapsEmbedKey,
+    googleClientId: incoming.googleClientId || current.googleClientId,
+    googleClientSecret: incoming.googleClientSecret || current.googleClientSecret,
     r2AccountId: incoming.r2AccountId || current.r2AccountId,
     r2AccessKeyId: incoming.r2AccessKeyId || current.r2AccessKeyId,
     r2SecretAccessKey: incoming.r2SecretAccessKey || current.r2SecretAccessKey,
@@ -154,9 +166,11 @@ export async function saveIntegrationSettings(
           textbee_api_key,
           textbee_device_id,
           sms_from_number,
+          google_client_id,
+          google_client_secret,
           updated_at
         )
-        VALUES (1, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW())
+        VALUES (1, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, NOW())
         ON CONFLICT (id) DO UPDATE SET
           google_maps_embed_key = EXCLUDED.google_maps_embed_key,
           r2_account_id = EXCLUDED.r2_account_id,
@@ -169,6 +183,8 @@ export async function saveIntegrationSettings(
           textbee_api_key = EXCLUDED.textbee_api_key,
           textbee_device_id = EXCLUDED.textbee_device_id,
           sms_from_number = EXCLUDED.sms_from_number,
+          google_client_id = EXCLUDED.google_client_id,
+          google_client_secret = EXCLUDED.google_client_secret,
           updated_at = NOW()
         `,
         [
@@ -183,6 +199,8 @@ export async function saveIntegrationSettings(
           next.textbeeApiKey,
           next.textbeeDeviceId,
           next.smsFromNumber,
+          next.googleClientId,
+          next.googleClientSecret,
         ],
       );
     } catch (error) {

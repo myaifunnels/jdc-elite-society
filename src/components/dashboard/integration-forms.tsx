@@ -5,6 +5,7 @@ import { useActionState } from "react";
 import {
   IntegrationFormState,
   saveGhlIntegration,
+  saveGoogleAuthIntegration,
   saveGoogleMapsIntegration,
   saveR2Integration,
   saveTextBeeIntegration,
@@ -40,6 +41,40 @@ export function GoogleMapsIntegrationForm({
         className="button-primary pressable w-fit rounded-full px-4 py-2 text-sm font-semibold disabled:opacity-70"
       >
         {pending ? "Saving..." : "Save Google Maps"}
+      </button>
+    </StickyForm>
+  );
+}
+
+export function GoogleAuthIntegrationForm({
+  configured,
+  clientId,
+}: {
+  configured: boolean;
+  clientId: string;
+}) {
+  const [state, formAction, pending] = useActionState(saveGoogleAuthIntegration, initialState);
+
+  return (
+    <StickyForm storageKey="coach-jdc-google-auth-integration" action={formAction} className="mt-6 grid gap-4">
+      <FloatField label="Enter your Google OAuth Client ID">
+        <input name="googleClientId" autoComplete="off" defaultValue={clientId} placeholder=" " />
+      </FloatField>
+      <FloatField
+        label={configured ? `Enter a new Client Secret (${maskSecret("set")})` : "Enter your Google OAuth Client Secret"}
+      >
+        <input name="googleClientSecret" type="password" autoComplete="off" placeholder=" " />
+      </FloatField>
+
+      {state.error ? <p className="text-sm text-red-500">{state.error}</p> : null}
+      {state.success ? <p className="text-sm text-emerald-400">{state.success}</p> : null}
+
+      <button
+        type="submit"
+        disabled={pending}
+        className="button-primary pressable w-fit rounded-full px-4 py-2 text-sm font-semibold disabled:opacity-70"
+      >
+        {pending ? "Saving..." : "Save Google Sign-In"}
       </button>
     </StickyForm>
   );
