@@ -187,42 +187,47 @@ export const SMS_TEMPLATE_DEFINITIONS: SmsTemplateDefinition[] = [
   {
     key: "webinar_registration_confirmed",
     label: "Webinar registration confirmed",
-    description: "Sent the moment someone registers for a webinar, whichever webinar it is.",
-    vars: ["name", "webinarTitle", "dateLabel", "timeLabel", "zoomLink"],
+    description:
+      "Sent the moment someone registers for a webinar, whichever webinar it is. No links in SMS by design — the Zoom link goes out by email and lives on My Webinars.",
+    vars: ["name", "webinarTitle", "dateLabel", "timeLabel"],
     defaultBody:
-      "Hi {{name}},\n\nYou're in! {{webinarTitle}} is on {{dateLabel}} at {{timeLabel}} (Manila time).\n\nJoin link: {{zoomLink}}\n\nBest Regards,\n-Team JDC Elite Society",
+      "Hi {{name}},\n\nYou're in! {{webinarTitle}} is on {{dateLabel}} at {{timeLabel}} (Manila time).\n\nCheck your email for the Zoom link, or open My Webinars on your dashboard.\n\nBest Regards,\n-Team JDC Elite Society",
   },
   {
     key: "webinar_reminder_3d",
     label: "Webinar reminder — 3 days before",
-    description: "Sent automatically 3 days before every webinar, to every confirmed registrant.",
-    vars: ["name", "webinarTitle", "dateLabel", "timeLabel", "zoomLink"],
+    description:
+      "Sent automatically 3 days before every webinar, to every confirmed registrant. No links in SMS by design.",
+    vars: ["name", "webinarTitle", "dateLabel", "timeLabel"],
     defaultBody:
-      "Hi {{name}},\n\n{{webinarTitle}} is in 3 days — {{dateLabel}} at {{timeLabel}} (Manila time).\n\nJoin link: {{zoomLink}}\n\nBest Regards,\n-Team JDC Elite Society",
+      "Hi {{name}},\n\n{{webinarTitle}} is in 3 days — {{dateLabel}} at {{timeLabel}} (Manila time).\n\nCheck your email or My Webinars on your dashboard for the Zoom link.\n\nBest Regards,\n-Team JDC Elite Society",
   },
   {
     key: "webinar_reminder_2d",
     label: "Webinar reminder — 2 days before",
-    description: "Sent automatically 2 days before every webinar, to every confirmed registrant.",
-    vars: ["name", "webinarTitle", "dateLabel", "timeLabel", "zoomLink"],
+    description:
+      "Sent automatically 2 days before every webinar, to every confirmed registrant. No links in SMS by design.",
+    vars: ["name", "webinarTitle", "dateLabel", "timeLabel"],
     defaultBody:
-      "Hi {{name}},\n\n{{webinarTitle}} is in 2 days — {{dateLabel}} at {{timeLabel}} (Manila time).\n\nJoin link: {{zoomLink}}\n\nBest Regards,\n-Team JDC Elite Society",
+      "Hi {{name}},\n\n{{webinarTitle}} is in 2 days — {{dateLabel}} at {{timeLabel}} (Manila time).\n\nCheck your email or My Webinars on your dashboard for the Zoom link.\n\nBest Regards,\n-Team JDC Elite Society",
   },
   {
     key: "webinar_reminder_dayof",
     label: "Webinar reminder — day of the webinar",
-    description: "Sent automatically the morning of every webinar, to every confirmed registrant.",
-    vars: ["name", "webinarTitle", "dateLabel", "timeLabel", "zoomLink"],
+    description:
+      "Sent automatically the morning of every webinar, to every confirmed registrant. No links in SMS by design.",
+    vars: ["name", "webinarTitle", "dateLabel", "timeLabel"],
     defaultBody:
-      "Hi {{name}},\n\nToday's the day! {{webinarTitle}} starts today at {{timeLabel}} (Manila time).\n\nJoin link: {{zoomLink}}\n\nBest Regards,\n-Team JDC Elite Society",
+      "Hi {{name}},\n\nToday's the day! {{webinarTitle}} starts today at {{timeLabel}} (Manila time).\n\nCheck your email or My Webinars on your dashboard for the Zoom link.\n\nBest Regards,\n-Team JDC Elite Society",
   },
   {
     key: "webinar_reminder_start",
     label: "Webinar reminder — starting now",
-    description: "Sent automatically at the exact start time of every webinar, to every confirmed registrant.",
-    vars: ["name", "webinarTitle", "timeLabel", "zoomLink"],
+    description:
+      "Sent automatically at the exact start time of every webinar, to every confirmed registrant. No links in SMS by design.",
+    vars: ["name", "webinarTitle", "timeLabel"],
     defaultBody:
-      "Hi {{name}},\n\n{{webinarTitle}} is starting now.\n\nJoin link: {{zoomLink}}\n\nBest Regards,\n-Team JDC Elite Society",
+      "Hi {{name}},\n\n{{webinarTitle}} is starting now.\n\nCheck your email or My Webinars on your dashboard for the Zoom link.\n\nBest Regards,\n-Team JDC Elite Society",
   },
 ];
 
