@@ -27,6 +27,7 @@ export function WebinarFormModal({
         open={open}
         onClose={() => setOpen(false)}
         title={webinar ? `Edit "${webinar.title || "webinar"}"` : "Schedule a webinar"}
+        size="lg"
       >
         <WebinarForm webinar={webinar} onDone={() => setOpen(false)} />
       </WebinarRegisterModal>

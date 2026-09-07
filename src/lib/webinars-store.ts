@@ -36,6 +36,7 @@ function seedRecord(): WebinarRecord {
     thumbnailUrl: "",
     ctaLabel: "Reserve your free seat",
     ctaHref: "/passive-income",
+    zoomLink: "",
     interestedCount: 0,
     isFeatured: true,
     totalSeats: 100,
@@ -70,6 +71,7 @@ async function ensureTable(client: Pool) {
   await client.query(`ALTER TABLE webinars ADD COLUMN IF NOT EXISTS interested_count INTEGER NOT NULL DEFAULT 0`);
   await client.query(`ALTER TABLE webinars ADD COLUMN IF NOT EXISTS is_featured BOOLEAN NOT NULL DEFAULT FALSE`);
   await client.query(`ALTER TABLE webinars ADD COLUMN IF NOT EXISTS total_seats INTEGER NOT NULL DEFAULT 100`);
+  await client.query(`ALTER TABLE webinars ADD COLUMN IF NOT EXISTS zoom_link TEXT NOT NULL DEFAULT ''`);
   tableReady = true;
 
   const existing = await client.query("SELECT COUNT(*)::int AS count FROM webinars");
@@ -80,8 +82,8 @@ async function ensureTable(client: Pool) {
       `
       INSERT INTO webinars (
         id, episode_number, season_label, title, tagline, description, host_name, host_title,
-        scheduled_at, thumbnail_url, cta_label, cta_href, interested_count, is_featured, total_seats, created_at, updated_at
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
+        scheduled_at, thumbnail_url, cta_label, cta_href, zoom_link, interested_count, is_featured, total_seats, created_at, updated_at
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
       ON CONFLICT (id) DO NOTHING
       `,
       [
@@ -97,6 +99,7 @@ async function ensureTable(client: Pool) {
         seed.thumbnailUrl,
         seed.ctaLabel,
         seed.ctaHref,
+        seed.zoomLink,
         seed.interestedCount,
         seed.isFeatured,
         seed.totalSeats,
@@ -121,6 +124,7 @@ function mapRow(row: Record<string, unknown>): WebinarRecord {
     thumbnailUrl: String(row.thumbnail_url ?? ""),
     ctaLabel: String(row.cta_label ?? ""),
     ctaHref: String(row.cta_href ?? ""),
+    zoomLink: String(row.zoom_link ?? ""),
     interestedCount: Number(row.interested_count ?? 0),
     isFeatured: row.is_featured === true || row.is_featured === "t",
     totalSeats: Number(row.total_seats ?? 100),
@@ -229,6 +233,7 @@ export async function saveWebinar(input: WebinarInput): Promise<WebinarRecord> {
     thumbnailUrl: input.thumbnailUrl ?? existing?.thumbnailUrl ?? "",
     ctaLabel: input.ctaLabel ?? existing?.ctaLabel ?? "",
     ctaHref: input.ctaHref ?? existing?.ctaHref ?? "",
+    zoomLink: input.zoomLink ?? existing?.zoomLink ?? "",
     interestedCount: input.interestedCount ?? existing?.interestedCount ?? 0,
     isFeatured: input.isFeatured ?? existing?.isFeatured ?? false,
     totalSeats: input.totalSeats ?? existing?.totalSeats ?? 100,
@@ -258,8 +263,8 @@ export async function saveWebinar(input: WebinarInput): Promise<WebinarRecord> {
       `
       INSERT INTO webinars (
         id, episode_number, season_label, title, tagline, description, host_name, host_title,
-        scheduled_at, thumbnail_url, cta_label, cta_href, interested_count, is_featured, total_seats, created_at, updated_at
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
+        scheduled_at, thumbnail_url, cta_label, cta_href, zoom_link, interested_count, is_featured, total_seats, created_at, updated_at
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
       ON CONFLICT (id) DO UPDATE SET
         episode_number = EXCLUDED.episode_number,
         season_label = EXCLUDED.season_label,
@@ -272,6 +277,7 @@ export async function saveWebinar(input: WebinarInput): Promise<WebinarRecord> {
         thumbnail_url = EXCLUDED.thumbnail_url,
         cta_label = EXCLUDED.cta_label,
         cta_href = EXCLUDED.cta_href,
+        zoom_link = EXCLUDED.zoom_link,
         interested_count = EXCLUDED.interested_count,
         is_featured = EXCLUDED.is_featured,
         total_seats = EXCLUDED.total_seats,
@@ -290,6 +296,7 @@ export async function saveWebinar(input: WebinarInput): Promise<WebinarRecord> {
         record.thumbnailUrl,
         record.ctaLabel,
         record.ctaHref,
+        record.zoomLink,
         record.interestedCount,
         record.isFeatured,
         record.totalSeats,

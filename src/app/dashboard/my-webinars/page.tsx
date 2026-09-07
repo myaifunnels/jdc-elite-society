@@ -2,6 +2,7 @@ import { CalendarDays, Video } from "lucide-react";
 import Link from "next/link";
 
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
+import { ZoomLogo } from "@/components/dashboard/integration-logos";
 import { EpisodeThumb } from "@/components/webinars/webinar-thumb";
 import { requireCapability } from "@/lib/session";
 import { getWebinar } from "@/lib/webinars-store";
@@ -74,13 +75,26 @@ export default async function MyWebinarsPage() {
                 <p className="m-0 text-xs text-[var(--muted)]">
                   Seat type: {registrant.tier === "paid_overflow" ? "Overflow (paid)" : "Free"}
                 </p>
-                <Link
-                  href="/webinars"
-                  className="mt-auto inline-flex items-center gap-1.5 pt-3 text-sm font-bold text-[var(--brand)]"
-                >
-                  <Video aria-hidden size={14} />
-                  View webinar details
-                </Link>
+                <div className="mt-auto grid gap-2 pt-3">
+                  {registrant.status === "confirmed" && webinar.zoomLink ? (
+                    <Link
+                      href={webinar.zoomLink}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="button-primary pressable inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-extrabold"
+                    >
+                      <ZoomLogo size={18} />
+                      Join via Zoom
+                    </Link>
+                  ) : null}
+                  <Link
+                    href="/webinars"
+                    className="inline-flex items-center gap-1.5 text-sm font-bold text-[var(--brand)]"
+                  >
+                    <Video aria-hidden size={14} />
+                    View webinar details
+                  </Link>
+                </div>
               </div>
             </article>
           ))}

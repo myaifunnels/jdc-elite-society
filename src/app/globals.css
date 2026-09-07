@@ -1762,6 +1762,10 @@ a,
   }
 }
 
+.webinar-register-modal.is-lg {
+  max-width: 36rem;
+}
+
 .webinar-register-modal-head {
   display: flex;
   align-items: flex-start;

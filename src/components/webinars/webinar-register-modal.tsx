@@ -12,11 +12,15 @@ export function WebinarRegisterModal({
   onClose,
   title,
   children,
+  size = "md",
 }: {
   open: boolean;
   onClose: () => void;
   title: string;
   children: React.ReactNode;
+  /** "md" (default, 30rem) fits the public registration form; "lg" (36rem) gives the admin
+   * schedule/edit form's sectioned, two-column layout room to breathe. */
+  size?: "md" | "lg";
 }) {
   const titleId = useId();
   const dialogRef = useRef<HTMLDivElement>(null);
@@ -81,7 +85,7 @@ export function WebinarRegisterModal({
         aria-modal="true"
         aria-labelledby={titleId}
         tabIndex={-1}
-        className="webinar-register-modal"
+        className={size === "lg" ? "webinar-register-modal is-lg" : "webinar-register-modal"}
         onClick={(event) => event.stopPropagation()}
       >
         <div className="webinar-register-modal-head">

@@ -190,7 +190,7 @@ export default async function WebinarsPage() {
                     webinarId={featured.id}
                     freeSeatsLeft={freeSeatsLeft}
                     overflowPrice={WEBINAR_OVERFLOW_PRICE}
-                    joinUrl={featured.ctaHref || undefined}
+                    joinUrl={featured.zoomLink || undefined}
                     existingRegistration={
                       myRegistration ? { tier: myRegistration.tier, status: myRegistration.status } : null
                     }
