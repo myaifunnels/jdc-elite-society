@@ -47,13 +47,13 @@ export function MacosBootScreen({
       }, reduced ? 0 : 420);
     }, duration);
 
-    // Next's router.replace is a soft (RSC) transition — it keeps this screen on-screen until
-    // the target route's data is ready rather than showing a blank page. If the dashboard's
-    // server render is ever unexpectedly slow, that means this card can sit here looking frozen
-    // instead of a visible loading state. As a last resort, if the URL still has ?welcome=1 a
-    // good while after the soft navigation should have already replaced it, force a full page
-    // reload so the user is never stuck here indefinitely.
+    // Last resort: always clear the overlay a few seconds after the animation should have
+    // finished, and force a full reload if the URL still carries ?welcome=1 by then (meaning the
+    // soft transition above never completed). Unconditional on the "open" side — regardless of
+    // *why* the normal path stalls, this guarantees the visitor is never stuck looking at this
+    // card indefinitely.
     const hardFallback = window.setTimeout(() => {
+      setOpen(false);
       if (window.location.search.includes("welcome=1")) {
         // Deliberately a hard navigation, not router.replace: this only runs when the soft
         // transition above has already failed to move on, so retrying the same mechanism
@@ -61,14 +61,23 @@ export function MacosBootScreen({
         // eslint-disable-next-line @next/next/no-location-assign-relative-destination
         window.location.assign("/dashboard");
       }
-    }, duration + 8000);
+    }, duration + 4000);
 
     return () => {
       window.cancelAnimationFrame(frame);
       window.clearTimeout(finish);
       window.clearTimeout(hardFallback);
     };
-  }, [welcome, router]);
+    // Intentionally omits `router` from the dependency list. `progress` updates re-render this
+    // component on every animation frame; if that ever made `router` a new reference each
+    // render (routers are meant to be stable, but this codebase runs on a Next.js version with
+    // documented breaking changes from what any model was trained on — see AGENTS.md), including
+    // it here would tear down and restart these timers every frame, so `finish`/`hardFallback`
+    // would never survive long enough to fire and this card would sit frozen indefinitely. The
+    // effect only needs to run once per "welcome" transition; `router.replace` is called
+    // imperatively inside the timeout callbacks below and doesn't need to be reactive here.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [welcome]);
 
   if (!open) {
     return null;

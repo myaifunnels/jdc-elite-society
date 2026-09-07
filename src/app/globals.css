@@ -5637,6 +5637,11 @@ html[data-membership="both"] .macos-btn-primary {
 }
 
 .macos-boot {
+  /* Pure-CSS safety net: even if the JS that's supposed to close this overlay never runs (a
+     hydration failure, a thrown error, anything), this guarantees it stops blocking the
+     dashboard underneath after a few seconds — the dashboard content is already rendered behind
+     it the whole time, this card is only ever a decorative splash on top of it. */
+  animation: macosBootAutoDismiss 7s linear forwards;
   position: fixed;
   inset: 0;
   z-index: 80;
@@ -5789,6 +5794,19 @@ html[data-membership="both"] .macos-btn-primary {
 @keyframes macos-boot-out {
   to {
     opacity: 0;
+  }
+}
+
+@keyframes macosBootAutoDismiss {
+  0%,
+  96% {
+    opacity: 1;
+    visibility: visible;
+  }
+  100% {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
   }
 }
 
