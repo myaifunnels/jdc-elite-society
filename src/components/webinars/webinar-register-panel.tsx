@@ -189,7 +189,7 @@ export function WebinarRegisterPanel({
         className="button-primary pressable inline-flex min-h-[3rem] items-center justify-center gap-2 px-6 text-sm font-extrabold sm:w-auto"
         onClick={() => setOpen(true)}
       >
-        {isOverflow ? `Reserve overflow seat · ₱${overflowPrice}` : "Reserve my Seat"}
+        {isOverflow ? `Reserve overflow seat · ₱${overflowPrice}` : "Reserve My Seat Now"}
       </button>
 
       <WebinarRegisterModal open={open} onClose={resetAndClose} title="Reserve your seat">

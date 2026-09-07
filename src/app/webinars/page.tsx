@@ -43,7 +43,7 @@ function formatTimeLabel(iso: string) {
   }).format(date);
 }
 
-function SeatsPill({ freeSeatsLeft, totalSeats }: { freeSeatsLeft: number; totalSeats: number }) {
+function SeatsPill({ freeSeatsLeft }: { freeSeatsLeft: number }) {
   if (freeSeatsLeft <= 0) {
     return (
       <span className="inline-flex items-center gap-2 rounded-full border border-amber-300/40 bg-amber-400/15 px-4 py-2 text-xs font-extrabold uppercase tracking-[0.06em] text-amber-200 backdrop-blur-md">
@@ -52,23 +52,48 @@ function SeatsPill({ freeSeatsLeft, totalSeats }: { freeSeatsLeft: number; total
     );
   }
 
-  const ratio = totalSeats > 0 ? freeSeatsLeft / totalSeats : 1;
-  const isLow = ratio <= 0.15;
+  const isCritical = freeSeatsLeft <= 10;
+  const isLow = !isCritical && freeSeatsLeft <= 20;
+  const tone = isCritical
+    ? "border-red-300/40 bg-red-400/15 text-red-200"
+    : isLow
+      ? "border-orange-300/40 bg-orange-400/15 text-orange-200"
+      : "border-emerald-300/30 bg-emerald-400/10 text-emerald-200";
+  const dotTone = isCritical ? "bg-red-300" : isLow ? "bg-orange-300" : "bg-emerald-300";
 
   return (
     <span
-      className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-xs font-extrabold uppercase tracking-[0.06em] backdrop-blur-md ${
-        isLow
-          ? "border-orange-300/40 bg-orange-400/15 text-orange-200"
-          : "border-emerald-300/30 bg-emerald-400/10 text-emerald-200"
-      }`}
+      className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-xs font-extrabold uppercase tracking-[0.06em] backdrop-blur-md ${tone}`}
     >
-      <i
-        aria-hidden
-        className={`inline-block h-1.5 w-1.5 rounded-full ${isLow ? "bg-orange-300" : "bg-emerald-300"}`}
-      />
+      <i aria-hidden className={`inline-block h-1.5 w-1.5 rounded-full ${dotTone}`} />
       {freeSeatsLeft} free {freeSeatsLeft === 1 ? "seat" : "seats"} left
     </span>
+  );
+}
+
+/** Scarcity bar showing how full the event is. Green while seats are plentiful, orange once
+ * 20 or fewer free seats remain, red once 10 or fewer remain (or the event is fully booked) —
+ * with a looping shimmer sweep across the filled portion so it reads as "live" urgency rather
+ * than a static stat. */
+function SeatsProgressBar({ freeSeatsLeft, totalSeats }: { freeSeatsLeft: number; totalSeats: number }) {
+  const seatsTaken = Math.max(0, totalSeats - Math.max(freeSeatsLeft, 0));
+  const filledPercent = totalSeats > 0 ? Math.min(100, Math.round((seatsTaken / totalSeats) * 100)) : 100;
+  const level = freeSeatsLeft <= 10 ? "red" : freeSeatsLeft <= 20 ? "orange" : "green";
+
+  return (
+    <div className="webinar-seats-progress" role="img" aria-label={`${seatsTaken} of ${totalSeats} seats reserved`}>
+      <div className="webinar-seats-progress-track">
+        <div
+          className={`webinar-seats-progress-fill is-${level}`}
+          style={{ width: `${Math.max(filledPercent, 3)}%` }}
+        >
+          <span aria-hidden className="webinar-seats-progress-shimmer" />
+        </div>
+      </div>
+      <p className="webinar-seats-progress-label">
+        {seatsTaken} of {totalSeats} seats reserved
+      </p>
+    </div>
   );
 }
 
@@ -121,7 +146,7 @@ export default async function WebinarsPage() {
               <div className="container-shell relative flex min-h-[640px] flex-col justify-end gap-6 py-12 sm:min-h-[720px] sm:py-16">
                 <div className="fade-up flex flex-wrap items-center gap-3">
                   <p className="eyebrow m-0 text-white/70">Latest webinar</p>
-                  <SeatsPill freeSeatsLeft={freeSeatsLeft} totalSeats={featured.totalSeats} />
+                  <SeatsPill freeSeatsLeft={freeSeatsLeft} />
                 </div>
 
                 <h1
@@ -183,6 +208,10 @@ export default async function WebinarsPage() {
 
                 <div className="fade-up-delay-2">
                   <WebinarCountdown scheduledAt={featured.scheduledAt} />
+                </div>
+
+                <div className="fade-up-delay-2 w-full max-w-sm">
+                  <SeatsProgressBar freeSeatsLeft={freeSeatsLeft} totalSeats={featured.totalSeats} />
                 </div>
 
                 <div className="fade-up-delay-2 flex flex-col gap-4 sm:flex-row sm:items-start">

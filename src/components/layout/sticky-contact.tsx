@@ -6,7 +6,15 @@ import { useState } from "react";
 
 import { InquiryForm } from "@/components/forms/inquiry-form";
 
-const hiddenPaths = ["/login", "/register", "/account", "/dashboard", "/forgot-password", "/reset-password"];
+const hiddenPaths = [
+  "/login",
+  "/register",
+  "/account",
+  "/dashboard",
+  "/forgot-password",
+  "/reset-password",
+  "/webinars",
+];
 
 export function StickyContact() {
   const pathname = usePathname();

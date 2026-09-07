@@ -1792,6 +1792,85 @@ a,
   gap: 0.25rem;
 }
 
+.webinar-seats-progress {
+  display: grid;
+  gap: 0.4rem;
+  width: 100%;
+}
+
+.webinar-seats-progress-track {
+  position: relative;
+  height: 0.55rem;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.webinar-seats-progress-fill {
+  position: relative;
+  height: 100%;
+  border-radius: 999px;
+  overflow: hidden;
+  background: linear-gradient(90deg, #34d399, #10b981);
+  transition: width 0.6s var(--ease-out);
+}
+
+.webinar-seats-progress-fill.is-orange {
+  background: linear-gradient(90deg, #fb923c, #f97316);
+}
+
+.webinar-seats-progress-fill.is-red {
+  background: linear-gradient(90deg, #f87171, #ef4444);
+  animation: webinarSeatsPulse 1.3s ease-in-out infinite alternate;
+}
+
+.webinar-seats-progress-shimmer {
+  position: absolute;
+  inset: 0;
+  width: 40%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.65), transparent);
+  animation: webinarSeatsShimmer 1.8s linear infinite;
+}
+
+.webinar-seats-progress-label {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+@keyframes webinarSeatsShimmer {
+  from {
+    transform: translateX(-120%);
+  }
+
+  to {
+    transform: translateX(280%);
+  }
+}
+
+@keyframes webinarSeatsPulse {
+  from {
+    box-shadow: 0 0 0 rgba(239, 68, 68, 0);
+  }
+
+  to {
+    box-shadow: 0 0 14px rgba(239, 68, 68, 0.65);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .webinar-seats-progress-shimmer {
+    animation: none;
+  }
+
+  .webinar-seats-progress-fill.is-red {
+    animation: none;
+  }
+}
+
 @keyframes webinarModalBackdropIn {
   from {
     opacity: 0;
