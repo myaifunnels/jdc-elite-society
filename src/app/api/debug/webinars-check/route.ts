@@ -1,7 +1,46 @@
 import { NextResponse } from "next/server";
 
+import { WebinarAdminGridCard } from "@/components/dashboard/webinar-admin-grid-card";
+import { WebinarAdminHero } from "@/components/dashboard/webinar-admin-hero";
 import { getFeaturedWebinar, listWebinars } from "@/lib/webinars-store";
 import { listPendingOverflowRegistrants, listRegistrants } from "@/lib/webinar-registrants-store";
+
+/**
+ * Manually walks a React element tree, calling each function component directly instead of
+ * going through react-dom/server (which Next.js's App Router refuses to let route files import
+ * transitively) or React's own reconciler (which JSX alone never triggers — <Foo/> only builds
+ * an element description; Foo's body doesn't run until something actually renders it). This is
+ * the only way, short of a real browser/SSR pass, to force nested child components to actually
+ * execute so a throw deep in the tree surfaces here instead of staying invisible.
+ * Skips any component whose displayName/function name suggests it uses hooks (a plain call
+ * outside React's real render loop would violate the Rules of Hooks and throw its own unrelated
+ * error) — WebinarAdminActions is the only such component in this tree.
+ */
+function walk(node: unknown, skip: Set<string>): void {
+  if (node == null || typeof node !== "object") return;
+  if (Array.isArray(node)) {
+    for (const item of node) walk(item, skip);
+    return;
+  }
+  const el = node as { type?: unknown; props?: { children?: unknown } };
+  if (typeof el.type === "function") {
+    const name = el.type.name || "";
+    if (skip.has(name)) return;
+    const result = (el.type as (props: unknown) => unknown)((el as { props?: unknown }).props ?? {});
+    walk(result, skip);
+    return;
+  }
+  if (el.props?.children) walk(el.props.children, skip);
+}
+
+function renderDeep(label: string, element: unknown, steps: Array<{ step: string; ok: boolean; detail?: unknown }>) {
+  try {
+    walk(element, new Set(["WebinarAdminActions"]));
+    steps.push({ step: label, ok: true });
+  } catch (error) {
+    steps.push({ step: label, ok: false, detail: describeError(error) });
+  }
+}
 
 /**
  * TEMPORARY diagnostic route to find the exact cause of a production-only error on
@@ -67,6 +106,17 @@ export async function GET() {
     } catch (error) {
       steps.push({ step: `listRegistrants(${webinar.id})`, ok: false, detail: describeError(error) });
     }
+  }
+
+  // All the data operations above already succeeded, which means the crash is happening during
+  // render, not data-fetching — and specifically somewhere React's real reconciler reaches that
+  // plain JSX creation never would (JSX only builds an element description; a nested child's
+  // function body doesn't execute until something actually walks the tree). Force that walk here.
+  const featured = await getFeaturedWebinar();
+  if (featured) {
+    const registrants = await listRegistrants(featured.id);
+    renderDeep("render WebinarAdminGridCard (deep)", WebinarAdminGridCard({ webinar: featured, registrants }), steps);
+    renderDeep("render WebinarAdminHero (deep)", WebinarAdminHero({ webinar: featured, registrants }), steps);
   }
 
   return NextResponse.json({ steps });
