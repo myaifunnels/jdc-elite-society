@@ -128,6 +128,9 @@ export default async function WebinarsPage() {
               <div className="container-shell relative flex min-h-[640px] flex-col justify-end gap-6 py-12 sm:min-h-[720px] sm:py-16">
                 <div className="fade-up flex flex-wrap items-center gap-3">
                   <p className="eyebrow m-0 text-white/70">Latest webinar</p>
+                  <span className="hero-episode-chip">
+                    EP {String(Math.max(1, featured.episodeNumber || 1)).padStart(2, "0")}
+                  </span>
                   <SeatsPill freeSeatsLeft={freeSeatsLeft} />
                 </div>
 

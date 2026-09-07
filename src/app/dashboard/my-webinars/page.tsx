@@ -5,7 +5,7 @@ import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { ZoomLogo } from "@/components/dashboard/integration-logos";
 import { EpisodeThumb } from "@/components/webinars/webinar-thumb";
 import { requireCapability } from "@/lib/session";
-import { getWebinar } from "@/lib/webinars-store";
+import { getWebinar, listWebinars } from "@/lib/webinars-store";
 import { listRegistrantsByUserId, type WebinarRegistrant } from "@/lib/webinar-registrants-store";
 import type { WebinarRecord } from "@/lib/webinars";
 
@@ -32,6 +32,15 @@ function StatusPill({ status }: { status: WebinarRegistrant["status"] }) {
   return <span className="status-pill is-quiet">Pending overflow review</span>;
 }
 
+/** Upcoming webinars this person hasn't registered for yet, soonest first — so the page always
+ * has something to show them even with zero registrations, instead of a dead end. */
+function availableWebinars(allWebinars: WebinarRecord[], registeredWebinarIds: Set<string>) {
+  const now = Date.now();
+  return allWebinars
+    .filter((webinar) => !registeredWebinarIds.has(webinar.id) && new Date(webinar.scheduledAt).getTime() >= now)
+    .sort((a, b) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime());
+}
+
 export default async function MyWebinarsPage() {
   const { user } = await requireCapability("myWebinars");
   const registrants = await listRegistrantsByUserId(user.id, user.email);
@@ -46,18 +55,26 @@ export default async function MyWebinarsPage() {
     (entry): entry is { registrant: WebinarRegistrant; webinar: WebinarRecord } => Boolean(entry.webinar),
   );
 
+  const registeredWebinarIds = new Set(entries.map((entry) => entry.webinar.id));
+  const allWebinars = await listWebinars();
+  const upNext = availableWebinars(allWebinars, registeredWebinarIds);
+
   return (
-    <DashboardShell title="Webinars" description="Every webinar you've registered for, and your seat status.">
-      {entries.length === 0 ? (
+    <DashboardShell title="Webinars" description="Every webinar you've registered for, and what's coming up next.">
+      {entries.length === 0 && upNext.length === 0 ? (
         <div className="card-surface p-8 text-center text-[var(--muted)]">
-          <p className="m-0">You haven&rsquo;t registered for any webinars yet.</p>
+          <p className="m-0">No webinars yet — check back soon.</p>
           <Link href="/webinars" className="button-primary pressable mt-4 inline-flex">
             Browse webinars
           </Link>
         </div>
-      ) : (
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {entries.map(({ registrant, webinar }) => (
+      ) : null}
+
+      {entries.length > 0 ? (
+        <section className="grid gap-3">
+          <h3 className="m-0 text-lg font-bold tracking-[-0.02em]">Your registrations</h3>
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {entries.map(({ registrant, webinar }) => (
             <article
               key={registrant.id}
               className="card-surface interactive-card flex flex-col overflow-hidden"
@@ -106,9 +123,36 @@ export default async function MyWebinarsPage() {
                 </div>
               </div>
             </article>
-          ))}
-        </div>
-      )}
+            ))}
+          </div>
+        </section>
+      ) : null}
+
+      {upNext.length > 0 ? (
+        <section className="mt-8 grid gap-3">
+          <h3 className="m-0 text-lg font-bold tracking-[-0.02em]">Upcoming &mdash; open to join</h3>
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {upNext.map((webinar) => (
+              <article key={webinar.id} className="card-surface interactive-card flex flex-col overflow-hidden">
+                <EpisodeThumb webinar={webinar} className="h-36 w-full" />
+                <div className="flex flex-1 flex-col gap-2 p-5">
+                  <strong className="text-[1rem] leading-snug">{webinar.title}</strong>
+                  <p className="m-0 flex items-center gap-2 text-xs text-[var(--muted)]">
+                    <CalendarDays aria-hidden size={14} className="text-[var(--brand)]" />
+                    {formatDateTimeLabel(webinar.scheduledAt)} &middot; Manila Time
+                  </p>
+                  <Link
+                    href="/webinars"
+                    className="button-primary pressable mt-auto inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-extrabold"
+                  >
+                    Reserve my seat
+                  </Link>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+      ) : null}
     </DashboardShell>
   );
 }
