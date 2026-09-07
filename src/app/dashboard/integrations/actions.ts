@@ -2,7 +2,14 @@
 
 import { revalidatePath } from "next/cache";
 
-import { isGhlReady, isGoogleAuthReady, isMapsReady, isR2Ready, isTextBeeReady } from "@/lib/integrations";
+import {
+  isFacebookAuthReady,
+  isGhlReady,
+  isGoogleAuthReady,
+  isMapsReady,
+  isR2Ready,
+  isTextBeeReady,
+} from "@/lib/integrations";
 import { getResolvedIntegrationSettings, saveIntegrationSettings } from "@/lib/integrations-store";
 import { migrateDataUrlFilesToR2 } from "@/lib/r2-migrate";
 import { requireCapability } from "@/lib/session";
@@ -63,6 +70,35 @@ export async function saveGoogleAuthIntegration(
   revalidatePath("/register");
 
   return { success: "Google Sign-In credentials saved." };
+}
+
+export async function saveFacebookAuthIntegration(
+  _prevState: IntegrationFormState,
+  formData: FormData,
+): Promise<IntegrationFormState> {
+  await requireCapability("integrations");
+
+  const incoming = {
+    facebookAppId: String(formData.get("facebookAppId") ?? "").trim(),
+    facebookAppSecret: String(formData.get("facebookAppSecret") ?? "").trim(),
+  };
+  const current = await getResolvedIntegrationSettings();
+  const preview = {
+    ...current,
+    facebookAppId: incoming.facebookAppId || current.facebookAppId,
+    facebookAppSecret: incoming.facebookAppSecret || current.facebookAppSecret,
+  };
+
+  if (!isFacebookAuthReady(preview)) {
+    return { error: "Paste both the Facebook App ID and App Secret." };
+  }
+
+  await saveIntegrationSettings(incoming);
+  revalidatePath("/dashboard/integrations");
+  revalidatePath("/login");
+  revalidatePath("/register");
+
+  return { success: "Facebook Login credentials saved." };
 }
 
 export async function saveR2Integration(

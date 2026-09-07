@@ -4,6 +4,7 @@ import { useActionState } from "react";
 
 import {
   IntegrationFormState,
+  saveFacebookAuthIntegration,
   saveGhlIntegration,
   saveGoogleAuthIntegration,
   saveGoogleMapsIntegration,
@@ -75,6 +76,40 @@ export function GoogleAuthIntegrationForm({
         className="button-primary pressable w-fit rounded-full px-4 py-2 text-sm font-semibold disabled:opacity-70"
       >
         {pending ? "Saving..." : "Save Google Sign-In"}
+      </button>
+    </StickyForm>
+  );
+}
+
+export function FacebookAuthIntegrationForm({
+  configured,
+  appId,
+}: {
+  configured: boolean;
+  appId: string;
+}) {
+  const [state, formAction, pending] = useActionState(saveFacebookAuthIntegration, initialState);
+
+  return (
+    <StickyForm storageKey="coach-jdc-facebook-auth-integration" action={formAction} className="mt-6 grid gap-4">
+      <FloatField label="Enter your Facebook App ID">
+        <input name="facebookAppId" autoComplete="off" defaultValue={appId} placeholder=" " />
+      </FloatField>
+      <FloatField
+        label={configured ? `Enter a new App Secret (${maskSecret("set")})` : "Enter your Facebook App Secret"}
+      >
+        <input name="facebookAppSecret" type="password" autoComplete="off" placeholder=" " />
+      </FloatField>
+
+      {state.error ? <p className="text-sm text-red-500">{state.error}</p> : null}
+      {state.success ? <p className="text-sm text-emerald-400">{state.success}</p> : null}
+
+      <button
+        type="submit"
+        disabled={pending}
+        className="button-primary pressable w-fit rounded-full px-4 py-2 text-sm font-semibold disabled:opacity-70"
+      >
+        {pending ? "Saving..." : "Save Facebook Login"}
       </button>
     </StickyForm>
   );

@@ -2613,7 +2613,8 @@ a,
     0 1px 2px rgba(127, 29, 29, 0.35);
 }
 
-.macos-btn-google {
+.macos-btn-google,
+.macos-btn-facebook {
   width: 100%;
   min-height: 2.55rem;
   border-radius: 0.78rem;
@@ -2631,7 +2632,8 @@ a,
   transition: box-shadow 0.2s ease, transform 0.2s ease;
 }
 
-.macos-btn-google:hover {
+.macos-btn-google:hover,
+.macos-btn-facebook:hover {
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.5),
     0 6px 16px rgba(0, 0, 0, 0.12);

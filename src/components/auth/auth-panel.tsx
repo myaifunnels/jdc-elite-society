@@ -12,10 +12,12 @@ import { StickyForm } from "@/components/forms/sticky-form";
 
 const initialState: AuthFormState = {};
 
-const GOOGLE_AUTH_ERRORS: Record<string, string> = {
+const SOCIAL_AUTH_ERRORS: Record<string, string> = {
   google_not_configured: "Google sign-in isn't set up yet.",
   google_failed: "Google sign-in didn't go through — try again.",
   google_email_unverified: "That Google account's email isn't verified.",
+  facebook_not_configured: "Facebook sign-in isn't set up yet.",
+  facebook_failed: "Facebook sign-in didn't go through — try again.",
 };
 
 function GoogleIcon() {
@@ -38,6 +40,17 @@ function GoogleIcon() {
         d="M24 48c6.48 0 11.92-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.97 6.19C6.51 42.62 14.62 48 24 48z"
       />
       <path fill="none" d="M0 0h48v48H0z" />
+    </svg>
+  );
+}
+
+function FacebookIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <path
+        fill="#1877F2"
+        d="M24 12.07C24 5.4 18.63 0 12 0S0 5.4 0 12.07C0 18.1 4.39 23.1 10.13 24v-8.44H7.08v-3.49h3.05V9.41c0-3.02 1.79-4.69 4.53-4.69 1.31 0 2.68.24 2.68.24v2.97h-1.51c-1.49 0-1.95.93-1.95 1.89v2.25h3.32l-.53 3.49h-2.79V24C19.61 23.1 24 18.1 24 12.07Z"
+      />
     </svg>
   );
 }
@@ -78,7 +91,7 @@ export function AuthPanel({
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const googleError = GOOGLE_AUTH_ERRORS[searchParams.get("error") ?? ""];
+  const socialAuthError = SOCIAL_AUTH_ERRORS[searchParams.get("error") ?? ""];
   const [loginState, loginAction, loginPending] = useActionState(loginAccount, initialState);
   const [registerState, registerAction, registerPending] = useActionState(registerAccount, initialState);
   const [password, setPassword] = useState("");
@@ -110,11 +123,16 @@ export function AuthPanel({
             : "Create your JDC Elite account to open the dashboard."}
         </p>
 
-        {googleError ? <p className="auth-error">{googleError}</p> : null}
+        {socialAuthError ? <p className="auth-error">{socialAuthError}</p> : null}
 
         <a href="/api/auth/google" className="macos-btn macos-btn-google">
           <GoogleIcon />
           Continue with Google
+        </a>
+
+        <a href="/api/auth/facebook" className="macos-btn macos-btn-facebook">
+          <FacebookIcon />
+          Continue with Facebook
         </a>
 
         <div className="auth-divider">

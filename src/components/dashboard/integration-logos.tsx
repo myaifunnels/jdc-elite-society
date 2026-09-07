@@ -39,6 +39,19 @@ export function GoogleLogo({ size = 28 }: LogoProps) {
   );
 }
 
+/** Facebook-blue rounded tile with the "f" glyph — used for Facebook Login credentials. */
+export function FacebookLogo({ size = 28 }: LogoProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 40 40" fill="none" aria-hidden="true">
+      <rect width="40" height="40" rx="10" fill="#1877F2" />
+      <path
+        fill="#FFFFFF"
+        d="M22.4 34V21.8h4.1l.6-4.8h-4.7v-3c0-1.4.4-2.3 2.4-2.3h2.5V7.4c-.4-.06-1.9-.2-3.7-.2-3.6 0-6.1 2.2-6.1 6.3v3.5H13.9v4.8h3.6V34h4.9Z"
+      />
+    </svg>
+  );
+}
+
 /** Cloudflare-orange cloud mark. */
 export function CloudflareLogo({ size = 28 }: LogoProps) {
   return (

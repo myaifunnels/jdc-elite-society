@@ -76,6 +76,14 @@ async function ensureTable(client: Pool) {
     ALTER TABLE integration_settings
     ADD COLUMN IF NOT EXISTS google_client_secret TEXT
   `);
+  await client.query(`
+    ALTER TABLE integration_settings
+    ADD COLUMN IF NOT EXISTS facebook_app_id TEXT
+  `);
+  await client.query(`
+    ALTER TABLE integration_settings
+    ADD COLUMN IF NOT EXISTS facebook_app_secret TEXT
+  `);
   tableReady = true;
 }
 
@@ -88,6 +96,8 @@ function mapRow(row: Record<string, unknown> | undefined): IntegrationSettings |
     googleMapsEmbedKey: String(row.google_maps_embed_key ?? ""),
     googleClientId: String(row.google_client_id ?? ""),
     googleClientSecret: String(row.google_client_secret ?? ""),
+    facebookAppId: String(row.facebook_app_id ?? ""),
+    facebookAppSecret: String(row.facebook_app_secret ?? ""),
     r2AccountId: String(row.r2_account_id ?? ""),
     r2AccessKeyId: String(row.r2_access_key_id ?? ""),
     r2SecretAccessKey: String(row.r2_secret_access_key ?? ""),
@@ -133,6 +143,8 @@ export async function saveIntegrationSettings(
     googleMapsEmbedKey: incoming.googleMapsEmbedKey || current.googleMapsEmbedKey,
     googleClientId: incoming.googleClientId || current.googleClientId,
     googleClientSecret: incoming.googleClientSecret || current.googleClientSecret,
+    facebookAppId: incoming.facebookAppId || current.facebookAppId,
+    facebookAppSecret: incoming.facebookAppSecret || current.facebookAppSecret,
     r2AccountId: incoming.r2AccountId || current.r2AccountId,
     r2AccessKeyId: incoming.r2AccessKeyId || current.r2AccessKeyId,
     r2SecretAccessKey: incoming.r2SecretAccessKey || current.r2SecretAccessKey,
@@ -168,9 +180,11 @@ export async function saveIntegrationSettings(
           sms_from_number,
           google_client_id,
           google_client_secret,
+          facebook_app_id,
+          facebook_app_secret,
           updated_at
         )
-        VALUES (1, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, NOW())
+        VALUES (1, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, NOW())
         ON CONFLICT (id) DO UPDATE SET
           google_maps_embed_key = EXCLUDED.google_maps_embed_key,
           r2_account_id = EXCLUDED.r2_account_id,
@@ -185,6 +199,8 @@ export async function saveIntegrationSettings(
           sms_from_number = EXCLUDED.sms_from_number,
           google_client_id = EXCLUDED.google_client_id,
           google_client_secret = EXCLUDED.google_client_secret,
+          facebook_app_id = EXCLUDED.facebook_app_id,
+          facebook_app_secret = EXCLUDED.facebook_app_secret,
           updated_at = NOW()
         `,
         [
@@ -201,6 +217,8 @@ export async function saveIntegrationSettings(
           next.smsFromNumber,
           next.googleClientId,
           next.googleClientSecret,
+          next.facebookAppId,
+          next.facebookAppSecret,
         ],
       );
     } catch (error) {

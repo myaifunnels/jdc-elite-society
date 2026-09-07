@@ -75,6 +75,7 @@ function publicUser(user: AuthUserRecord): AuthUser {
     facebookProfileUrl: user.facebookProfileUrl,
     facebookPhotoUrl: user.facebookPhotoUrl,
     googleId: user.googleId,
+    facebookId: user.facebookId,
     createdAt: user.createdAt,
   };
 }
@@ -112,6 +113,7 @@ function mapRow(row: Record<string, unknown>): AuthUserRecord {
     facebookProfileUrl: String(row.facebook_profile_url ?? ""),
     facebookPhotoUrl: String(row.facebook_photo_url ?? ""),
     googleId: String(row.google_id ?? ""),
+    facebookId: String(row.facebook_id ?? ""),
     passwordHash: String(row.password_hash ?? ""),
     createdAt: String(row.created_at ?? new Date().toISOString()),
   };
@@ -195,6 +197,10 @@ async function ensureTable(client: Pool) {
   await client.query(`
     ALTER TABLE site_users
     ADD COLUMN IF NOT EXISTS google_id TEXT NOT NULL DEFAULT ''
+  `);
+  await client.query(`
+    ALTER TABLE site_users
+    ADD COLUMN IF NOT EXISTS facebook_id TEXT NOT NULL DEFAULT ''
   `);
   await client.query(`
     UPDATE site_users
@@ -514,6 +520,101 @@ export async function findOrCreateGoogleUser(profile: {
   return created;
 }
 
+export async function findUserByFacebookId(facebookId: string) {
+  if (!facebookId) {
+    return null;
+  }
+
+  const client = getPool();
+  if (!client) {
+    return memoryUsers.find((user) => user.facebookId === facebookId) ?? null;
+  }
+
+  try {
+    await ensureTable(client);
+    const result = await client.query("SELECT * FROM site_users WHERE facebook_id = $1 LIMIT 1", [facebookId]);
+    return result.rows[0] ? mapRow(result.rows[0]) : null;
+  } catch (error) {
+    console.error("Failed to load user by facebook id", error);
+    return memoryUsers.find((user) => user.facebookId === facebookId) ?? null;
+  }
+}
+
+async function linkFacebookId(userId: string, facebookId: string) {
+  const memoryIndex = memoryUsers.findIndex((user) => user.id === userId);
+  if (memoryIndex >= 0) {
+    memoryUsers[memoryIndex] = { ...memoryUsers[memoryIndex], facebookId };
+  }
+
+  const client = getPool();
+  if (!client) {
+    return;
+  }
+
+  try {
+    await ensureTable(client);
+    await client.query("UPDATE site_users SET facebook_id = $2 WHERE id = $1", [userId, facebookId]);
+  } catch (error) {
+    console.error("Failed to link facebook id", error);
+  }
+}
+
+/**
+ * Finds an existing account for a "Continue with Facebook" sign-in, links a
+ * Facebook identity onto a matching password-based account, or provisions a
+ * brand-new account when neither exists. Mirrors findOrCreateGoogleUser.
+ */
+export async function findOrCreateFacebookUser(profile: {
+  facebookId: string;
+  email: string;
+  name: string;
+  avatarUrl?: string;
+}) {
+  await ensureSeedUsers();
+
+  const email = profile.email.trim().toLowerCase();
+  const name = profile.name.trim() || email;
+
+  // 1. Returning Facebook user - looked up by the stable numeric id, not
+  // email, since a Facebook account's email can be absent or change.
+  const byFacebookId = await findUserByFacebookId(profile.facebookId);
+  if (byFacebookId) {
+    return publicUser(byFacebookId);
+  }
+
+  // 2. Existing password-based account signing in with Facebook for the first
+  // time - link the Facebook id onto it without touching password/role/memberships.
+  if (email) {
+    const byEmail = await findUserByEmail(email);
+    if (byEmail) {
+      await linkFacebookId(byEmail.id, profile.facebookId);
+      const updated = await findUserById(byEmail.id);
+      return publicUser(updated ?? { ...byEmail, facebookId: profile.facebookId });
+    }
+  }
+
+  // 3. Brand-new account. A Facebook-authenticated user doesn't need a
+  // password, so passwordSet is true, mirroring findOrCreateGoogleUser.
+  // Facebook accounts without a verified email fall back to a synthetic,
+  // never-colliding placeholder so createUser's email-uniqueness check
+  // still works.
+  const placeholderPassword = `pending:${randomBytes(24).toString("hex")}`;
+  const created = await createUser({
+    name,
+    email: email || `fb-${profile.facebookId}@users.noreply.coachjdc.org`,
+    password: placeholderPassword,
+    role: "member",
+    memberships: ["jes"],
+    profileComplete: false,
+    paymentVerified: false,
+    passwordSet: true,
+    facebookPhotoUrl: profile.avatarUrl ?? "",
+    facebookId: profile.facebookId,
+  });
+
+  return created;
+}
+
 export async function createUser(input: {
   name: string;
   email: string;
@@ -528,6 +629,7 @@ export async function createUser(input: {
   facebookProfileUrl?: string;
   facebookPhotoUrl?: string;
   googleId?: string;
+  facebookId?: string;
   memberships?: Membership[];
   profileComplete?: boolean;
   paymentVerified?: boolean;
@@ -566,6 +668,7 @@ export async function createUser(input: {
     facebookProfileUrl: input.facebookProfileUrl ?? "",
     facebookPhotoUrl: input.facebookPhotoUrl ?? "",
     googleId: input.googleId ?? "",
+    facebookId: input.facebookId ?? "",
     passwordHash: await hashPassword(input.password),
     createdAt: new Date().toISOString(),
   };
@@ -582,9 +685,9 @@ export async function createUser(input: {
           id, name, email, role, password_hash, created_at, best_describes_you,
           date_of_birth, address, facebook_profile_url, facebook_photo_url, memberships,
           phone, phone_country, company, profile_complete, payment_verified, password_set,
-          affiliate_access, affiliate_programs, active_account, google_id
+          affiliate_access, affiliate_programs, active_account, google_id, facebook_id
         )
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23)
         `,
         [
           user.id,
@@ -609,6 +712,7 @@ export async function createUser(input: {
           serializeAffiliatePrograms(user.affiliatePrograms),
           user.active,
           user.googleId,
+          user.facebookId,
         ],
       );
     } catch (error) {
@@ -1036,7 +1140,8 @@ async function persistUserUpdate(user: AuthUserRecord) {
         payment_verified = $16,
         password_set = $17,
         active_account = $18,
-        google_id = $19
+        google_id = $19,
+        facebook_id = $20
       WHERE id = $1
       `,
       [
@@ -1059,6 +1164,7 @@ async function persistUserUpdate(user: AuthUserRecord) {
         user.passwordSet,
         user.active,
         user.googleId ?? "",
+        user.facebookId ?? "",
       ],
     );
   } catch (error) {

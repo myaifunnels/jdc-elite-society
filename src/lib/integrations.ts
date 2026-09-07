@@ -2,6 +2,8 @@ export type IntegrationSettings = {
   googleMapsEmbedKey: string;
   googleClientId: string;
   googleClientSecret: string;
+  facebookAppId: string;
+  facebookAppSecret: string;
   r2AccountId: string;
   r2AccessKeyId: string;
   r2SecretAccessKey: string;
@@ -18,6 +20,8 @@ export const emptyIntegrationSettings: IntegrationSettings = {
   googleMapsEmbedKey: "",
   googleClientId: "",
   googleClientSecret: "",
+  facebookAppId: "",
+  facebookAppSecret: "",
   r2AccountId: "",
   r2AccessKeyId: "",
   r2SecretAccessKey: "",
@@ -35,6 +39,8 @@ export function envIntegrationSettings(): IntegrationSettings {
     googleMapsEmbedKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_EMBED_KEY ?? "",
     googleClientId: process.env.GOOGLE_CLIENT_ID ?? "",
     googleClientSecret: process.env.GOOGLE_CLIENT_SECRET ?? "",
+    facebookAppId: process.env.FACEBOOK_APP_ID ?? "",
+    facebookAppSecret: process.env.FACEBOOK_APP_SECRET ?? "",
     r2AccountId: process.env.R2_ACCOUNT_ID ?? "",
     r2AccessKeyId: process.env.R2_ACCESS_KEY_ID ?? "",
     r2SecretAccessKey: process.env.R2_SECRET_ACCESS_KEY ?? "",
@@ -56,6 +62,8 @@ export function mergeIntegrationSettings(
     googleMapsEmbedKey: saved?.googleMapsEmbedKey || env.googleMapsEmbedKey,
     googleClientId: saved?.googleClientId || env.googleClientId,
     googleClientSecret: saved?.googleClientSecret || env.googleClientSecret,
+    facebookAppId: saved?.facebookAppId || env.facebookAppId,
+    facebookAppSecret: saved?.facebookAppSecret || env.facebookAppSecret,
     r2AccountId: saved?.r2AccountId || env.r2AccountId,
     r2AccessKeyId: saved?.r2AccessKeyId || env.r2AccessKeyId,
     r2SecretAccessKey: saved?.r2SecretAccessKey || env.r2SecretAccessKey,
@@ -85,6 +93,10 @@ export function isR2Ready(settings: IntegrationSettings) {
 
 export function isGoogleAuthReady(settings: IntegrationSettings) {
   return Boolean(settings.googleClientId && settings.googleClientSecret);
+}
+
+export function isFacebookAuthReady(settings: IntegrationSettings) {
+  return Boolean(settings.facebookAppId && settings.facebookAppSecret);
 }
 
 export function isGhlReady(settings: IntegrationSettings) {

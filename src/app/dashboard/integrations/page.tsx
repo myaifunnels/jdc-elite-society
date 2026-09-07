@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { ComponentType } from "react";
 
 import {
+  FacebookAuthIntegrationForm,
   GhlIntegrationForm,
   GoogleAuthIntegrationForm,
   GoogleMapsIntegrationForm,
@@ -11,6 +12,7 @@ import {
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import {
   CloudflareLogo,
+  FacebookLogo,
   GoHighLevelLogo,
   GoogleLogo,
   GoogleMapsLogo,
@@ -19,6 +21,7 @@ import {
 import { MigrateFilesToR2Button } from "@/components/dashboard/migrate-files-button";
 import { AddressMap } from "@/components/maps/address-map";
 import {
+  isFacebookAuthReady,
   isGhlReady,
   isGoogleAuthReady,
   isMapsReady,
@@ -30,7 +33,7 @@ import { getResolvedIntegrationSettings } from "@/lib/integrations-store";
 import { requireCapability } from "@/lib/session";
 import { siteUrl } from "@/lib/site";
 
-type AppId = "maps" | "googleAuth" | "r2" | "ghl" | "textbee";
+type AppId = "maps" | "googleAuth" | "facebookAuth" | "r2" | "ghl" | "textbee";
 
 type AppEntry = {
   id: AppId;
@@ -51,6 +54,7 @@ export default async function IntegrationsPage({
   const settings = await getResolvedIntegrationSettings();
   const mapsReady = isMapsReady(settings);
   const googleAuthReady = isGoogleAuthReady(settings);
+  const facebookAuthReady = isFacebookAuthReady(settings);
   const r2Ready = isR2Ready(settings);
   const ghlReady = isGhlReady(settings);
   const textbeeReady = isTextBeeReady(settings);
@@ -69,6 +73,13 @@ export default async function IntegrationsPage({
       tagline: "Lets members sign in or register with Google on Login/Register.",
       logo: GoogleLogo,
       connected: googleAuthReady,
+    },
+    {
+      id: "facebookAuth",
+      name: "Facebook Login",
+      tagline: "Lets members sign in or register with Facebook on Login/Register.",
+      logo: FacebookLogo,
+      connected: facebookAuthReady,
     },
     {
       id: "r2",
@@ -178,6 +189,25 @@ export default async function IntegrationsPage({
               <code>{siteUrl}/api/auth/google/callback</code>
               <br />
               Then paste the Client ID and Client Secret above — no redeploy needed.
+            </p>
+          </>
+        ) : null}
+
+        {active.id === "facebookAuth" ? (
+          <>
+            <p className="app-store-detail-meta">
+              App ID: <code>{settings.facebookAppId || "not set"}</code> · App Secret:{" "}
+              <code>{maskSecret(settings.facebookAppSecret)}</code>
+            </p>
+            <FacebookAuthIntegrationForm configured={facebookAuthReady} appId={settings.facebookAppId} />
+            <p className="app-store-detail-meta" style={{ marginTop: "1rem" }}>
+              In the Meta for Developers dashboard, create an app with the &quot;Facebook Login&quot; product,
+              then under Facebook Login → Settings add this Valid OAuth Redirect URI:
+              <br />
+              <code>{siteUrl}/api/auth/facebook/callback</code>
+              <br />
+              Paste the App ID and App Secret above — no redeploy needed. Switch the app to Live mode so
+              anyone (not just app testers) can sign in.
             </p>
           </>
         ) : null}
