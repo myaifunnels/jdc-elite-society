@@ -7,7 +7,7 @@ import { EpisodeThumb } from "@/components/webinars/webinar-thumb";
 import { requireCapability } from "@/lib/session";
 import { getWebinar, listWebinars } from "@/lib/webinars-store";
 import { listRegistrantsByUserId, type WebinarRegistrant } from "@/lib/webinar-registrants-store";
-import type { WebinarRecord } from "@/lib/webinars";
+import { WEBINAR_ZOOM_MEETING_ID, WEBINAR_ZOOM_PASSCODE, type WebinarRecord } from "@/lib/webinars";
 
 function formatDateTimeLabel(iso: string) {
   const date = new Date(iso);
@@ -111,15 +111,21 @@ export default async function MyWebinarsPage() {
                 </p>
                 <div className="mt-auto grid gap-2 pt-3">
                   {registrant.status === "confirmed" && webinar.zoomLink ? (
-                    <Link
-                      href={webinar.zoomLink}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="button-primary pressable inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-extrabold"
-                    >
-                      <ZoomLogo size={18} />
-                      Join via Zoom
-                    </Link>
+                    <div className="grid gap-1.5">
+                      <Link
+                        href={webinar.zoomLink}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="button-primary pressable inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-extrabold"
+                      >
+                        <ZoomLogo size={18} />
+                        Join via Zoom
+                      </Link>
+                      <p className="m-0 text-center text-[0.7rem] text-[var(--muted)]">
+                        Meeting ID: <strong>{WEBINAR_ZOOM_MEETING_ID}</strong> &middot; Passcode:{" "}
+                        <strong>{WEBINAR_ZOOM_PASSCODE}</strong>
+                      </p>
+                    </div>
                   ) : null}
                   {registrant.status === "confirmed" && webinar.replayUrl ? (
                     <Link

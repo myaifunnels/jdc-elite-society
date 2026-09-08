@@ -33,6 +33,11 @@ export type WebinarInput = Partial<Omit<WebinarRecord, "id" | "createdAt" | "upd
 /** Price (PHP) for an overflow seat once a webinar's free seats are gone. */
 export const WEBINAR_OVERFLOW_PRICE = 499;
 
+/** The recurring Zoom room every webinar uses — shown alongside "Join via Zoom" for anyone who
+ * joins by dialing in or entering the meeting manually in the Zoom app instead of the link. */
+export const WEBINAR_ZOOM_MEETING_ID = "838 2522 3200";
+export const WEBINAR_ZOOM_PASSCODE = "CoachJDC";
+
 /** Manila-time date/time labels shared by the public webinars page and the registration
  * confirmation/reminder messages, so a webinar's date always reads the same way everywhere. */
 export function formatWebinarDateLabel(iso: string) {

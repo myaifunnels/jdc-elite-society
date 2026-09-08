@@ -7,9 +7,19 @@ import { FormEvent, useRef, useState } from "react";
 import { mastermindOffer } from "@/data/mastermind-offer";
 import { ZoomLogo } from "@/components/dashboard/integration-logos";
 import { WebinarRegisterModal } from "@/components/webinars/webinar-register-modal";
+import { WEBINAR_ZOOM_MEETING_ID, WEBINAR_ZOOM_PASSCODE } from "@/lib/webinars";
 
 const PHOTO_TYPES = "image/jpeg,image/png,image/webp,image/gif";
 const RECEIPT_TYPES = "image/jpeg,image/png,image/webp,application/pdf";
+
+function ZoomMeetingDetails() {
+  return (
+    <p className="m-0 text-center text-xs text-white/50">
+      Meeting ID: <span className="font-bold text-white/70">{WEBINAR_ZOOM_MEETING_ID}</span> &middot; Passcode:{" "}
+      <span className="font-bold text-white/70">{WEBINAR_ZOOM_PASSCODE}</span>
+    </p>
+  );
+}
 
 type RegisterResult =
   | { ok: true; tier: "free" | "paid_overflow"; status?: string; needsPasswordSetup?: boolean }
@@ -189,15 +199,18 @@ export function WebinarRegisterPanel({
 
   if (existingRegistration?.status === "confirmed") {
     return joinUrl ? (
-      <Link
-        href={joinUrl}
-        target="_blank"
-        rel="noreferrer"
-        className="button-primary pressable inline-flex min-h-[3rem] items-center justify-center gap-2 px-6 text-sm font-extrabold sm:w-auto"
-      >
-        <ZoomLogo size={20} />
-        Join via Zoom
-      </Link>
+      <div className="inline-flex flex-col items-center gap-2">
+        <Link
+          href={joinUrl}
+          target="_blank"
+          rel="noreferrer"
+          className="button-primary pressable inline-flex min-h-[3rem] items-center justify-center gap-2 px-6 text-sm font-extrabold sm:w-auto"
+        >
+          <ZoomLogo size={20} />
+          Join via Zoom
+        </Link>
+        <ZoomMeetingDetails />
+      </div>
     ) : (
       <div className="inline-flex items-center gap-2 rounded-full border border-emerald-300/30 bg-emerald-400/10 px-4 py-2.5 text-sm font-extrabold text-emerald-200">
         <ZoomLogo size={20} />
@@ -268,6 +281,11 @@ export function WebinarRegisterPanel({
                 Stay on this page
               </button>
             </div>
+            {(outcome === "free_confirmed" || outcome === "overflow_confirmed") && joinUrl ? (
+              <div className="mt-3">
+                <ZoomMeetingDetails />
+              </div>
+            ) : null}
           </div>
         ) : (
           <>
