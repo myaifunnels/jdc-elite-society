@@ -36,9 +36,9 @@ function writeDraft(draft: RegisterDraft) {
 
 function ZoomMeetingDetails() {
   return (
-    <p className="m-0 text-center text-xs text-white/50">
-      Meeting ID: <span className="font-bold text-white/70">{WEBINAR_ZOOM_MEETING_ID}</span> &middot; Passcode:{" "}
-      <span className="font-bold text-white/70">{WEBINAR_ZOOM_PASSCODE}</span>
+    <p className="m-0 text-center text-sm text-white/60">
+      Meeting ID: <span className="text-base font-bold text-white/85">{WEBINAR_ZOOM_MEETING_ID}</span> &middot; Passcode:{" "}
+      <span className="text-base font-bold text-white/85">{WEBINAR_ZOOM_PASSCODE}</span>
     </p>
   );
 }
@@ -306,12 +306,12 @@ export function WebinarRegisterPanel({
 
   if (existingRegistration?.status === "confirmed") {
     return joinUrl ? (
-      <div className="inline-flex flex-col items-center gap-2">
+      <div className="flex w-full flex-col items-center gap-2 sm:w-auto">
         <Link
           href={joinUrl}
           target="_blank"
           rel="noreferrer"
-          className="button-primary pressable inline-flex min-h-[3rem] items-center justify-center gap-2 px-6 text-sm font-extrabold sm:w-auto"
+          className="button-primary pressable inline-flex min-h-[3.5rem] w-full items-center justify-center gap-2 px-10 text-base font-extrabold sm:w-auto sm:min-w-[20rem]"
         >
           <ZoomLogo size={20} />
           Join via Zoom
@@ -338,7 +338,7 @@ export function WebinarRegisterPanel({
     <>
       <button
         type="button"
-        className="button-primary pressable inline-flex min-h-[3rem] items-center justify-center gap-2 px-6 text-sm font-extrabold sm:w-auto"
+        className="button-primary pressable inline-flex min-h-[3.5rem] w-full items-center justify-center gap-2 px-10 text-base font-extrabold sm:w-auto sm:min-w-[20rem]"
         onClick={() => setOpen(true)}
       >
         {isOverflow ? `Reserve overflow seat · ₱${overflowPrice}` : "Reserve My Seat Now"}

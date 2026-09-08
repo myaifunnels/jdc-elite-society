@@ -143,7 +143,7 @@ export default async function WebinarsPage() {
                 </p>
 
                 <div
-                  className="fade-up-delay-1 flex flex-wrap items-stretch gap-3 rounded-2xl border border-white/15 bg-white/[0.07] p-4 backdrop-blur-xl sm:inline-flex sm:w-auto"
+                  className="fade-up-delay-1 inline-flex w-fit flex-wrap items-stretch gap-3 rounded-2xl border border-white/15 bg-white/[0.07] p-4 backdrop-blur-xl"
                   aria-label="Event date and time"
                 >
                   <div className="flex items-center gap-3">

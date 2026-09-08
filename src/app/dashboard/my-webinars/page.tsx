@@ -121,9 +121,9 @@ export default async function MyWebinarsPage() {
                         <ZoomLogo size={18} />
                         Join via Zoom
                       </Link>
-                      <p className="m-0 text-center text-[0.7rem] text-[var(--muted)]">
-                        Meeting ID: <strong>{WEBINAR_ZOOM_MEETING_ID}</strong> &middot; Passcode:{" "}
-                        <strong>{WEBINAR_ZOOM_PASSCODE}</strong>
+                      <p className="m-0 text-center text-xs text-[var(--muted)]">
+                        Meeting ID: <strong className="text-sm">{WEBINAR_ZOOM_MEETING_ID}</strong> &middot; Passcode:{" "}
+                        <strong className="text-sm">{WEBINAR_ZOOM_PASSCODE}</strong>
                       </p>
                     </div>
                   ) : null}
