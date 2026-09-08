@@ -5,7 +5,13 @@ import { NextResponse } from "next/server";
 import { mastermindOffer } from "@/data/mastermind-offer";
 import { AFFILIATE_CAMPAIGN_COOKIE, AFFILIATE_COOKIE, normalizeAffiliateCode } from "@/lib/affiliate";
 import { getProfileByCode, recordAttribution } from "@/lib/affiliate-store";
-import { createUser, deleteUser, ensureSeedUsers, findUserByEmailOrPhone } from "@/lib/auth-store";
+import {
+  createUser,
+  deleteUser,
+  ensureSeedUsers,
+  findUserByEmailOrPhone,
+  grantMastermindMembership,
+} from "@/lib/auth-store";
 import { formatInternationalPhone } from "@/lib/countries";
 import { createLead } from "@/lib/crm-store";
 import { createEliteCheckoutOrder } from "@/lib/elite-checkout-store";
@@ -13,7 +19,7 @@ import { addGhlContactTags, lookupGhlContact } from "@/lib/ghl";
 import { grantCommunityAndMastermindAccess } from "@/lib/ghl-community";
 import { notifyMastermindPurchase } from "@/lib/notify";
 import { storePaymentReceipt } from "@/lib/r2-upload";
-import { sessionCookieName } from "@/lib/session";
+import { getSessionUser, sessionCookieName } from "@/lib/session";
 import { JDC_MASTERMIND_PAYMENT_VERIFICATION_TAG, mastermindCheckoutTags } from "@/lib/tags";
 import { eliteCheckoutSchema } from "@/lib/validations";
 
@@ -85,12 +91,22 @@ export async function POST(request: Request) {
   const mobile = formatInternationalPhone(parsed.data.phoneCountry, parsed.data.phoneNational);
 
   await ensureSeedUsers();
-  const existing = await findUserByEmailOrPhone(parsed.data.email, mobile);
-  if (existing) {
-    return NextResponse.json(
-      { error: "An account with this email or mobile number already exists. Sign in or use another account." },
-      { status: 409 },
-    );
+  const sessionUser = await getSessionUser();
+
+  // A signed-in visitor already proved ownership of their account (via the checkout form's
+  // inline "sign in" step, or Google) -- attach this order to that account instead of blocking
+  // them or silently linking an unauthenticated email/phone match onto someone else's account.
+  if (!sessionUser) {
+    const existing = await findUserByEmailOrPhone(parsed.data.email, mobile);
+    if (existing) {
+      return NextResponse.json(
+        {
+          error: "An account with this email or mobile number already exists. Sign in to continue.",
+          accountExists: true,
+        },
+        { status: 409 },
+      );
+    }
   }
 
   let receiptUrl = "";
@@ -120,22 +136,24 @@ export async function POST(request: Request) {
 
   let user;
   try {
-    user = await createUser({
-      name: parsed.data.fullName,
-      email: parsed.data.email,
-      password: randomBytes(18).toString("hex"),
-      role: "member",
-      phone: mobile || parsed.data.phoneNational,
-      phoneCountry: parsed.data.phoneCountry,
-      company: "JDC Mastermind",
-      memberships: ["jes"],
-      profileComplete: true,
-      paymentVerified: true,
-      passwordSet: false,
-    });
+    user = sessionUser
+      ? await grantMastermindMembership(sessionUser.id)
+      : await createUser({
+          name: parsed.data.fullName,
+          email: parsed.data.email,
+          password: randomBytes(18).toString("hex"),
+          role: "member",
+          phone: mobile || parsed.data.phoneNational,
+          phoneCountry: parsed.data.phoneCountry,
+          company: "JDC Mastermind",
+          memberships: ["jes"],
+          profileComplete: true,
+          paymentVerified: true,
+          passwordSet: false,
+        });
   } catch (error) {
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "I couldn't create your JDC account." },
+      { error: error instanceof Error ? error.message : "I couldn't set up your JDC account." },
       { status: 400 },
     );
   }

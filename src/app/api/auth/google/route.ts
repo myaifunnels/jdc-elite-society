@@ -1,5 +1,5 @@
 import { createHash, randomBytes } from "node:crypto";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 import { getResolvedIntegrationSettings } from "@/lib/integrations-store";
 import { signValue } from "@/lib/session";
@@ -12,7 +12,16 @@ import { siteUrl } from "@/lib/site";
 export const GOOGLE_OAUTH_COOKIE = "coach-jdc-google-oauth";
 const GOOGLE_OAUTH_COOKIE_MAX_AGE = 60 * 10; // 10 minutes
 
-export async function GET() {
+/** Only ever a same-origin relative path (e.g. from the Mastermind checkout form's "Continue
+ * with Google" sign-in step) -- never an absolute/protocol-relative URL, so this can't be used
+ * as an open redirect even though it round-trips through a client-controlled query param. */
+function safeNextPath(value: string | null) {
+  if (!value) return null;
+  if (!value.startsWith("/") || value.startsWith("//")) return null;
+  return value;
+}
+
+export async function GET(request: NextRequest) {
   const settings = await getResolvedIntegrationSettings();
   const clientId = settings.googleClientId;
 
@@ -20,6 +29,7 @@ export async function GET() {
     return NextResponse.redirect(new URL("/login?error=google_not_configured", siteUrl));
   }
 
+  const next = safeNextPath(request.nextUrl.searchParams.get("next"));
   const state = randomBytes(16).toString("hex");
   const codeVerifier = randomBytes(32).toString("base64url");
   const codeChallenge = createHash("sha256").update(codeVerifier).digest("base64url");
@@ -37,7 +47,7 @@ export async function GET() {
   authorizeUrl.searchParams.set("access_type", "online");
 
   const response = NextResponse.redirect(authorizeUrl);
-  response.cookies.set(GOOGLE_OAUTH_COOKIE, signValue(JSON.stringify({ state, codeVerifier })), {
+  response.cookies.set(GOOGLE_OAUTH_COOKIE, signValue(JSON.stringify({ state, codeVerifier, next })), {
     httpOnly: true,
     sameSite: "lax",
     path: "/api/auth/google",

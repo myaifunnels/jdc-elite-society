@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { EliteCheckoutPage } from "@/components/elite/elite-checkout-page";
+import { getSessionUser } from "@/lib/session";
 
 export const metadata: Metadata = {
   title: {
@@ -10,6 +11,11 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export default function CheckoutPage() {
-  return <EliteCheckoutPage />;
+export default async function CheckoutPage() {
+  const user = await getSessionUser();
+  return (
+    <EliteCheckoutPage
+      signedInUser={user ? { name: user.name, email: user.email, phone: user.phone, phoneCountry: user.phoneCountry } : null}
+    />
+  );
 }

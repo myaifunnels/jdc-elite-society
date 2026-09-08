@@ -565,6 +565,21 @@ body:has(.elite-offer) {
 .elite-form-actions .elite-cta { flex: 1; }
 .elite-form-back { min-width: 86px; border: 1px solid var(--elite-card-border); border-radius: 999px; background: rgba(255, 255, 255, 0.6); color: var(--elite-card-ink); cursor: pointer; font-family: inherit; font-weight: 700; transition: transform 160ms var(--elite-ease-out), background-color 160ms ease; }
 .elite-form-back:active { transform: scale(0.97); }
+.elite-signedin-badge { margin: 0 0 1rem; padding: 0.6rem 0.85rem; border: 1px solid rgba(23, 105, 255, 0.22); border-radius: 12px; background: rgba(23, 105, 255, 0.08); color: var(--elite-card-ink); font-size: 0.82rem; }
+.elite-signedin-badge strong { color: #0b3fae; }
+.elite-signin-panel { margin-top: 0.4rem; padding: 1.1rem; border: 1px solid rgba(23, 105, 255, 0.22); border-radius: 16px; background: rgba(255, 255, 255, 0.7); }
+.elite-signin-panel-title { margin: 0 0 0.3rem; color: var(--elite-card-ink); font-size: 0.9rem; font-weight: 760; }
+.elite-signin-panel-copy { margin: 0 0 0.9rem; color: var(--elite-card-muted); font-size: 0.8rem; line-height: 1.5; }
+.elite-google-btn { display: flex; width: 100%; min-height: 48px; align-items: center; justify-content: center; gap: 0.5rem; border: 1px solid var(--elite-card-border); border-radius: 12px; background: #fff; color: var(--elite-card-ink); cursor: pointer; font-family: inherit; font-size: 0.85rem; font-weight: 700; transition: transform 160ms var(--elite-ease-out), background-color 160ms ease; }
+.elite-google-btn:active { transform: scale(0.98); }
+.elite-google-btn:hover { background: rgba(23, 105, 255, 0.06); }
+.elite-signin-divider { position: relative; margin: 1rem 0; color: var(--elite-card-muted); font-size: 0.72rem; text-align: center; }
+.elite-signin-divider::before, .elite-signin-divider::after { position: absolute; top: 50%; width: calc(50% - 5rem); height: 1px; background: var(--elite-card-border); content: ""; }
+.elite-signin-divider::before { left: 0; }
+.elite-signin-divider::after { right: 0; }
+.elite-signin-actions { display: flex; gap: 0.6rem; margin-top: 0.9rem; }
+.elite-signin-actions .elite-form-back { flex: none; }
+.elite-signin-actions .elite-cta { flex: 1; min-height: 48px; justify-content: center; padding: 0 1rem; text-align: center; }
 .elite-review-intro { margin: 0 0 1rem; color: var(--elite-card-ink); line-height: 1.55; }
 .elite-review dl { margin: 0; border-top: 1px solid var(--elite-card-border); }
 .elite-review dl div { display: grid; grid-template-columns: 92px 1fr; gap: 1rem; padding: 0.72rem 0; border-bottom: 1px solid var(--elite-card-border); }

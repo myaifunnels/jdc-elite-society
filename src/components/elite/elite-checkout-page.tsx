@@ -12,7 +12,14 @@ function LockIcon() {
   );
 }
 
-export function EliteCheckoutPage() {
+export type SignedInCheckoutUser = {
+  name: string;
+  email: string;
+  phone: string;
+  phoneCountry: string;
+};
+
+export function EliteCheckoutPage({ signedInUser }: { signedInUser: SignedInCheckoutUser | null }) {
   return (
     <main className="elite-offer elite-checkout-page">
       <div className="elite-checkout-glow" aria-hidden="true" />
@@ -62,7 +69,7 @@ export function EliteCheckoutPage() {
               </div>
             </aside>
 
-            <EliteCheckoutForm />
+            <EliteCheckoutForm signedInUser={signedInUser} />
           </div>
 
           <p className="elite-checkout-help">

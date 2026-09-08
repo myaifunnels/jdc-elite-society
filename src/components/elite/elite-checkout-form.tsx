@@ -4,8 +4,37 @@ import { FormEvent, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { PhoneField } from "@/components/forms/phone-field";
+import type { SignedInCheckoutUser } from "@/components/elite/elite-checkout-page";
 import { formatPhp, mastermindOffer } from "@/data/mastermind-offer";
+import { findCountry } from "@/lib/countries";
 import { elitePaymentMethods } from "@/lib/validations";
+
+const DRAFT_STORAGE_KEY = "elite-checkout-draft";
+
+type CheckoutDraft = { fullName: string; email: string; phoneCountry: string; phoneNational: string };
+
+function readDraft(): CheckoutDraft | null {
+  try {
+    const raw = window.sessionStorage.getItem(DRAFT_STORAGE_KEY);
+    return raw ? (JSON.parse(raw) as CheckoutDraft) : null;
+  } catch {
+    return null;
+  }
+}
+
+function writeDraft(draft: CheckoutDraft) {
+  try {
+    window.sessionStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(draft));
+  } catch {
+    // Private/restricted browser contexts can throw on storage access -- the visitor just
+    // retypes their details after the Google redirect instead of losing the whole checkout.
+  }
+}
+
+function nationalNumberFor(phoneCountry: string, phone: string) {
+  const dial = findCountry(phoneCountry).dial;
+  return phone.startsWith(dial) ? phone.slice(dial.length).trim() : phone;
+}
 
 function Check({ className = "" }: { className?: string }) {
   return (
@@ -23,12 +52,25 @@ function ArrowIcon() {
   );
 }
 
-export function EliteCheckoutForm() {
+export function EliteCheckoutForm({ signedInUser }: { signedInUser: SignedInCheckoutUser | null }) {
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
+  // A signed-in session (from the server) is authoritative; otherwise fall back to whatever
+  // draft was saved just before redirecting to Google (see "Continue with Google" below), read
+  // once via a lazy initializer rather than an effect + setState pair.
+  const initialDraft = useMemo(() => (signedInUser ? null : readDraft()), [signedInUser]);
   const [step, setStep] = useState(1);
-  const [fullName, setFullName] = useState("");
-  const [email, setEmail] = useState("");
+  const [fullName, setFullName] = useState(signedInUser?.name ?? initialDraft?.fullName ?? "");
+  const [email, setEmail] = useState(signedInUser?.email ?? initialDraft?.email ?? "");
+  const [phoneDefaults, setPhoneDefaults] = useState(() => {
+    if (signedInUser) {
+      return { iso: signedInUser.phoneCountry || "PH", national: nationalNumberFor(signedInUser.phoneCountry, signedInUser.phone) };
+    }
+    if (initialDraft) {
+      return { iso: initialDraft.phoneCountry, national: initialDraft.phoneNational };
+    }
+    return { iso: "PH", national: "" };
+  });
   const [paymentMethod, setPaymentMethod] = useState("");
   const [couponCode, setCouponCode] = useState("");
   const [couponApplied, setCouponApplied] = useState(false);
@@ -37,6 +79,13 @@ export function EliteCheckoutForm() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [serverError, setServerError] = useState("");
   const [pending, setPending] = useState(false);
+
+  const [signedIn, setSignedIn] = useState(Boolean(signedInUser));
+  const [accountExists, setAccountExists] = useState(false);
+  const [checkingAccount, setCheckingAccount] = useState(false);
+  const [signinPassword, setSigninPassword] = useState("");
+  const [signinError, setSigninError] = useState("");
+  const [signinPending, setSigninPending] = useState(false);
 
   const couponEligible = couponCode.trim().toUpperCase() === mastermindOffer.couponCode;
   const price = couponEligible ? mastermindOffer.couponPrice : mastermindOffer.offerPrice;
@@ -77,16 +126,119 @@ export function EliteCheckoutForm() {
 
   function continueTo(nextStep: number) {
     setServerError("");
-    const valid = step === 1 ? validateDetails() : validatePayment();
+    const valid = validatePayment();
     if (!valid) return;
     setStep(nextStep);
+  }
+
+  function currentPhoneNational() {
+    const input = formRef.current?.elements.namedItem("phoneNational") as HTMLInputElement | null;
+    return input?.value.trim() ?? "";
+  }
+
+  function currentPhoneCountry() {
+    const input = formRef.current?.elements.namedItem("phoneCountry") as HTMLInputElement | null;
+    return input?.value.trim() || "PH";
+  }
+
+  async function goToPaymentStep() {
+    setServerError("");
+    if (!validateDetails()) return;
+
+    if (signedIn) {
+      setStep(2);
+      return;
+    }
+
+    setCheckingAccount(true);
+    try {
+      const response = await fetch("/api/elite/check-account", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: email.trim(),
+          phoneCountry: currentPhoneCountry(),
+          phoneNational: currentPhoneNational(),
+        }),
+      });
+      const payload = (await response.json().catch(() => null)) as { exists?: boolean } | null;
+      if (payload?.exists) {
+        setAccountExists(true);
+        return;
+      }
+      setStep(2);
+    } catch {
+      // If the check itself fails, don't block checkout on it -- the final submit still
+      // safely catches an existing account server-side.
+      setStep(2);
+    } finally {
+      setCheckingAccount(false);
+    }
+  }
+
+  function resetAccountCheck() {
+    setAccountExists(false);
+    setSigninError("");
+    setSigninPassword("");
+  }
+
+  async function handleSignin() {
+    setSigninError("");
+    if (!signinPassword) {
+      setSigninError("Enter your password.");
+      return;
+    }
+
+    setSigninPending(true);
+    try {
+      const response = await fetch("/api/elite/checkout/signin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email.trim(), password: signinPassword }),
+      });
+      const payload = (await response.json().catch(() => null)) as
+        | { ok: true; name: string; email: string; phone: string; phoneCountry: string }
+        | { ok: false; error: string }
+        | null;
+
+      if (!response.ok || !payload?.ok) {
+        setSigninError((payload && !payload.ok && payload.error) || "That didn't work. Try again.");
+        setSigninPending(false);
+        return;
+      }
+
+      setFullName(payload.name);
+      setEmail(payload.email);
+      setPhoneDefaults({ iso: payload.phoneCountry || "PH", national: nationalNumberFor(payload.phoneCountry, payload.phone) });
+      setSignedIn(true);
+      setAccountExists(false);
+      setSigninPassword("");
+      setStep(2);
+    } catch {
+      setSigninError("That didn't work. Try again.");
+    } finally {
+      setSigninPending(false);
+    }
+  }
+
+  function continueWithGoogle() {
+    writeDraft({
+      fullName: fullName.trim(),
+      email: email.trim(),
+      phoneCountry: currentPhoneCountry(),
+      phoneNational: currentPhoneNational(),
+    });
+    // Deliberately a hard navigation, not router.push: this hands off to an API route (Google's
+    // OAuth dialog), not a Next.js page, so client-side routing doesn't apply here.
+    // eslint-disable-next-line @next/next/no-location-assign-relative-destination
+    window.location.assign("/api/auth/google?next=%2Felite%2Fcheckout");
   }
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setServerError("");
     if (step === 1) {
-      continueTo(2);
+      await goToPaymentStep();
       return;
     }
     if (step === 2) {
@@ -105,8 +257,14 @@ export function EliteCheckoutForm() {
 
     try {
       const response = await fetch("/api/elite/checkout", { method: "POST", body: form });
-      const payload = (await response.json().catch(() => null)) as { error?: string } | null;
+      const payload = (await response.json().catch(() => null)) as { error?: string; accountExists?: boolean } | null;
       if (!response.ok) {
+        if (payload?.accountExists) {
+          setStep(1);
+          setAccountExists(true);
+          setPending(false);
+          return;
+        }
         setServerError(payload?.error || "Hindi na-submit ang payment. Subukan ulit.");
         setPending(false);
         return;
@@ -161,6 +319,11 @@ export function EliteCheckoutForm() {
       </div>
 
       <div className="elite-form-step" hidden={step !== 1}>
+        {signedIn ? (
+          <p className="elite-signedin-badge">
+            Signed in as <strong>{email}</strong>
+          </p>
+        ) : null}
         <div className="elite-field">
           <label>
             Full Name <span>*</span>
@@ -172,16 +335,59 @@ export function EliteCheckoutForm() {
           <label>
             Email Address <span>*</span>
           </label>
-          <input name="email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} autoComplete="email" />
+          <input
+            name="email"
+            type="email"
+            value={email}
+            onChange={(event) => {
+              setEmail(event.target.value);
+              if (accountExists) resetAccountCheck();
+            }}
+            autoComplete="email"
+            disabled={signedIn}
+          />
           {errors.email ? <p className="error">{errors.email}</p> : null}
         </div>
         <div className="elite-field">
           <label>
             Mobile Number <span>*</span>
           </label>
-          <PhoneField defaultIso="PH" />
+          <PhoneField key={`${phoneDefaults.iso}-${phoneDefaults.national}`} defaultIso={phoneDefaults.iso} defaultNational={phoneDefaults.national} />
           {errors.mobile ? <p className="error">{errors.mobile}</p> : null}
         </div>
+
+        {accountExists ? (
+          <div className="elite-signin-panel">
+            <p className="elite-signin-panel-title">You already have an account with this email.</p>
+            <p className="elite-signin-panel-copy">Sign in to continue your application under your existing account.</p>
+
+            <button type="button" className="elite-google-btn" onClick={continueWithGoogle}>
+              Continue with Google
+            </button>
+
+            <div className="elite-signin-divider">or sign in with your password</div>
+
+            <div className="elite-field">
+              <label>Password</label>
+              <input
+                type="password"
+                value={signinPassword}
+                onChange={(event) => setSigninPassword(event.target.value)}
+                autoComplete="current-password"
+              />
+            </div>
+            {signinError ? <p className="error">{signinError}</p> : null}
+
+            <div className="elite-signin-actions">
+              <button type="button" className="elite-form-back" onClick={resetAccountCheck} disabled={signinPending}>
+                Use a different email
+              </button>
+              <button type="button" className="elite-cta" onClick={handleSignin} disabled={signinPending}>
+                {signinPending ? "Signing in..." : "Sign in and continue"}
+              </button>
+            </div>
+          </div>
+        ) : null}
       </div>
 
       {step === 2 ? (
@@ -266,22 +472,25 @@ export function EliteCheckoutForm() {
 
       {serverError ? <p className="error">{serverError}</p> : null}
 
+      {!(step === 1 && accountExists) ? (
       <div className="elite-form-actions">
         {step > 1 ? (
           <button className="elite-form-back" type="button" onClick={() => setStep((current) => current - 1)} disabled={pending}>
             Back
           </button>
         ) : null}
-        <button className="elite-cta elite-cta-lg elite-cta-rich" type="submit" disabled={pending}>
+        <button className="elite-cta elite-cta-lg elite-cta-rich" type="submit" disabled={pending || checkingAccount}>
           <span className="elite-cta-copy">
             <strong>
               {pending
                 ? "Submitting securely..."
-                : step === 1
-                  ? "Continue to payment"
-                  : step === 2
-                    ? "Review my details"
-                    : "Submit and unlock access"}
+                : checkingAccount
+                  ? "Checking..."
+                  : step === 1
+                    ? "Continue to payment"
+                    : step === 2
+                      ? "Review my details"
+                      : "Submit and unlock access"}
             </strong>
             <small>
               {step === 1
@@ -296,6 +505,7 @@ export function EliteCheckoutForm() {
           </span>
         </button>
       </div>
+      ) : null}
     </form>
   );
 }

@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
     return failure("google_failed");
   }
 
-  let stored: { state?: string; codeVerifier?: string };
+  let stored: { state?: string; codeVerifier?: string; next?: string | null };
   try {
     stored = JSON.parse(signedValue);
   } catch {
@@ -121,7 +121,8 @@ export async function GET(request: NextRequest) {
 
     await setSessionCookie(user.id, true);
 
-    const response = NextResponse.redirect(new URL("/dashboard?welcome=1", siteUrl));
+    const next = stored.next && stored.next.startsWith("/") && !stored.next.startsWith("//") ? stored.next : null;
+    const response = NextResponse.redirect(new URL(next ?? "/dashboard?welcome=1", siteUrl));
     response.cookies.set(GOOGLE_OAUTH_COOKIE, "", {
       httpOnly: true,
       sameSite: "lax",

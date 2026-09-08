@@ -957,6 +957,31 @@ export async function setMemberPaymentVerified(userId: string, verified = true) 
   return publicUser(next);
 }
 
+/** Upgrades an already-existing account to full Mastermind access — used when a checkout
+ * customer's email/phone matches an account they've already proven ownership of (signed in
+ * during checkout), rather than creating a duplicate account for them. */
+export async function grantMastermindMembership(userId: string) {
+  const user = await findUserById(userId);
+  if (!user) {
+    throw new Error("Account not found.");
+  }
+
+  const memberships: Membership[] = user.memberships.includes("jes") ? user.memberships : [...user.memberships, "jes"];
+  const next: AuthUserRecord = {
+    ...user,
+    memberships,
+    paymentVerified: true,
+    accountStatus: deriveStatus({
+      role: user.role,
+      profileComplete: user.profileComplete,
+      paymentVerified: true,
+    }),
+  };
+
+  await persistUserUpdate(next);
+  return publicUser(next);
+}
+
 export async function setUserActive(userId: string, active: boolean) {
   const user = await findUserById(userId);
   if (!user) {
