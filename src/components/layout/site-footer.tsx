@@ -2,14 +2,13 @@ import Link from "next/link";
 
 import { SiteLogo } from "@/components/branding/site-logo";
 import { ScrollTopButton } from "@/components/layout/scroll-top-button";
-import { StickyContact } from "@/components/layout/sticky-contact";
 import { siteContent } from "@/data/site-content";
 import { getResolvedBrandingSettings } from "@/lib/branding-store";
 
 const quickLinks = [
   { href: "/programs", label: "JDC Partnership Program" },
   { href: "/programs", label: "JDC Elite Society" },
-  { href: "/programs", label: "1-on-1 Coaching" },
+  { href: "/programs/1-on-1-coaching", label: "1-on-1 Coaching", comingSoon: true },
   { href: "/elite", label: "JDC Mastermind" },
   { href: "/about", label: "About Coach JDC" },
   { href: "/about", label: "Success Stories" },
@@ -85,7 +84,10 @@ export async function SiteFooter() {
           <ul>
             {quickLinks.map((item) => (
               <li key={item.label}>
-                <Link href={item.href}>{item.label}</Link>
+                <Link href={item.href}>
+                  {item.label}
+                  {item.comingSoon ? <span className="site-nav-soon-badge">Soon</span> : null}
+                </Link>
               </li>
             ))}
           </ul>
@@ -162,7 +164,6 @@ export async function SiteFooter() {
         </p>
         <div className="site-footer-copy">Copyright © 2026 JDC Elite Society. All Rights Reserved.</div>
       </div>
-      <StickyContact />
     </footer>
   );
 }

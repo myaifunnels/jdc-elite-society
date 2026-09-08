@@ -246,22 +246,18 @@ a,
   transform: rotate(180deg);
 }
 
+/* Flush against the trigger (top: 100%, no gap) so the hoverable hitbox has no dead zone the
+   pointer can slip through on its way down to the menu -- the actual visual offset from the
+   trigger lives on the inner .site-nav-dropdown-card's margin-top instead. A real gap here
+   (top: calc(100% + Npx)) is the classic cause of a hover dropdown "disappearing" as soon as you
+   try to move the mouse into it. */
 .site-nav-dropdown {
   position: absolute;
-  top: calc(100% + 0.4rem);
+  top: 100%;
   left: 50%;
   z-index: 40;
-  display: grid;
-  gap: 0.1rem;
   width: max-content;
   min-width: 14rem;
-  padding: 0.5rem;
-  border: 1px solid var(--line);
-  border-radius: 1rem;
-  background: color-mix(in srgb, var(--surface-elevated) 96%, transparent);
-  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.16);
-  backdrop-filter: blur(24px) saturate(180%);
-  -webkit-backdrop-filter: blur(24px) saturate(180%);
   opacity: 0;
   pointer-events: none;
   transform: translate(-50%, 4px);
@@ -275,14 +271,40 @@ a,
   transform: translate(-50%, 0);
 }
 
+.site-nav-dropdown-card {
+  display: grid;
+  gap: 0.1rem;
+  margin-top: 0.5rem;
+  padding: 0.5rem;
+  border: 1px solid color-mix(in srgb, white 22%, transparent);
+  border-radius: 1rem;
+  background: color-mix(in srgb, var(--surface-elevated) 58%, transparent);
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.32), inset 0 1px 0 color-mix(in srgb, white 18%, transparent);
+  backdrop-filter: blur(28px) saturate(200%);
+  -webkit-backdrop-filter: blur(28px) saturate(200%);
+}
+
 .site-nav-dropdown-link {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   border-radius: 0.65rem;
   padding: 0.6rem 0.75rem;
   color: var(--foreground);
   font-size: 0.86rem;
   font-weight: 600;
   white-space: nowrap;
+}
+
+.site-nav-soon-badge {
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--brand) 22%, transparent);
+  padding: 0.12rem 0.45rem;
+  color: var(--brand);
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 .site-nav-dropdown-link:hover {
@@ -313,24 +335,20 @@ a,
 .site-nav-subdropdown {
   position: absolute;
   top: -0.5rem;
-  left: calc(100% + 0.4rem);
+  left: 100%;
   z-index: 41;
-  display: grid;
-  gap: 0.1rem;
   width: max-content;
   min-width: 13rem;
-  padding: 0.5rem;
-  border: 1px solid var(--line);
-  border-radius: 1rem;
-  background: color-mix(in srgb, var(--surface-elevated) 96%, transparent);
-  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.16);
-  backdrop-filter: blur(24px) saturate(180%);
-  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  padding-left: 0.5rem;
   opacity: 0;
   pointer-events: none;
   transform-origin: left top;
   transform: scale(0.96) translateX(-4px);
   transition: opacity 180ms var(--ease-out), transform 180ms var(--ease-out);
+}
+
+.site-nav-subdropdown .site-nav-dropdown-card {
+  margin-top: 0;
 }
 
 .site-nav-subitem-group:hover .site-nav-subdropdown,
@@ -430,12 +448,12 @@ a,
   width: max-content;
   min-width: 14rem;
   padding: 0.5rem;
-  border: 1px solid var(--line);
+  border: 1px solid color-mix(in srgb, white 22%, transparent);
   border-radius: 1rem;
-  background: color-mix(in srgb, var(--surface-elevated) 96%, transparent);
-  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.16);
-  backdrop-filter: blur(24px) saturate(180%);
-  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  background: color-mix(in srgb, var(--surface-elevated) 58%, transparent);
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.32), inset 0 1px 0 color-mix(in srgb, white 18%, transparent);
+  backdrop-filter: blur(28px) saturate(200%);
+  -webkit-backdrop-filter: blur(28px) saturate(200%);
 }
 
 .site-account-dropdown-head {
@@ -2132,11 +2150,23 @@ a,
 }
 
 .site-footer {
+  position: relative;
   background:
     linear-gradient(165deg, color-mix(in srgb, var(--brand) 12%, transparent) 0%, transparent 50%),
     linear-gradient(180deg, #000 0%, #070b12 100%);
   color: #9aa3b2;
   padding: 4rem 0 calc(1.5rem + var(--safe-bottom));
+}
+
+.site-footer::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 8%;
+  right: 8%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--brand) 70%, white 20%), transparent);
+  opacity: 0.6;
 }
 
 .site-footer-grid {
@@ -2209,6 +2239,19 @@ a,
 
 .site-footer a {
   color: inherit;
+}
+
+.site-footer ul a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  transition: transform 160ms ease, color 160ms ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .site-footer ul a:hover {
+    transform: translateX(3px);
+  }
 }
 
 .site-footer-contact a,

@@ -20,6 +20,7 @@ function DesktopNavChild({ child }: { child: NavSubItem }) {
     return (
       <Link href={child.href} className="site-nav-dropdown-link">
         {child.label}
+        {child.comingSoon ? <span className="site-nav-soon-badge">Soon</span> : null}
       </Link>
     );
   }
@@ -31,11 +32,13 @@ function DesktopNavChild({ child }: { child: NavSubItem }) {
         <ChevronDown size={12} aria-hidden />
       </Link>
       <div className="site-nav-subdropdown">
-        {child.children.map((grandchild) => (
-          <Link key={grandchild.href} href={grandchild.href} className="site-nav-dropdown-link">
-            {grandchild.label}
-          </Link>
-        ))}
+        <div className="site-nav-dropdown-card">
+          {child.children.map((grandchild) => (
+            <Link key={grandchild.href} href={grandchild.href} className="site-nav-dropdown-link">
+              {grandchild.label}
+            </Link>
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -57,9 +60,11 @@ function DesktopNavItem({ item }: { item: NavItem }) {
         <ChevronDown size={14} aria-hidden />
       </Link>
       <div className="site-nav-dropdown">
-        {item.children.map((child) => (
-          <DesktopNavChild key={child.href} child={child} />
-        ))}
+        <div className="site-nav-dropdown-card">
+          {item.children.map((child) => (
+            <DesktopNavChild key={child.href} child={child} />
+          ))}
+        </div>
       </div>
     </div>
   );

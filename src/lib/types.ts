@@ -18,6 +18,7 @@ export type Program = {
 export type NavSubItem = {
   href: string;
   label: string;
+  comingSoon?: boolean;
   children?: { href: string; label: string }[];
 };
 

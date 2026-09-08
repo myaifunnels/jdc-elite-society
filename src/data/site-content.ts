@@ -7,15 +7,7 @@ export const navItems: NavItem[] = [
     label: "Programs",
     children: [
       { href: "/elite", label: "JDC Mastermind" },
-      {
-        href: "/programs/1-on-1-coaching",
-        label: "1-on-1 Coaching",
-        children: [
-          { href: "/programs/1-on-1-coaching#online", label: "Online Coaching" },
-          { href: "/programs/1-on-1-coaching#face-to-face", label: "Face to Face Coaching" },
-        ],
-      },
-      { href: "/programs/90-day-blueprint", label: "90-Day Blueprint" },
+      { href: "/programs/1-on-1-coaching", label: "1-on-1 Coaching", comingSoon: true },
     ],
   },
   { href: "/webinars", label: "Webinars" },

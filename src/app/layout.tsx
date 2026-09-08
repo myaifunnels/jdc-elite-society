@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Playfair_Display } from "next/font/google";
+import { SiteChatWidget } from "@/components/layout/site-chat-widget";
 import { ThemeProvider } from "@/components/theme/theme-provider";
 import { membershipTheme } from "@/lib/membership";
 import { getSessionUser } from "@/lib/session";
@@ -70,6 +71,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
     >
       <body className="min-h-full flex flex-col">
         <ThemeProvider>{children}</ThemeProvider>
+        <SiteChatWidget />
       </body>
     </html>
   );
