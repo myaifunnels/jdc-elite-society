@@ -1,8 +1,9 @@
 "use client";
 
+import { ArrowRight, Lock, Smartphone, UserRound } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { FormEvent, useMemo, useRef, useState } from "react";
+import { FormEvent, type ReactNode, useMemo, useRef, useState } from "react";
 
 import { mastermindOffer } from "@/data/mastermind-offer";
 import { ZoomLogo } from "@/components/dashboard/integration-logos";
@@ -63,6 +64,36 @@ function GoogleIcon() {
       />
       <path fill="none" d="M0 0h48v48H0z" />
     </svg>
+  );
+}
+
+/** Same label + icon + input layout as the site's main sign-in/register form (see AuthField in
+ * src/components/auth/auth-panel.tsx), reused here so the webinar registration modal follows the
+ * exact same look — this component isn't exported from there, so it's kept in sync locally. */
+function WebinarAuthField({
+  label,
+  icon,
+  className,
+  action,
+  children,
+}: {
+  label: string;
+  icon?: ReactNode;
+  className?: string;
+  action?: ReactNode;
+  children: ReactNode;
+}) {
+  return (
+    <label className={className ? `auth-field ${className}` : "auth-field"}>
+      <span className="auth-field-copy">
+        <em>{label}</em>
+        <span className="auth-input-wrap">
+          {icon}
+          {children}
+        </span>
+      </span>
+      {action}
+    </label>
   );
 }
 
@@ -313,12 +344,23 @@ export function WebinarRegisterPanel({
         {isOverflow ? `Reserve overflow seat · ₱${overflowPrice}` : "Reserve My Seat Now"}
       </button>
 
-      <WebinarRegisterModal open={open} onClose={resetAndClose} title="Reserve your seat">
+      <WebinarRegisterModal
+        open={open}
+        onClose={resetAndClose}
+        title={
+          outcome
+            ? outcome === "rejected"
+              ? "About your registration"
+              : "Thank you!"
+            : signedInUser
+              ? "Reserve your seat"
+              : tab === "signin"
+                ? "Welcome back"
+                : "Join the webinar"
+        }
+      >
         {outcome ? (
           <div className="webinar-register-confirm">
-            <p className="m-0 text-lg font-extrabold text-white">
-              {outcome === "rejected" ? "About your registration" : "Thank you!"}
-            </p>
             {outcome === "free_confirmed" ? (
               <p className="mt-1.5 text-sm text-white/70">
                 Your free seat is confirmed. Keep an eye on your email and phone for the join link.
@@ -366,158 +408,148 @@ export function WebinarRegisterPanel({
         ) : (
           <>
             {signedInUser ? (
-              <p className="mb-4 m-0 rounded-lg border border-emerald-300/30 bg-emerald-400/10 px-3 py-2 text-xs font-bold text-emerald-200">
+              <p className="mb-3 rounded-lg border border-emerald-300/30 bg-emerald-400/10 px-3 py-2 text-xs font-bold text-emerald-200">
                 Signed in as {signedInUser.email}
               </p>
             ) : (
-              <div className="mb-4 grid grid-cols-2 gap-1.5 rounded-full border border-white/12 bg-black/25 p-1">
-                <button
-                  type="button"
-                  onClick={() => setTab("register")}
-                  className={`rounded-full py-2 text-xs font-extrabold uppercase tracking-[0.06em] transition ${
-                    tab === "register" ? "bg-white/15 text-white" : "text-white/50"
-                  }`}
-                >
+              <div className="macos-segment mx-auto mb-4" role="tablist" aria-label="Webinar registration">
+                <button type="button" role="tab" aria-selected={tab === "register"} onClick={() => setTab("register")} className={tab === "register" ? "is-active" : ""}>
                   Register
                 </button>
-                <button
-                  type="button"
-                  onClick={() => setTab("signin")}
-                  className={`rounded-full py-2 text-xs font-extrabold uppercase tracking-[0.06em] transition ${
-                    tab === "signin" ? "bg-white/15 text-white" : "text-white/50"
-                  }`}
-                >
-                  Sign in
+                <button type="button" role="tab" aria-selected={tab === "signin"} onClick={() => setTab("signin")} className={tab === "signin" ? "is-active" : ""}>
+                  Sign In
                 </button>
               </div>
             )}
 
             {tab === "signin" && !signedInUser ? (
-              <form onSubmit={onSignIn} className="grid gap-3">
-                <p className="m-0 text-sm text-white/70">
-                  {existingAccountEmail
-                    ? "That email already has an account. Sign in with your email — first-time access uses the temporary password JDCELITESOCIETY, then you'll set a new password."
-                    : "Sign in and we’ll reserve your seat for this webinar automatically."}
-                </p>
+              <p className="macos-lead mb-3">
+                {existingAccountEmail
+                  ? "That email already has an account. First-time access uses the temporary password JDCELITESOCIETY, then you'll set a new one."
+                  : "Sign in and we’ll reserve your seat for this webinar automatically."}
+              </p>
+            ) : (
+              <p className="macos-lead mb-3">
+                {signedInUser
+                  ? "Just confirm your phone number to lock in your seat."
+                  : isOverflow
+                    ? `Free seats are gone — reserve an overflow seat for ₱${overflowPrice}.`
+                    : "A few details and you're in."}
+              </p>
+            )}
 
-                <button type="button" className="webinar-google-btn" onClick={continueWithGoogle}>
+            {tab === "signin" && !signedInUser ? (
+              <form onSubmit={onSignIn} className="grid gap-3">
+                <button type="button" className="macos-btn macos-btn-google" onClick={continueWithGoogle}>
                   <GoogleIcon />
                   Continue with Google
                 </button>
 
-                <div className="webinar-signin-divider">or sign in with your password</div>
+                <div className="auth-divider">
+                  <span>or continue with email</span>
+                </div>
 
-                <div className="grid gap-1.5">
-                  <label htmlFor="webinar-signin-email" className="text-xs font-bold uppercase tracking-[0.06em] text-white/60">
-                    Email
-                  </label>
+                <WebinarAuthField label="Email">
                   <input
                     id="webinar-signin-email"
                     name="email"
                     type="email"
                     required
                     defaultValue={existingAccountEmail}
-                    className="rounded-lg border border-white/15 bg-black/30 px-3 py-2.5 text-sm text-white placeholder:text-white/35 outline-none focus:border-white/40"
-                    placeholder="you@email.com"
+                    autoComplete="username"
+                    placeholder="name@mail.com"
                   />
-                </div>
+                </WebinarAuthField>
 
-                <div className="grid gap-1.5">
-                  <label htmlFor="webinar-signin-password" className="text-xs font-bold uppercase tracking-[0.06em] text-white/60">
-                    Password
-                  </label>
+                <WebinarAuthField label="Password" icon={<Lock size={15} aria-hidden />}>
                   <input
                     id="webinar-signin-password"
                     name="password"
                     type="password"
                     required
-                    className="rounded-lg border border-white/15 bg-black/30 px-3 py-2.5 text-sm text-white placeholder:text-white/35 outline-none focus:border-white/40"
+                    autoComplete="current-password"
                     placeholder="••••••••"
                   />
-                </div>
+                </WebinarAuthField>
 
-                <Link href="/forgot-password" className="justify-self-start text-xs font-bold text-[var(--brand)]">
+                <Link href="/forgot-password" className="auth-forgot justify-self-end text-xs">
                   Forgot password?
                 </Link>
 
-                {signinError ? <p className="m-0 text-sm font-semibold text-red-300">{signinError}</p> : null}
+                {signinError ? <p className="auth-error">{signinError}</p> : null}
 
                 <button
                   type="submit"
                   disabled={signinPending}
-                  className="button-primary pressable mt-1 inline-flex min-h-[3rem] items-center justify-center gap-2 text-sm font-extrabold disabled:opacity-60"
+                  className="macos-btn macos-btn-primary auth-submit-btn mt-1 min-h-[3rem] w-full text-sm"
                 >
-                  {signinPending ? "Signing in..." : "Sign in & reserve my seat"}
+                  <span>{signinPending ? "Signing in..." : "Sign In & Reserve My Seat"}</span>
+                  <ArrowRight size={17} aria-hidden />
                 </button>
+
+                <p className="auth-switch-copy">
+                  Don&rsquo;t have an account?{" "}
+                  <button type="button" className="auth-forgot" onClick={() => setTab("register")}>
+                    Register
+                  </button>
+                </p>
               </form>
             ) : (
               <form ref={formRef} onSubmit={onSubmit} className="grid gap-3">
                 {prefill ? (
-                  <p className="m-0 rounded-lg border border-emerald-300/30 bg-emerald-400/10 px-3 py-2 text-xs font-bold text-emerald-200">
+                  <p className="mb-1 rounded-lg border border-emerald-300/30 bg-emerald-400/10 px-3 py-2 text-xs font-bold text-emerald-200">
                     You&rsquo;re signed in. Finish reserving your overflow seat below.
-                  </p>
-                ) : null}
-
-                {isOverflow ? (
-                  <p className="m-0 rounded-lg border border-amber-300/30 bg-amber-400/10 px-3 py-2 text-xs font-bold text-amber-200">
-                    Fully booked — reserve an overflow seat for ₱{overflowPrice}, pending verification.
                   </p>
                 ) : null}
 
                 {!signedInUser && !prefill ? (
                   <>
-                    <button type="button" className="webinar-google-btn" onClick={continueWithGoogle}>
+                    <button type="button" className="macos-btn macos-btn-google" onClick={continueWithGoogle}>
                       <GoogleIcon />
                       Continue with Google
                     </button>
-                    <div className="webinar-signin-divider">or register with your details</div>
+
+                    <div className="auth-divider">
+                      <span>or continue with email</span>
+                    </div>
                   </>
                 ) : null}
 
-                <div className="grid gap-1.5">
-                  <label htmlFor="webinar-reg-name" className="text-xs font-bold uppercase tracking-[0.06em] text-white/60">
-                    Full name
-                  </label>
+                <WebinarAuthField label="Full name" icon={<UserRound size={15} aria-hidden />}>
                   <input
                     id="webinar-reg-name"
                     name="name"
                     required
+                    autoComplete="name"
                     defaultValue={signedInUser?.name ?? prefill?.name ?? initialDraft?.name ?? ""}
-                    className="rounded-lg border border-white/15 bg-black/30 px-3 py-2.5 text-sm text-white placeholder:text-white/35 outline-none focus:border-white/40"
                     placeholder="Juan Dela Cruz"
                   />
-                </div>
+                </WebinarAuthField>
 
-                <div className="grid gap-1.5">
-                  <label htmlFor="webinar-reg-email" className="text-xs font-bold uppercase tracking-[0.06em] text-white/60">
-                    Email
-                  </label>
+                <WebinarAuthField label="Email">
                   <input
                     id="webinar-reg-email"
                     name="email"
                     type="email"
                     required
+                    autoComplete="email"
                     defaultValue={signedInUser?.email ?? prefill?.email ?? ""}
                     disabled={Boolean(signedInUser)}
-                    className="rounded-lg border border-white/15 bg-black/30 px-3 py-2.5 text-sm text-white placeholder:text-white/35 outline-none focus:border-white/40 disabled:opacity-60"
-                    placeholder="you@email.com"
+                    placeholder="name@mail.com"
                   />
-                </div>
+                </WebinarAuthField>
 
-                <div className="grid gap-1.5">
-                  <label htmlFor="webinar-reg-phone" className="text-xs font-bold uppercase tracking-[0.06em] text-white/60">
-                    Phone
-                  </label>
+                <WebinarAuthField label="Phone" icon={<Smartphone size={15} aria-hidden />}>
                   <input
                     id="webinar-reg-phone"
                     name="phone"
                     type="tel"
                     required
+                    autoComplete="tel"
                     defaultValue={signedInUser?.phone || prefill?.phone || initialDraft?.phone || ""}
-                    className="rounded-lg border border-white/15 bg-black/30 px-3 py-2.5 text-sm text-white placeholder:text-white/35 outline-none focus:border-white/40"
                     placeholder="09XXXXXXXXX"
                   />
-                </div>
+                </WebinarAuthField>
 
                 <div className="grid gap-1.5">
                   <label htmlFor="webinar-reg-photo" className="text-xs font-bold uppercase tracking-[0.06em] text-white/60">
@@ -579,19 +611,28 @@ export function WebinarRegisterPanel({
                   </div>
                 ) : null}
 
-                {error ? <p className="m-0 text-sm font-semibold text-red-300">{error}</p> : null}
+                {error ? <p className="auth-error">{error}</p> : null}
 
                 <button
                   type="submit"
                   disabled={pending}
-                  className="button-primary pressable mt-1 inline-flex min-h-[3rem] items-center justify-center gap-2 text-sm font-extrabold disabled:opacity-60"
+                  className="macos-btn macos-btn-primary auth-submit-btn mt-1 min-h-[3rem] w-full text-sm"
                 >
-                  {pending
-                    ? "Submitting..."
-                    : isOverflow
-                      ? `Reserve overflow seat · ₱${overflowPrice}`
-                      : "Reserve My Seat Now"}
+                  <span>
+                    {pending
+                      ? "Submitting..."
+                      : isOverflow
+                        ? `Reserve overflow seat · ₱${overflowPrice}`
+                        : "Reserve My Seat Now"}
+                  </span>
+                  <ArrowRight size={17} aria-hidden />
                 </button>
+
+                {!signedInUser ? (
+                  <p className="auth-switch-copy">
+                    Already registering? <button type="button" className="auth-forgot" onClick={() => setTab("signin")}>Sign In</button>
+                  </p>
+                ) : null}
               </form>
             )}
           </>
