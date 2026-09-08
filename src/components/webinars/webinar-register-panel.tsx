@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { FormEvent, useRef, useState } from "react";
+import { FormEvent, useMemo, useRef, useState } from "react";
 
 import { mastermindOffer } from "@/data/mastermind-offer";
 import { ZoomLogo } from "@/components/dashboard/integration-logos";
@@ -11,6 +11,27 @@ import { WEBINAR_ZOOM_MEETING_ID, WEBINAR_ZOOM_PASSCODE } from "@/lib/webinars";
 
 const PHOTO_TYPES = "image/jpeg,image/png,image/webp,image/gif";
 const RECEIPT_TYPES = "image/jpeg,image/png,image/webp,application/pdf";
+const DRAFT_STORAGE_KEY = "webinar-register-draft";
+
+type RegisterDraft = { name: string; phone: string };
+
+function readDraft(): RegisterDraft | null {
+  try {
+    const raw = window.sessionStorage.getItem(DRAFT_STORAGE_KEY);
+    return raw ? (JSON.parse(raw) as RegisterDraft) : null;
+  } catch {
+    return null;
+  }
+}
+
+function writeDraft(draft: RegisterDraft) {
+  try {
+    window.sessionStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(draft));
+  } catch {
+    // Private/restricted browser contexts can throw on storage access; the visitor just
+    // retypes their details after the Google redirect instead of losing the form.
+  }
+}
 
 function ZoomMeetingDetails() {
   return (
@@ -18,6 +39,30 @@ function ZoomMeetingDetails() {
       Meeting ID: <span className="font-bold text-white/70">{WEBINAR_ZOOM_MEETING_ID}</span> &middot; Passcode:{" "}
       <span className="font-bold text-white/70">{WEBINAR_ZOOM_PASSCODE}</span>
     </p>
+  );
+}
+
+function GoogleIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
+      <path
+        fill="#EA4335"
+        d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"
+      />
+      <path
+        fill="#4285F4"
+        d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.9-2.26 5.36-4.78 7.02l7.73 6c4.51-4.18 7.09-10.36 7.09-17.49z"
+      />
+      <path
+        fill="#FBBC05"
+        d="M10.53 28.59a14.5 14.5 0 0 1-.76-4.59c0-1.59.27-3.13.76-4.59l-7.98-6.19A23.94 23.94 0 0 0 0 24c0 3.86.92 7.51 2.56 10.78l7.97-6.19z"
+      />
+      <path
+        fill="#34A853"
+        d="M24 48c6.48 0 11.92-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.97 6.19C6.51 42.62 14.62 48 24 48z"
+      />
+      <path fill="none" d="M0 0h48v48H0z" />
+    </svg>
   );
 }
 
@@ -50,6 +95,7 @@ export function WebinarRegisterPanel({
   overflowPrice,
   joinUrl,
   existingRegistration,
+  signedInUser,
 }: {
   webinarId: string;
   freeSeatsLeft: number;
@@ -60,12 +106,27 @@ export function WebinarRegisterPanel({
   /** The signed-in visitor's existing registration for this webinar, if any — looked up
    * server-side by session/email so a returning registrant never sees "Register" again. */
   existingRegistration?: { tier: "free" | "paid_overflow"; status: string } | null;
+  /** The signed-in visitor's account details, if any — from the server session, e.g. right after
+   * "Continue with Google" resumes here. Skips the Register/Sign in tabs and shows a single
+   * pre-filled register form instead, since sign-in is already done. */
+  signedInUser?: { name: string; email: string; phone: string } | null;
 }) {
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
   const isOverflow = freeSeatsLeft <= 0;
 
-  const [open, setOpen] = useState(false);
+  // A signed-in session is authoritative; otherwise fall back to whatever draft was saved just
+  // before redirecting to Google (see "Continue with Google" below), read once via a lazy
+  // initializer rather than an effect + setState pair.
+  const initialDraft = useMemo(
+    () => (signedInUser || typeof window === "undefined" ? null : readDraft()),
+    [signedInUser],
+  );
+  // `?register=1` marks a return trip from the Google OAuth redirect (or a direct link) — open
+  // the modal immediately instead of making the visitor click "Reserve My Seat Now" again.
+  const [open, setOpen] = useState(
+    () => typeof window !== "undefined" && new URLSearchParams(window.location.search).get("register") === "1",
+  );
   const [tab, setTab] = useState<"register" | "signin">("register");
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
@@ -106,6 +167,16 @@ export function WebinarRegisterPanel({
     router.push("/dashboard/my-webinars");
   }
 
+  function continueWithGoogle() {
+    const name = (formRef.current?.elements.namedItem("name") as HTMLInputElement | null)?.value ?? "";
+    const phone = (formRef.current?.elements.namedItem("phone") as HTMLInputElement | null)?.value ?? "";
+    writeDraft({ name, phone });
+    // Deliberately a hard navigation, not router.push: this hands off to an API route (Google's
+    // OAuth authorize URL), not a Next.js page.
+    // eslint-disable-next-line @next/next/no-location-assign-relative-destination
+    window.location.assign(`/api/auth/google?next=${encodeURIComponent("/webinars?register=1")}`);
+  }
+
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!formRef.current) return;
@@ -121,6 +192,11 @@ export function WebinarRegisterPanel({
 
     setPending(true);
     const body = new FormData(formRef.current);
+    // A disabled input (the email field once signedInUser is set) is never included in
+    // FormData, so set it explicitly rather than trusting the form to carry it.
+    if (signedInUser) {
+      body.set("email", signedInUser.email);
+    }
 
     try {
       const response = await fetch(`/api/webinars/${webinarId}/register`, { method: "POST", body });
@@ -289,34 +365,47 @@ export function WebinarRegisterPanel({
           </div>
         ) : (
           <>
-            <div className="mb-4 grid grid-cols-2 gap-1.5 rounded-full border border-white/12 bg-black/25 p-1">
-              <button
-                type="button"
-                onClick={() => setTab("register")}
-                className={`rounded-full py-2 text-xs font-extrabold uppercase tracking-[0.06em] transition ${
-                  tab === "register" ? "bg-white/15 text-white" : "text-white/50"
-                }`}
-              >
-                Register
-              </button>
-              <button
-                type="button"
-                onClick={() => setTab("signin")}
-                className={`rounded-full py-2 text-xs font-extrabold uppercase tracking-[0.06em] transition ${
-                  tab === "signin" ? "bg-white/15 text-white" : "text-white/50"
-                }`}
-              >
-                Sign in
-              </button>
-            </div>
+            {signedInUser ? (
+              <p className="mb-4 m-0 rounded-lg border border-emerald-300/30 bg-emerald-400/10 px-3 py-2 text-xs font-bold text-emerald-200">
+                Signed in as {signedInUser.email}
+              </p>
+            ) : (
+              <div className="mb-4 grid grid-cols-2 gap-1.5 rounded-full border border-white/12 bg-black/25 p-1">
+                <button
+                  type="button"
+                  onClick={() => setTab("register")}
+                  className={`rounded-full py-2 text-xs font-extrabold uppercase tracking-[0.06em] transition ${
+                    tab === "register" ? "bg-white/15 text-white" : "text-white/50"
+                  }`}
+                >
+                  Register
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setTab("signin")}
+                  className={`rounded-full py-2 text-xs font-extrabold uppercase tracking-[0.06em] transition ${
+                    tab === "signin" ? "bg-white/15 text-white" : "text-white/50"
+                  }`}
+                >
+                  Sign in
+                </button>
+              </div>
+            )}
 
-            {tab === "signin" ? (
+            {tab === "signin" && !signedInUser ? (
               <form onSubmit={onSignIn} className="grid gap-3">
                 <p className="m-0 text-sm text-white/70">
                   {existingAccountEmail
                     ? "That email already has an account. Sign in with your email — first-time access uses the temporary password JDCELITESOCIETY, then you'll set a new password."
                     : "Sign in and we’ll reserve your seat for this webinar automatically."}
                 </p>
+
+                <button type="button" className="webinar-google-btn" onClick={continueWithGoogle}>
+                  <GoogleIcon />
+                  Continue with Google
+                </button>
+
+                <div className="webinar-signin-divider">or sign in with your password</div>
 
                 <div className="grid gap-1.5">
                   <label htmlFor="webinar-signin-email" className="text-xs font-bold uppercase tracking-[0.06em] text-white/60">
@@ -375,6 +464,16 @@ export function WebinarRegisterPanel({
                   </p>
                 ) : null}
 
+                {!signedInUser && !prefill ? (
+                  <>
+                    <button type="button" className="webinar-google-btn" onClick={continueWithGoogle}>
+                      <GoogleIcon />
+                      Continue with Google
+                    </button>
+                    <div className="webinar-signin-divider">or register with your details</div>
+                  </>
+                ) : null}
+
                 <div className="grid gap-1.5">
                   <label htmlFor="webinar-reg-name" className="text-xs font-bold uppercase tracking-[0.06em] text-white/60">
                     Full name
@@ -383,7 +482,7 @@ export function WebinarRegisterPanel({
                     id="webinar-reg-name"
                     name="name"
                     required
-                    defaultValue={prefill?.name ?? ""}
+                    defaultValue={signedInUser?.name ?? prefill?.name ?? initialDraft?.name ?? ""}
                     className="rounded-lg border border-white/15 bg-black/30 px-3 py-2.5 text-sm text-white placeholder:text-white/35 outline-none focus:border-white/40"
                     placeholder="Juan Dela Cruz"
                   />
@@ -398,8 +497,9 @@ export function WebinarRegisterPanel({
                     name="email"
                     type="email"
                     required
-                    defaultValue={prefill?.email ?? ""}
-                    className="rounded-lg border border-white/15 bg-black/30 px-3 py-2.5 text-sm text-white placeholder:text-white/35 outline-none focus:border-white/40"
+                    defaultValue={signedInUser?.email ?? prefill?.email ?? ""}
+                    disabled={Boolean(signedInUser)}
+                    className="rounded-lg border border-white/15 bg-black/30 px-3 py-2.5 text-sm text-white placeholder:text-white/35 outline-none focus:border-white/40 disabled:opacity-60"
                     placeholder="you@email.com"
                   />
                 </div>
@@ -413,7 +513,7 @@ export function WebinarRegisterPanel({
                     name="phone"
                     type="tel"
                     required
-                    defaultValue={prefill?.phone ?? ""}
+                    defaultValue={signedInUser?.phone || prefill?.phone || initialDraft?.phone || ""}
                     className="rounded-lg border border-white/15 bg-black/30 px-3 py-2.5 text-sm text-white placeholder:text-white/35 outline-none focus:border-white/40"
                     placeholder="09XXXXXXXXX"
                   />

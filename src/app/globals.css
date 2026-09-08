@@ -1819,6 +1819,53 @@ a,
   gap: 0.25rem;
 }
 
+.webinar-google-btn {
+  display: flex;
+  width: 100%;
+  min-height: 3rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: #fff;
+  color: #1f1f1f;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 800;
+  transition: transform 160ms var(--ease-out), background-color 160ms ease;
+}
+.webinar-google-btn:hover {
+  background: rgba(255, 255, 255, 0.9);
+}
+.webinar-google-btn:active {
+  transform: scale(0.98);
+}
+
+.webinar-signin-divider {
+  position: relative;
+  margin: 0.25rem 0;
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 0.7rem;
+  text-align: center;
+}
+.webinar-signin-divider::before,
+.webinar-signin-divider::after {
+  position: absolute;
+  top: 50%;
+  width: calc(50% - 4.5rem);
+  height: 1px;
+  background: rgba(255, 255, 255, 0.15);
+  content: "";
+}
+.webinar-signin-divider::before {
+  left: 0;
+}
+.webinar-signin-divider::after {
+  right: 0;
+}
+
 .webinar-seats-progress {
   display: grid;
   gap: 0.4rem;

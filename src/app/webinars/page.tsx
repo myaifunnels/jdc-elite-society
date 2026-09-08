@@ -205,6 +205,11 @@ export default async function WebinarsPage() {
                     existingRegistration={
                       myRegistration ? { tier: myRegistration.tier, status: myRegistration.status } : null
                     }
+                    signedInUser={
+                      sessionUser && !myRegistration
+                        ? { name: sessionUser.name, email: sessionUser.email, phone: sessionUser.phone }
+                        : null
+                    }
                   />
                   <div className="flex flex-col gap-3">
                     {confirmedRegistrants.length > 0 ? (
