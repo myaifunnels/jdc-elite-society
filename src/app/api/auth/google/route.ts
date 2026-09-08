@@ -13,7 +13,7 @@ export const GOOGLE_OAUTH_COOKIE = "coach-jdc-google-oauth";
 const GOOGLE_OAUTH_COOKIE_MAX_AGE = 60 * 10; // 10 minutes
 
 /** Only ever a same-origin relative path (e.g. from the Mastermind checkout form's "Continue
- * with Google" sign-in step) -- never an absolute/protocol-relative URL, so this can't be used
+ * with Google" sign-in step), never an absolute/protocol-relative URL, so this can't be used
  * as an open redirect even though it round-trips through a client-controlled query param. */
 function safeNextPath(value: string | null) {
   if (!value) return null;

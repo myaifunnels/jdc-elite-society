@@ -94,7 +94,7 @@ export async function POST(request: Request) {
   const sessionUser = await getSessionUser();
 
   // A signed-in visitor already proved ownership of their account (via the checkout form's
-  // inline "sign in" step, or Google) -- attach this order to that account instead of blocking
+  // inline "sign in" step, or Google): attach this order to that account instead of blocking
   // them or silently linking an unauthenticated email/phone match onto someone else's account.
   if (!sessionUser) {
     const existing = await findUserByEmailOrPhone(parsed.data.email, mobile);

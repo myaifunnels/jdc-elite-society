@@ -72,6 +72,7 @@ export async function SiteFooter() {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label={item.label}
+                className="pressable"
               >
                 {item.icon}
               </a>
@@ -132,6 +133,7 @@ export async function SiteFooter() {
               href="https://play.google.com/store/apps/details?id=net.clientclub.app.kollab&hl=en"
               target="_blank"
               rel="noopener noreferrer"
+              className="pressable"
             >
               Download App on Android
             </a>
@@ -139,6 +141,7 @@ export async function SiteFooter() {
               href="https://apps.apple.com/us/app/gokollab/id6484272411"
               target="_blank"
               rel="noopener noreferrer"
+              className="pressable"
             >
               Download App on iPhone
             </a>

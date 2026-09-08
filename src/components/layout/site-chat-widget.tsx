@@ -6,7 +6,7 @@ import Script from "next/script";
 import { mastermindOffer } from "@/data/mastermind-offer";
 
 // Kept off the authenticated dashboard (which already has its own Support ticket system) and the
-// auth screens -- everywhere else on the public site gets the real GoHighLevel chat widget
+// auth screens. Everywhere else on the public site gets the real GoHighLevel chat widget
 // instead of the old "Talk to Coach" sticky button + inline form.
 const hiddenPaths = ["/dashboard", "/login", "/register", "/forgot-password", "/reset-password", "/account"];
 

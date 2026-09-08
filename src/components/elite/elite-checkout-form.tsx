@@ -26,7 +26,7 @@ function writeDraft(draft: CheckoutDraft) {
   try {
     window.sessionStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(draft));
   } catch {
-    // Private/restricted browser contexts can throw on storage access -- the visitor just
+    // Private/restricted browser contexts can throw on storage access; the visitor just
     // retypes their details after the Google redirect instead of losing the whole checkout.
   }
 }
@@ -168,7 +168,7 @@ export function EliteCheckoutForm({ signedInUser }: { signedInUser: SignedInChec
       }
       setStep(2);
     } catch {
-      // If the check itself fails, don't block checkout on it -- the final submit still
+      // If the check itself fails, don't block checkout on it: the final submit still
       // safely catches an existing account server-side.
       setStep(2);
     } finally {
