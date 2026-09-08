@@ -37,6 +37,30 @@ async function notifyWebinarRegistrationConfirmed(
   ]);
 }
 
+/** Sent the instant a webinar registration attempt matches an existing account — this fires
+ * immediately, whether or not the visitor ever notices the in-page "sign in" prompt or completes
+ * it, so they always get told (by email and text, and it lands in their dashboard Inbox) that
+ * they need to sign in with the temporary password to confirm their seat. */
+export async function notifyExistingAccountWebinarSignin(
+  webinar: WebinarRecord,
+  registrant: { name: string; email: string; phone: string },
+  tempPassword: string,
+) {
+  const vars = { name: registrant.name, webinarTitle: webinar.title, tempPassword, siteUrl };
+
+  const [smsBody, email] = await Promise.all([
+    getSmsTemplateBody("webinar_existing_account"),
+    renderEmailTemplate("webinar_existing_account", vars),
+  ]);
+
+  await Promise.allSettled([
+    registrant.phone
+      ? sendSms({ to: registrant.phone, body: renderTemplate(smsBody, vars), name: registrant.name, email: registrant.email })
+      : Promise.resolve(),
+    registrant.email ? sendEmail({ to: registrant.email, subject: email.subject, html: email.html }) : Promise.resolve(),
+  ]);
+}
+
 /**
  * Runs everything a confirmed webinar registration should trigger: University/community access
  * when this webinar has it turned on (every such registrant gets the same standing as a paid

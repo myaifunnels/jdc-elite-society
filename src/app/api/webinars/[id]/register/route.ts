@@ -5,7 +5,7 @@ import { TEMPORARY_MEMBER_PASSWORD } from "@/lib/auth-constants";
 import { createUser, findUserByEmailOrPhone, issueTemporaryPassword } from "@/lib/auth-store";
 import { storeRegistrantPhoto, storeWebinarReceipt } from "@/lib/r2-upload";
 import { getSessionUser, sessionCookieName } from "@/lib/session";
-import { confirmWebinarRegistration } from "@/lib/webinar-notify";
+import { confirmWebinarRegistration, notifyExistingAccountWebinarSignin } from "@/lib/webinar-notify";
 import { WEBINAR_OVERFLOW_PRICE } from "@/lib/webinars";
 import { getWebinar } from "@/lib/webinars-store";
 import {
@@ -71,6 +71,11 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
     if (existingUser) {
       if (existingUser.role !== "admin" && existingUser.role !== "partner") {
         await issueTemporaryPassword(existingUser.id);
+        notifyExistingAccountWebinarSignin(
+          webinar,
+          { name: existingUser.name, email: existingUser.email, phone: existingUser.phone },
+          TEMPORARY_MEMBER_PASSWORD,
+        ).catch((error) => console.error("Webinar existing-account notification failed", error));
       }
       return NextResponse.json({
         ok: false,

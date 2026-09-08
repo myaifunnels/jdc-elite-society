@@ -51,6 +51,7 @@ export const EMAIL_TEMPLATE_GROUPS: Array<{ id: string; label: string; keys: Ema
     label: "Webinars",
     keys: [
       "webinar_registration_confirmed",
+      "webinar_existing_account",
       "webinar_reminder_3d",
       "webinar_reminder_2d",
       "webinar_reminder_dayof",
@@ -193,6 +194,16 @@ export const EMAIL_TEMPLATE_DEFINITIONS: EmailTemplateDefinition[] = [
     defaultSubject: "You're registered: {{webinarTitle}}",
     defaultHtml:
       "<p>Hi {{name}},</p><p>You're in! <strong>{{webinarTitle}}</strong> is on <strong>{{dateLabel}}</strong> at <strong>{{timeLabel}}</strong> (Manila time).</p><p><a href=\"{{zoomLink}}\">Join on Zoom</a></p><p>We'll send you a few reminders before it starts — keep an eye on your email and phone.</p><p>{{siteUrl}}</p>",
+  },
+  {
+    key: "webinar_existing_account",
+    label: "Webinar registration — existing account found",
+    description:
+      "Sent the moment someone registers for a webinar using an email/phone that already has a JDC account. They must sign in to finish reserving their seat.",
+    vars: ["name", "webinarTitle", "tempPassword", "siteUrl"],
+    defaultSubject: "Sign in to confirm your seat: {{webinarTitle}}",
+    defaultHtml:
+      "<p>Hi {{name}},</p><p>You already have a JDC account, so we could not auto-register you for <strong>{{webinarTitle}}</strong> yet.</p><p>Sign in with this email and the temporary password <strong>{{tempPassword}}</strong>, then reserve your seat again on the webinar page to confirm it.</p><p><a href=\"{{siteUrl}}/login\">Sign in</a></p>",
   },
   {
     key: "webinar_reminder_3d",

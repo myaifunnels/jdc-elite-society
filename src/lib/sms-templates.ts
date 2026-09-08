@@ -14,6 +14,7 @@ export type SmsTemplateKey =
   | "support_status_member"
   | "receipt_reupload_team"
   | "webinar_registration_confirmed"
+  | "webinar_existing_account"
   | "webinar_reminder_3d"
   | "webinar_reminder_2d"
   | "webinar_reminder_dayof"
@@ -63,6 +64,7 @@ export const SMS_TEMPLATE_GROUPS: Array<{ id: string; label: string; keys: SmsTe
     label: "Webinars",
     keys: [
       "webinar_registration_confirmed",
+      "webinar_existing_account",
       "webinar_reminder_3d",
       "webinar_reminder_2d",
       "webinar_reminder_dayof",
@@ -192,6 +194,15 @@ export const SMS_TEMPLATE_DEFINITIONS: SmsTemplateDefinition[] = [
     vars: ["name", "webinarTitle", "dateLabel", "timeLabel"],
     defaultBody:
       "Hi {{name}},\n\nYou're in! {{webinarTitle}} is on {{dateLabel}} at {{timeLabel}} (Manila time).\n\nCheck your email for the Zoom link, or open My Webinars on your dashboard.\n\nBest Regards,\n-Team JDC Elite Society",
+  },
+  {
+    key: "webinar_existing_account",
+    label: "Webinar registration — existing account found",
+    description:
+      "Sent the moment someone registers for a webinar using an email/phone that already has a JDC account. They must sign in to finish reserving their seat — this text tells them how, immediately, instead of leaving them to notice the in-page prompt.",
+    vars: ["name", "webinarTitle", "tempPassword"],
+    defaultBody:
+      "Hi {{name}},\n\nYou already have a JDC account, so we could not auto-register you for {{webinarTitle}} yet.\n\nSign in with this email and the temporary password {{tempPassword}}, then reserve your seat again to confirm it.\n\nBest Regards,\n-Team JDC Elite Society",
   },
   {
     key: "webinar_reminder_3d",
