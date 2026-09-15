@@ -85,7 +85,7 @@ export function MastermindBatch2Page() {
 
   return (
     <div ref={rootRef} className="elite-offer" data-motion-ready="false">
-      <section className="elite-hero" id="top">
+      <section className="elite-hero elite-hero-compact" id="top">
         <video className="elite-hero-video" autoPlay muted loop playsInline preload="auto">
           <source src={mastermindOffer.heroVideo} />
         </video>
@@ -114,7 +114,7 @@ export function MastermindBatch2Page() {
         </div>
       </section>
 
-      <section className="elite-section elite-reveal">
+      <section className="elite-section elite-reveal" id="offer">
         <div className="elite-shell">
           <p className="elite-kicker elite-center">THE STANDARD YOU&apos;VE BEEN SEARCHING FOR</p>
           <h2>
@@ -122,36 +122,32 @@ export function MastermindBatch2Page() {
           </h2>
           <p className="elite-center elite-sub" style={{ marginInline: "auto" }}>
             You didn&apos;t fight your way here just to stay in the middle. Every empire begins with one moment — the
-            moment someone got tired of struggling and chose precision, discipline, and execution.
+            moment someone got tired of struggling and chose precision, discipline, and execution. This is that
+            moment.
           </p>
-          <p className="elite-center elite-quote">This is that moment.</p>
-        </div>
-      </section>
 
-      <section className="elite-section elite-reveal" id="offer">
-        <div className="elite-shell">
-          <p className="elite-badge">SESSION 2</p>
-          <h2>EXECUTION</h2>
-          <p className="elite-quote">
-            Foundation gave you clarity. Execution gives you strength. This is where standards turn into systems, and
-            systems create progress you can finally trust.
-          </p>
-          <p className="elite-kicker">What you will get in this session:</p>
-          <div className="elite-glass" style={{ padding: "1.5rem" }}>
-            <IncludeList
-              items={[
-                "The Passive Growth Principles — build leaders, multiply impact, create income that doesn't depend on your hours",
-                "The Complete 6-Step Partner Growth System — a clear, duplicable structure designed for real expansion",
-                "Leadership and the 5 Aspects of Life — true leadership is built in every area, not just business",
-                "Live Sessions with Coach JDC — direct, personal, precise, and real experience advice",
-              ]}
-            />
-          </div>
-          <p className="elite-center elite-sub" style={{ marginInline: "auto", marginTop: "1.5rem" }}>
-            This isn&apos;t content. This is a transformation with clear results.
-          </p>
-          {execution ? (
-            <div style={{ maxWidth: 640, marginInline: "auto", marginTop: "2rem" }}>
+          <div className="elite-grid-2" style={{ marginTop: "clamp(2.5rem, 5vw, 3.5rem)" }}>
+            <div className="elite-glass elite-reveal-item" style={{ padding: "1.75rem" }}>
+              <p className="elite-badge">SESSION 2 · EXECUTION</p>
+              <h3 style={{ margin: "0.6rem 0 0.8rem", fontSize: "1.4rem" }}>
+                Foundation gave you clarity. Execution gives you strength.
+              </h3>
+              <p style={{ margin: 0 }}>
+                This is where standards turn into systems, and systems create progress you can finally trust.
+              </p>
+              <p className="elite-kicker" style={{ marginTop: "1.4rem" }}>
+                What you will get in this session
+              </p>
+              <IncludeList
+                items={[
+                  "The Passive Growth Principles — build leaders, multiply impact, create income that doesn't depend on your hours",
+                  "The Complete 6-Step Partner Growth System — a clear, duplicable structure designed for real expansion",
+                  "Leadership and the 5 Aspects of Life — true leadership is built in every area, not just business",
+                  "Live Sessions with Coach JDC — direct, personal, precise, and real experience advice",
+                ]}
+              />
+            </div>
+            {execution ? (
               <article className="elite-card elite-reveal-item">
                 <img src={execution.image} alt={execution.title} />
                 <p className="meta">{execution.kicker}</p>
@@ -159,8 +155,12 @@ export function MastermindBatch2Page() {
                 <p>{execution.body}</p>
                 <IncludeList items={execution.bullets} />
               </article>
-            </div>
-          ) : null}
+            ) : null}
+          </div>
+
+          <p className="elite-center elite-sub" style={{ marginInline: "auto", marginTop: "clamp(1.75rem, 4vw, 2.5rem)" }}>
+            This isn&apos;t content. This is a transformation with clear results.
+          </p>
         </div>
       </section>
 
