@@ -49,6 +49,7 @@ export const mastermindOffer = {
   coachImage:
     "https://vibe.filesafe.space/1780838141047994819/attachments/e1a87fc2-c6a0-49a8-9d4c-871266b789d6.png",
   listPrice: 14999,
+  regularPrice: 5000,
   offerPrice: 2000,
   couponPrice: 1500,
   couponCode: "SPARTANS",
