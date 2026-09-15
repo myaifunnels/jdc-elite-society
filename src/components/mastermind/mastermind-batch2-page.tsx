@@ -111,6 +111,17 @@ export function MastermindBatch2Page() {
             />
           </div>
           <p className="elite-warn">Regular ₱5,000 · Full Value ₱14,999</p>
+          <div className="elite-stats">
+            <span>
+              <strong>{mastermindOffer.memberCount}+</strong> members inside
+            </span>
+            <span>
+              <strong>2</strong> focused sessions
+            </span>
+            <span>
+              <strong>Lifetime</strong> access
+            </span>
+          </div>
         </div>
       </section>
 

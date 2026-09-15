@@ -117,6 +117,12 @@ body:has(.elite-offer) {
   isolation: isolate;
 }
 
+.elite-hero-compact {
+  min-height: min(84vh, 760px);
+  align-items: center;
+  padding: clamp(6rem, 11vw, 8rem) 0;
+}
+
 .elite-hero-video {
   position: absolute;
   z-index: -3;
@@ -697,7 +703,7 @@ body:has(.elite-offer) {
 @media (max-width: 720px) {
   .elite-shell { width: min(100% - 28px, 1160px); }
   .elite-hero { min-height: 820px; padding: 5rem 0 4.2rem; }
-  .elite-hero-compact { min-height: 88svh; align-items: center; padding: 6.5rem 0 3rem; }
+  .elite-hero-compact { min-height: 88svh; padding: 6.5rem 0 3rem; }
   .elite-section { padding: 3.25rem 0; }
   .elite-hero-video { object-position: 68% center; opacity: 0.58; }
   .elite-hero-scrim { background: linear-gradient(0deg, #02040a 4%, rgba(2, 4, 10, 0.68) 52%, rgba(2, 4, 10, 0.12) 100%), linear-gradient(90deg, rgba(2, 4, 10, 0.58), transparent); }
