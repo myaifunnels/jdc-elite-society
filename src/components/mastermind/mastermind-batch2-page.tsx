@@ -151,7 +151,7 @@ export function MastermindBatch2Page() {
             This isn&apos;t content. This is a transformation with clear results.
           </p>
           {execution ? (
-            <div className="elite-grid-2" style={{ marginTop: "2rem" }}>
+            <div style={{ maxWidth: 640, marginInline: "auto", marginTop: "2rem" }}>
               <article className="elite-card elite-reveal-item">
                 <img src={execution.image} alt={execution.title} />
                 <p className="meta">{execution.kicker}</p>
@@ -186,16 +186,16 @@ export function MastermindBatch2Page() {
               <p>
                 Foundation. Execution. Lifetime replays. The private Elite Society. Access anywhere, anytime.
               </p>
-              <div style={{ display: "flex", justifyContent: "space-between", marginTop: "1.5rem" }}>
-                <span>Full Package Value:</span>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem 1rem", justifyContent: "space-between", marginTop: "1.5rem" }}>
+                <span>Full Value</span>
                 <span className="elite-strike">{formatPhp(mastermindOffer.listPrice)}</span>
               </div>
-              <div style={{ display: "flex", justifyContent: "space-between" }}>
-                <span>Regular Price:</span>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem 1rem", justifyContent: "space-between" }}>
+                <span>Regular Price</span>
                 <span className="elite-strike">{formatPhp(mastermindOffer.regularPrice)}</span>
               </div>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "end" }}>
-                <span>Early Bird Rate (7 days only):</span>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem 1rem", justifyContent: "space-between", alignItems: "end" }}>
+                <span>Early Bird (7 days only)</span>
                 <span className="elite-price">{formatPhp(mastermindOffer.offerPrice)}</span>
               </div>
               <p style={{ textAlign: "right", fontStyle: "italic", fontSize: "0.8rem" }}>
