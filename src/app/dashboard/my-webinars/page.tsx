@@ -5,7 +5,7 @@ import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { ZoomLogo } from "@/components/dashboard/integration-logos";
 import { EpisodeThumb } from "@/components/webinars/webinar-thumb";
 import { requireCapability } from "@/lib/session";
-import { getWebinar, listWebinars } from "@/lib/webinars-store";
+import { getFeaturedWebinar, getWebinar, listWebinars } from "@/lib/webinars-store";
 import { listRegistrantsByUserId, type WebinarRegistrant } from "@/lib/webinar-registrants-store";
 import { WEBINAR_ZOOM_MEETING_ID, WEBINAR_ZOOM_PASSCODE, type WebinarRecord } from "@/lib/webinars";
 
@@ -33,11 +33,26 @@ function StatusPill({ status }: { status: WebinarRegistrant["status"] }) {
 }
 
 /** Upcoming webinars this person hasn't registered for yet, soonest first — so the page always
- * has something to show them even with zero registrations, instead of a dead end. */
-function availableWebinars(allWebinars: WebinarRecord[], registeredWebinarIds: Set<string>) {
+ * has something to show them even with zero registrations, instead of a dead end.
+ *
+ * Restricted to the currently-featured webinar: /webinars only ever renders a registration form
+ * for whichever webinar getFeaturedWebinar() returns, so that's the only webinar anyone can
+ * actually register for right now. Listing other upcoming-but-not-featured webinars here used to
+ * send members to a "Reserve my seat" button that landed on the featured webinar's page instead
+ * — a different webinar than the one they clicked from. */
+function availableWebinars(
+  allWebinars: WebinarRecord[],
+  registeredWebinarIds: Set<string>,
+  featuredWebinarId: string | null,
+) {
   const now = Date.now();
   return allWebinars
-    .filter((webinar) => !registeredWebinarIds.has(webinar.id) && new Date(webinar.scheduledAt).getTime() >= now)
+    .filter(
+      (webinar) =>
+        webinar.id === featuredWebinarId &&
+        !registeredWebinarIds.has(webinar.id) &&
+        new Date(webinar.scheduledAt).getTime() >= now,
+    )
     .sort((a, b) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime());
 }
 
@@ -69,8 +84,8 @@ export default async function MyWebinarsPage() {
   const confirmedWebinarIds = new Set(
     entries.filter((entry) => entry.registrant.status === "confirmed").map((entry) => entry.webinar.id),
   );
-  const allWebinars = await listWebinars();
-  const upNext = availableWebinars(allWebinars, registeredWebinarIds);
+  const [allWebinars, featured] = await Promise.all([listWebinars(), getFeaturedWebinar()]);
+  const upNext = availableWebinars(allWebinars, registeredWebinarIds, featured?.id ?? null);
   const replays = replayLibrary(allWebinars, confirmedWebinarIds);
 
   return (
@@ -136,13 +151,15 @@ export default async function MyWebinarsPage() {
                       Watch replay
                     </Link>
                   ) : null}
-                  <Link
-                    href="/webinars"
-                    className="inline-flex items-center gap-1.5 text-sm font-bold text-[var(--brand)]"
-                  >
-                    <Video aria-hidden size={14} />
-                    View webinar details
-                  </Link>
+                  {webinar.id === featured?.id ? (
+                    <Link
+                      href="/webinars"
+                      className="inline-flex items-center gap-1.5 text-sm font-bold text-[var(--brand)]"
+                    >
+                      <Video aria-hidden size={14} />
+                      View webinar details
+                    </Link>
+                  ) : null}
                 </div>
               </div>
             </article>

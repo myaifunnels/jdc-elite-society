@@ -6,7 +6,7 @@ import { sessionCookieName } from "@/lib/session";
 import { confirmWebinarRegistration } from "@/lib/webinar-notify";
 import { getWebinar } from "@/lib/webinars-store";
 import {
-  createRegistrant,
+  createFreeRegistrantIfSeatAvailable,
   findRegistrantByUserAndWebinar,
   getFreeSeatsLeft,
 } from "@/lib/webinar-registrants-store";
@@ -112,19 +112,32 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   }
 
   try {
-    const registrant = await createRegistrant({
+    // Recomputes and claims the seat atomically (not from the freeSeatsLeft read above, which
+    // can be stale by the time we get here) so two requests racing for the last free seat can
+    // never both succeed — see createFreeRegistrantIfSeatAvailable.
+    const registrant = await createFreeRegistrantIfSeatAvailable(webinar, {
       webinarId: webinar.id,
       userId: user.id,
       name: user.name,
       email: user.email,
       phone: user.phone,
-      tier: "free",
     });
-    if (registrant.status === "confirmed") {
-      confirmWebinarRegistration(webinar, registrant).catch((error) =>
-        console.error("Webinar registration confirmation failed", error),
+    if (!registrant) {
+      // Same seat-just-filled race as above — hand back the same "switch to overflow form"
+      // response the upfront freeSeatsLeft<=0 check above already uses.
+      return withSession(
+        NextResponse.json({
+          ok: true,
+          status: "needs_overflow_payment",
+          name: user.name,
+          email: user.email,
+          phone: user.phone,
+        }),
       );
     }
+    confirmWebinarRegistration(webinar, registrant).catch((error) =>
+      console.error("Webinar registration confirmation failed", error),
+    );
     return withSession(
       NextResponse.json({
         ok: true,

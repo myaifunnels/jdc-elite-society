@@ -208,6 +208,98 @@ export async function createRegistrant(input: CreateRegistrantInput): Promise<We
   return registrant;
 }
 
+/** Atomically claims one free seat and inserts the registrant, or returns null if the seat was
+ * already gone by the time this ran. Two requests racing for the last free seat (e.g. a
+ * double-submit, or two visitors submitting within milliseconds of each other) must never both
+ * succeed — a plain "count, then insert" (as the caller used to do) has a window between the read
+ * and the write where both requests can see a seat available. This holds a Postgres advisory
+ * transaction lock keyed on the webinar id so the count-then-insert is serialized per webinar:
+ * the first request to arrive holds the lock until it commits, so the second request's count
+ * always reflects the first request's insert. Falls back to the non-atomic in-memory path (no
+ * concurrent requests to race in a single dev process) when there's no database configured. */
+export async function createFreeRegistrantIfSeatAvailable(
+  webinar: WebinarRecord,
+  input: Omit<CreateRegistrantInput, "tier">,
+): Promise<WebinarRegistrant | null> {
+  const client = getPool();
+  if (!client) {
+    const freeConfirmed = countUniquePeople(
+      memoryRegistrants.filter(
+        (item) => item.webinarId === webinar.id && item.status === "confirmed" && item.tier === "free",
+      ),
+    );
+    if (freeConfirmed >= webinar.totalSeats) return null;
+    return createRegistrant({ ...input, tier: "free" });
+  }
+
+  await ensureTable(client);
+  const conn = await client.connect();
+  try {
+    await conn.query("BEGIN");
+    await conn.query("SELECT pg_advisory_xact_lock(hashtext($1))", [webinar.id]);
+
+    const countResult = await conn.query(
+      `SELECT COUNT(DISTINCT COALESCE(NULLIF(user_id, ''), email)) AS count
+       FROM webinar_registrants
+       WHERE webinar_id = $1 AND status = 'confirmed' AND tier = 'free'`,
+      [webinar.id],
+    );
+    const freeConfirmed = Number(countResult.rows[0]?.count ?? 0);
+    if (freeConfirmed >= webinar.totalSeats) {
+      await conn.query("ROLLBACK");
+      return null;
+    }
+
+    const registrant: WebinarRegistrant = {
+      id: `reg-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      webinarId: webinar.id,
+      userId: input.userId ?? "",
+      name: input.name,
+      email: input.email.toLowerCase(),
+      phone: input.phone,
+      photoUrl: input.photoUrl ?? "",
+      tier: "free",
+      status: "confirmed",
+      paymentReceiptUrl: "",
+      amountPaid: 0,
+      remindersSent: [],
+      createdAt: new Date().toISOString(),
+    };
+
+    await conn.query(
+      `
+      INSERT INTO webinar_registrants (
+        id, webinar_id, user_id, name, email, phone, photo_url, tier, status, payment_receipt_url, amount_paid, created_at
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+      `,
+      [
+        registrant.id,
+        registrant.webinarId,
+        registrant.userId,
+        registrant.name,
+        registrant.email,
+        registrant.phone,
+        registrant.photoUrl,
+        registrant.tier,
+        registrant.status,
+        registrant.paymentReceiptUrl,
+        registrant.amountPaid,
+        registrant.createdAt,
+      ],
+    );
+
+    await conn.query("COMMIT");
+    memoryRegistrants.unshift(registrant);
+    return registrant;
+  } catch (error) {
+    await conn.query("ROLLBACK").catch(() => {});
+    console.error("Failed to atomically claim webinar seat", error);
+    throw new Error("I couldn't save that registration. Please try again.");
+  } finally {
+    conn.release();
+  }
+}
+
 export async function updateRegistrantStatus(
   id: string,
   status: WebinarRegistrantStatus,

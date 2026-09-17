@@ -99,7 +99,7 @@ function WebinarAuthField({
 
 type RegisterResult =
   | { ok: true; tier: "free" | "paid_overflow"; status?: string; needsPasswordSetup?: boolean }
-  | { ok: false; error: string; accountExists?: boolean; email?: string };
+  | { ok: false; error: string; accountExists?: boolean; email?: string; skipsTempPassword?: boolean };
 type SignInResult =
   | { ok: true; status: "registered"; tier: "free" | "paid_overflow"; needsPasswordSetup?: boolean }
   | {
@@ -178,6 +178,7 @@ export function WebinarRegisterPanel({
   // than silently attaching the registration, so this switches to the sign-in tab and tells the
   // visitor how to get back in.
   const [existingAccountEmail, setExistingAccountEmail] = useState("");
+  const [existingAccountSkipsTempPassword, setExistingAccountSkipsTempPassword] = useState(false);
 
   function closeModal() {
     setOpen(false);
@@ -189,6 +190,7 @@ export function WebinarRegisterPanel({
     setSigninError("");
     setPrefill(null);
     setExistingAccountEmail("");
+    setExistingAccountSkipsTempPassword(false);
     setTab("register");
     closeModal();
   }
@@ -235,6 +237,7 @@ export function WebinarRegisterPanel({
       if (!response.ok || !payload || !("ok" in payload) || !payload.ok) {
         if (payload && "accountExists" in payload && payload.accountExists) {
           setExistingAccountEmail(payload.email ?? "");
+          setExistingAccountSkipsTempPassword(Boolean(payload.skipsTempPassword));
           setTab("signin");
           setPending(false);
           return;
@@ -425,7 +428,9 @@ export function WebinarRegisterPanel({
             {tab === "signin" && !signedInUser ? (
               <p className="macos-lead mb-3">
                 {existingAccountEmail
-                  ? "That email already has an account. First-time access uses the temporary password JDCELITESOCIETY, then you'll set a new one."
+                  ? existingAccountSkipsTempPassword
+                    ? "That email already has an account. Sign in with your existing password to finish registering."
+                    : "That email already has an account. First-time access uses the temporary password JDCELITESOCIETY, then you'll set a new one."
                   : "Sign in and we’ll reserve your seat for this webinar automatically."}
               </p>
             ) : (

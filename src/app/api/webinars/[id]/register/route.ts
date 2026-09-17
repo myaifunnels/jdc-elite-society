@@ -9,6 +9,7 @@ import { confirmWebinarRegistration, notifyExistingAccountWebinarSignin } from "
 import { WEBINAR_OVERFLOW_PRICE } from "@/lib/webinars";
 import { getWebinar } from "@/lib/webinars-store";
 import {
+  createFreeRegistrantIfSeatAvailable,
   createRegistrant,
   findRegistrantByUserAndWebinar,
   getFreeSeatsLeft,
@@ -69,7 +70,8 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   } else {
     const existingUser = await findUserByEmailOrPhone(parsed.data.email, parsed.data.phone);
     if (existingUser) {
-      if (existingUser.role !== "admin" && existingUser.role !== "partner") {
+      const isPrivilegedAccount = existingUser.role === "admin" || existingUser.role === "partner";
+      if (!isPrivilegedAccount) {
         await issueTemporaryPassword(existingUser.id);
         notifyExistingAccountWebinarSignin(
           webinar,
@@ -81,6 +83,9 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
         ok: false,
         accountExists: true,
         email: existingUser.email,
+        // Admin/partner accounts keep their real password — no temp password was issued for
+        // them above, so the client must not tell them to use one (see webinar-register-panel).
+        skipsTempPassword: isPrivilegedAccount,
         error: "This email already has an account. Sign in to finish registering.",
       });
     }
@@ -161,20 +166,29 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
 
   if (!isOverflow) {
     try {
-      const registrant = await createRegistrant({
+      // Recomputes and claims the seat atomically (not from the isOverflow read above, which can
+      // be stale by the time we get here) so two requests racing for the last free seat can never
+      // both succeed — see createFreeRegistrantIfSeatAvailable.
+      const registrant = await createFreeRegistrantIfSeatAvailable(webinar, {
         webinarId: webinar.id,
         userId,
         name: parsed.data.name,
         email: parsed.data.email,
         phone: parsed.data.phone,
         photoUrl,
-        tier: "free",
       });
-      if (registrant.status === "confirmed") {
-        confirmWebinarRegistration(webinar, registrant).catch((error) =>
-          console.error("Webinar registration confirmation failed", error),
+      if (!registrant) {
+        return NextResponse.json(
+          {
+            error:
+              "The last free seat was just taken by someone else. Please refresh the page and reserve an overflow seat instead.",
+          },
+          { status: 409 },
         );
       }
+      confirmWebinarRegistration(webinar, registrant).catch((error) =>
+        console.error("Webinar registration confirmation failed", error),
+      );
       return withSession(
         NextResponse.json({ ok: true, tier: registrant.tier, status: registrant.status, needsPasswordSetup }),
       );
