@@ -94,9 +94,10 @@ export function MastermindBatch2Page() {
         <div className="elite-shell elite-hero-copy">
           <p className="elite-kicker">COACH JAYSON DELA CRUZ</p>
           <h1 className="elite-display elite-identity-headline">
-            <span className="elite-headline-line">THE NETWORK BUILDER SYSTEM</span>
+            <span className="elite-headline-kicker">THE NETWORK BUILDER SYSTEM</span>
+            <span className="elite-headline-shift">How to Build a Business</span>
             <span className="elite-headline-shift">
-              How to Build a Business <em>That Grows Beyond You.</em>
+              <em>That Grows Beyond You.</em>
             </span>
           </h1>
           <p className="elite-sub elite-hero-positioning">
