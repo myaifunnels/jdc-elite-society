@@ -185,6 +185,20 @@ body:has(.elite-offer) {
 }
 
 .elite-warn { margin: 1rem 0 0; color: #8ca1c5; font-size: 0.82rem; }
+.elite-coupon-banner {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  margin-top: 0.9rem;
+  padding: 0.55em 1.1em;
+  border: 1px solid rgba(143, 200, 255, 0.35);
+  border-radius: 999px;
+  background: rgba(23, 105, 255, 0.16);
+  color: #d7e8ff;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+.elite-coupon-banner strong { color: #8fc8ff; letter-spacing: 0.05em; }
 .elite-stats { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 1.8rem; color: #aab4c8; font-size: 0.82rem; }
 .elite-stats span { display: inline-flex; min-height: 38px; align-items: center; gap: 0.34rem; padding: 0.48rem 0.78rem; border: 1px solid rgba(153, 188, 255, 0.16); border-radius: 999px; background: rgba(8, 15, 30, 0.58); backdrop-filter: blur(14px); }
 .elite-stats strong { color: #edf3ff; }

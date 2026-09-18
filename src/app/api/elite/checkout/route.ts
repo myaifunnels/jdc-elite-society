@@ -2,7 +2,7 @@ import { randomBytes } from "node:crypto";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
-import { mastermindOffer } from "@/data/mastermind-offer";
+import { isCouponValid, mastermindOffer } from "@/data/mastermind-offer";
 import { AFFILIATE_CAMPAIGN_COOKIE, AFFILIATE_COOKIE, normalizeAffiliateCode } from "@/lib/affiliate";
 import { getProfileByCode, recordAttribution } from "@/lib/affiliate-store";
 import {
@@ -22,12 +22,6 @@ import { storePaymentReceipt } from "@/lib/r2-upload";
 import { getSessionUser, sessionCookieName } from "@/lib/session";
 import { JDC_MASTERMIND_PAYMENT_VERIFICATION_TAG, mastermindCheckoutTags } from "@/lib/tags";
 import { eliteCheckoutSchema } from "@/lib/validations";
-
-const couponCode = mastermindOffer.couponCode;
-
-function appliedCoupon(raw: string) {
-  return raw.trim().toUpperCase() === couponCode;
-}
 
 async function upsertFunnelContact(input: {
   fullName: string;
@@ -85,7 +79,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "I-upload ang iyong resibo." }, { status: 400 });
   }
 
-  const spartans = appliedCoupon(parsed.data.couponCode);
+  const spartans = isCouponValid(parsed.data.couponCode);
   const price = spartans ? mastermindOffer.couponPrice : mastermindOffer.offerPrice;
   const priceLabel = `PHP ${price.toLocaleString("en-PH")}`;
   const mobile = formatInternationalPhone(parsed.data.phoneCountry, parsed.data.phoneNational);

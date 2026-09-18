@@ -113,6 +113,9 @@ export function MastermindBatch2Page() {
             />
           </div>
           <p className="elite-warn">Regular ₱5,000 · Full Value ₱14,999</p>
+          <p className="elite-coupon-banner">
+            Use code <strong>DUPLICATION</strong> for an extra ₱500 off — next 24 hours only
+          </p>
           <div className="elite-stats">
             <span>
               <strong>{mastermindOffer.memberCount}+</strong> members inside
@@ -213,6 +216,9 @@ export function MastermindBatch2Page() {
               </div>
               <p style={{ textAlign: "right", fontStyle: "italic", fontSize: "0.8rem" }}>
                 One payment. Lifetime access. No exceptions after the deadline.
+              </p>
+              <p className="elite-coupon-banner" style={{ display: "flex", justifyContent: "center", width: "100%" }}>
+                Use code <strong>DUPLICATION</strong> at checkout for ₱500 off — next 24 hours only
               </p>
               <MastermindCtaLink
                 title="Secure my ₱2,000 seat"

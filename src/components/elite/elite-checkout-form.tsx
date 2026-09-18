@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 
 import { PhoneField } from "@/components/forms/phone-field";
 import type { SignedInCheckoutUser } from "@/components/elite/elite-checkout-page";
-import { formatPhp, mastermindOffer } from "@/data/mastermind-offer";
+import { formatPhp, isCouponValid, mastermindOffer } from "@/data/mastermind-offer";
 import { findCountry } from "@/lib/countries";
 import { elitePaymentMethods } from "@/lib/validations";
 
@@ -87,7 +87,7 @@ export function EliteCheckoutForm({ signedInUser }: { signedInUser: SignedInChec
   const [signinError, setSigninError] = useState("");
   const [signinPending, setSigninPending] = useState(false);
 
-  const couponEligible = couponCode.trim().toUpperCase() === mastermindOffer.couponCode;
+  const couponEligible = isCouponValid(couponCode);
   const price = couponEligible ? mastermindOffer.couponPrice : mastermindOffer.offerPrice;
 
   const receiptLabel = useMemo(() => {
@@ -96,13 +96,13 @@ export function EliteCheckoutForm({ signedInUser }: { signedInUser: SignedInChec
   }, [receipt]);
 
   function applyCoupon() {
-    if (couponCode.trim().toUpperCase() === mastermindOffer.couponCode) {
+    if (isCouponValid(couponCode)) {
       setCouponApplied(true);
       setCouponError("");
       return;
     }
     setCouponApplied(false);
-    setCouponError("Invalid coupon code");
+    setCouponError("Invalid or expired coupon code");
   }
 
   function validateDetails() {
@@ -443,7 +443,9 @@ export function EliteCheckoutForm({ signedInUser }: { signedInUser: SignedInChec
             </button>
           </div>
           {couponApplied ? (
-            <p className="elite-coupon-success">SPARTANS coupon applied. Save PHP {mastermindOffer.couponDiscount}.</p>
+            <p className="elite-coupon-success">
+              {couponCode.trim().toUpperCase()} coupon applied. Save PHP {mastermindOffer.couponDiscount}.
+            </p>
           ) : null}
           {couponError ? <p className="error">{couponError}</p> : null}
         </div>

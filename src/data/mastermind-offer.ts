@@ -54,6 +54,10 @@ export const mastermindOffer = {
   couponPrice: 1500,
   couponCode: "SPARTANS",
   couponDiscount: 500,
+  coupons: [
+    { code: "SPARTANS" },
+    { code: "DUPLICATION", expiresAt: "2026-09-19T12:00:35.000Z" },
+  ] as { code: string; expiresAt?: string }[],
   coachingPricePerHour: 5000,
   inPersonCoachingPricePerHour: 10000,
   memberCount: 147,
@@ -213,4 +217,13 @@ export const mastermindOffer = {
 
 export function formatPhp(amount: number) {
   return `PHP ${amount.toLocaleString("en-PH")}`;
+}
+
+export function isCouponValid(rawCode: string, now: Date = new Date()) {
+  const code = rawCode.trim().toUpperCase();
+  if (!code) return false;
+  const match = mastermindOffer.coupons.find((coupon) => coupon.code === code);
+  if (!match) return false;
+  if (match.expiresAt && now.getTime() > new Date(match.expiresAt).getTime()) return false;
+  return true;
 }
