@@ -5,9 +5,9 @@ import { siteUrl } from "@/lib/site";
 
 const offerUrl = `${siteUrl}/breakthrough`;
 const ogImageUrl = `${siteUrl}${mastermindOffer.ogImage}`;
-const title = "JDC Mastermind: Your Breakthrough Begins the Moment You Decide to Rise.";
+const title = "The Network Builder System: How to Build a Business That Grows Beyond You";
 const description =
-  "The waiting ends here and real change begins. Join JDC Mastermind with Coach Jayson Dela Cruz — Foundation and Execution, lifetime replays, and the private JDC Elite Society community.";
+  `Join JDC Mastermind with Coach Jayson Dela Cruz — two live sessions, ${mastermindOffer.sessionDates.session1} and ${mastermindOffer.sessionDates.session2} (Foundation and Execution), plus lifetime replays and the private JDC Elite Society community.`;
 
 export const mastermindBatch2Seo: Metadata = {
   metadataBase: new URL(siteUrl),

@@ -57,6 +57,11 @@ export const mastermindOffer = {
   coachingPricePerHour: 5000,
   inPersonCoachingPricePerHour: 10000,
   memberCount: 147,
+  sessionDates: {
+    session1: "October 2",
+    session2: "October 9",
+    combined: "October 2 & October 9",
+  },
   chatWidgetId: "6a88a07f1f8d51222d5a4b15",
   funnelTrackingId: "tk_05790544d7b7482782736edf17e38d41",
   funnelLocationId: "Col3j2B7jRDX5y8J5bgN",
@@ -73,14 +78,14 @@ export const mastermindOffer = {
   androidApp: "https://play.google.com/store/apps/details?id=net.clientclub.app.kollab",
   iosApp: "https://apps.apple.com/us/app/gokollab/id6484272411",
   includes: [
-    "Two complete sessions: Foundation and Execution",
+    "Two live sessions: Foundation (Oct 2) and Execution (Oct 9)",
     "Lifetime access to every session replay",
     "Private JDC Elite Society accountability community",
     "Watch anywhere through the Android and iPhone apps",
   ],
   sessions: [
     {
-      kicker: "Session 1 · Foundation",
+      kicker: "Session 1 · Foundation · October 2",
       title: "Foundation: decide what you stand for",
       image: "https://vibe.filesafe.space/1780838141047994819/attachments/f5485024-ec42-4296-bed7-4db0c14623f5.jpg",
       body: "Get honest about where you are, define the vision worth working for, and build the standards that make your direction clear.",
@@ -92,7 +97,7 @@ export const mastermindOffer = {
       ],
     },
     {
-      kicker: "Session 2 · Execution",
+      kicker: "Session 2 · Execution · October 9",
       title: "Execution: turn standards into momentum",
       image: "https://vibe.filesafe.space/1780838141047994819/attachments/3e79791e-ce26-46ba-ab78-c8b32e283601.jpg",
       body: "Translate clarity into repeatable action through practical systems, stronger leadership, and a plan that survives low-motivation days.",
@@ -132,7 +137,7 @@ export const mastermindOffer = {
   ],
   agenda: [
     {
-      session: "SESSION 1",
+      session: "SESSION 1 · OCTOBER 2",
       title: "FOUNDATION",
       bullets: [
         "Do's and Don'ts: the standards ng JDC Elite Society",
@@ -143,7 +148,7 @@ export const mastermindOffer = {
       ],
     },
     {
-      session: "SESSION 2",
+      session: "SESSION 2 · OCTOBER 9",
       title: "EXECUTION",
       bullets: [
         "Assignment review: community accountability check-in",

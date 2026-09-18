@@ -94,14 +94,15 @@ export function MastermindBatch2Page() {
         <div className="elite-shell elite-hero-copy">
           <p className="elite-kicker">COACH JAYSON DELA CRUZ</p>
           <h1 className="elite-display elite-identity-headline">
-            <span className="elite-headline-line">JDC MASTERMIND</span>
+            <span className="elite-headline-line">THE NETWORK BUILDER SYSTEM</span>
             <span className="elite-headline-shift">
-              Your Breakthrough Begins the Moment <em>You Decide to Rise.</em>
+              How to Build a Business <em>That Grows Beyond You.</em>
             </span>
           </h1>
           <p className="elite-sub elite-hero-positioning">
-            The waiting ends here and real change begins. This is the stage where decisions turn into momentum, and
-            momentum turns into results.
+            Two live sessions — {mastermindOffer.sessionDates.session1} and{" "}
+            {mastermindOffer.sessionDates.session2} — where decisions turn into momentum, and momentum turns into
+            results.
           </p>
           <div className="elite-hero-actions">
             <MastermindCtaLink
@@ -116,7 +117,7 @@ export function MastermindBatch2Page() {
               <strong>{mastermindOffer.memberCount}+</strong> members inside
             </span>
             <span>
-              <strong>2</strong> focused sessions
+              <strong>{mastermindOffer.sessionDates.combined}</strong> live sessions
             </span>
             <span>
               <strong>Lifetime</strong> access
