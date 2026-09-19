@@ -7,6 +7,7 @@ import { FormEvent, type ReactNode, useMemo, useRef, useState } from "react";
 
 import { mastermindOffer } from "@/data/mastermind-offer";
 import { ZoomLogo } from "@/components/dashboard/integration-logos";
+import { useWebinarPhase } from "@/components/webinars/webinar-countdown";
 import { WebinarRegisterModal } from "@/components/webinars/webinar-register-modal";
 import { WEBINAR_ZOOM_MEETING_ID, WEBINAR_ZOOM_PASSCODE } from "@/lib/webinars";
 
@@ -122,6 +123,9 @@ function outcomeFor(tier: "free" | "paid_overflow", status?: string): Outcome {
 
 export function WebinarRegisterPanel({
   webinarId,
+  scheduledAt,
+  serverNow,
+  hasReplay,
   freeSeatsLeft,
   overflowPrice,
   joinUrl,
@@ -129,6 +133,14 @@ export function WebinarRegisterPanel({
   signedInUser,
 }: {
   webinarId: string;
+  /** The webinar's scheduled start — with `serverNow`, drives the live / registration-closed
+   * states (registration closes WEBINAR_LIVE_WINDOW_MS after the start). */
+  scheduledAt: string;
+  /** The server's clock when this page rendered; used until the client clock takes over. */
+  serverNow: number;
+  /** Whether a replay is published — decides between "Watch replay" and "replay coming soon"
+   * once registration has closed. */
+  hasReplay: boolean;
   freeSeatsLeft: number;
   overflowPrice: number;
   /** Where "Join via Zoom" should link once someone's seat is confirmed — the webinar's own
@@ -145,6 +157,8 @@ export function WebinarRegisterPanel({
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
   const isOverflow = freeSeatsLeft <= 0;
+  const phase = useWebinarPhase(scheduledAt, serverNow);
+  const isLive = phase === "live";
 
   // A signed-in session is authoritative; otherwise fall back to whatever draft was saved just
   // before redirecting to Google (see "Continue with Google" below), read once via a lazy
@@ -307,6 +321,28 @@ export function WebinarRegisterPanel({
     }
   }
 
+  // The live window has passed — registration is closed for everyone (the register APIs enforce
+  // this too), including people who registered but never showed up.
+  if (phase === "closed") {
+    return (
+      <div className="flex w-full flex-col gap-3 sm:w-auto">
+        <div className="inline-flex w-fit items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2.5 text-sm font-extrabold text-white/90 backdrop-blur-xl">
+          Registration is closed &mdash; this webinar has ended.
+        </div>
+        {hasReplay ? (
+          <Link
+            href={`/webinars/${webinarId}/replay`}
+            className="button-primary pressable inline-flex min-h-[3.5rem] w-full items-center justify-center gap-2 px-10 text-base font-extrabold sm:w-auto sm:min-w-[20rem]"
+          >
+            Watch the replay
+          </Link>
+        ) : (
+          <p className="m-0 text-sm font-semibold text-white/70">The replay will be posted here soon.</p>
+        )}
+      </div>
+    );
+  }
+
   if (existingRegistration?.status === "confirmed") {
     return joinUrl ? (
       <div className="flex w-full flex-col items-center gap-2 sm:w-auto">
@@ -317,7 +353,7 @@ export function WebinarRegisterPanel({
           className="button-primary pressable inline-flex min-h-[3.5rem] w-full items-center justify-center gap-2 px-10 text-base font-extrabold sm:w-auto sm:min-w-[20rem]"
         >
           <ZoomLogo size={20} />
-          Join via Zoom
+          {isLive ? "Join live now via Zoom" : "Join via Zoom"}
         </Link>
         <ZoomMeetingDetails />
       </div>
@@ -344,7 +380,11 @@ export function WebinarRegisterPanel({
         className="button-primary pressable inline-flex min-h-[3.5rem] w-full items-center justify-center gap-2 px-10 text-base font-extrabold sm:w-auto sm:min-w-[20rem]"
         onClick={() => setOpen(true)}
       >
-        {isOverflow ? `Reserve overflow seat · ₱${overflowPrice}` : "Reserve My Seat Now"}
+        {isOverflow
+          ? `Reserve overflow seat · ₱${overflowPrice}`
+          : isLive
+            ? "Register & join the live session"
+            : "Reserve My Seat Now"}
       </button>
 
       <WebinarRegisterModal

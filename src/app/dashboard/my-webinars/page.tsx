@@ -3,11 +3,17 @@ import Link from "next/link";
 
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { ZoomLogo } from "@/components/dashboard/integration-logos";
+import { WebinarLiveBadge } from "@/components/webinars/webinar-live-badge";
 import { EpisodeThumb } from "@/components/webinars/webinar-thumb";
 import { requireCapability } from "@/lib/session";
 import { getFeaturedWebinar, getWebinar, listWebinars } from "@/lib/webinars-store";
 import { listRegistrantsByUserId, type WebinarRegistrant } from "@/lib/webinar-registrants-store";
-import { WEBINAR_ZOOM_MEETING_ID, WEBINAR_ZOOM_PASSCODE, type WebinarRecord } from "@/lib/webinars";
+import {
+  WEBINAR_ZOOM_MEETING_ID,
+  WEBINAR_ZOOM_PASSCODE,
+  getWebinarPhase,
+  type WebinarRecord,
+} from "@/lib/webinars";
 
 function formatDateTimeLabel(iso: string) {
   const date = new Date(iso);
@@ -45,13 +51,14 @@ function availableWebinars(
   registeredWebinarIds: Set<string>,
   featuredWebinarId: string | null,
 ) {
-  const now = Date.now();
+  // "Open to join" includes a webinar that's live right now — registration only closes once the
+  // live window is over (see getWebinarPhase).
   return allWebinars
     .filter(
       (webinar) =>
         webinar.id === featuredWebinarId &&
         !registeredWebinarIds.has(webinar.id) &&
-        new Date(webinar.scheduledAt).getTime() >= now,
+        getWebinarPhase(webinar.scheduledAt) !== "closed",
     )
     .sort((a, b) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime());
 }
@@ -117,6 +124,11 @@ export default async function MyWebinarsPage() {
                   <strong className="text-[1rem] leading-snug">{webinar.title}</strong>
                   <StatusPill status={registrant.status} />
                 </div>
+                {getWebinarPhase(webinar.scheduledAt) === "live" ? (
+                  <div>
+                    <WebinarLiveBadge size="sm" />
+                  </div>
+                ) : null}
                 <p className="m-0 flex items-center gap-2 text-xs text-[var(--muted)]">
                   <CalendarDays aria-hidden size={14} className="text-[var(--brand)]" />
                   {formatDateTimeLabel(webinar.scheduledAt)} &middot; Manila Time
@@ -125,7 +137,7 @@ export default async function MyWebinarsPage() {
                   Seat type: {registrant.tier === "paid_overflow" ? "Overflow (paid)" : "Free"}
                 </p>
                 <div className="mt-auto grid gap-2 pt-3">
-                  {registrant.status === "confirmed" && webinar.zoomLink ? (
+                  {registrant.status === "confirmed" && webinar.zoomLink && getWebinarPhase(webinar.scheduledAt) !== "closed" ? (
                     <div className="grid gap-1.5">
                       <Link
                         href={webinar.zoomLink}
@@ -134,7 +146,7 @@ export default async function MyWebinarsPage() {
                         className="button-primary pressable inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-extrabold"
                       >
                         <ZoomLogo size={18} />
-                        Join via Zoom
+                        {getWebinarPhase(webinar.scheduledAt) === "live" ? "Join live now via Zoom" : "Join via Zoom"}
                       </Link>
                       <p className="m-0 text-center text-xs text-[var(--muted)]">
                         Meeting ID: <strong className="text-sm">{WEBINAR_ZOOM_MEETING_ID}</strong> &middot; Passcode:{" "}

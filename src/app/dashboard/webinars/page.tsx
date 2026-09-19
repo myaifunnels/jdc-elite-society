@@ -3,7 +3,9 @@ import { ScheduleWebinarButton } from "@/components/dashboard/schedule-webinar-b
 import { WebinarAdminGridCard } from "@/components/dashboard/webinar-admin-grid-card";
 import { WebinarAdminHero } from "@/components/dashboard/webinar-admin-hero";
 import { WebinarAdminUpcomingRow } from "@/components/dashboard/webinar-admin-upcoming-row";
+import { WebinarGhlSyncPanel } from "@/components/dashboard/webinar-ghl-sync-panel";
 import { WebinarOverflowCard } from "@/components/dashboard/webinar-overflow-card";
+import { getWebinarGhlBackfillState } from "@/lib/ghl-webinar-pipeline";
 import { requireCapability } from "@/lib/session";
 import { getFeaturedWebinar, listWebinars } from "@/lib/webinars-store";
 import { listPendingOverflowRegistrants, listRegistrants } from "@/lib/webinar-registrants-store";
@@ -137,6 +139,8 @@ export default async function WebinarsAdminPage() {
             <p className="m-0 text-sm text-[var(--muted)]">No webinars yet. Schedule your first one above.</p>
           )}
         </section>
+
+        <WebinarGhlSyncPanel state={getWebinarGhlBackfillState()} />
 
         <section className="grid gap-3">
           <h3 className="m-0 text-lg font-bold tracking-[-0.02em]">

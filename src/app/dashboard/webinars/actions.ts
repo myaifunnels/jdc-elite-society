@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 
+import { startWebinarGhlBackfill, syncWebinarRegistrantToGhl } from "@/lib/ghl-webinar-pipeline";
 import { requireCapability } from "@/lib/session";
 import { confirmWebinarRegistration } from "@/lib/webinar-notify";
 import { deleteWebinar, getWebinar, saveWebinar, setFeaturedWebinar } from "@/lib/webinars-store";
@@ -139,6 +140,9 @@ export async function approveOverflowRegistrantAction(
       confirmWebinarRegistration(webinar, registrant).catch((error) =>
         console.error("Webinar registration confirmation failed", error),
       );
+      syncWebinarRegistrantToGhl(webinar, registrant, { moveStage: true, replaceStatusTags: true }).catch((error) =>
+        console.error("Webinar registrant GHL sync failed", error),
+      );
     }
   } catch (error) {
     return { error: error instanceof Error ? error.message : "I couldn't approve that registration." };
@@ -158,7 +162,13 @@ export async function rejectOverflowRegistrantAction(
   if (!id) return { error: "Missing registrant." };
 
   try {
-    await updateRegistrantStatus(id, "rejected");
+    const registrant = await updateRegistrantStatus(id, "rejected");
+    const webinar = await getWebinar(registrant.webinarId);
+    if (webinar) {
+      syncWebinarRegistrantToGhl(webinar, registrant, { replaceStatusTags: true }).catch((error) =>
+        console.error("Webinar registrant GHL sync failed", error),
+      );
+    }
   } catch (error) {
     return { error: error instanceof Error ? error.message : "I couldn't reject that registration." };
   }
@@ -166,4 +176,19 @@ export async function rejectOverflowRegistrantAction(
   revalidatePath("/dashboard/webinars");
   revalidatePath("/webinars");
   return { success: "Registration rejected." };
+}
+
+/** Admin "Sync to GoHighLevel" button: pushes every existing webinar registrant (all webinars)
+ * into the GHL webinar pipeline in the background — see startWebinarGhlBackfill. */
+export async function syncWebinarRegistrantsToGhlAction(): Promise<WebinarFormState> {
+  await requireCapability("webinars");
+
+  const result = await startWebinarGhlBackfill();
+  revalidatePath("/dashboard/webinars");
+  if (!result.started) {
+    return { error: result.reason ?? "Couldn't start the sync." };
+  }
+  return {
+    success: `Sync started for ${result.total} registrants. It runs in the background — refresh in a few minutes to see progress.`,
+  };
 }

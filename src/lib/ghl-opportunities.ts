@@ -216,9 +216,93 @@ export async function getGhlOpportunityById(opportunityId: string) {
   }
 }
 
+/** Every opportunity a given contact has in one pipeline — used to find an existing opportunity
+ * before creating one, without paging through the whole pipeline. */
+export async function listGhlOpportunitiesForContact(pipelineId: string, contactId: string) {
+  const settings = await getResolvedIntegrationSettings();
+  const token = settings.ghlApiKey;
+  const locationId = settings.ghlLocationId;
+  if (!token || !locationId || !pipelineId || !contactId) {
+    return [] as GhlOpportunity[];
+  }
+
+  try {
+    const query = new URLSearchParams({
+      location_id: locationId,
+      pipeline_id: pipelineId,
+      contact_id: contactId,
+      status: "all",
+      limit: "100",
+    });
+    const response = await fetch(`https://services.leadconnectorhq.com/opportunities/search?${query.toString()}`, {
+      headers: ghlHeaders(token),
+      cache: "no-store",
+      signal: AbortSignal.timeout(10_000),
+    });
+    if (!response.ok) {
+      console.error("GHL contact opportunity search failed", response.status, await response.text());
+      return [];
+    }
+    const payload = asRecord(await response.json());
+    const list = Array.isArray(payload.opportunities) ? payload.opportunities : [];
+    return list.map(mapOpportunity).filter((item): item is GhlOpportunity => Boolean(item));
+  } catch (error) {
+    console.error("GHL contact opportunity search error", error);
+    return [];
+  }
+}
+
+/** Creates a brand-new opportunity (unlike upsertGhlOpportunity, which GHL de-duplicates to one
+ * per contact per pipeline — not what we want when one person registers for several webinars). */
+export async function createGhlOpportunity(input: {
+  contactId: string;
+  pipelineId: string;
+  pipelineStageId: string;
+  name: string;
+  monetaryValue: number;
+  status?: "open" | "won" | "lost" | "abandoned";
+  source?: string;
+}) {
+  const settings = await getResolvedIntegrationSettings();
+  const token = settings.ghlApiKey;
+  const locationId = settings.ghlLocationId;
+  if (!token || !locationId || !input.contactId) {
+    return { skipped: true as const, ok: false as const, opportunityId: undefined };
+  }
+
+  try {
+    const response = await fetch("https://services.leadconnectorhq.com/opportunities/", {
+      method: "POST",
+      headers: ghlHeaders(token, true),
+      signal: AbortSignal.timeout(10_000),
+      body: JSON.stringify({
+        locationId,
+        contactId: input.contactId,
+        pipelineId: input.pipelineId,
+        pipelineStageId: input.pipelineStageId,
+        name: input.name,
+        monetaryValue: input.monetaryValue,
+        status: input.status ?? "open",
+        source: input.source || undefined,
+      }),
+    });
+    if (!response.ok) {
+      console.error("GHL opportunity create failed", response.status, await response.text());
+      return { skipped: false as const, ok: false as const, opportunityId: undefined };
+    }
+    const payload = asRecord(await response.json());
+    const opportunity = asRecord(payload.opportunity);
+    const opportunityId = String(opportunity.id ?? payload.id ?? "").trim();
+    return { skipped: false as const, ok: true as const, opportunityId: opportunityId || undefined };
+  } catch (error) {
+    console.error("GHL opportunity create error", error);
+    return { skipped: false as const, ok: false as const, opportunityId: undefined };
+  }
+}
+
 export async function updateGhlOpportunity(
   opportunityId: string,
-  patch: { pipelineStageId?: string; monetaryValue?: number; name?: string },
+  patch: { pipelineStageId?: string; monetaryValue?: number; name?: string; status?: "open" | "won" | "lost" | "abandoned" },
 ) {
   const settings = await getResolvedIntegrationSettings();
   const token = settings.ghlApiKey;
@@ -229,6 +313,9 @@ export async function updateGhlOpportunity(
   const body: Record<string, unknown> = {};
   if (patch.pipelineStageId) {
     body.pipelineStageId = patch.pipelineStageId;
+  }
+  if (patch.status) {
+    body.status = patch.status;
   }
   if (typeof patch.monetaryValue === "number") {
     body.monetaryValue = patch.monetaryValue;

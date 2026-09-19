@@ -8,6 +8,7 @@ import { ZoomLogo } from "@/components/dashboard/integration-logos";
 import { WebinarAvatarRow } from "@/components/webinars/webinar-avatar-row";
 import { WebinarCountdown } from "@/components/webinars/webinar-countdown";
 import { WebinarParticles } from "@/components/webinars/webinar-particles";
+import { WebinarPhasePill } from "@/components/webinars/webinar-phase-pill";
 import { WebinarRegisterPanel } from "@/components/webinars/webinar-register-panel";
 import { EpisodeThumb } from "@/components/webinars/webinar-thumb";
 import { getSessionUser } from "@/lib/session";
@@ -24,6 +25,12 @@ export const metadata: Metadata = {
 
 const formatDateLabel = formatWebinarDateLabel;
 const formatTimeLabel = formatWebinarTimeLabel;
+
+/** The server's clock, handed to the live/closed client components so their first render matches
+ * the server render (they switch to the visitor's own ticking clock right after hydration). */
+function currentTimeMs() {
+  return Date.now();
+}
 
 function SeatsPill({ freeSeatsLeft }: { freeSeatsLeft: number }) {
   if (freeSeatsLeft <= 0) {
@@ -91,6 +98,7 @@ export default async function WebinarsPage() {
     featured && sessionUser
       ? await findRegistrantByUserAndWebinar(featured.id, sessionUser.id, sessionUser.email)
       : null;
+  const serverNow = currentTimeMs();
 
   return (
     <div className="min-h-screen">
@@ -128,7 +136,11 @@ export default async function WebinarsPage() {
               <div className="container-shell relative flex min-h-[640px] flex-col justify-end gap-6 py-12 sm:min-h-[720px] sm:py-16">
                 <div className="fade-up flex flex-wrap items-center gap-3">
                   <p className="eyebrow m-0 text-white/70">Latest webinar</p>
-                  <SeatsPill freeSeatsLeft={freeSeatsLeft} />
+                  <WebinarPhasePill
+                    scheduledAt={featured.scheduledAt}
+                    serverNow={serverNow}
+                    upcoming={<SeatsPill freeSeatsLeft={freeSeatsLeft} />}
+                  />
                 </div>
 
                 <h1
@@ -199,6 +211,9 @@ export default async function WebinarsPage() {
                 <div className="fade-up-delay-2 flex flex-col gap-4 sm:flex-row sm:items-start">
                   <WebinarRegisterPanel
                     webinarId={featured.id}
+                    scheduledAt={featured.scheduledAt}
+                    serverNow={serverNow}
+                    hasReplay={Boolean(featured.replayUrl)}
                     freeSeatsLeft={freeSeatsLeft}
                     overflowPrice={WEBINAR_OVERFLOW_PRICE}
                     joinUrl={featured.zoomLink || undefined}

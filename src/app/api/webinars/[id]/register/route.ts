@@ -6,7 +6,8 @@ import { createUser, findUserByEmailOrPhone, issueTemporaryPassword } from "@/li
 import { storeRegistrantPhoto, storeWebinarReceipt } from "@/lib/r2-upload";
 import { getSessionUser, sessionCookieName } from "@/lib/session";
 import { confirmWebinarRegistration, notifyExistingAccountWebinarSignin } from "@/lib/webinar-notify";
-import { WEBINAR_OVERFLOW_PRICE } from "@/lib/webinars";
+import { syncWebinarRegistrantToGhl } from "@/lib/ghl-webinar-pipeline";
+import { WEBINAR_OVERFLOW_PRICE, getWebinarPhase } from "@/lib/webinars";
 import { getWebinar } from "@/lib/webinars-store";
 import {
   createFreeRegistrantIfSeatAvailable,
@@ -27,6 +28,13 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   const webinar = await getWebinar(id);
   if (!webinar) {
     return NextResponse.json({ error: "This webinar could not be found." }, { status: 404 });
+  }
+
+  // Registration stays open through the live session (latecomers can still join) and closes
+  // WEBINAR_LIVE_WINDOW_MS after the scheduled start. Enforced here, not just in the UI, so a
+  // stale open tab or a direct API call can't register someone for a finished webinar.
+  if (getWebinarPhase(webinar.scheduledAt) === "closed") {
+    return NextResponse.json({ error: "Registration for this webinar has closed." }, { status: 410 });
   }
 
   let form: FormData;
@@ -189,6 +197,9 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
       confirmWebinarRegistration(webinar, registrant).catch((error) =>
         console.error("Webinar registration confirmation failed", error),
       );
+      syncWebinarRegistrantToGhl(webinar, registrant).catch((error) =>
+        console.error("Webinar registrant GHL sync failed", error),
+      );
       return withSession(
         NextResponse.json({ ok: true, tier: registrant.tier, status: registrant.status, needsPasswordSetup }),
       );
@@ -230,6 +241,9 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
       paymentReceiptUrl: receiptUrl,
       amountPaid: WEBINAR_OVERFLOW_PRICE,
     });
+    syncWebinarRegistrantToGhl(webinar, registrant).catch((error) =>
+      console.error("Webinar registrant GHL sync failed", error),
+    );
     return withSession(
       NextResponse.json({ ok: true, tier: registrant.tier, status: registrant.status, needsPasswordSetup }),
     );

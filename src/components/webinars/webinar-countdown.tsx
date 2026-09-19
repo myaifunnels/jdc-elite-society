@@ -3,6 +3,9 @@
 import { Volume2, VolumeX } from "lucide-react";
 import { useEffect, useRef, useSyncExternalStore } from "react";
 
+import { WebinarLiveBadge } from "@/components/webinars/webinar-live-badge";
+import { getWebinarPhase, type WebinarPhase } from "@/lib/webinars";
+
 const MUTE_STORAGE_KEY = "webinar-countdown-muted";
 
 function splitDuration(ms: number) {
@@ -65,6 +68,15 @@ function getTickSnapshot(): number | null {
 
 function getServerTickSnapshot(): number | null {
   return null;
+}
+
+/** The webinar's current phase (upcoming / live / closed), ticking every second on the client so
+ * a visitor sitting on the page sees it flip to "LIVE NOW" — and registration close — without
+ * refreshing. `serverNow` (the server's clock at render time) is used until the client clock
+ * arrives, so the server render and first client render agree and hydration matches. */
+export function useWebinarPhase(scheduledAt: string, serverNow: number): WebinarPhase {
+  const tick = useSyncExternalStore(subscribeTick, getTickSnapshot, getServerTickSnapshot);
+  return getWebinarPhase(scheduledAt, tick ?? serverNow);
 }
 
 function readStoredMuted(): boolean {
@@ -190,15 +202,16 @@ export function WebinarCountdown({ scheduledAt }: { scheduledAt: string }) {
 
   const diff = target - now;
   if (diff <= 0) {
-    const elapsed = now - target;
-    const isRecent = elapsed < 1000 * 60 * 60 * 3; // within 3 hours of start
+    if (getWebinarPhase(scheduledAt, now) === "live") {
+      return <WebinarLiveBadge />;
+    }
     return (
       <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2.5 text-sm font-extrabold uppercase tracking-[0.08em] text-white backdrop-blur-xl">
         <i
           aria-hidden
           className="inline-block h-2 w-2 rounded-full bg-[var(--brand)] shadow-[0_0_0_0.3rem_rgba(255,255,255,0.15)]"
         />
-        {isRecent ? "Live now" : "Replay available soon"}
+        Webinar ended &middot; Replay available soon
       </div>
     );
   }

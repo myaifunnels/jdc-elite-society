@@ -33,6 +33,24 @@ export type WebinarInput = Partial<Omit<WebinarRecord, "id" | "createdAt" | "upd
 /** Price (PHP) for an overflow seat once a webinar's free seats are gone. */
 export const WEBINAR_OVERFLOW_PRICE = 499;
 
+/** How long after a webinar's scheduled start it stays "live" — and therefore how long
+ * registration stays open for latecomers. Once this window passes, registration closes. */
+export const WEBINAR_LIVE_WINDOW_MS = 4 * 60 * 60 * 1000;
+
+export type WebinarPhase = "upcoming" | "live" | "closed";
+
+/** Where a webinar is in its lifecycle right now: "upcoming" before the scheduled start, "live"
+ * from the start until WEBINAR_LIVE_WINDOW_MS later (registration still open), then "closed".
+ * An unparseable date counts as upcoming so a bad record never locks people out. Pure and
+ * clock-injectable so the server (registration APIs) and client (live badge) agree. */
+export function getWebinarPhase(scheduledAt: string, now: number = Date.now()): WebinarPhase {
+  const start = new Date(scheduledAt).getTime();
+  if (Number.isNaN(start)) return "upcoming";
+  if (now < start) return "upcoming";
+  if (now < start + WEBINAR_LIVE_WINDOW_MS) return "live";
+  return "closed";
+}
+
 /** The recurring Zoom room every webinar uses — shown alongside "Join via Zoom" for anyone who
  * joins by dialing in or entering the meeting manually in the Zoom app instead of the link. */
 export const WEBINAR_ZOOM_MEETING_ID = "838 2522 3200";

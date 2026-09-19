@@ -3,7 +3,9 @@ import { z } from "zod";
 
 import { authenticateUser } from "@/lib/auth-store";
 import { sessionCookieName } from "@/lib/session";
+import { syncWebinarRegistrantToGhl } from "@/lib/ghl-webinar-pipeline";
 import { confirmWebinarRegistration } from "@/lib/webinar-notify";
+import { getWebinarPhase } from "@/lib/webinars";
 import { getWebinar } from "@/lib/webinars-store";
 import {
   createFreeRegistrantIfSeatAvailable,
@@ -37,6 +39,11 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   const webinar = await getWebinar(id);
   if (!webinar) {
     return NextResponse.json({ ok: false, error: "This webinar could not be found." }, { status: 404 });
+  }
+
+  // Same close rule as the public register route — see WEBINAR_LIVE_WINDOW_MS.
+  if (getWebinarPhase(webinar.scheduledAt) === "closed") {
+    return NextResponse.json({ ok: false, error: "Registration for this webinar has closed." }, { status: 410 });
   }
 
   let body: unknown;
@@ -137,6 +144,9 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
     }
     confirmWebinarRegistration(webinar, registrant).catch((error) =>
       console.error("Webinar registration confirmation failed", error),
+    );
+    syncWebinarRegistrantToGhl(webinar, registrant).catch((error) =>
+      console.error("Webinar registrant GHL sync failed", error),
     );
     return withSession(
       NextResponse.json({
