@@ -269,7 +269,8 @@ export function EliteCheckoutForm({ signedInUser }: { signedInUser: SignedInChec
         setPending(false);
         return;
       }
-      router.push("/elite/coaching-offer");
+      const fromDuplication = new URLSearchParams(window.location.search).get("src") === "duplication";
+      router.push(fromDuplication ? "/elite/coaching-offer?src=duplication" : "/elite/coaching-offer");
     } catch {
       setServerError("Hindi na-submit ang payment. Subukan ulit.");
       setPending(false);

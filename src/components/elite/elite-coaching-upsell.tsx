@@ -34,8 +34,13 @@ export function EliteCoachingUpsell({ firstName }: { firstName: string }) {
     return receipt.name;
   }, [receipt]);
 
+  function thankYouPath() {
+    const fromDuplication = new URLSearchParams(window.location.search).get("src") === "duplication";
+    return fromDuplication ? "/duplication/thank-you" : "/elite/thank-you";
+  }
+
   function skip() {
-    router.push("/elite/thank-you");
+    router.push(thankYouPath());
   }
 
   async function submitOffer() {
@@ -64,7 +69,7 @@ export function EliteCoachingUpsell({ firstName }: { firstName: string }) {
         setPending(false);
         return;
       }
-      router.push("/elite/thank-you");
+      router.push(thankYouPath());
     } catch {
       setError("Hindi na-submit ang payment. Subukan ulit.");
       setPending(false);
