@@ -15,6 +15,7 @@ import {
 import { formatInternationalPhone } from "@/lib/countries";
 import { createLead } from "@/lib/crm-store";
 import { createEliteCheckoutOrder } from "@/lib/elite-checkout-store";
+import { syncMastermindOrderToGhl } from "@/lib/ghl-mastermind-payments";
 import { addGhlContactTags, lookupGhlContact } from "@/lib/ghl";
 import { grantCommunityAndMastermindAccess } from "@/lib/ghl-community";
 import { notifyMastermindPurchase } from "@/lib/notify";
@@ -152,8 +153,9 @@ export async function POST(request: Request) {
     );
   }
 
+  let checkoutOrder;
   try {
-    await createEliteCheckoutOrder({
+    checkoutOrder = await createEliteCheckoutOrder({
       userId: user.id,
       fullName: parsed.data.fullName,
       email: parsed.data.email,
@@ -234,6 +236,10 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error("Mastermind GHL community grant failed", error);
   }
+
+  syncMastermindOrderToGhl(checkoutOrder).catch((error) =>
+    console.error("Mastermind payment GHL pipeline sync failed", error),
+  );
 
   await upsertFunnelContact({
     fullName: parsed.data.fullName,

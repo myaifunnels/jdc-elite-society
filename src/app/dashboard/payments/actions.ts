@@ -7,6 +7,7 @@ import { approveEliteCheckoutOrder, deleteEliteCheckoutOrder, getEliteCheckoutOr
 import { hideAndRemoveContactByEmail, invalidateRegistrantCrmSync } from "@/lib/crm-store";
 import { addGhlContactTags, lookupGhlContact, removeGhlContactTags } from "@/lib/ghl";
 import { grantCommunityAndMastermindAccess } from "@/lib/ghl-community";
+import { syncMastermindOrderToGhl } from "@/lib/ghl-mastermind-payments";
 import { notifyPaymentApproved, notifyPaymentRejected } from "@/lib/notify";
 import { deletePasswordResetsForUser } from "@/lib/password-reset";
 import { removeProfileForUser } from "@/lib/affiliate-store";
@@ -62,7 +63,8 @@ export async function approveMastermindPayment(
     if (order.status === "approved") return { success: "This payment is already approved." };
 
     await setMemberPaymentVerified(order.userId, true);
-    await approveEliteCheckoutOrder(order.id, admin.id);
+    const approved = await approveEliteCheckoutOrder(order.id, admin.id);
+    syncMastermindOrderToGhl(approved).catch((error) => console.error("Mastermind payment GHL sync failed", error));
     await grantCourseAccess(order.fullName, order.email, order.mobile);
     notifyPaymentApproved({
       id: order.userId,
@@ -92,7 +94,8 @@ export async function rejectMastermindPayment(
     if (order.status === "rejected") return { success: "This payment is already rejected." };
 
     await setMemberPaymentVerified(order.userId, false);
-    await rejectEliteCheckoutOrder(order.id, admin.id);
+    const rejected = await rejectEliteCheckoutOrder(order.id, admin.id);
+    syncMastermindOrderToGhl(rejected).catch((error) => console.error("Mastermind payment GHL sync failed", error));
     await revokeCourseAccess(order.email, order.mobile);
     notifyPaymentRejected({
       id: order.userId,

@@ -181,7 +181,9 @@ export async function reuploadReceiptAction(
 
   try {
     const receiptUrl = await storePaymentReceipt(receipt, user.email);
-    await updateEliteCheckoutReceipt(orderId, { receiptName: receipt.name, receiptUrl });
+    const resubmitted = await updateEliteCheckoutReceipt(orderId, { receiptName: receipt.name, receiptUrl });
+    const { syncMastermindOrderToGhl } = await import("@/lib/ghl-mastermind-payments");
+    syncMastermindOrderToGhl(resubmitted).catch((error) => console.error("Mastermind payment GHL sync failed", error));
     const { notifyReceiptReupload } = await import("@/lib/activity-notify");
     notifyReceiptReupload({
       id: user.id,

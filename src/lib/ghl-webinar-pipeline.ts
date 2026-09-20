@@ -79,7 +79,7 @@ function registrantPipelines(pipelines: GhlOpportunityPipeline[]) {
     .sort((left, right) => Number(exact(right)) - Number(exact(left)));
 }
 
-function pickStage(pipeline: GhlOpportunityPipeline, keywords: string[]) {
+export function pickStage(pipeline: GhlOpportunityPipeline, keywords: string[]) {
   for (const keyword of keywords) {
     const match = pipeline.stages.find((stage) => stage.name.toLowerCase().includes(keyword));
     if (match) return match;
@@ -90,7 +90,7 @@ function pickStage(pipeline: GhlOpportunityPipeline, keywords: string[]) {
 /** Like pickStage, but requires a stage name to contain ALL of the given keywords — used for
  * "payment for verification"-type stages where a single keyword ("payment") could too easily
  * match something unrelated. */
-function pickStageAll(pipeline: GhlOpportunityPipeline, keywords: string[]) {
+export function pickStageAll(pipeline: GhlOpportunityPipeline, keywords: string[]) {
   return pipeline.stages.find((stage) => keywords.every((keyword) => stage.name.toLowerCase().includes(keyword))) ?? null;
 }
 
@@ -237,7 +237,7 @@ function noteFor(webinar: WebinarRecord, registrant: WebinarRegistrant) {
   return lines.join("\n");
 }
 
-async function addContactNote(contactId: string, body: string) {
+export async function addContactNote(contactId: string, body: string) {
   const settings = await getResolvedIntegrationSettings();
   const token = settings.ghlApiKey;
   if (!token || !contactId) return;

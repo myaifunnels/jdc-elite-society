@@ -1286,6 +1286,8 @@ export async function listPipelineBoard(viewer: CrmViewer, orders: EliteCheckout
     orders.filter((order) => order.status === "pending").map((order) => order.email.toLowerCase()),
   );
   const reviewOrders = orders.filter((order) => order.status === "pending" || order.status === "rejected");
+  // Catch up any pending payments that never reached the AiFunnels pipeline (fire-and-forget).
+  void import("@/lib/ghl-mastermind-payments").then((mod) => mod.backfillPendingMastermindOrders(orders));
 
   const pipeline = await getMastermindBuyerPipeline();
   const stages = pipeline
