@@ -29,7 +29,12 @@ import { listWebinars } from "@/lib/webinars-store";
  * its name. GHL's API can't create pipelines or stages, so this only ever attaches to ones that
  * already exist. */
 const PIPELINE_CACHE_MS = 2 * 60 * 1000;
-let pipelineCache: { at: number; pipeline: GhlOpportunityPipeline | null } | null = null;
+let pipelineCache: {
+  at: number;
+  pipeline: GhlOpportunityPipeline | null;
+  /** Other pipelines that also have a Registrants stage (only `pipeline` is used). */
+  otherCandidates: string[];
+} | null = null;
 
 export function resetWebinarPipelineCache() {
   pipelineCache = null;
@@ -42,7 +47,7 @@ export async function findWebinarPipeline(): Promise<GhlOpportunityPipeline | nu
 
   const pipelines = await listGhlOpportunityPipelines();
   const lower = (name: string) => name.trim().toLowerCase();
-  const withRegistrantStage = pipelines.filter((item) => pickStage(item, ["registrant"]));
+  const withRegistrantStage = registrantPipelines(pipelines);
   if (withRegistrantStage.length > 1) {
     console.warn(
       "Several GHL pipelines have a Registrants stage; using the first:",
@@ -56,8 +61,22 @@ export async function findWebinarPipeline(): Promise<GhlOpportunityPipeline | nu
     pipelines.find((item) => lower(item.name).includes("mastermind")) ??
     pipelines.find((item) => lower(item.name).includes("webinar")) ??
     null;
-  pipelineCache = { at: Date.now(), pipeline };
+  pipelineCache = {
+    at: Date.now(),
+    pipeline,
+    otherCandidates: pipeline ? withRegistrantStage.filter((item) => item.id !== pipeline.id).map((item) => item.name) : [],
+  };
   return pipeline;
+}
+
+/** Pipelines that have a stage named like "registrant", best match first: one with a stage named
+ * exactly "Webinar Registrants" outranks one with just a generic "Registrants" stage. */
+function registrantPipelines(pipelines: GhlOpportunityPipeline[]) {
+  const exact = (item: GhlOpportunityPipeline) =>
+    item.stages.some((stage) => stage.name.trim().toLowerCase() === "webinar registrants");
+  return pipelines
+    .filter((item) => pickStage(item, ["registrant"]))
+    .sort((left, right) => Number(exact(right)) - Number(exact(left)));
 }
 
 function pickStage(pipeline: GhlOpportunityPipeline, keywords: string[]) {
@@ -66,6 +85,26 @@ function pickStage(pipeline: GhlOpportunityPipeline, keywords: string[]) {
     if (match) return match;
   }
   return null;
+}
+
+export type WebinarRouting = {
+  pipelineName: string;
+  stageName: string;
+  /** Other pipelines that also have a Registrants stage (only the first is used). */
+  otherCandidates: string[];
+};
+
+/** Where a new registrant will land right now, read live from GoHighLevel — shown in the admin
+ * panel so it's obvious whether routing points at the right pipeline and stage. Null when GHL
+ * isn't connected or no suitable pipeline exists. */
+export async function describeWebinarRouting(): Promise<WebinarRouting | null> {
+  const settings = await getResolvedIntegrationSettings();
+  if (!settings.ghlApiKey || !settings.ghlLocationId) return null;
+  const pipeline = await findWebinarPipeline();
+  if (!pipeline) return null;
+  const stage = stageFor(pipeline, "confirmed");
+  if (!stage) return null;
+  return { pipelineName: pipeline.name, stageName: stage.name, otherCandidates: pipelineCache?.otherCandidates ?? [] };
 }
 
 /** New registrants enter at the top of the funnel: a stage an admin has named for them
@@ -155,9 +194,18 @@ export type WebinarGhlSyncResult = {
   source?: "comment" | "direct";
   /** Why a "failed" result failed, in words an admin can act on. */
   error?: string;
+  /** What happened in the pipeline: a new card, an existing card moved up to the registrant stage,
+   * or the person already had a card there (left as it was). */
+  action?: PipelineAction;
 };
 
-type PipelineOutcome = { status: WebinarGhlSyncResult["status"]; advancedFromEarlier?: boolean; error?: string };
+type PipelineAction = "created" | "advanced" | "already_in_pipeline";
+type PipelineOutcome = {
+  status: WebinarGhlSyncResult["status"];
+  advancedFromEarlier?: boolean;
+  error?: string;
+  action?: PipelineAction;
+};
 type SyncOptions = { moveStage?: boolean; replaceStatusTags?: boolean };
 
 /** Pushes one webinar registrant into GoHighLevel so admins can filter, qualify and nurture them:
@@ -228,7 +276,12 @@ export async function syncWebinarRegistrantToGhl(
     await addGhlContactTags(contactId, [DIRECT_SOURCE_TAG]);
   }
 
-  return { status: outcome.status, source: isCommenter ? "comment" : "direct", error: outcome.error };
+  return {
+    status: outcome.status,
+    source: isCommenter ? "comment" : "direct",
+    error: outcome.error,
+    action: outcome.action,
+  };
 }
 
 /** The pipeline half of the sync: put the registrant's opportunity in the right stage (see the
@@ -270,7 +323,9 @@ async function placeInPipeline(
       status: registrant.status === "rejected" ? "lost" : "open",
       ...(options.moveStage || upgradeFromLeads ? { pipelineStageId: stage.id } : {}),
     });
-    return updated.ok ? { status: "synced" } : { status: "failed", error: updated.error };
+    return updated.ok
+      ? { status: "synced", action: "already_in_pipeline" }
+      : { status: "failed", error: updated.error };
   }
 
   // Already in this pipeline by another route (a "FB Page DMs" lead from the FREE COACHING comment
@@ -290,9 +345,9 @@ async function placeInPipeline(
         return { status: "failed", error: moved.error };
       }
       await addContactNote(contactId, noteFor(webinar, registrant));
-      return { status: "synced", advancedFromEarlier: true };
+      return { status: "synced", advancedFromEarlier: true, action: "advanced" };
     }
-    return { status: "synced" };
+    return { status: "synced", action: "already_in_pipeline" };
   }
 
   // A rejected overflow request isn't a lead worth creating a card for.
@@ -315,7 +370,7 @@ async function placeInPipeline(
     return { status: "failed", error: created.error };
   }
   await addContactNote(contactId, noteFor(webinar, registrant));
-  return { status: "synced" };
+  return { status: "synced", action: "created" };
 }
 
 const STATUS_RANK: Record<WebinarRegistrant["status"], number> = { confirmed: 2, pending: 1, rejected: 0 };
@@ -349,6 +404,11 @@ export type WebinarGhlBackfillState = {
   fromComment: number;
   /** Registrants who registered without commenting. */
   direct: number;
+  /** What the pipeline step did: brand-new cards, cards moved up from an earlier stage, and people
+   * who already had a card further along (left untouched, e.g. existing Mastermind buyers). */
+  created: number;
+  advanced: number;
+  alreadyInPipeline: number;
   /** Open cards still sitting in a stage before "Webinar Registrants" — i.e. commented (or were
    * otherwise added) but haven't registered. Null until a run has finished counting. */
   stillBeforeRegistrants: number | null;
@@ -366,6 +426,9 @@ let backfillState: WebinarGhlBackfillState = {
   skippedNotConnected: false,
   fromComment: 0,
   direct: 0,
+  created: 0,
+  advanced: 0,
+  alreadyInPipeline: 0,
   stillBeforeRegistrants: null,
   errorSamples: [],
 };
@@ -395,8 +458,8 @@ export function getWebinarGhlBackfillState(): WebinarGhlBackfillState {
   return { ...backfillState };
 }
 
-const BACKFILL_CONCURRENCY = 2;
-const BACKFILL_DELAY_MS = 250;
+const BACKFILL_CONCURRENCY = 3;
+const BACKFILL_DELAY_MS = 150;
 
 /** Kicks off a background push of every existing registrant (all webinars) into GHL and returns
  * immediately — ~170 registrants at a few GHL calls each takes minutes, longer than a request
@@ -434,6 +497,9 @@ export async function startWebinarGhlBackfill(): Promise<{ started: boolean; tot
     skippedNotConnected: false,
     fromComment: 0,
     direct: 0,
+    created: 0,
+    advanced: 0,
+    alreadyInPipeline: 0,
     stillBeforeRegistrants: null,
     errorSamples: [],
   };
@@ -450,6 +516,9 @@ export async function startWebinarGhlBackfill(): Promise<{ started: boolean; tot
             backfillState.synced += 1;
             if (result.source === "comment") backfillState.fromComment += 1;
             else if (result.source === "direct") backfillState.direct += 1;
+            if (result.action === "created") backfillState.created += 1;
+            else if (result.action === "advanced") backfillState.advanced += 1;
+            else if (result.action === "already_in_pipeline") backfillState.alreadyInPipeline += 1;
           } else if (result.status === "no_pipeline") {
             backfillState.noPipeline = true;
           } else {

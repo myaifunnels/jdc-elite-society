@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useActionState, useEffect } from "react";
 
 import { syncWebinarRegistrantsToGhlAction, type WebinarFormState } from "@/app/dashboard/webinars/actions";
-import type { WebinarGhlBackfillState } from "@/lib/ghl-webinar-pipeline";
+import type { WebinarGhlBackfillState, WebinarRouting } from "@/lib/ghl-webinar-pipeline";
 
 const initialState: WebinarFormState = {};
 
@@ -24,7 +24,14 @@ function formatTime(iso?: string) {
 /** Admin control for the GoHighLevel webinar pipeline: new registrations sync automatically; this
  * backfills everyone who registered before that existed (and re-syncs anyone, safely — existing
  * opportunity stages are never moved), and shows how the last run went. */
-export function WebinarGhlSyncPanel({ state }: { state: WebinarGhlBackfillState }) {
+export function WebinarGhlSyncPanel({
+  state,
+  routing,
+}: {
+  state: WebinarGhlBackfillState;
+  /** Where registrants will land right now, read live from GoHighLevel (null = couldn't determine). */
+  routing: WebinarRouting | null;
+}) {
   const [result, action, pending] = useActionState(syncWebinarRegistrantsToGhlAction, initialState);
   const running = state.running || pending;
   const router = useRouter();
@@ -67,6 +74,26 @@ export function WebinarGhlSyncPanel({ state }: { state: WebinarGhlBackfillState 
         </p>
       </div>
 
+      {routing ? (
+        <div className="rounded-xl border border-[var(--line)] p-3 text-sm">
+          <span className="text-[var(--muted)]">Registrants are routed to: </span>
+          <strong>{routing.pipelineName}</strong>
+          <span className="text-[var(--muted)]"> &rarr; </span>
+          <strong>{routing.stageName}</strong>
+          {routing.otherCandidates.length > 0 ? (
+            <p className="m-0 mt-1 text-xs text-amber-300">
+              Heads up: {routing.otherCandidates.join(", ")} also {routing.otherCandidates.length === 1 ? "has" : "have"} a
+              Registrants stage and is being ignored. Rename or remove that stage if it shouldn&rsquo;t compete.
+            </p>
+          ) : null}
+        </div>
+      ) : (
+        <p className="m-0 rounded-xl border border-[var(--line)] p-3 text-sm text-[var(--muted)]">
+          Couldn&rsquo;t read your GoHighLevel pipelines just now, so the destination can&rsquo;t be shown. Check that the
+          API key and location ID are set in Integrations.
+        </p>
+      )}
+
       <form action={action} className="flex flex-wrap items-center gap-3">
         <button type="submit" className="macos-btn macos-btn-primary" disabled={running}>
           {running ? "Syncing…" : "Sync all registrants to GoHighLevel"}
@@ -82,6 +109,13 @@ export function WebinarGhlSyncPanel({ state }: { state: WebinarGhlBackfillState 
         ) : null}
       </form>
 
+      {state.processed > 0 ? (
+        <p className="m-0 text-xs text-[var(--muted)]">
+          So far: <strong>{state.created}</strong> new cards created &middot; <strong>{state.advanced}</strong> moved up
+          from an earlier stage &middot; <strong>{state.alreadyInPipeline}</strong> already had a card further along
+          (left untouched &mdash; e.g. existing Mastermind buyers) &middot; <strong>{state.failed}</strong> failed
+        </p>
+      ) : null}
       {!state.running && state.finishedAt && (state.fromComment > 0 || state.direct > 0) ? (
         <div className="grid gap-2 sm:grid-cols-3">
           <div className="rounded-xl border border-[var(--line)] p-3">

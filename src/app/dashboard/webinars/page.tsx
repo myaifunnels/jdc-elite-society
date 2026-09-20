@@ -5,7 +5,7 @@ import { WebinarAdminHero } from "@/components/dashboard/webinar-admin-hero";
 import { WebinarAdminUpcomingRow } from "@/components/dashboard/webinar-admin-upcoming-row";
 import { WebinarGhlSyncPanel } from "@/components/dashboard/webinar-ghl-sync-panel";
 import { WebinarOverflowCard } from "@/components/dashboard/webinar-overflow-card";
-import { getWebinarGhlBackfillState } from "@/lib/ghl-webinar-pipeline";
+import { describeWebinarRouting, getWebinarGhlBackfillState, type WebinarRouting } from "@/lib/ghl-webinar-pipeline";
 import { requireCapability } from "@/lib/session";
 import { getFeaturedWebinar, listWebinars } from "@/lib/webinars-store";
 import { listPendingOverflowRegistrants, listRegistrants } from "@/lib/webinar-registrants-store";
@@ -77,6 +77,18 @@ export default async function WebinarsAdminPage() {
 
   const upcoming = upcomingWebinars(webinars, featured?.id);
 
+  // Read live from GoHighLevel; a slow or failing GHL must never take this admin page down, so the
+  // lookup is time-boxed and any failure just means "destination unknown" in the panel.
+  let ghlRouting: WebinarRouting | null = null;
+  try {
+    ghlRouting = await Promise.race([
+      describeWebinarRouting(),
+      new Promise<null>((resolve) => setTimeout(() => resolve(null), 6000)),
+    ]);
+  } catch (error) {
+    console.error("Webinars admin: couldn't resolve GHL routing", error);
+  }
+
   return (
     <DashboardShell
       title="Webinars"
@@ -140,7 +152,7 @@ export default async function WebinarsAdminPage() {
           )}
         </section>
 
-        <WebinarGhlSyncPanel state={getWebinarGhlBackfillState()} />
+        <WebinarGhlSyncPanel state={getWebinarGhlBackfillState()} routing={ghlRouting} />
 
         <section className="grid gap-3">
           <h3 className="m-0 text-lg font-bold tracking-[-0.02em]">

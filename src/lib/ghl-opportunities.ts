@@ -91,7 +91,7 @@ export async function listGhlOpportunityPipelines() {
   try {
     const response = await fetch(
       `https://services.leadconnectorhq.com/opportunities/pipelines?locationId=${encodeURIComponent(locationId)}`,
-      { headers: ghlHeaders(token), cache: "no-store" },
+      { headers: ghlHeaders(token), cache: "no-store", signal: AbortSignal.timeout(8_000) },
     );
     if (!response.ok) {
       console.error("GHL pipelines list failed", response.status, await response.text());
