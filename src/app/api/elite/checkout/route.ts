@@ -21,7 +21,11 @@ import { grantCommunityAndMastermindAccess } from "@/lib/ghl-community";
 import { notifyMastermindPurchase } from "@/lib/notify";
 import { storePaymentReceipt } from "@/lib/r2-upload";
 import { getSessionUser, sessionCookieName } from "@/lib/session";
-import { JDC_MASTERMIND_PAYMENT_VERIFICATION_TAG, mastermindCheckoutTags } from "@/lib/tags";
+import {
+  DUPLICATION_PAYMENT_VERIFICATION_TAG,
+  JDC_MASTERMIND_PAYMENT_VERIFICATION_TAG,
+  mastermindCheckoutTags,
+} from "@/lib/tags";
 import { eliteCheckoutSchema } from "@/lib/validations";
 
 async function upsertFunnelContact(input: {
@@ -122,11 +126,12 @@ export async function POST(request: Request) {
     ? [`affiliate:${affiliate.code}`, campaignSlug ? `campaign:${campaignSlug}` : ""].filter(Boolean)
     : [];
 
+  const fromDuplication = String(form.get("src") ?? "").trim().toLowerCase() === "duplication";
   const tags = mastermindCheckoutTags({
     paymentMethod: parsed.data.paymentMethod,
     priceLabel,
     couponApplied: spartans,
-    extra: extraTags,
+    extra: [...extraTags, ...(fromDuplication ? [DUPLICATION_PAYMENT_VERIFICATION_TAG] : [])],
   });
 
   let user;
@@ -216,7 +221,9 @@ export async function POST(request: Request) {
 
   let ghlContactId: string | null = null;
   try {
-    const ghlCreateTags = tags.filter((tag) => tag !== JDC_MASTERMIND_PAYMENT_VERIFICATION_TAG);
+    const ghlCreateTags = tags.filter(
+      (tag) => tag !== JDC_MASTERMIND_PAYMENT_VERIFICATION_TAG && tag !== DUPLICATION_PAYMENT_VERIFICATION_TAG,
+    );
     const community = await grantCommunityAndMastermindAccess({
       name: parsed.data.fullName,
       email: parsed.data.email,
@@ -229,7 +236,10 @@ export async function POST(request: Request) {
     }
     if (ghlContactId) {
       // Separate tag add so GHL "Payment Verification Workflow" fires on Contact Tag Added.
-      await addGhlContactTags(ghlContactId, [JDC_MASTERMIND_PAYMENT_VERIFICATION_TAG]);
+      await addGhlContactTags(ghlContactId, [
+        JDC_MASTERMIND_PAYMENT_VERIFICATION_TAG,
+        ...(fromDuplication ? [DUPLICATION_PAYMENT_VERIFICATION_TAG] : []),
+      ]);
     } else {
       console.error("Mastermind payment verification tag skipped: no GHL contact id");
     }

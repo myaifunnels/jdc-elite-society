@@ -254,6 +254,7 @@ export function EliteCheckoutForm({ signedInUser }: { signedInUser: SignedInChec
     form.set("paymentMethod", paymentMethod);
     form.set("couponCode", couponCode.trim());
     form.set("receipt", receipt);
+    form.set("src", new URLSearchParams(window.location.search).get("src") ?? "");
 
     try {
       const response = await fetch("/api/elite/checkout", { method: "POST", body: form });

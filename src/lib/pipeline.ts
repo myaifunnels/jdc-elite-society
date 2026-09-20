@@ -25,7 +25,7 @@ export type PipelineStageId = (typeof PIPELINE_STAGES)[number]["id"];
 
 export const SECOND_BATCH_TAGS = ["jdc-mastermind-second-batch"];
 export const FIRST_BATCH_TAGS = ["jdc-mastermind-buyer", "jdc-mastermind", "mastermind", "jdc mastermind"];
-const PAYMENT_TAGS = ["payment pending", "jdc-mastermind-payment-verification"];
+const PAYMENT_TAGS = ["payment pending", "jdc-mastermind-payment-verification", "duplication-payment-verification"];
 const LEAD_TAGS = ["pipeline-leads", "lead"];
 
 export const PIPELINE_GHL_FETCH_TAGS = [

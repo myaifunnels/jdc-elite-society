@@ -17,6 +17,10 @@ export const PAYMENT_REJECTED_TAG = "Payment Rejected";
 /** Applied on Elite checkout submit so GHL "Payment Verification Workflow" can move the contact. */
 export const JDC_MASTERMIND_PAYMENT_VERIFICATION_TAG = "jdc-mastermind-payment-verification";
 
+/** Applied alongside the tag above when the buyer came through the /duplication funnel
+ * (checkout?src=duplication), so Duplication-only automations can key off it. */
+export const DUPLICATION_PAYMENT_VERIFICATION_TAG = "duplication-payment-verification";
+
 export type TagGroup = {
   id: TagGroupId;
   label: string;
@@ -57,6 +61,7 @@ export const TAG_GROUPS: TagGroup[] = [
       "jdc-mastermind",
       "jdc-mastermind-buyer",
       "jdc-mastermind-payment-verification",
+      "duplication-payment-verification",
       "jdc-mastermind-second-batch",
       "mastermind",
       "pipeline-leads",

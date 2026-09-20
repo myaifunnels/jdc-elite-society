@@ -13,7 +13,12 @@ import { deletePasswordResetsForUser } from "@/lib/password-reset";
 import { removeProfileForUser } from "@/lib/affiliate-store";
 import { deleteUserAccess } from "@/lib/access-store";
 import { requireCapability } from "@/lib/session";
-import { COURSE_ACCESS_TAGS, JDC_MASTERMIND_PAYMENT_VERIFICATION_TAG, PAYMENT_REJECTED_TAG } from "@/lib/tags";
+import {
+  COURSE_ACCESS_TAGS,
+  DUPLICATION_PAYMENT_VERIFICATION_TAG,
+  JDC_MASTERMIND_PAYMENT_VERIFICATION_TAG,
+  PAYMENT_REJECTED_TAG,
+} from "@/lib/tags";
 
 export type PaymentActionState = { error?: string; success?: string };
 
@@ -31,7 +36,11 @@ async function grantCourseAccess(name: string, email: string, mobile: string) {
     const contact = await lookupGhlContact(email, mobile);
     if (!contact?.id) return;
     await addGhlContactTags(contact.id, [...COURSE_ACCESS_TAGS]);
-    await removeGhlContactTags(contact.id, [PAYMENT_REJECTED_TAG, JDC_MASTERMIND_PAYMENT_VERIFICATION_TAG]);
+    await removeGhlContactTags(contact.id, [
+      PAYMENT_REJECTED_TAG,
+      JDC_MASTERMIND_PAYMENT_VERIFICATION_TAG,
+      DUPLICATION_PAYMENT_VERIFICATION_TAG,
+    ]);
   } catch (error) {
     console.error("Failed to grant GHL course access", error);
   }
@@ -42,7 +51,7 @@ async function revokeCourseAccess(email: string, mobile: string) {
   try {
     const contact = await lookupGhlContact(email, mobile);
     if (!contact?.id) return;
-    await removeGhlContactTags(contact.id, [...COURSE_ACCESS_TAGS]);
+    await removeGhlContactTags(contact.id, [...COURSE_ACCESS_TAGS, DUPLICATION_PAYMENT_VERIFICATION_TAG]);
     await addGhlContactTags(contact.id, [PAYMENT_REJECTED_TAG]);
   } catch (error) {
     console.error("Failed to revoke GHL course access", error);
