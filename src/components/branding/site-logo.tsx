@@ -1,17 +1,9 @@
 import Link from "next/link";
 
+import { JdcWordmark } from "@/components/branding/jdc-wordmark";
+import { LogoImage } from "@/components/branding/logo-image";
 import { BrandingSettings, resolveLogoHref } from "@/lib/branding";
 import { cn } from "@/lib/utils";
-
-export function JdcWordmark({ compact = false }: { compact?: boolean }) {
-  return (
-    <span className={cn("jdc-wordmark", compact && "is-compact")} aria-hidden="true">
-      <span className="jdc-letter">j</span>
-      <span className="jdc-letter">D</span>
-      <span className="jdc-letter">C</span>
-    </span>
-  );
-}
 
 export function SiteLogo({
   branding,
@@ -35,13 +27,7 @@ export function SiteLogo({
   const content = (
     <>
       {branding.logoUrl ? (
-        // User-provided logo URLs can come from R2 or any public host.
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={branding.logoUrl}
-          alt={branding.logoAlt || "Coach JDC"}
-          className="site-logo-image h-9 w-auto object-contain"
-        />
+        <LogoImage src={branding.logoUrl} alt={branding.logoAlt || "Coach JDC"} compact={compact} />
       ) : (
         <JdcWordmark compact={compact} />
       )}

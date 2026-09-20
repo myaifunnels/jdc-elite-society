@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 
-import { isSafeAssetUrl, resolveLogoHref } from "@/lib/branding";
+import { isSafeAssetUrl, isTemporarySocialUrl, resolveLogoHref } from "@/lib/branding";
 import { saveBrandingSettings } from "@/lib/branding-store";
 import { requireCapability } from "@/lib/session";
 
@@ -23,6 +23,10 @@ export async function saveLogoSettings(
 
   if (logoUrl && !isSafeAssetUrl(logoUrl)) {
     return { error: "Use an https image URL or a path that starts with /." };
+  }
+
+  if (logoUrl && isTemporarySocialUrl(logoUrl)) {
+    return { error: "Facebook/Instagram image links expire and stop loading. Upload the logo to your own hosting and paste that URL." };
   }
 
   if (logoAlt.length > 120) {
