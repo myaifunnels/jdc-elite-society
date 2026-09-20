@@ -4831,23 +4831,6 @@ html[data-membership="both"] .macos-btn-primary {
   border: 0;
 }
 
-.university-community-open {
-  position: absolute;
-  top: 0.7rem;
-  right: 0.7rem;
-  z-index: 2;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--surface) 88%, transparent);
-  padding: 0.32rem 0.7rem;
-  color: var(--foreground);
-  font-size: 0.72rem;
-  font-weight: 800;
-  letter-spacing: 0.04em;
-  text-decoration: none;
-  text-transform: uppercase;
-  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.18);
-}
-
 .university-locked-state {
   display: flex;
   flex: 1;
