@@ -13,7 +13,7 @@ import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import {
   CloudflareLogo,
   FacebookLogo,
-  GoHighLevelLogo,
+  AiFunnelsLogo,
   GoogleLogo,
   GoogleMapsLogo,
   TextBeeLogo,
@@ -97,9 +97,9 @@ export default async function IntegrationsPage({
     },
     {
       id: "ghl",
-      name: "GoHighLevel",
+      name: "AiFunnels",
       tagline: "Syncs contacts, tags, pipeline stages, and course access.",
-      logo: GoHighLevelLogo,
+      logo: AiFunnelsLogo,
       connected: ghlReady,
       fieldsSummary: `Location: ${settings.ghlLocationId || "not set"}`,
     },
@@ -262,7 +262,7 @@ export default async function IntegrationsPage({
             <p className="app-store-detail-meta" style={{ marginTop: "1rem" }}>
               Pipeline mirror webhook: <code>{siteUrl}/api/ghl/webhook</code>
               <br />
-              In GHL, add this URL for Contact Tag Update, Contact Update, and Opportunity Stage Update so the Contacts pipeline stays in sync. Only the <code>jdc-mastermind-buyer</code> pipeline is mirrored.
+              In AiFunnels, add this URL for Contact Tag Update, Contact Update, and Opportunity Stage Update so the Contacts pipeline stays in sync. Only the <code>jdc-mastermind-buyer</code> pipeline is mirrored.
             </p>
           </>
         ) : null}
@@ -273,7 +273,7 @@ export default async function IntegrationsPage({
               Device: <code>{settings.textbeeDeviceId || "not set"}</code>
             </p>
             <p className="macos-lead" style={{ textAlign: "left" }}>
-              Texts try GoHighLevel first, then TextBee, then Twilio. Forgot-password codes, Elite checkout, payment
+              Texts try AiFunnels first, then TextBee, then Twilio. Forgot-password codes, Elite checkout, payment
               review, University welcome, and Support messages all use this chain.
             </p>
             <TextBeeIntegrationForm configured={textbeeReady} deviceId={settings.textbeeDeviceId} />

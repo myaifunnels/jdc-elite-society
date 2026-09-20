@@ -393,7 +393,7 @@ function fromGhlContact(contact: GhlRemoteContact): ContactRecord | null {
     String(contact.name ?? "").trim() ||
     String(contact.phone ?? "").trim() ||
     (email.includes("@") ? email.split("@")[0] : "") ||
-    "GHL contact";
+    "AiFunnels contact";
   if (!ghlId || !email || isServiceContactEmail(email)) {
     return null;
   }
@@ -417,10 +417,10 @@ function fromGhlContact(contact: GhlRemoteContact): ContactRecord | null {
     city,
     region: region || undefined,
     tags: tags.length ? tags : ["JDC Elite Society"],
-    bestDescribesYou: customField(contact, ["best_describes", "audience"]) || tags[0] || "GHL contact",
+    bestDescribesYou: customField(contact, ["best_describes", "audience"]) || tags[0] || "AiFunnels contact",
     programInterest: customField(contact, ["program"]) || "JDC Elite Society",
     status: mapGhlStatus(tags, contact.type),
-    source: String(contact.source ?? "").trim() || "GHL · JDC Elite Society",
+    source: String(contact.source ?? "").trim() || "AiFunnels · JDC Elite Society",
     assignedPartner: contact.assignedTo ? String(contact.assignedTo) : undefined,
     photoUrl: photoUrl || undefined,
     lat: asCoord(contact.latitude),
@@ -1316,7 +1316,7 @@ export async function listPipelineBoard(viewer: CrmViewer, orders: EliteCheckout
       cards.push({
         id: `opp-${opportunity.id}`,
         contactId: contact?.id ?? `ghl-${opportunity.contactId || opportunity.id}`,
-        name: contact?.name || opportunity.contactName || opportunity.name || opportunity.email || "GHL contact",
+        name: contact?.name || opportunity.contactName || opportunity.name || opportunity.email || "AiFunnels contact",
         email: contact?.email || opportunity.email,
         phone: contact?.phone || opportunity.phone,
         photoUrl: contact?.photoUrl,
@@ -1424,7 +1424,7 @@ export async function setPipelineStage(viewer: CrmViewer, cardId: string, stageI
     if (opportunityId) {
       const moved = await updateGhlOpportunity(opportunityId, { pipelineStageId: resolvedGhlStage.id });
       if (!moved.ok && !moved.skipped) {
-        return { ok: false as const, error: "GoHighLevel did not accept that stage move." };
+        return { ok: false as const, error: "AiFunnels did not accept that stage move." };
       }
     } else if (contact) {
       const linked = await ensureGhlLink(contact);
@@ -1438,7 +1438,7 @@ export async function setPipelineStage(viewer: CrmViewer, cardId: string, stageI
           monetaryValue: mastermindOffer.offerPrice,
         });
         if (!upserted.ok && !upserted.skipped) {
-          return { ok: false as const, error: "Could not create the GHL opportunity." };
+          return { ok: false as const, error: "Could not create the AiFunnels opportunity." };
         }
       }
     }
@@ -1451,7 +1451,7 @@ export async function setPipelineStage(viewer: CrmViewer, cardId: string, stageI
       return result;
     }
     if (linked.ghlContactId && !result.ghlSynced) {
-      return { ok: false as const, error: "Stage saved here, but GoHighLevel tag sync failed. Try again." };
+      return { ok: false as const, error: "Stage saved here, but AiFunnels tag sync failed. Try again." };
     }
     return result;
   }

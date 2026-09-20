@@ -88,7 +88,7 @@ export function ForgotPasswordForm() {
             </button>
           </div>
           <p className="auth-switch-copy" style={{ marginTop: "0.75rem" }}>
-            <Smartphone size={13} aria-hidden /> Texts use GHL, TextBee, or Twilio from Integrations.
+            <Smartphone size={13} aria-hidden /> Texts use AiFunnels, TextBee, or Twilio from Integrations.
           </p>
         </StickyForm>
       </div>

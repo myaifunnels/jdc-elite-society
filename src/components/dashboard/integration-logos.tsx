@@ -71,21 +71,20 @@ export function CloudflareLogo({ size = 28 }: LogoProps) {
   );
 }
 
-/** The official HighLevel / GoHighLevel mark — three arrows in blue, yellow and green (paths and
- * colours taken from HighLevel's own published logo) — on HighLevel's app-icon navy tile. */
-export function GoHighLevelLogo({ size = 28 }: LogoProps) {
+/** The AiFunnels "Ai" mark — the white-label brand for the CRM/automation platform behind this
+ * site. The artwork is a full-bleed dark tile, so it only needs the same rounded corners as the
+ * other integration logos. */
+export function AiFunnelsLogo({ size = 28 }: LogoProps) {
   return (
-    <svg width={size} height={size} viewBox="0 0 40 40" fill="none" aria-hidden="true">
-      <rect width="40" height="40" rx="10" fill="#08223D" />
-      <g transform="translate(5.4 8.25) scale(0.78)">
-        <path d="M29.6459 0L21.8371 7.70729H27.0573V30.0754H32.2345V12.0312L27.293 7.72427H32.2345V7.70729H37.4564L29.6459 0Z" fill="#17D94B" />
-        <path d="M32.2345 7.72427H27.293L32.2345 12.0312V7.72427Z" fill="#0B6F26" />
-        <path d="M15.6193 7.70729L7.8088 0L0 7.70729H5.2202V30.0482H10.3991V12.004L5.45756 7.69711H10.3991V7.70729H15.6193Z" fill="#FFD000" />
-        <path d="M10.3991 7.69711H5.45756L10.3991 12.004V7.69711Z" fill="#855D19" />
-        <path d="M26.543 18.4805L18.7342 10.7732L10.9237 18.4805H16.1456V30.0754H21.3228V22.7874L16.3813 18.4805H21.3228H26.543Z" fill="#2896FB" />
-        <path d="M21.3228 18.4805H16.3813L21.3228 22.7874V18.4805Z" fill="#1C58A0" />
-      </g>
-    </svg>
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src="/integrations/aifunnels-logo.png"
+      width={size}
+      height={size}
+      alt=""
+      aria-hidden="true"
+      style={{ borderRadius: size * 0.25, display: "block" }}
+    />
   );
 }
 

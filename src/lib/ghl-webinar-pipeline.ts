@@ -50,7 +50,7 @@ export async function findWebinarPipeline(): Promise<GhlOpportunityPipeline | nu
   const withRegistrantStage = registrantPipelines(pipelines);
   if (withRegistrantStage.length > 1) {
     console.warn(
-      "Several GHL pipelines have a Registrants stage; using the first:",
+      "Several AiFunnels pipelines have a Registrants stage; using the first:",
       withRegistrantStage.map((item) => item.name).join(", "),
     );
   }
@@ -94,7 +94,7 @@ export type WebinarRouting = {
   otherCandidates: string[];
 };
 
-/** Where a new registrant will land right now, read live from GoHighLevel — shown in the admin
+/** Where a new registrant will land right now, read live from AiFunnels — shown in the admin
  * panel so it's obvious whether routing points at the right pipeline and stage. Null when GHL
  * isn't connected or no suitable pipeline exists. */
 export async function describeWebinarRouting(): Promise<WebinarRouting | null> {
@@ -208,7 +208,7 @@ type PipelineOutcome = {
 };
 type SyncOptions = { moveStage?: boolean; replaceStatusTags?: boolean };
 
-/** Pushes one webinar registrant into GoHighLevel so admins can filter, qualify and nurture them:
+/** Pushes one webinar registrant into AiFunnels so admins can filter, qualify and nurture them:
  *  1. the contact — created or found, tagged with the webinar, seat type and status (the tags are
  *     what let admins filter by webinar in GHL, and they accumulate across webinars);
  *  2. a lead opportunity in the JDC Mastermind pipeline's "Leads" stage — but only if this person
@@ -251,7 +251,7 @@ export async function syncWebinarRegistrantToGhl(
     contactId = created.contactId;
   }
   if (!contactId) {
-    return { status: "failed", error: "Couldn't find or create the contact in GoHighLevel (check the API key and its Contacts permission)." };
+    return { status: "failed", error: "Couldn't find or create the contact in AiFunnels (check the API key and its Contacts permission)." };
   }
 
   if (options.replaceStatusTags) {
@@ -306,7 +306,7 @@ async function placeInPipeline(
     // Couldn't look — don't guess "none" and risk creating a duplicate card.
     return {
       status: "failed",
-      error: "Couldn't read this contact's opportunities from GoHighLevel (check the API key's Opportunities permission).",
+      error: "Couldn't read this contact's opportunities from AiFunnels (check the API key's Opportunities permission).",
     };
   }
 
@@ -473,7 +473,7 @@ export async function startWebinarGhlBackfill(): Promise<{ started: boolean; tot
   const settings = await getResolvedIntegrationSettings();
   if (!settings.ghlApiKey || !settings.ghlLocationId) {
     backfillState = { ...backfillState, skippedNotConnected: true };
-    return { started: false, total: 0, reason: "GoHighLevel isn't connected — add your API key and location ID in Integrations first." };
+    return { started: false, total: 0, reason: "AiFunnels isn't connected — add your API key and location ID in Integrations first." };
   }
 
   resetWebinarPipelineCache();

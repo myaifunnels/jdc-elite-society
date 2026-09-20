@@ -71,7 +71,7 @@ export function ContactTagEditor({
             <input
               value={value}
               onChange={(event) => setValue(event.target.value)}
-              placeholder="Add a tag and sync it to GHL"
+              placeholder="Add a tag and sync it to AiFunnels"
               disabled={pending}
             />
             <button type="submit" className="macos-btn macos-btn-secondary" disabled={pending || !value.trim()}>

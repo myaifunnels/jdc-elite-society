@@ -316,7 +316,7 @@ export default async function ContactsPage({
                             <td className="col-optional capitalize">
                               {portal
                                 ? portal.role
-                                : contact.ghlContactId || contact.source.toLowerCase().includes("ghl")
+                                : contact.ghlContactId || contact.source.toLowerCase().match(/ghl|aifunnels/)
                                   ? "Contact"
                                   : "No login"}
                             </td>

@@ -318,7 +318,7 @@ export default async function DashboardPage() {
             {
               href: "/dashboard/integrations",
               label: "Integrations",
-              description: "Google Maps, Cloudflare R2, and GoHighLevel configuration.",
+              description: "Google Maps, Cloudflare R2, and AiFunnels configuration.",
               icon: Plug,
             },
           ]}

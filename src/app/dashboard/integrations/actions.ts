@@ -153,13 +153,13 @@ export async function saveGhlIntegration(
   };
 
   if (!isGhlReady(preview)) {
-    return { error: "Paste the GHL Private Integration token and the JDC Elite Society location ID." };
+    return { error: "Paste the AiFunnels Private Integration token and the JDC Elite Society location ID." };
   }
 
   await saveIntegrationSettings(incoming);
   revalidatePath("/dashboard/integrations");
 
-  return { success: "GoHighLevel JDC Elite Society subaccount saved." };
+  return { success: "AiFunnels JDC Elite Society subaccount saved." };
 }
 
 export async function saveTextBeeIntegration(

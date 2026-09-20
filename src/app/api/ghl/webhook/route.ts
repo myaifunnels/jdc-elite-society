@@ -66,7 +66,7 @@ async function readPayload(request: Request): Promise<Record<string, unknown>> {
 }
 
 export async function GET() {
-  return NextResponse.json({ ok: true, service: "ghl-pipeline-webhook" });
+  return NextResponse.json({ ok: true, service: "aifunnels-pipeline-webhook" });
 }
 
 export async function POST(request: Request) {

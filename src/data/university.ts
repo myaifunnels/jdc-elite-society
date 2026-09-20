@@ -29,7 +29,7 @@ export const universityCourses: UniversityCourse[] = [
     slug: "life-and-money-mastery-series",
     title: "Life and Money Mastery Series",
     ghlName: "Life and Money Mastery Series",
-    source: "JDC Elite Society · AiFunnels GHL",
+    source: "JDC Elite Society · AiFunnels",
     summary:
       "The money and life operating system from the JDC Elite Society membership: mindset, cash flow, and the discipline to keep both.",
     audience: "Members who need a real plan for income, savings, and follow-through.",
@@ -44,7 +44,7 @@ export const universityCourses: UniversityCourse[] = [
     slug: "exclusive-mentoring-series",
     title: "Exclusive Mentoring Series",
     ghlName: "Exclusive Mentoring Series",
-    source: "JDC Elite Society · AiFunnels GHL",
+    source: "JDC Elite Society · AiFunnels",
     summary:
       "Closed-door mentoring from Coach JDC. Direct, specific, and meant for people already inside the membership.",
     audience: "Verified members who want the room, not another pep talk.",
@@ -59,7 +59,7 @@ export const universityCourses: UniversityCourse[] = [
     slug: "jdc-mastermind-session-1",
     title: "JDC Mastermind Session 1",
     ghlName: "JDC Mastermind Session 1",
-    source: "JDC Elite Society · AiFunnels GHL",
+    source: "JDC Elite Society · AiFunnels",
     summary: "Session 1 of the JDC Mastermind. The opening board: who is in the room and what we are building.",
     audience: "JES members inside the Mastermind track.",
     lessons: [
@@ -72,7 +72,7 @@ export const universityCourses: UniversityCourse[] = [
     slug: "jdc-mastermind-session-2",
     title: "JDC Mastermind Session 2",
     ghlName: "JDC Mastermind Session 2",
-    source: "JDC Elite Society · AiFunnels GHL",
+    source: "JDC Elite Society · AiFunnels",
     summary: "Session 2 of the JDC Mastermind. Pressure, progress, and the next round of decisions.",
     audience: "JES members continuing the Mastermind track.",
     lessons: [

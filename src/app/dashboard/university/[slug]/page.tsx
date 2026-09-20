@@ -6,6 +6,7 @@ import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { MacosWindow } from "@/components/dashboard/macos-window";
 import { UniversityLessonMedia } from "@/components/dashboard/university-lesson-media";
 import { getUniversityCourse } from "@/data/university";
+import { whiteLabel } from "@/lib/brand";
 import { listUniversityCourses } from "@/lib/ghl-courses";
 import { requireCapability } from "@/lib/session";
 import { hasUniversityAccess } from "@/lib/university-access";
@@ -34,7 +35,7 @@ export default async function UniversityCoursePage({
     >
       <div className="dashboard-widget-grid">
         <MacosWindow title={unlocked ? "Lessons" : "Locked course"} className="dashboard-span-2">
-          <p className="macos-kicker">{course.source}</p>
+          <p className="macos-kicker">{whiteLabel(course.source)}</p>
           <p className="macos-lead" style={{ textAlign: "left" }}>
             {unlocked
               ? course.audience

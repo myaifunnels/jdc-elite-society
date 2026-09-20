@@ -12,12 +12,12 @@ export const PIPELINE_STAGES = [
   {
     id: "first-batch",
     label: "First Batch",
-    detail: "GHL contacts tagged mastermind or jdc-mastermind-buyer.",
+    detail: "AiFunnels contacts tagged mastermind or jdc-mastermind-buyer.",
   },
   {
     id: "second-batch",
     label: "Second Batch",
-    detail: "GHL contacts tagged jdc-mastermind-second-batch.",
+    detail: "AiFunnels contacts tagged jdc-mastermind-second-batch.",
   },
 ] as const;
 

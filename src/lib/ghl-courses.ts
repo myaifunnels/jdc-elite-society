@@ -136,7 +136,7 @@ function lessonFromPost(node: Json, moduleTitle?: string): UniversityLesson {
 
   return {
     title: text(node.title || node.name) || "Lesson",
-    summary: text(node.description).replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim() || "Membership lesson from GHL.",
+    summary: text(node.description).replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim() || "Membership lesson from AiFunnels.",
     moduleTitle,
     thumbnailUrl: text(node.thumbnailUrl || node.image || node.poster) || undefined,
     materials,
@@ -239,7 +239,7 @@ function attachMediaToLessons(course: UniversityCourse, files: Json[]): Universi
       const existing = course.lessons[index];
       return {
         title: text(file.name || file.filename) || existing?.title || `Lesson ${index + 1}`,
-        summary: existing?.summary || "Video from the JDC Elite Society GHL media library.",
+        summary: existing?.summary || "Video from the JDC Elite Society AiFunnels media library.",
         thumbnailUrl: text(file.thumbnailUrl || file.preview) || undefined,
         videoUrl: isDirectVideoUrl(url) ? url : undefined,
         embedUrl: isDirectVideoUrl(url) ? undefined : url,

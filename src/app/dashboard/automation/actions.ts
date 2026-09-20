@@ -137,7 +137,7 @@ export async function sendTestSmsAction(
 
   const result = await sendSms({ to, body: rendered, name: "Test Buyer" });
   if (!result.sent) {
-    return { error: "Couldn't send — check that GHL, TextBee, or Twilio is connected on the Integrations page." };
+    return { error: "Couldn't send — check that AiFunnels, TextBee, or Twilio is connected on the Integrations page." };
   }
   return { success: `Test text sent to ${to}.` };
 }

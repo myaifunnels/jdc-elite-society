@@ -176,11 +176,11 @@ export function GhlIntegrationForm({
   return (
     <StickyForm storageKey="coach-jdc-ghl-integration" action={formAction} className="mt-6 grid gap-4">
       <FloatField
-        label={configured ? `Enter a new GHL token (${maskSecret("set")})` : "Enter your GHL private token"}
+        label={configured ? `Enter a new AiFunnels token (${maskSecret("set")})` : "Enter your AiFunnels private token"}
       >
         <input name="ghlApiKey" type="password" autoComplete="off" placeholder=" " />
       </FloatField>
-      <FloatField label="Enter your GHL location ID">
+      <FloatField label="Enter your AiFunnels location ID">
         <input name="ghlLocationId" autoComplete="off" defaultValue={locationId} placeholder=" " />
       </FloatField>
 
@@ -192,7 +192,7 @@ export function GhlIntegrationForm({
         disabled={pending}
         className="button-primary pressable w-fit rounded-full px-4 py-2 text-sm font-semibold disabled:opacity-70"
       >
-        {pending ? "Saving..." : "Save GoHighLevel"}
+        {pending ? "Saving..." : "Save AiFunnels"}
       </button>
     </StickyForm>
   );

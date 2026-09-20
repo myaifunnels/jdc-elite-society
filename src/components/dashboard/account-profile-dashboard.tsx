@@ -245,7 +245,7 @@ export function AccountProfileDashboard({
           <section className="account-dash-card">
             <header className="account-dash-section-head">
               <h3>Contact</h3>
-              <p>Phone stays on your account and syncs to Go High Level when configured.</p>
+              <p>Phone stays on your account and syncs to AiFunnels when configured.</p>
             </header>
             <label className="auth-field">
               <span>Mobile number</span>

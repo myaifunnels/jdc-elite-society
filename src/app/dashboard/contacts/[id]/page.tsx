@@ -16,6 +16,7 @@ import { hasAccess } from "@/lib/access";
 import { findUserByEmail } from "@/lib/auth-store";
 import { listAssignedContacts, listTagIndex, resolveContactDashboard } from "@/lib/crm-store";
 import { getGoogleMapsConfig } from "@/lib/maps";
+import { whiteLabel } from "@/lib/brand";
 import { membershipLabel } from "@/lib/membership";
 import { parsePage, paginate } from "@/lib/pagination";
 import { requireAnyCapability } from "@/lib/session";
@@ -140,9 +141,9 @@ export default async function ContactDashboardPage({
             <Field label="Region" value={contact.region} />
             <Field label="Address" value={contact.address} />
             <Field label={isPartner ? "Coverage" : "Assigned partner"} value={isPartner ? location : contact.assignedPartner} />
-            <Field label="Source" value={contact.source} />
+            <Field label="Source" value={whiteLabel(contact.source)} />
             <Field label="Created" value={contact.createdAt} />
-            <Field label="GHL id" value={contact.ghlContactId} />
+            <Field label="AiFunnels ID" value={contact.ghlContactId} />
             <Field
               label="Facebook"
               value={portalUser?.facebookProfileUrl}
@@ -186,13 +187,13 @@ export default async function ContactDashboardPage({
           <>
             <article className="dashboard-metric-card">
               <p className="macos-kicker">Source</p>
-              <p className="dashboard-metric-title">{contact.source}</p>
+              <p className="dashboard-metric-title">{whiteLabel(contact.source)}</p>
               <p className="dashboard-metric-copy">Created {contact.createdAt}</p>
             </article>
             <article className="dashboard-metric-card">
               <p className="macos-kicker">Tags</p>
               <p className="dashboard-metric-value">{contact.tags.length}</p>
-              <p className="dashboard-metric-copy">Synced with the JDC Elite Society GHL subaccount.</p>
+              <p className="dashboard-metric-copy">Synced with the JDC Elite Society AiFunnels subaccount.</p>
             </article>
             <article className="dashboard-metric-card">
               <p className="macos-kicker">Portal</p>
@@ -241,7 +242,7 @@ export default async function ContactDashboardPage({
         <>
         <MacosWindow title="Tags" className="dashboard-span-2">
           <p className="macos-lead" style={{ textAlign: "left" }}>
-            Advanced tags stay aligned with AiFunnels GHL. Pioneer and jdc-partner unlock the matching affiliate campaigns
+            Advanced tags stay aligned with AiFunnels. Pioneer and jdc-partner unlock the matching affiliate campaigns
             when this contact has a login.
           </p>
           <ContactTagEditor
@@ -298,7 +299,7 @@ export default async function ContactDashboardPage({
             <>
               <p className="macos-lead" style={{ textAlign: "left" }}>
                 {contact.ghlContactId
-                  ? "This GHL contact gets a Contact dashboard when you open it. They set a password from Forgot password."
+                  ? "This AiFunnels contact gets a Contact dashboard when you open it. They set a password from Forgot password."
                   : "No login yet. Grant Contact access for a limited portal (home + University)."}
               </p>
               <div className="macos-actions">

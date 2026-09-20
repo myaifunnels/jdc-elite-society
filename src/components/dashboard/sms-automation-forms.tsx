@@ -26,7 +26,7 @@ export function SmsFromNumberForm({ value }: { value: string }) {
         placeholder="+639171234567"
         className="sms-template-input"
       />
-      <p className="sms-template-hint">Used for Twilio sends. GHL and TextBee send from their own connected number/device.</p>
+      <p className="sms-template-hint">Used for Twilio sends. AiFunnels and TextBee send from their own connected number/device.</p>
       <div className="sms-template-actions">
         <button type="submit" className="macos-btn macos-btn-primary" disabled={pending}>
           {pending ? "Saving..." : "Save from number"}

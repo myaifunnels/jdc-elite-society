@@ -95,7 +95,7 @@ export function ContactsMap({
   if (pins.length === 0) {
     return (
       <div className="partners-map-empty">
-        <p>No mapped contacts yet. Add a city or address, then tags will still sync from GHL.</p>
+        <p>No mapped contacts yet. Add a city or address, then tags will still sync from AiFunnels.</p>
       </div>
     );
   }

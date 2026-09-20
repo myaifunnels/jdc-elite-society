@@ -3,6 +3,7 @@ import { GraduationCap, Lock } from "lucide-react";
 
 import { MacosWindow } from "@/components/dashboard/macos-window";
 import { UniversityCourse } from "@/data/university";
+import { whiteLabel } from "@/lib/brand";
 import { cn } from "@/lib/utils";
 
 export function UniversityCourseGrid({
@@ -35,7 +36,7 @@ export function UniversityCourseGrid({
           <article className={cn("university-course-card", !unlocked && "is-locked")}>
             <span className="university-course-kicker">
               <GraduationCap size={14} aria-hidden />
-              {course.source}
+              {whiteLabel(course.source)}
             </span>
             {!unlocked ? (
               <span className="university-lock-badge">
