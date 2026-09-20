@@ -219,13 +219,15 @@ export async function getGhlOpportunityById(opportunityId: string) {
 }
 
 /** Every opportunity a given contact has in one pipeline — used to find an existing opportunity
- * before creating one, without paging through the whole pipeline. */
+ * before creating one, without paging through the whole pipeline. Returns null (not an empty list)
+ * when the search itself fails, so a caller never mistakes "couldn't look" for "has none" and
+ * creates a duplicate. */
 export async function listGhlOpportunitiesForContact(pipelineId: string, contactId: string) {
   const settings = await getResolvedIntegrationSettings();
   const token = settings.ghlApiKey;
   const locationId = settings.ghlLocationId;
   if (!token || !locationId || !pipelineId || !contactId) {
-    return [] as GhlOpportunity[];
+    return null as GhlOpportunity[] | null;
   }
 
   try {
@@ -243,15 +245,21 @@ export async function listGhlOpportunitiesForContact(pipelineId: string, contact
     });
     if (!response.ok) {
       console.error("GHL contact opportunity search failed", response.status, await response.text());
-      return [];
+      return null;
     }
     const payload = asRecord(await response.json());
     const list = Array.isArray(payload.opportunities) ? payload.opportunities : [];
     return list.map(mapOpportunity).filter((item): item is GhlOpportunity => Boolean(item));
   } catch (error) {
     console.error("GHL contact opportunity search error", error);
-    return [];
+    return null;
   }
+}
+
+/** A short, human-readable reason for a failed GHL response, shown to admins in the sync panel. */
+async function failureReason(action: string, response: Response) {
+  const body = (await response.text().catch(() => "")).replace(/\s+/g, " ").slice(0, 160);
+  return `${action} failed (${response.status})${body ? `: ${body}` : ""}`;
 }
 
 /** Creates a brand-new opportunity (unlike upsertGhlOpportunity, which GHL de-duplicates to one
@@ -269,7 +277,7 @@ export async function createGhlOpportunity(input: {
   const token = settings.ghlApiKey;
   const locationId = settings.ghlLocationId;
   if (!token || !locationId || !input.contactId) {
-    return { skipped: true as const, ok: false as const, opportunityId: undefined };
+    return { skipped: true as const, ok: false as const, opportunityId: undefined, error: undefined as string | undefined };
   }
 
   try {
@@ -289,16 +297,27 @@ export async function createGhlOpportunity(input: {
       }),
     });
     if (!response.ok) {
-      console.error("GHL opportunity create failed", response.status, await response.text());
-      return { skipped: false as const, ok: false as const, opportunityId: undefined };
+      const error = await failureReason("Creating the opportunity", response);
+      console.error("GHL opportunity create failed", error);
+      return { skipped: false as const, ok: false as const, opportunityId: undefined, error };
     }
     const payload = asRecord(await response.json());
     const opportunity = asRecord(payload.opportunity);
     const opportunityId = String(opportunity.id ?? payload.id ?? "").trim();
-    return { skipped: false as const, ok: true as const, opportunityId: opportunityId || undefined };
+    return {
+      skipped: false as const,
+      ok: true as const,
+      opportunityId: opportunityId || undefined,
+      error: undefined as string | undefined,
+    };
   } catch (error) {
     console.error("GHL opportunity create error", error);
-    return { skipped: false as const, ok: false as const, opportunityId: undefined };
+    return {
+      skipped: false as const,
+      ok: false as const,
+      opportunityId: undefined,
+      error: `Creating the opportunity failed: ${error instanceof Error ? error.message : "network error"}`,
+    };
   }
 }
 
@@ -309,7 +328,7 @@ export async function updateGhlOpportunity(
   const settings = await getResolvedIntegrationSettings();
   const token = settings.ghlApiKey;
   if (!token || !opportunityId) {
-    return { skipped: true as const, ok: false as const };
+    return { skipped: true as const, ok: false as const, error: undefined as string | undefined };
   }
 
   const body: Record<string, unknown> = {};
@@ -333,13 +352,18 @@ export async function updateGhlOpportunity(
       body: JSON.stringify(body),
     });
     if (!response.ok) {
-      console.error("GHL opportunity update failed", response.status, await response.text());
-      return { skipped: false as const, ok: false as const };
+      const error = await failureReason("Updating the opportunity", response);
+      console.error("GHL opportunity update failed", error);
+      return { skipped: false as const, ok: false as const, error };
     }
-    return { skipped: false as const, ok: true as const };
+    return { skipped: false as const, ok: true as const, error: undefined as string | undefined };
   } catch (error) {
     console.error("GHL opportunity update error", error);
-    return { skipped: false as const, ok: false as const };
+    return {
+      skipped: false as const,
+      ok: false as const,
+      error: `Updating the opportunity failed: ${error instanceof Error ? error.message : "network error"}`,
+    };
   }
 }
 

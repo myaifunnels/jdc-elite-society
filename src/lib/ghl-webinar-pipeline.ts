@@ -1,5 +1,6 @@
 import {
   addGhlContactTags,
+  findGhlContactDuplicate,
   getGhlContactById,
   ghlHeaders,
   lookupGhlContact,
@@ -152,9 +153,11 @@ export type WebinarGhlSyncResult = {
   /** Where this registrant came from: "comment" = they had commented FREE COACHING (workflow tag,
    * or a card in an earlier stage of the funnel), "direct" = they registered without commenting. */
   source?: "comment" | "direct";
+  /** Why a "failed" result failed, in words an admin can act on. */
+  error?: string;
 };
 
-type PipelineOutcome = { status: WebinarGhlSyncResult["status"]; advancedFromEarlier?: boolean };
+type PipelineOutcome = { status: WebinarGhlSyncResult["status"]; advancedFromEarlier?: boolean; error?: string };
 type SyncOptions = { moveStage?: boolean; replaceStatusTags?: boolean };
 
 /** Pushes one webinar registrant into GoHighLevel so admins can filter, qualify and nurture them:
@@ -180,7 +183,10 @@ export async function syncWebinarRegistrantToGhl(
 
   let contactId: string | undefined;
   let priorTags: string[] = [];
-  const existing = await lookupGhlContact(registrant.email, registrant.phone);
+  // Try GHL's documented duplicate search first, then the older lookup endpoint.
+  const existing =
+    (await findGhlContactDuplicate(registrant.email, registrant.phone)) ??
+    (await lookupGhlContact(registrant.email, registrant.phone));
   if (existing?.id) {
     contactId = existing.id;
     // The lookup response isn't guaranteed to carry tags, so fall back to fetching the contact.
@@ -197,7 +203,7 @@ export async function syncWebinarRegistrantToGhl(
     contactId = created.contactId;
   }
   if (!contactId) {
-    return { status: "failed" };
+    return { status: "failed", error: "Couldn't find or create the contact in GoHighLevel (check the API key and its Contacts permission)." };
   }
 
   if (options.replaceStatusTags) {
@@ -222,7 +228,7 @@ export async function syncWebinarRegistrantToGhl(
     await addGhlContactTags(contactId, [DIRECT_SOURCE_TAG]);
   }
 
-  return { status: outcome.status, source: isCommenter ? "comment" : "direct" };
+  return { status: outcome.status, source: isCommenter ? "comment" : "direct", error: outcome.error };
 }
 
 /** The pipeline half of the sync: put the registrant's opportunity in the right stage (see the
@@ -243,6 +249,13 @@ async function placeInPipeline(
   }
 
   const opportunities = await listGhlOpportunitiesForContact(pipeline.id, contactId);
+  if (opportunities === null) {
+    // Couldn't look — don't guess "none" and risk creating a duplicate card.
+    return {
+      status: "failed",
+      error: "Couldn't read this contact's opportunities from GoHighLevel (check the API key's Opportunities permission).",
+    };
+  }
 
   // An opportunity this module created earlier (recognised by its "Webinar · …" source): keep it
   // in step with the registration status — a rejected overflow seat closes it as lost — and only
@@ -257,7 +270,7 @@ async function placeInPipeline(
       status: registrant.status === "rejected" ? "lost" : "open",
       ...(options.moveStage || upgradeFromLeads ? { pipelineStageId: stage.id } : {}),
     });
-    return { status: updated.ok ? "synced" : "failed" };
+    return updated.ok ? { status: "synced" } : { status: "failed", error: updated.error };
   }
 
   // Already in this pipeline by another route (a "FB Page DMs" lead from the FREE COACHING comment
@@ -274,7 +287,7 @@ async function placeInPipeline(
     if (behind && registrant.status !== "rejected") {
       const moved = await updateGhlOpportunity(behind.id, { pipelineStageId: stage.id });
       if (!moved.ok) {
-        return { status: "failed" };
+        return { status: "failed", error: moved.error };
       }
       await addContactNote(contactId, noteFor(webinar, registrant));
       return { status: "synced", advancedFromEarlier: true };
@@ -299,7 +312,7 @@ async function placeInPipeline(
     source: `${WEBINAR_SOURCE_PREFIX} · ${webinar.title}`,
   });
   if (!created.ok) {
-    return { status: "failed" };
+    return { status: "failed", error: created.error };
   }
   await addContactNote(contactId, noteFor(webinar, registrant));
   return { status: "synced" };
@@ -339,6 +352,8 @@ export type WebinarGhlBackfillState = {
   /** Open cards still sitting in a stage before "Webinar Registrants" — i.e. commented (or were
    * otherwise added) but haven't registered. Null until a run has finished counting. */
   stillBeforeRegistrants: number | null;
+  /** Up to three distinct reasons registrants failed, so a stuck run explains itself. */
+  errorSamples: string[];
 };
 
 let backfillState: WebinarGhlBackfillState = {
@@ -352,7 +367,15 @@ let backfillState: WebinarGhlBackfillState = {
   fromComment: 0,
   direct: 0,
   stillBeforeRegistrants: null,
+  errorSamples: [],
 };
+
+function recordError(message?: string) {
+  const text = message?.trim();
+  if (text && backfillState.errorSamples.length < 3 && !backfillState.errorSamples.includes(text)) {
+    backfillState.errorSamples.push(text);
+  }
+}
 
 /** How many open opportunities are still in a stage before the registrant stage. Read-only. */
 async function countStillBeforeRegistrants(): Promise<number | null> {
@@ -412,6 +435,7 @@ export async function startWebinarGhlBackfill(): Promise<{ started: boolean; tot
     fromComment: 0,
     direct: 0,
     stillBeforeRegistrants: null,
+    errorSamples: [],
   };
 
   void (async () => {
@@ -422,14 +446,20 @@ export async function startWebinarGhlBackfill(): Promise<{ started: boolean; tot
         cursor += 1;
         try {
           const result = await syncWebinarRegistrantToGhl(job.webinar, job.registrant);
-          if (result.status === "synced") backfillState.synced += 1;
-          else if (result.status === "no_pipeline") backfillState.noPipeline = true;
-          else backfillState.failed += 1;
-          if (result.source === "comment") backfillState.fromComment += 1;
-          else if (result.source === "direct") backfillState.direct += 1;
+          if (result.status === "synced") {
+            backfillState.synced += 1;
+            if (result.source === "comment") backfillState.fromComment += 1;
+            else if (result.source === "direct") backfillState.direct += 1;
+          } else if (result.status === "no_pipeline") {
+            backfillState.noPipeline = true;
+          } else {
+            backfillState.failed += 1;
+            recordError(result.error);
+          }
         } catch (error) {
           console.error("Webinar GHL backfill item failed", error);
           backfillState.failed += 1;
+          recordError(error instanceof Error ? error.message : "Unexpected error");
         }
         backfillState.processed += 1;
         await new Promise((resolve) => setTimeout(resolve, BACKFILL_DELAY_MS));

@@ -33,6 +33,17 @@ function splitName(name: string) {
   };
 }
 
+/** GHL answers a duplicate-contact create with a 400 whose body includes `meta.contactId`. */
+function duplicateContactIdFrom(responseBody: string) {
+  try {
+    const parsed = JSON.parse(responseBody) as { meta?: { contactId?: unknown } };
+    const id = parsed.meta?.contactId;
+    return typeof id === "string" && id ? id : "";
+  } catch {
+    return "";
+  }
+}
+
 export async function syncContactToGhl(input: GhlContactInput) {
   const settings = await getResolvedIntegrationSettings();
   const token = settings.ghlApiKey;
@@ -95,6 +106,12 @@ export async function syncContactToGhl(input: GhlContactInput) {
     if (!response.ok) {
       const detail = await response.text();
       console.error("GHL contact sync failed", response.status, detail);
+      // A duplicate rejection carries the existing contact's id in its body — use it directly.
+      const duplicateId = duplicateContactIdFrom(detail);
+      if (duplicateId) {
+        await addGhlContactTags(duplicateId, tags);
+        return { skipped: false as const, ok: true as const, contactId: duplicateId };
+      }
       const existing = await lookupGhlContact(input.email, input.phone);
       if (existing?.id) {
         await addGhlContactTags(existing.id, tags);
@@ -406,6 +423,41 @@ export async function lookupGhlContact(email?: string, phone?: string) {
     console.error("GHL contact lookup failed", error);
     return null;
   }
+}
+
+/** Finds an existing contact by email or phone using GHL's documented duplicate-search endpoint
+ * (email first, then phone). Returns null when there's no match or the request fails. */
+export async function findGhlContactDuplicate(email?: string, phone?: string) {
+  const settings = await getResolvedIntegrationSettings();
+  const token = settings.ghlApiKey;
+  const locationId = settings.ghlLocationId;
+  if (!token || !locationId) {
+    return null;
+  }
+
+  const attempts: Array<[string, string]> = [];
+  if (email) attempts.push(["email", email]);
+  if (phone) attempts.push(["number", phone]);
+
+  for (const [key, value] of attempts) {
+    try {
+      const query = new URLSearchParams({ locationId, [key]: value });
+      const response = await ghlFetch(`https://services.leadconnectorhq.com/contacts/search/duplicate?${query.toString()}`, {
+        headers: ghlHeaders(token),
+        cache: "no-store",
+      });
+      if (!response.ok) {
+        continue;
+      }
+      const payload = (await response.json()) as { contact?: GhlRemoteContact | null };
+      if (payload.contact?.id) {
+        return payload.contact;
+      }
+    } catch (error) {
+      console.error("GHL duplicate contact search failed", error);
+    }
+  }
+  return null;
 }
 
 export async function getGhlContactById(contactId: string) {

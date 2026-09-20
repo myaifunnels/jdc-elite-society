@@ -1,6 +1,7 @@
 "use client";
 
-import { useActionState } from "react";
+import { useRouter } from "next/navigation";
+import { useActionState, useEffect } from "react";
 
 import { syncWebinarRegistrantsToGhlAction, type WebinarFormState } from "@/app/dashboard/webinars/actions";
 import type { WebinarGhlBackfillState } from "@/lib/ghl-webinar-pipeline";
@@ -26,6 +27,15 @@ function formatTime(iso?: string) {
 export function WebinarGhlSyncPanel({ state }: { state: WebinarGhlBackfillState }) {
   const [result, action, pending] = useActionState(syncWebinarRegistrantsToGhlAction, initialState);
   const running = state.running || pending;
+  const router = useRouter();
+
+  // The sync runs in the background on the server; re-read its progress every few seconds while it
+  // runs so the counts and any error reasons appear without a manual refresh.
+  useEffect(() => {
+    if (!state.running) return;
+    const timer = window.setInterval(() => router.refresh(), 4000);
+    return () => window.clearInterval(timer);
+  }, [state.running, router]);
 
   return (
     <section className="card-surface grid gap-3 p-5 sm:p-6">
@@ -92,9 +102,20 @@ export function WebinarGhlSyncPanel({ state }: { state: WebinarGhlBackfillState 
       ) : null}
       {state.noPipeline ? (
         <p className="auth-error m-0">
-          Contacts were pushed and tagged, but no &ldquo;JDC Mastermind&rdquo; pipeline was found in GoHighLevel, so no
-          leads were created. Check the pipeline&rsquo;s name in GoHighLevel, then run the sync again.
+          Contacts were pushed and tagged, but no pipeline with a &ldquo;Registrants&rdquo; stage (or a JDC Mastermind
+          pipeline) was found in GoHighLevel, so no cards were created. Check the stage name, and that the API key can
+          read Opportunities, then run the sync again.
         </p>
+      ) : null}
+      {state.errorSamples.length > 0 ? (
+        <div className="auth-error m-0 grid gap-1">
+          <strong>{state.failed} registrant(s) couldn&rsquo;t be synced. Reasons GoHighLevel gave:</strong>
+          {state.errorSamples.map((message) => (
+            <span key={message} className="text-xs">
+              &bull; {message}
+            </span>
+          ))}
+        </div>
       ) : null}
       {result.success ? <p className="m-0 text-sm font-semibold text-emerald-300">{result.success}</p> : null}
       {result.error ? <p className="auth-error m-0">{result.error}</p> : null}
