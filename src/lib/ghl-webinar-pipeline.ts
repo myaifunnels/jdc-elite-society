@@ -12,12 +12,13 @@ import { listRegistrants, type WebinarRegistrant } from "@/lib/webinar-registran
 import { formatWebinarDateLabel, formatWebinarTimeLabel, type WebinarRecord } from "@/lib/webinars";
 import { listWebinars } from "@/lib/webinars-store";
 
-/** Every webinar registrant is pushed into the "JDC Mastermind" pipeline as a lead — they're the
- * top of the Mastermind funnel, so admins qualify and move them through the same stages as
- * everyone else. Resolution order: an exact "JDC Mastermind" pipeline, the app's recognised
- * Mastermind buyer pipeline, any pipeline with "mastermind" in its name, then (if an admin ever
- * makes one) a dedicated pipeline with "webinar" in its name. GHL's API can't create pipelines,
- * so this only ever attaches to one that already exists. */
+/** Webinar registrants are pushed into the campaign pipeline that has a "Registrants" stage (e.g.
+ * "B2 Duplication Campaign" → "Webinar Registrants"), so admins qualify and move them through that
+ * funnel. Resolution order: a pipeline with a stage named like "registrant" (the first, with a
+ * warning if several exist); else an exact "JDC Mastermind" pipeline, the app's recognised
+ * Mastermind buyer pipeline, any pipeline with "mastermind" in its name, then one with "webinar" in
+ * its name. GHL's API can't create pipelines or stages, so this only ever attaches to ones that
+ * already exist. */
 const PIPELINE_CACHE_MS = 2 * 60 * 1000;
 let pipelineCache: { at: number; pipeline: GhlOpportunityPipeline | null } | null = null;
 
@@ -32,7 +33,15 @@ export async function findWebinarPipeline(): Promise<GhlOpportunityPipeline | nu
 
   const pipelines = await listGhlOpportunityPipelines();
   const lower = (name: string) => name.trim().toLowerCase();
+  const withRegistrantStage = pipelines.filter((item) => pickStage(item, ["registrant"]));
+  if (withRegistrantStage.length > 1) {
+    console.warn(
+      "Several GHL pipelines have a Registrants stage; using the first:",
+      withRegistrantStage.map((item) => item.name).join(", "),
+    );
+  }
   const pipeline =
+    withRegistrantStage[0] ??
     pipelines.find((item) => lower(item.name) === "jdc mastermind") ??
     (await getMastermindBuyerPipeline()) ??
     pipelines.find((item) => lower(item.name).includes("mastermind")) ??
@@ -201,9 +210,24 @@ export async function syncWebinarRegistrantToGhl(
     return { status: updated.ok ? "synced" : "failed" };
   }
 
-  // Already in this pipeline as a lead or a Mastermind buyer (or by any other route): leave their
-  // opportunity completely alone. The tags added above still record this webinar registration.
+  // Already in this pipeline by another route (a "FB Page DMs" lead from the FREE COACHING comment
+  // workflow, an existing lead, a Mastermind buyer…). Never duplicate or edit their deal — with one
+  // exception: an open opportunity sitting in an EARLIER stage than the registrant stage advances
+  // to it, since registering is exactly the progress that stage represents. Nobody is ever moved
+  // backward, and won/lost deals are left alone. The tags added above record the registration.
   if (opportunities.length > 0) {
+    const rank = (stageId: string) => pipeline.stages.findIndex((item) => item.id === stageId);
+    const entryRank = rank(stage.id);
+    const behind = opportunities
+      .filter((item) => item.status === "open" && rank(item.pipelineStageId) !== -1 && rank(item.pipelineStageId) < entryRank)
+      .sort((left, right) => rank(right.pipelineStageId) - rank(left.pipelineStageId))[0];
+    if (behind && registrant.status !== "rejected") {
+      const moved = await updateGhlOpportunity(behind.id, { pipelineStageId: stage.id });
+      if (!moved.ok) {
+        return { status: "failed" };
+      }
+      await addContactNote(contactId, noteFor(webinar, registrant));
+    }
     return { status: "synced" };
   }
 

@@ -34,14 +34,15 @@ export function WebinarGhlSyncPanel({ state }: { state: WebinarGhlBackfillState 
         <h3 className="m-0 mt-1 text-lg font-bold tracking-[-0.02em]">Registrants pipeline</h3>
         <p className="m-0 mt-1 max-w-2xl text-sm text-[var(--muted)]">
           Every new registration is pushed to GoHighLevel automatically as a tagged contact plus a lead in the{" "}
-          <strong>JDC Mastermind</strong> pipeline, so you can filter, qualify and nurture them there. Use the button to
-          send everyone who registered before now. It&rsquo;s safe to run again &mdash; stages you&rsquo;ve already
-          moved are never reset.
+          campaign pipeline&rsquo;s <strong>Webinar Registrants</strong> stage, so you can filter, qualify and nurture
+          them there. Use the button to send everyone who registered before now. It&rsquo;s safe to run again &mdash;
+          stages you&rsquo;ve already moved are never reset.
         </p>
         <p className="m-0 mt-2 max-w-2xl text-xs text-[var(--muted)]">
-          They go into a stage named <strong>Registrants</strong> if you&rsquo;ve added one in GoHighLevel (GoHighLevel
-          doesn&rsquo;t let apps create stages, so add it under Settings &rarr; Pipelines &rarr; JDC Mastermind), otherwise
-          into <strong>Leads</strong>. Once you add it, run the sync again and cards still sitting in Leads move over.
+          The pipeline used is the one with a stage named &ldquo;Registrants&rdquo; (currently B2 Duplication Campaign);
+          without one it falls back to the JDC Mastermind pipeline&rsquo;s Leads stage. Someone already in an
+          <em> earlier</em> stage, such as <strong>FB Page DMs</strong> from the FREE COACHING comment workflow,
+          advances to Webinar Registrants when they register. Nobody is ever moved backward.
         </p>
         <p className="m-0 mt-2 max-w-2xl text-xs text-[var(--muted)]">
           Anyone already in that pipeline (a Mastermind buyer or an existing lead) keeps their card untouched &mdash;
