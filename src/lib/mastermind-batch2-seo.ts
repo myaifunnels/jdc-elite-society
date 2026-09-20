@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { mastermindOffer } from "@/data/mastermind-offer";
 import { siteUrl } from "@/lib/site";
 
-const offerUrl = `${siteUrl}/breakthrough`;
+const offerUrl = `${siteUrl}/duplication`;
 const ogImageUrl = `${siteUrl}${mastermindOffer.ogImage}`;
 const title = "The Network Builder System: How to Build a Business That Grows Beyond You";
 const description =
@@ -147,7 +147,7 @@ export function mastermindBatch2JsonLd() {
         })),
         offers: {
           "@type": "Offer",
-          url: `${siteUrl}/elite/checkout?src=breakthrough`,
+          url: `${siteUrl}/elite/checkout?src=duplication`,
           price: String(mastermindOffer.offerPrice),
           priceCurrency: "PHP",
           availability: "https://schema.org/InStock",

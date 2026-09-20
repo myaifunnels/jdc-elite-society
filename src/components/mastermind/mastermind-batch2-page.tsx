@@ -9,7 +9,7 @@ import { EliteTestimonialsCarousel } from "@/components/elite/elite-testimonials
 import { IncludeList } from "@/components/elite/elite-checkout-form";
 import { formatPhp, mastermindOffer } from "@/data/mastermind-offer";
 
-const CHECKOUT_HREF = "/elite/checkout?src=breakthrough";
+const CHECKOUT_HREF = "/elite/checkout?src=duplication";
 
 function ArrowIcon() {
   return (
