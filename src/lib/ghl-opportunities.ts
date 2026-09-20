@@ -27,6 +27,7 @@ export type GhlOpportunity = {
   email: string;
   phone: string;
   contactName: string;
+  source: string;
 };
 
 function asRecord(value: unknown): Record<string, unknown> {
@@ -75,6 +76,7 @@ function mapOpportunity(raw: unknown): GhlOpportunity | null {
     email: String(contact.email ?? record.email ?? "").trim(),
     phone: String(contact.phone ?? record.phone ?? "").trim(),
     contactName: String(contact.name ?? [contact.firstName, contact.lastName].filter(Boolean).join(" ")).trim(),
+    source: String(record.source ?? "").trim(),
   };
 }
 

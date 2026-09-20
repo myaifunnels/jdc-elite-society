@@ -33,16 +33,15 @@ export function WebinarGhlSyncPanel({ state }: { state: WebinarGhlBackfillState 
         <p className="eyebrow m-0">GoHighLevel</p>
         <h3 className="m-0 mt-1 text-lg font-bold tracking-[-0.02em]">Registrants pipeline</h3>
         <p className="m-0 mt-1 max-w-2xl text-sm text-[var(--muted)]">
-          Every new registration is pushed to GoHighLevel automatically as a tagged contact plus an opportunity in your
-          webinar pipeline, so you can filter, qualify and nurture them there. Use the button to send everyone who
-          registered before now. It&rsquo;s safe to run again &mdash; stages you&rsquo;ve already moved are never
-          reset.
+          Every new registration is pushed to GoHighLevel automatically as a tagged contact plus a lead in the{" "}
+          <strong>JDC Mastermind</strong> pipeline&rsquo;s <strong>Leads</strong> stage, so you can filter, qualify and
+          nurture them there. Use the button to send everyone who registered before now. It&rsquo;s safe to run again
+          &mdash; stages you&rsquo;ve already moved are never reset.
         </p>
         <p className="m-0 mt-2 max-w-2xl text-xs text-[var(--muted)]">
-          One-time setup in GoHighLevel: create a pipeline named <strong>JDC Webinar Registrants</strong> with stages
-          such as <em>Registered</em>, <em>Pending Payment</em>, <em>Attended</em>, <em>Qualified</em> and{" "}
-          <em>Nurture</em>. New registrants land in &ldquo;Registered&rdquo; (or the first stage); overflow seats awaiting
-          payment review land in the &ldquo;Pending&rdquo; stage.
+          Anyone already in that pipeline (a Mastermind buyer or an existing lead) keeps their card untouched &mdash;
+          no duplicates. Registrant leads show the source &ldquo;Webinar &middot; &lt;title&gt;&rdquo;, and every
+          registrant is tagged with the webinar, seat type and status, so you can filter by any of them in GoHighLevel.
         </p>
       </div>
 
@@ -63,8 +62,8 @@ export function WebinarGhlSyncPanel({ state }: { state: WebinarGhlBackfillState 
 
       {state.noPipeline ? (
         <p className="auth-error m-0">
-          Contacts were pushed and tagged, but no webinar pipeline was found in GoHighLevel, so no opportunities were
-          created. Create the &ldquo;JDC Webinar Registrants&rdquo; pipeline, then run the sync again.
+          Contacts were pushed and tagged, but no &ldquo;JDC Mastermind&rdquo; pipeline was found in GoHighLevel, so no
+          leads were created. Check the pipeline&rsquo;s name in GoHighLevel, then run the sync again.
         </p>
       ) : null}
       {result.success ? <p className="m-0 text-sm font-semibold text-emerald-300">{result.success}</p> : null}

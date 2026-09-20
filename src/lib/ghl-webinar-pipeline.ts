@@ -1,6 +1,7 @@
 import { addGhlContactTags, ghlHeaders, lookupGhlContact, removeGhlContactTags, syncContactToGhl } from "@/lib/ghl";
 import {
   createGhlOpportunity,
+  getMastermindBuyerPipeline,
   listGhlOpportunitiesForContact,
   listGhlOpportunityPipelines,
   updateGhlOpportunity,
@@ -11,13 +12,12 @@ import { listRegistrants, type WebinarRegistrant } from "@/lib/webinar-registran
 import { formatWebinarDateLabel, formatWebinarTimeLabel, type WebinarRecord } from "@/lib/webinars";
 import { listWebinars } from "@/lib/webinars-store";
 
-/** The GoHighLevel pipeline webinar registrants are pushed into. GHL's public API can't create
- * pipelines, so an admin creates it once in GHL (any name containing "webinar" works — this exact
- * name is preferred) with stages like Registered → Attended → Qualified → Nurture. New
- * registrants land in the stage named like "Registered" (or the first stage); overflow seats
- * awaiting payment review land in a stage named like "Pending"/"Overflow" when one exists. */
-export const WEBINAR_PIPELINE_NAME = "JDC Webinar Registrants";
-
+/** Every webinar registrant is pushed into the "JDC Mastermind" pipeline as a lead — they're the
+ * top of the Mastermind funnel, so admins qualify and move them through the same stages as
+ * everyone else. Resolution order: an exact "JDC Mastermind" pipeline, the app's recognised
+ * Mastermind buyer pipeline, any pipeline with "mastermind" in its name, then (if an admin ever
+ * makes one) a dedicated pipeline with "webinar" in its name. GHL's API can't create pipelines,
+ * so this only ever attaches to one that already exists. */
 const PIPELINE_CACHE_MS = 2 * 60 * 1000;
 let pipelineCache: { at: number; pipeline: GhlOpportunityPipeline | null } | null = null;
 
@@ -31,8 +31,13 @@ export async function findWebinarPipeline(): Promise<GhlOpportunityPipeline | nu
   }
 
   const pipelines = await listGhlOpportunityPipelines();
-  const exact = pipelines.find((item) => item.name.trim().toLowerCase() === WEBINAR_PIPELINE_NAME.toLowerCase());
-  const pipeline = exact ?? pipelines.find((item) => item.name.toLowerCase().includes("webinar")) ?? null;
+  const lower = (name: string) => name.trim().toLowerCase();
+  const pipeline =
+    pipelines.find((item) => lower(item.name) === "jdc mastermind") ??
+    (await getMastermindBuyerPipeline()) ??
+    pipelines.find((item) => lower(item.name).includes("mastermind")) ??
+    pipelines.find((item) => lower(item.name).includes("webinar")) ??
+    null;
   pipelineCache = { at: Date.now(), pipeline };
   return pipeline;
 }
@@ -45,13 +50,21 @@ function pickStage(pipeline: GhlOpportunityPipeline, keywords: string[]) {
   return null;
 }
 
+/** New registrants always enter at the top of the funnel — the "Leads" stage (or a "Registered"/
+ * "New" stage in a dedicated pipeline, else the first stage). Deliberately NOT matched on
+ * "payment": the Mastermind pipeline's "2nd Batch Payment for Verification" is the Mastermind
+ * checkout review, not a webinar overflow seat. */
 function stageFor(pipeline: GhlOpportunityPipeline, status: WebinarRegistrant["status"]) {
-  const registered = pickStage(pipeline, ["registered", "new"]) ?? pipeline.stages[0] ?? null;
+  const entry = pickStage(pipeline, ["lead", "registered", "new"]) ?? pipeline.stages[0] ?? null;
   if (status === "pending") {
-    return pickStage(pipeline, ["pending", "overflow", "payment", "review"]) ?? registered;
+    return pickStage(pipeline, ["pending", "overflow"]) ?? entry;
   }
-  return registered;
+  return entry;
 }
+
+/** Opportunities this module creates carry a "Webinar · …" source, which is how it recognises its
+ * own later — and how it avoids ever editing a Mastermind buyer's or existing lead's opportunity. */
+const WEBINAR_SOURCE_PREFIX = "Webinar";
 
 const STATUS_TAG: Record<WebinarRegistrant["status"], string> = {
   confirmed: "Webinar status: confirmed",
@@ -104,19 +117,20 @@ async function addContactNote(contactId: string, body: string) {
 }
 
 export type WebinarGhlSyncResult = {
-  /** "synced" = contact + opportunity done; "no_pipeline" = contact/tags pushed but there's no
-   * webinar pipeline in GHL yet to put an opportunity in; "skipped" = GHL isn't connected. */
+  /** "synced" = contact + opportunity done; "no_pipeline" = contact/tags pushed but no matching
+   * pipeline was found in GHL to put an opportunity in; "skipped" = GHL isn't connected. */
   status: "synced" | "no_pipeline" | "skipped" | "failed";
 };
 
 /** Pushes one webinar registrant into GoHighLevel so admins can filter, qualify and nurture them:
- *  1. the contact — created or found, tagged with the webinar, seat type and status;
- *  2. an opportunity in the webinar pipeline (one per person per webinar, so registering for
- *     several webinars gives several trackable opportunities), valued at what they paid;
- *  3. a one-time note with the registration details.
- * Idempotent — safe to re-run. An existing opportunity's stage is left alone (an admin may have
- * already moved it to Qualified/Nurture) unless `moveStage` is set, which the approve/reject
- * actions use so a reviewed overflow seat advances out of "Pending". */
+ *  1. the contact — created or found, tagged with the webinar, seat type and status (the tags are
+ *     what let admins filter by webinar in GHL, and they accumulate across webinars);
+ *  2. a lead opportunity in the JDC Mastermind pipeline's "Leads" stage — but only if this person
+ *     has no opportunity in that pipeline yet. Someone who's already a lead or a Mastermind buyer
+ *     keeps their existing card untouched (no duplicate, no edits to a buyer's deal);
+ *  3. a one-time note with the registration details when the opportunity is created.
+ * Idempotent — safe to re-run. An opportunity this module created keeps whatever stage an admin
+ * moved it to (Qualified, Nurture…) unless `moveStage` is set. */
 export async function syncWebinarRegistrantToGhl(
   webinar: WebinarRecord,
   registrant: WebinarRegistrant,
@@ -164,29 +178,41 @@ export async function syncWebinarRegistrantToGhl(
     return { status: "no_pipeline" };
   }
 
-  const name = `${registrant.name} — ${webinar.title}`;
-  const opportunityStatus = registrant.status === "rejected" ? "lost" : "open";
   const opportunities = await listGhlOpportunitiesForContact(pipeline.id, contactId);
-  const match = opportunities.find((item) => item.name === name);
 
-  if (match) {
-    const updated = await updateGhlOpportunity(match.id, {
-      name,
-      monetaryValue: registrant.amountPaid,
-      status: opportunityStatus,
+  // An opportunity this module created earlier (recognised by its "Webinar · …" source): keep it
+  // in step with the registration status — a rejected overflow seat closes it as lost — and only
+  // move its stage when asked, so an admin's own stage moves are never undone.
+  const ours = opportunities.find((item) => item.source.startsWith(WEBINAR_SOURCE_PREFIX));
+  if (ours) {
+    const updated = await updateGhlOpportunity(ours.id, {
+      status: registrant.status === "rejected" ? "lost" : "open",
       ...(options.moveStage ? { pipelineStageId: stage.id } : {}),
     });
     return { status: updated.ok ? "synced" : "failed" };
+  }
+
+  // Already in this pipeline as a lead or a Mastermind buyer (or by any other route): leave their
+  // opportunity completely alone. The tags added above still record this webinar registration.
+  if (opportunities.length > 0) {
+    return { status: "synced" };
+  }
+
+  // A rejected overflow request isn't a lead worth creating a card for.
+  if (registrant.status === "rejected") {
+    return { status: "synced" };
   }
 
   const created = await createGhlOpportunity({
     contactId,
     pipelineId: pipeline.id,
     pipelineStageId: stage.id,
-    name,
-    monetaryValue: registrant.amountPaid,
-    status: opportunityStatus,
-    source: "Webinar registration",
+    name: registrant.name,
+    // Deliberately 0: this is a shared Mastermind pipeline whose totals track Mastermind sales, so
+    // webinar money (e.g. a ₱499 overflow seat) goes in the note instead of inflating those totals.
+    monetaryValue: 0,
+    status: "open",
+    source: `${WEBINAR_SOURCE_PREFIX} · ${webinar.title}`,
   });
   if (!created.ok) {
     return { status: "failed" };
