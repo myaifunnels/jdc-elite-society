@@ -34,9 +34,14 @@ export function WebinarGhlSyncPanel({ state }: { state: WebinarGhlBackfillState 
         <h3 className="m-0 mt-1 text-lg font-bold tracking-[-0.02em]">Registrants pipeline</h3>
         <p className="m-0 mt-1 max-w-2xl text-sm text-[var(--muted)]">
           Every new registration is pushed to GoHighLevel automatically as a tagged contact plus a lead in the{" "}
-          <strong>JDC Mastermind</strong> pipeline&rsquo;s <strong>Leads</strong> stage, so you can filter, qualify and
-          nurture them there. Use the button to send everyone who registered before now. It&rsquo;s safe to run again
-          &mdash; stages you&rsquo;ve already moved are never reset.
+          <strong>JDC Mastermind</strong> pipeline, so you can filter, qualify and nurture them there. Use the button to
+          send everyone who registered before now. It&rsquo;s safe to run again &mdash; stages you&rsquo;ve already
+          moved are never reset.
+        </p>
+        <p className="m-0 mt-2 max-w-2xl text-xs text-[var(--muted)]">
+          They go into a stage named <strong>Registrants</strong> if you&rsquo;ve added one in GoHighLevel (GoHighLevel
+          doesn&rsquo;t let apps create stages, so add it under Settings &rarr; Pipelines &rarr; JDC Mastermind), otherwise
+          into <strong>Leads</strong>. Once you add it, run the sync again and cards still sitting in Leads move over.
         </p>
         <p className="m-0 mt-2 max-w-2xl text-xs text-[var(--muted)]">
           Anyone already in that pipeline (a Mastermind buyer or an existing lead) keeps their card untouched &mdash;

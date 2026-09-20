@@ -50,12 +50,17 @@ function pickStage(pipeline: GhlOpportunityPipeline, keywords: string[]) {
   return null;
 }
 
-/** New registrants always enter at the top of the funnel — the "Leads" stage (or a "Registered"/
+/** New registrants enter at the top of the funnel: a stage an admin has named for them
+ * ("Registrants", "Webinar Registrants"…) if one exists, otherwise "Leads" (or a "Registered"/
  * "New" stage in a dedicated pipeline, else the first stage). Deliberately NOT matched on
  * "payment": the Mastermind pipeline's "2nd Batch Payment for Verification" is the Mastermind
  * checkout review, not a webinar overflow seat. */
 function stageFor(pipeline: GhlOpportunityPipeline, status: WebinarRegistrant["status"]) {
-  const entry = pickStage(pipeline, ["lead", "registered", "new"]) ?? pipeline.stages[0] ?? null;
+  const entry =
+    pickStage(pipeline, ["registrant", "webinar"]) ??
+    pickStage(pipeline, ["lead", "registered", "new"]) ??
+    pipeline.stages[0] ??
+    null;
   if (status === "pending") {
     return pickStage(pipeline, ["pending", "overflow"]) ?? entry;
   }
@@ -185,9 +190,13 @@ export async function syncWebinarRegistrantToGhl(
   // move its stage when asked, so an admin's own stage moves are never undone.
   const ours = opportunities.find((item) => item.source.startsWith(WEBINAR_SOURCE_PREFIX));
   if (ours) {
+    // If a dedicated Registrants stage has since been added, a card still sitting untouched in
+    // the old default ("Leads") moves over to it. A card an admin already moved anywhere else stays.
+    const leadsStage = pickStage(pipeline, ["lead"]);
+    const upgradeFromLeads = Boolean(leadsStage) && stage.id !== leadsStage!.id && ours.pipelineStageId === leadsStage!.id;
     const updated = await updateGhlOpportunity(ours.id, {
       status: registrant.status === "rejected" ? "lost" : "open",
-      ...(options.moveStage ? { pipelineStageId: stage.id } : {}),
+      ...(options.moveStage || upgradeFromLeads ? { pipelineStageId: stage.id } : {}),
     });
     return { status: updated.ok ? "synced" : "failed" };
   }
