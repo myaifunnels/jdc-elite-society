@@ -1,9 +1,17 @@
-import { addGhlContactTags, ghlHeaders, lookupGhlContact, removeGhlContactTags, syncContactToGhl } from "@/lib/ghl";
+import {
+  addGhlContactTags,
+  getGhlContactById,
+  ghlHeaders,
+  lookupGhlContact,
+  removeGhlContactTags,
+  syncContactToGhl,
+} from "@/lib/ghl";
 import {
   createGhlOpportunity,
   getMastermindBuyerPipeline,
   listGhlOpportunitiesForContact,
   listGhlOpportunityPipelines,
+  searchGhlOpportunities,
   updateGhlOpportunity,
   type GhlOpportunityPipeline,
 } from "@/lib/ghl-opportunities";
@@ -80,6 +88,13 @@ function stageFor(pipeline: GhlOpportunityPipeline, status: WebinarRegistrant["s
  * own later — and how it avoids ever editing a Mastermind buyer's or existing lead's opportunity. */
 const WEBINAR_SOURCE_PREFIX = "Webinar";
 
+/** Added by the FREE COACHING comment workflow the moment someone comments — it means "commented
+ * and was DM'd the registration link", NOT "registered". We only read it, to tell commenters who
+ * registered apart from people who registered directly. */
+const COMMENT_WORKFLOW_TAG = "passive-income-webinar-registrant";
+const COMMENT_SOURCE_TAG = "Webinar source: FREE COACHING comment";
+const DIRECT_SOURCE_TAG = "Webinar source: direct";
+
 const STATUS_TAG: Record<WebinarRegistrant["status"], string> = {
   confirmed: "Webinar status: confirmed",
   pending: "Webinar status: pending review",
@@ -134,7 +149,13 @@ export type WebinarGhlSyncResult = {
   /** "synced" = contact + opportunity done; "no_pipeline" = contact/tags pushed but no matching
    * pipeline was found in GHL to put an opportunity in; "skipped" = GHL isn't connected. */
   status: "synced" | "no_pipeline" | "skipped" | "failed";
+  /** Where this registrant came from: "comment" = they had commented FREE COACHING (workflow tag,
+   * or a card in an earlier stage of the funnel), "direct" = they registered without commenting. */
+  source?: "comment" | "direct";
 };
+
+type PipelineOutcome = { status: WebinarGhlSyncResult["status"]; advancedFromEarlier?: boolean };
+type SyncOptions = { moveStage?: boolean; replaceStatusTags?: boolean };
 
 /** Pushes one webinar registrant into GoHighLevel so admins can filter, qualify and nurture them:
  *  1. the contact — created or found, tagged with the webinar, seat type and status (the tags are
@@ -148,7 +169,7 @@ export type WebinarGhlSyncResult = {
 export async function syncWebinarRegistrantToGhl(
   webinar: WebinarRecord,
   registrant: WebinarRegistrant,
-  options: { moveStage?: boolean; replaceStatusTags?: boolean } = {},
+  options: SyncOptions = {},
 ): Promise<WebinarGhlSyncResult> {
   const settings = await getResolvedIntegrationSettings();
   if (!settings.ghlApiKey || !settings.ghlLocationId) {
@@ -158,9 +179,12 @@ export async function syncWebinarRegistrantToGhl(
   const tags = tagsFor(webinar, registrant);
 
   let contactId: string | undefined;
+  let priorTags: string[] = [];
   const existing = await lookupGhlContact(registrant.email, registrant.phone);
   if (existing?.id) {
     contactId = existing.id;
+    // The lookup response isn't guaranteed to carry tags, so fall back to fetching the contact.
+    priorTags = Array.isArray(existing.tags) ? existing.tags : ((await getGhlContactById(existing.id))?.tags ?? []);
     await addGhlContactTags(contactId, tags);
   } else {
     const created = await syncContactToGhl({
@@ -183,6 +207,32 @@ export async function syncWebinarRegistrantToGhl(
     await removeGhlContactTags(contactId, stale);
   }
 
+  const outcome = await placeInPipeline(webinar, registrant, contactId, options);
+
+  // Label where this registrant came from, so admins can split the funnel in GHL: people who
+  // commented FREE COACHING and then registered, versus people who registered directly. Someone
+  // counts as a commenter if their contact carries the workflow's tag (or a source tag we set on an
+  // earlier run), or if they had an open card in an earlier funnel stage that we just advanced.
+  const has = (tag: string) => priorTags.some((item) => item.toLowerCase() === tag.toLowerCase());
+  const isCommenter = has(COMMENT_WORKFLOW_TAG) || has(COMMENT_SOURCE_TAG) || Boolean(outcome.advancedFromEarlier);
+  if (isCommenter) {
+    if (!has(COMMENT_SOURCE_TAG)) await addGhlContactTags(contactId, [COMMENT_SOURCE_TAG]);
+    if (has(DIRECT_SOURCE_TAG)) await removeGhlContactTags(contactId, [DIRECT_SOURCE_TAG]);
+  } else if (!has(DIRECT_SOURCE_TAG)) {
+    await addGhlContactTags(contactId, [DIRECT_SOURCE_TAG]);
+  }
+
+  return { status: outcome.status, source: isCommenter ? "comment" : "direct" };
+}
+
+/** The pipeline half of the sync: put the registrant's opportunity in the right stage (see the
+ * rules on syncWebinarRegistrantToGhl and the comments below). */
+async function placeInPipeline(
+  webinar: WebinarRecord,
+  registrant: WebinarRegistrant,
+  contactId: string,
+  options: SyncOptions,
+): Promise<PipelineOutcome> {
   const pipeline = await findWebinarPipeline();
   if (!pipeline) {
     return { status: "no_pipeline" };
@@ -227,6 +277,7 @@ export async function syncWebinarRegistrantToGhl(
         return { status: "failed" };
       }
       await addContactNote(contactId, noteFor(webinar, registrant));
+      return { status: "synced", advancedFromEarlier: true };
     }
     return { status: "synced" };
   }
@@ -281,6 +332,13 @@ export type WebinarGhlBackfillState = {
   /** True when contacts were pushed but no webinar pipeline exists in GHL to hold opportunities. */
   noPipeline: boolean;
   skippedNotConnected: boolean;
+  /** Registrants who had commented FREE COACHING first. */
+  fromComment: number;
+  /** Registrants who registered without commenting. */
+  direct: number;
+  /** Open cards still sitting in a stage before "Webinar Registrants" — i.e. commented (or were
+   * otherwise added) but haven't registered. Null until a run has finished counting. */
+  stillBeforeRegistrants: number | null;
 };
 
 let backfillState: WebinarGhlBackfillState = {
@@ -291,7 +349,24 @@ let backfillState: WebinarGhlBackfillState = {
   failed: 0,
   noPipeline: false,
   skippedNotConnected: false,
+  fromComment: 0,
+  direct: 0,
+  stillBeforeRegistrants: null,
 };
+
+/** How many open opportunities are still in a stage before the registrant stage. Read-only. */
+async function countStillBeforeRegistrants(): Promise<number | null> {
+  const pipeline = await findWebinarPipeline();
+  if (!pipeline) return null;
+  const entry = stageFor(pipeline, "confirmed");
+  if (!entry) return null;
+  const entryRank = pipeline.stages.findIndex((item) => item.id === entry.id);
+  const opportunities = await searchGhlOpportunities(pipeline.id);
+  return opportunities.filter((item) => {
+    const rank = pipeline.stages.findIndex((stage) => stage.id === item.pipelineStageId);
+    return item.status === "open" && rank !== -1 && rank < entryRank;
+  }).length;
+}
 
 export function getWebinarGhlBackfillState(): WebinarGhlBackfillState {
   return { ...backfillState };
@@ -334,6 +409,9 @@ export async function startWebinarGhlBackfill(): Promise<{ started: boolean; tot
     failed: 0,
     noPipeline: false,
     skippedNotConnected: false,
+    fromComment: 0,
+    direct: 0,
+    stillBeforeRegistrants: null,
   };
 
   void (async () => {
@@ -347,6 +425,8 @@ export async function startWebinarGhlBackfill(): Promise<{ started: boolean; tot
           if (result.status === "synced") backfillState.synced += 1;
           else if (result.status === "no_pipeline") backfillState.noPipeline = true;
           else backfillState.failed += 1;
+          if (result.source === "comment") backfillState.fromComment += 1;
+          else if (result.source === "direct") backfillState.direct += 1;
         } catch (error) {
           console.error("Webinar GHL backfill item failed", error);
           backfillState.failed += 1;
@@ -358,6 +438,7 @@ export async function startWebinarGhlBackfill(): Promise<{ started: boolean; tot
 
     try {
       await Promise.all(Array.from({ length: BACKFILL_CONCURRENCY }, worker));
+      backfillState.stillBeforeRegistrants = await countStillBeforeRegistrants();
     } catch (error) {
       console.error("Webinar GHL backfill crashed", error);
     } finally {

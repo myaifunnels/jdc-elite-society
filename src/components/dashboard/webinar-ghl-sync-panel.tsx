@@ -45,6 +45,12 @@ export function WebinarGhlSyncPanel({ state }: { state: WebinarGhlBackfillState 
           advances to Webinar Registrants when they register. Nobody is ever moved backward.
         </p>
         <p className="m-0 mt-2 max-w-2xl text-xs text-[var(--muted)]">
+          Each registrant is also tagged <strong>Webinar source: FREE COACHING comment</strong> (they commented first,
+          matched by your workflow&rsquo;s <em>passive-income-webinar-registrant</em> tag or their FB Page DMs card) or{" "}
+          <strong>Webinar source: direct</strong>, so you can filter either group in GoHighLevel. People are matched by
+          the email or phone they registered with.
+        </p>
+        <p className="m-0 mt-2 max-w-2xl text-xs text-[var(--muted)]">
           Anyone already in that pipeline (a Mastermind buyer or an existing lead) keeps their card untouched &mdash;
           no duplicates. Registrant leads show the source &ldquo;Webinar &middot; &lt;title&gt;&rdquo;, and every
           registrant is tagged with the webinar, seat type and status, so you can filter by any of them in GoHighLevel.
@@ -66,6 +72,24 @@ export function WebinarGhlSyncPanel({ state }: { state: WebinarGhlBackfillState 
         ) : null}
       </form>
 
+      {!state.running && state.finishedAt && (state.fromComment > 0 || state.direct > 0) ? (
+        <div className="grid gap-2 sm:grid-cols-3">
+          <div className="rounded-xl border border-[var(--line)] p-3">
+            <p className="m-0 text-2xl font-extrabold">{state.fromComment}</p>
+            <p className="m-0 text-xs text-[var(--muted)]">Registered after commenting FREE COACHING</p>
+          </div>
+          <div className="rounded-xl border border-[var(--line)] p-3">
+            <p className="m-0 text-2xl font-extrabold">{state.direct}</p>
+            <p className="m-0 text-xs text-[var(--muted)]">Registered directly (no comment)</p>
+          </div>
+          <div className="rounded-xl border border-[var(--line)] p-3">
+            <p className="m-0 text-2xl font-extrabold">
+              {state.stillBeforeRegistrants === null ? "—" : state.stillBeforeRegistrants}
+            </p>
+            <p className="m-0 text-xs text-[var(--muted)]">Still before Webinar Registrants (commented, not registered)</p>
+          </div>
+        </div>
+      ) : null}
       {state.noPipeline ? (
         <p className="auth-error m-0">
           Contacts were pushed and tagged, but no &ldquo;JDC Mastermind&rdquo; pipeline was found in GoHighLevel, so no
