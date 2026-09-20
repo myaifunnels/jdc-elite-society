@@ -279,6 +279,9 @@ type PipelineOutcome = {
 };
 type SyncOptions = { moveStage?: boolean; replaceStatusTags?: boolean };
 
+const RATE_LIMITED_PATTERN = /\(429\)/;
+const RATE_LIMIT_RETRY_DELAY_MS = 2000;
+
 /** Pushes one webinar registrant into AiFunnels so admins can filter, qualify and nurture them:
  *  1. the contact — created or found, tagged with the webinar, seat type and status (the tags are
  *     what let admins filter by webinar in GHL, and they accumulate across webinars);
@@ -287,11 +290,28 @@ type SyncOptions = { moveStage?: boolean; replaceStatusTags?: boolean };
  *     keeps their existing card untouched (no duplicate, no edits to a buyer's deal);
  *  3. a one-time note with the registration details when the opportunity is created.
  * Idempotent — safe to re-run. An opportunity this module created keeps whatever stage an admin
- * moved it to (Qualified, Nurture…) unless `moveStage` is set. */
+ * moved it to (Qualified, Nurture…) unless `moveStage` is set.
+ *
+ * Retries once, after a short pause, if GHL responds with a 429 (rate limited) — a bulk backfill
+ * of hundreds of registrants can burst past GHL's rate limit, and without this a person who simply
+ * got unlucky in the burst would otherwise fail until the next full re-run. */
 export async function syncWebinarRegistrantToGhl(
   webinar: WebinarRecord,
   registrant: WebinarRegistrant,
   options: SyncOptions = {},
+): Promise<WebinarGhlSyncResult> {
+  const result = await syncWebinarRegistrantToGhlOnce(webinar, registrant, options);
+  if (result.status === "failed" && RATE_LIMITED_PATTERN.test(result.error ?? "")) {
+    await new Promise((resolve) => setTimeout(resolve, RATE_LIMIT_RETRY_DELAY_MS));
+    return syncWebinarRegistrantToGhlOnce(webinar, registrant, options);
+  }
+  return result;
+}
+
+async function syncWebinarRegistrantToGhlOnce(
+  webinar: WebinarRecord,
+  registrant: WebinarRegistrant,
+  options: SyncOptions,
 ): Promise<WebinarGhlSyncResult> {
   const settings = await getResolvedIntegrationSettings();
   if (!settings.ghlApiKey || !settings.ghlLocationId) {
@@ -554,8 +574,13 @@ export function getWebinarGhlBackfillState(): WebinarGhlBackfillState {
   return { ...backfillState };
 }
 
-const BACKFILL_CONCURRENCY = 3;
-const BACKFILL_DELAY_MS = 150;
+// Each registrant makes several GHL calls (lookup, tags, opportunity search, create/update, note),
+// so even modest concurrency bursts well past GHL's per-second rate limit on a run of hundreds of
+// registrants — which is exactly what was happening (contact-create and opportunity-read calls
+// coming back 429). Lower concurrency and a longer pause between registrants keeps the sustained
+// rate well under that limit; the 429 retry in syncWebinarRegistrantToGhl covers the rest.
+const BACKFILL_CONCURRENCY = 2;
+const BACKFILL_DELAY_MS = 500;
 
 /** Kicks off a background push of every existing registrant (all webinars) into GHL and returns
  * immediately — ~170 registrants at a few GHL calls each takes minutes, longer than a request
