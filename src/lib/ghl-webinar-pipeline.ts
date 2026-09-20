@@ -128,6 +128,53 @@ function stageFor(pipeline: GhlOpportunityPipeline, status: WebinarRegistrant["s
  * own later — and how it avoids ever editing a Mastermind buyer's or existing lead's opportunity. */
 const WEBINAR_SOURCE_PREFIX = "Webinar";
 
+/** Last resort when the registrant's email/phone matches no existing contact: a Facebook DM
+ * contact (e.g. from the FREE COACHING comment workflow) is often created with just a name — no
+ * email or phone to match on — so without this, every such person's registration would create a
+ * duplicate contact instead of advancing their FB Page DMs card.
+ *
+ * Deliberately conservative — returns a match only when it's unambiguous:
+ *  - an OPEN opportunity in the webinar pipeline, in a stage strictly before the registrant stage
+ *    (so a person who has already moved further along is never touched by this);
+ *  - whose contact name matches the registrant's name exactly, case-insensitively;
+ *  - and there is exactly ONE such contact — two same-named candidates means "don't guess", not
+ *    "pick one";
+ *  - and that contact has neither an email nor a phone on file — if it already has a verified
+ *    identity, a same-name coincidence is not enough to justify merging into it.
+ * Any other outcome returns null and the caller creates a normal new contact instead. */
+async function findNamesakeInEarlierStage(
+  pipeline: GhlOpportunityPipeline,
+  entryStageId: string,
+  fullName: string,
+): Promise<string | null> {
+  const name = fullName.trim().toLowerCase();
+  if (!name) return null;
+  const entryRank = pipeline.stages.findIndex((item) => item.id === entryStageId);
+  if (entryRank < 0) return null;
+
+  const opportunities = await searchGhlOpportunities(pipeline.id);
+  const candidateContactIds = new Set(
+    opportunities
+      .filter((item) => {
+        const rank = pipeline.stages.findIndex((stage) => stage.id === item.pipelineStageId);
+        return (
+          item.status === "open" &&
+          rank !== -1 &&
+          rank < entryRank &&
+          item.contactId &&
+          (item.contactName || item.name).trim().toLowerCase() === name
+        );
+      })
+      .map((item) => item.contactId),
+  );
+  if (candidateContactIds.size !== 1) return null;
+
+  const [contactId] = candidateContactIds;
+  const contact = await getGhlContactById(contactId);
+  if (!contact || contact.email || contact.phone) return null;
+  return contactId;
+}
+
 /** Added by the FREE COACHING comment workflow the moment someone comments — it means "commented
  * and was DM'd the registration link", NOT "registered". We only read it, to tell commenters who
  * registered apart from people who registered directly. */
@@ -241,14 +288,30 @@ export async function syncWebinarRegistrantToGhl(
     priorTags = Array.isArray(existing.tags) ? existing.tags : ((await getGhlContactById(existing.id))?.tags ?? []);
     await addGhlContactTags(contactId, tags);
   } else {
-    const created = await syncContactToGhl({
-      name: registrant.name,
-      email: registrant.email,
-      phone: registrant.phone,
-      source: `Webinar · ${webinar.title}`,
-      tags,
-    });
-    contactId = created.contactId;
+    // No email/phone match — before creating a new contact, check for an unambiguous namesake
+    // sitting earlier in the funnel (see findNamesakeInEarlierStage) so a Facebook DM contact with
+    // no email/phone on file doesn't get duplicated the moment they register.
+    const pipelineForMatch = await findWebinarPipeline();
+    const stageForMatch = pipelineForMatch ? stageFor(pipelineForMatch, registrant.status) : null;
+    const namesakeId =
+      pipelineForMatch && stageForMatch
+        ? await findNamesakeInEarlierStage(pipelineForMatch, stageForMatch.id, registrant.name)
+        : null;
+
+    if (namesakeId) {
+      contactId = namesakeId;
+      priorTags = (await getGhlContactById(namesakeId))?.tags ?? [];
+      await addGhlContactTags(contactId, tags);
+    } else {
+      const created = await syncContactToGhl({
+        name: registrant.name,
+        email: registrant.email,
+        phone: registrant.phone,
+        source: `Webinar · ${webinar.title}`,
+        tags,
+      });
+      contactId = created.contactId;
+    }
   }
   if (!contactId) {
     return { status: "failed", error: "Couldn't find or create the contact in AiFunnels (check the API key and its Contacts permission)." };
