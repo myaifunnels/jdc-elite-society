@@ -2,7 +2,10 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   async redirects() {
-    return [{ source: "/breakthrough", destination: "/duplication", permanent: true }];
+    return [
+      { source: "/breakthrough", destination: "/duplication", permanent: true },
+      { source: "/duplication/thank-you", destination: "/duplication/payment-verification", permanent: true },
+    ];
   },
   experimental: {
     serverActions: {
