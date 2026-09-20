@@ -1,6 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  async redirects() {
+    return [{ source: "/breakthrough", destination: "/duplication", permanent: true }];
+  },
   experimental: {
     serverActions: {
       bodySizeLimit: "6mb",
