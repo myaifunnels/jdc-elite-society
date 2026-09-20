@@ -112,8 +112,10 @@ export function WebinarGhlSyncPanel({
       {state.processed > 0 ? (
         <p className="m-0 text-xs text-[var(--muted)]">
           So far: <strong>{state.created}</strong> new cards created &middot; <strong>{state.advanced}</strong> moved up
-          from an earlier stage &middot; <strong>{state.alreadyInPipeline}</strong> already had a card further along
-          (left untouched &mdash; e.g. existing Mastermind buyers) &middot; <strong>{state.failed}</strong> failed
+          from an earlier stage &middot; <strong>{state.resynced}</strong> already had their webinar card and were just
+          confirmed (normal on a repeat sync) &middot; <strong>{state.alreadyInPipeline}</strong> already had a{" "}
+          <em>different</em> card further along and were left untouched (e.g. existing Mastermind buyers) &middot;{" "}
+          <strong>{state.failed}</strong> failed
         </p>
       ) : null}
       {!state.running && state.finishedAt && (state.fromComment > 0 || state.direct > 0) ? (

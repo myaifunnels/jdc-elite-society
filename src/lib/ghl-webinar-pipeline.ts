@@ -246,7 +246,7 @@ export type WebinarGhlSyncResult = {
   action?: PipelineAction;
 };
 
-type PipelineAction = "created" | "advanced" | "already_in_pipeline";
+type PipelineAction = "created" | "advanced" | "resynced" | "already_in_pipeline";
 type PipelineOutcome = {
   status: WebinarGhlSyncResult["status"];
   advancedFromEarlier?: boolean;
@@ -386,8 +386,11 @@ async function placeInPipeline(
       status: registrant.status === "rejected" ? "lost" : "open",
       ...(options.moveStage || upgradeFromLeads ? { pipelineStageId: stage.id } : {}),
     });
+    // "resynced" = we already had this person's card and just confirmed/updated its status — a
+    // healthy, expected outcome on a repeat sync, not a skip. Distinct from "already_in_pipeline"
+    // below, which means a DIFFERENT card (someone else's route) was left alone.
     return updated.ok
-      ? { status: "synced", action: "already_in_pipeline" }
+      ? { status: "synced", action: "resynced" }
       : { status: "failed", error: updated.error };
   }
 
@@ -467,10 +470,13 @@ export type WebinarGhlBackfillState = {
   fromComment: number;
   /** Registrants who registered without commenting. */
   direct: number;
-  /** What the pipeline step did: brand-new cards, cards moved up from an earlier stage, and people
-   * who already had a card further along (left untouched, e.g. existing Mastermind buyers). */
+  /** What the pipeline step did: brand-new cards, cards moved up from an earlier stage, cards we
+   * already had that were simply confirmed/updated (a healthy repeat-sync outcome), and people who
+   * already had a DIFFERENT card further along by another route (left untouched — e.g. existing
+   * Mastermind buyers). */
   created: number;
   advanced: number;
+  resynced: number;
   alreadyInPipeline: number;
   /** Open cards still sitting in a stage before "Webinar Registrants" — i.e. commented (or were
    * otherwise added) but haven't registered. Null until a run has finished counting. */
@@ -491,6 +497,7 @@ let backfillState: WebinarGhlBackfillState = {
   direct: 0,
   created: 0,
   advanced: 0,
+  resynced: 0,
   alreadyInPipeline: 0,
   stillBeforeRegistrants: null,
   errorSamples: [],
@@ -562,6 +569,7 @@ export async function startWebinarGhlBackfill(): Promise<{ started: boolean; tot
     direct: 0,
     created: 0,
     advanced: 0,
+    resynced: 0,
     alreadyInPipeline: 0,
     stillBeforeRegistrants: null,
     errorSamples: [],
@@ -581,6 +589,7 @@ export async function startWebinarGhlBackfill(): Promise<{ started: boolean; tot
             else if (result.source === "direct") backfillState.direct += 1;
             if (result.action === "created") backfillState.created += 1;
             else if (result.action === "advanced") backfillState.advanced += 1;
+            else if (result.action === "resynced") backfillState.resynced += 1;
             else if (result.action === "already_in_pipeline") backfillState.alreadyInPipeline += 1;
           } else if (result.status === "no_pipeline") {
             backfillState.noPipeline = true;
