@@ -15,7 +15,7 @@ import { getResolvedIntegrationSettings } from "@/lib/integrations-store";
 
 /** Mastermind checkout payments live in the same campaign pipeline as the webinar registrants
  * ("B2 Duplication Campaign"): a pending receipt belongs in its "Payment for Verification" stage so
- * admins can check it there, an approved one moves on to the "Buyers" stage, a rejected one to
+ * admins can check it there, an approved one moves on to the "Paid" stage, a rejected one to
  * "Payment Rejected". Cards this module creates carry a "Mastermind payment · …" source. */
 const PAYMENT_SOURCE_PREFIX = "Mastermind payment";
 
@@ -27,7 +27,7 @@ export type MastermindPaymentSyncResult = {
 
 function stageForOrder(pipeline: NonNullable<Awaited<ReturnType<typeof findWebinarPipeline>>>, status: EliteCheckoutOrder["status"]) {
   const payment = pickStageAll(pipeline, ["payment", "verif"]) ?? pickStage(pipeline, ["pending"]);
-  if (status === "approved") return pickStage(pipeline, ["buyer"]) ?? payment;
+  if (status === "approved") return pickStage(pipeline, ["paid", "buyer"]) ?? payment;
   if (status === "rejected") return pickStage(pipeline, ["reject"]) ?? payment;
   return payment;
 }

@@ -122,7 +122,7 @@ export async function describeWebinarRouting(): Promise<WebinarRouting | null> {
  * needing a look, webinar or Mastermind, shows up in one place; a REJECTED one goes to a
  * "rejected"-named stage when one exists, so admins have a place to see declined payments. Both
  * fall back to a "pending"/"overflow" or "reject" stage name, then to the normal entry stage. */
-function stageFor(pipeline: GhlOpportunityPipeline, status: WebinarRegistrant["status"]) {
+function stageFor(pipeline: GhlOpportunityPipeline, status: WebinarRegistrant["status"], paidSeat = false) {
   const entry =
     pickStage(pipeline, ["registrant", "webinar"]) ??
     pickStage(pipeline, ["lead", "registered", "new"]) ??
@@ -133,6 +133,10 @@ function stageFor(pipeline: GhlOpportunityPipeline, status: WebinarRegistrant["s
   }
   if (status === "rejected") {
     return pickStage(pipeline, ["reject"]) ?? entry;
+  }
+  // A verified overflow payment belongs in the "Paid" stage when the pipeline has one.
+  if (paidSeat) {
+    return pickStage(pipeline, ["paid"]) ?? entry;
   }
   return entry;
 }
@@ -405,7 +409,7 @@ async function placeInPipeline(
   if (!pipeline) {
     return { status: "no_pipeline" };
   }
-  const stage = stageFor(pipeline, registrant.status);
+  const stage = stageFor(pipeline, registrant.status, registrant.tier === "paid_overflow");
   if (!stage) {
     return { status: "no_pipeline" };
   }
