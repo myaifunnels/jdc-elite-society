@@ -87,6 +87,13 @@ function pickStage(pipeline: GhlOpportunityPipeline, keywords: string[]) {
   return null;
 }
 
+/** Like pickStage, but requires a stage name to contain ALL of the given keywords — used for
+ * "payment for verification"-type stages where a single keyword ("payment") could too easily
+ * match something unrelated. */
+function pickStageAll(pipeline: GhlOpportunityPipeline, keywords: string[]) {
+  return pipeline.stages.find((stage) => keywords.every((keyword) => stage.name.toLowerCase().includes(keyword))) ?? null;
+}
+
 export type WebinarRouting = {
   pipelineName: string;
   stageName: string;
@@ -109,9 +116,12 @@ export async function describeWebinarRouting(): Promise<WebinarRouting | null> {
 
 /** New registrants enter at the top of the funnel: a stage an admin has named for them
  * ("Registrants", "Webinar Registrants"…) if one exists, otherwise "Leads" (or a "Registered"/
- * "New" stage in a dedicated pipeline, else the first stage). Deliberately NOT matched on
- * "payment": the Mastermind pipeline's "2nd Batch Payment for Verification" is the Mastermind
- * checkout review, not a webinar overflow seat. */
+ * "New" stage in a dedicated pipeline, else the first stage). A PENDING overflow seat (awaiting
+ * payment review) instead goes to a "payment ... verification"-named stage when one exists —
+ * the same review queue admins already use for Mastermind checkout payments — so every payment
+ * needing a look, webinar or Mastermind, shows up in one place; a REJECTED one goes to a
+ * "rejected"-named stage when one exists, so admins have a place to see declined payments. Both
+ * fall back to a "pending"/"overflow" or "reject" stage name, then to the normal entry stage. */
 function stageFor(pipeline: GhlOpportunityPipeline, status: WebinarRegistrant["status"]) {
   const entry =
     pickStage(pipeline, ["registrant", "webinar"]) ??
@@ -119,7 +129,10 @@ function stageFor(pipeline: GhlOpportunityPipeline, status: WebinarRegistrant["s
     pipeline.stages[0] ??
     null;
   if (status === "pending") {
-    return pickStage(pipeline, ["pending", "overflow"]) ?? entry;
+    return pickStageAll(pipeline, ["payment", "verif"]) ?? pickStage(pipeline, ["pending", "overflow"]) ?? entry;
+  }
+  if (status === "rejected") {
+    return pickStage(pipeline, ["reject"]) ?? entry;
   }
   return entry;
 }
@@ -127,6 +140,14 @@ function stageFor(pipeline: GhlOpportunityPipeline, status: WebinarRegistrant["s
 /** Opportunities this module creates carry a "Webinar · …" source, which is how it recognises its
  * own later — and how it avoids ever editing a Mastermind buyer's or existing lead's opportunity. */
 const WEBINAR_SOURCE_PREFIX = "Webinar";
+
+/** The card's value: the real amount paid for an overflow seat (so the payment-verification queue
+ * shows something worth checking against the receipt), 0 for a free seat (this is a shared
+ * Mastermind pipeline whose totals track Mastermind sales — a free registrant shouldn't inflate
+ * them). */
+function opportunityValue(registrant: WebinarRegistrant) {
+  return registrant.tier === "paid_overflow" ? registrant.amountPaid : 0;
+}
 
 /** Last resort when the registrant's email/phone matches no existing contact: a Facebook DM
  * contact (e.g. from the FREE COACHING comment workflow) is often created with just a name — no
@@ -199,7 +220,7 @@ function tagsFor(webinar: WebinarRecord, registrant: WebinarRegistrant) {
 
 function noteFor(webinar: WebinarRecord, registrant: WebinarRegistrant) {
   const registeredAt = `${formatWebinarDateLabel(registrant.createdAt)} ${formatWebinarTimeLabel(registrant.createdAt)}`;
-  return [
+  const lines = [
     `Webinar registration — ${webinar.title}`,
     `Webinar: ${formatWebinarDateLabel(webinar.scheduledAt)} · ${formatWebinarTimeLabel(webinar.scheduledAt)} Manila Time`,
     `Seat: ${registrant.tier === "free" ? "Free" : `Overflow (₱${registrant.amountPaid} paid)`}`,
@@ -207,10 +228,13 @@ function noteFor(webinar: WebinarRecord, registrant: WebinarRegistrant) {
     `Registered: ${registeredAt} Manila Time`,
     `Email: ${registrant.email}`,
     `Phone: ${registrant.phone || "—"}`,
-    registrant.paymentReceiptUrl ? `Receipt: ${registrant.paymentReceiptUrl}` : "",
-  ]
-    .filter(Boolean)
-    .join("\n");
+  ];
+  // Leads with the receipt link, front and center — that's what an admin opening this card in
+  // "2nd Batch Payment for Verification" is there to check.
+  if (registrant.paymentReceiptUrl) {
+    lines.unshift(`PAYMENT RECEIPT: ${registrant.paymentReceiptUrl}`, "");
+  }
+  return lines.join("\n");
 }
 
 async function addContactNote(contactId: string, body: string) {
@@ -278,6 +302,7 @@ export async function syncWebinarRegistrantToGhl(
 
   let contactId: string | undefined;
   let priorTags: string[] = [];
+  let contactError: string | undefined;
   // Try GHL's documented duplicate search first, then the older lookup endpoint.
   const existing =
     (await findGhlContactDuplicate(registrant.email, registrant.phone)) ??
@@ -311,10 +336,11 @@ export async function syncWebinarRegistrantToGhl(
         tags,
       });
       contactId = created.contactId;
+      contactError = "error" in created ? created.error : undefined;
     }
   }
   if (!contactId) {
-    return { status: "failed", error: "Couldn't find or create the contact in AiFunnels (check the API key and its Contacts permission)." };
+    return { status: "failed", error: contactError ?? "Couldn't find or create the contact in AiFunnels." };
   }
 
   if (options.replaceStatusTags) {
@@ -364,14 +390,12 @@ async function placeInPipeline(
     return { status: "no_pipeline" };
   }
 
-  const opportunities = await listGhlOpportunitiesForContact(pipeline.id, contactId);
-  if (opportunities === null) {
+  const opportunitiesResult = await listGhlOpportunitiesForContact(pipeline.id, contactId);
+  if (opportunitiesResult.items === null) {
     // Couldn't look — don't guess "none" and risk creating a duplicate card.
-    return {
-      status: "failed",
-      error: "Couldn't read this contact's opportunities from AiFunnels (check the API key's Opportunities permission).",
-    };
+    return { status: "failed", error: opportunitiesResult.error };
   }
+  const opportunities = opportunitiesResult.items;
 
   // An opportunity this module created earlier (recognised by its "Webinar · …" source): keep it
   // in step with the registration status — a rejected overflow seat closes it as lost — and only
@@ -384,6 +408,7 @@ async function placeInPipeline(
     const upgradeFromLeads = Boolean(leadsStage) && stage.id !== leadsStage!.id && ours.pipelineStageId === leadsStage!.id;
     const updated = await updateGhlOpportunity(ours.id, {
       status: registrant.status === "rejected" ? "lost" : "open",
+      monetaryValue: opportunityValue(registrant),
       ...(options.moveStage || upgradeFromLeads ? { pipelineStageId: stage.id } : {}),
     });
     // "resynced" = we already had this person's card and just confirmed/updated its status — a
@@ -406,7 +431,10 @@ async function placeInPipeline(
       .filter((item) => item.status === "open" && rank(item.pipelineStageId) !== -1 && rank(item.pipelineStageId) < entryRank)
       .sort((left, right) => rank(right.pipelineStageId) - rank(left.pipelineStageId))[0];
     if (behind && registrant.status !== "rejected") {
-      const moved = await updateGhlOpportunity(behind.id, { pipelineStageId: stage.id });
+      const moved = await updateGhlOpportunity(behind.id, {
+        pipelineStageId: stage.id,
+        monetaryValue: opportunityValue(registrant),
+      });
       if (!moved.ok) {
         return { status: "failed", error: moved.error };
       }
@@ -426,9 +454,7 @@ async function placeInPipeline(
     pipelineId: pipeline.id,
     pipelineStageId: stage.id,
     name: registrant.name,
-    // Deliberately 0: this is a shared Mastermind pipeline whose totals track Mastermind sales, so
-    // webinar money (e.g. a ₱499 overflow seat) goes in the note instead of inflating those totals.
-    monetaryValue: 0,
+    monetaryValue: opportunityValue(registrant),
     status: "open",
     source: `${WEBINAR_SOURCE_PREFIX} · ${webinar.title}`,
   });

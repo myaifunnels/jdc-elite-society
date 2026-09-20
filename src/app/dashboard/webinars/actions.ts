@@ -165,7 +165,7 @@ export async function rejectOverflowRegistrantAction(
     const registrant = await updateRegistrantStatus(id, "rejected");
     const webinar = await getWebinar(registrant.webinarId);
     if (webinar) {
-      syncWebinarRegistrantToGhl(webinar, registrant, { replaceStatusTags: true }).catch((error) =>
+      syncWebinarRegistrantToGhl(webinar, registrant, { moveStage: true, replaceStatusTags: true }).catch((error) =>
         console.error("Webinar registrant GHL sync failed", error),
       );
     }

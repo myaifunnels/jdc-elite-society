@@ -44,13 +44,20 @@ function duplicateContactIdFrom(responseBody: string) {
   }
 }
 
+/** A short, human-readable reason for a failed GHL response — the real status and message, not a
+ * guess, so an admin can tell a permission problem from a validation error from a rate limit. */
+function ghlFailureReason(action: string, status: number, body: string) {
+  const trimmed = body.replace(/\s+/g, " ").slice(0, 160);
+  return `${action} failed (${status})${trimmed ? `: ${trimmed}` : ""}`;
+}
+
 export async function syncContactToGhl(input: GhlContactInput) {
   const settings = await getResolvedIntegrationSettings();
   const token = settings.ghlApiKey;
   const locationId = settings.ghlLocationId;
 
   if (!token || !locationId) {
-    return { skipped: true as const, contactId: undefined };
+    return { skipped: true as const, contactId: undefined, error: "AiFunnels isn't connected (no API key/location ID)." };
   }
 
   const { firstName, lastName } = splitName(input.name);
@@ -117,7 +124,7 @@ export async function syncContactToGhl(input: GhlContactInput) {
         await addGhlContactTags(existing.id, tags);
         return { skipped: false as const, ok: true as const, contactId: existing.id };
       }
-      return { skipped: false as const, ok: false as const };
+      return { skipped: false as const, ok: false as const, error: ghlFailureReason("Creating the contact", response.status, detail) };
     }
 
     const payload = (await response.json()) as { contact?: { id?: string }; id?: string };
@@ -125,7 +132,11 @@ export async function syncContactToGhl(input: GhlContactInput) {
     return { skipped: false as const, ok: true as const, contactId: contactId || undefined };
   } catch (error) {
     console.error("GHL contact sync error", error);
-    return { skipped: false as const, ok: false as const };
+    return {
+      skipped: false as const,
+      ok: false as const,
+      error: `Creating the contact failed: ${error instanceof Error ? error.message : "network error"}`,
+    };
   }
 }
 

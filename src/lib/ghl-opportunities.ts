@@ -219,15 +219,18 @@ export async function getGhlOpportunityById(opportunityId: string) {
 }
 
 /** Every opportunity a given contact has in one pipeline — used to find an existing opportunity
- * before creating one, without paging through the whole pipeline. Returns null (not an empty list)
- * when the search itself fails, so a caller never mistakes "couldn't look" for "has none" and
- * creates a duplicate. */
-export async function listGhlOpportunitiesForContact(pipelineId: string, contactId: string) {
+ * before creating one, without paging through the whole pipeline. `items` is null (not an empty
+ * list) when the search itself fails, so a caller never mistakes "couldn't look" for "has none"
+ * and creates a duplicate; `error` then carries GHL's real status/message for that failure. */
+export async function listGhlOpportunitiesForContact(
+  pipelineId: string,
+  contactId: string,
+): Promise<{ items: GhlOpportunity[] | null; error?: string }> {
   const settings = await getResolvedIntegrationSettings();
   const token = settings.ghlApiKey;
   const locationId = settings.ghlLocationId;
   if (!token || !locationId || !pipelineId || !contactId) {
-    return null as GhlOpportunity[] | null;
+    return { items: null, error: "AiFunnels isn't connected (no API key/location ID)." };
   }
 
   try {
@@ -244,15 +247,19 @@ export async function listGhlOpportunitiesForContact(pipelineId: string, contact
       signal: AbortSignal.timeout(10_000),
     });
     if (!response.ok) {
-      console.error("GHL contact opportunity search failed", response.status, await response.text());
-      return null;
+      const error = await failureReason("Reading this contact's opportunities", response);
+      console.error("GHL contact opportunity search failed", error);
+      return { items: null, error };
     }
     const payload = asRecord(await response.json());
     const list = Array.isArray(payload.opportunities) ? payload.opportunities : [];
-    return list.map(mapOpportunity).filter((item): item is GhlOpportunity => Boolean(item));
+    return { items: list.map(mapOpportunity).filter((item): item is GhlOpportunity => Boolean(item)) };
   } catch (error) {
     console.error("GHL contact opportunity search error", error);
-    return null;
+    return {
+      items: null,
+      error: `Reading this contact's opportunities failed: ${error instanceof Error ? error.message : "network error"}`,
+    };
   }
 }
 
