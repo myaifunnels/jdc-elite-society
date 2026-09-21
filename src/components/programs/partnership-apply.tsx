@@ -64,7 +64,7 @@ export function PartnershipApply({
           <div style={{ padding: "0 0.6rem 0.8rem" }}>
             <iframe
               src={`https://api.myaifunnels.com/widget/form/${formId}`}
-              style={{ width: "100%", height: "100%", minHeight: 460, border: "none", background: "transparent", colorScheme: "light" }}
+              style={{ width: "100%", height: 360, minHeight: 360, border: "none", background: "transparent", colorScheme: "light" }}
               id={`inline-${formId}`}
               data-layout="{'id':'INLINE'}"
               data-trigger-type="alwaysShow"
