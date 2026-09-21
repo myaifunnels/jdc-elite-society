@@ -137,7 +137,7 @@ export function PartnershipThankYou() {
               Welcome to the <em>JDC Partnership Program.</em>
             </h1>
             <p className="partner-sub">Thanks for signing up. Watch the video below for your next steps.</p>
-            <div className="elite-glass partner-video" style={{ width: "min(880px, 100%)", marginBottom: "4rem" }}>
+            <div className="elite-glass partner-video" style={{ width: "min(1120px, 100%)", marginBottom: "4rem" }}>
               <div className="partner-video-inner">
                 <PartnershipVideo src={partnershipThankYouVsl} />
               </div>

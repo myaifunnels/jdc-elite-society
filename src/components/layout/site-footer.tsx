@@ -5,7 +5,7 @@ import { ScrollTopButton } from "@/components/layout/scroll-top-button";
 import { siteContent } from "@/data/site-content";
 import { getResolvedBrandingSettings } from "@/lib/branding-store";
 
-type FooterLink = { href: string; label: string; comingSoon?: boolean; children?: FooterLink[] };
+type FooterLink = { href: string; label: string; comingSoon?: boolean };
 
 const quickLinks: FooterLink[] = [
   { href: "/programs/jdc-elite-society", label: "JDC Elite Society" },
@@ -13,28 +13,16 @@ const quickLinks: FooterLink[] = [
   {
     href: "/programs?program=jdc-mastermind",
     label: "JDC Mastermind",
-    children: [
-      { href: "/building", label: "Season 1 - Building" },
-      { href: "/duplication", label: "Season 2 - Duplication" },
-    ],
   },
   {
     href: "/programs/group-coaching",
     label: "Group Coaching",
     comingSoon: true,
-    children: [
-      { href: "/programs/group-coaching/online", label: "Online Coaching" },
-      { href: "/programs/group-coaching/face-to-face", label: "Face-to-Face Coaching" },
-    ],
   },
   {
     href: "/programs/1-on-1-coaching",
     label: "1-on-1 Coaching",
     comingSoon: true,
-    children: [
-      { href: "/programs/1-on-1-coaching/online", label: "Online Coaching" },
-      { href: "/programs/1-on-1-coaching/face-to-face", label: "Face-to-Face Coaching" },
-    ],
   },
   { href: "/about", label: "About Coach JDC" },
   { href: "/about", label: "Success Stories" },
@@ -115,15 +103,6 @@ export async function SiteFooter() {
                   {item.label}
                   {item.comingSoon ? <span className="site-nav-soon-badge">Soon</span> : null}
                 </Link>
-                {item.children ? (
-                  <ul style={{ marginTop: "0.35rem", paddingLeft: "0.9rem", opacity: 0.85 }}>
-                    {item.children.map((child) => (
-                      <li key={child.href}>
-                        <Link href={child.href}>{child.label}</Link>
-                      </li>
-                    ))}
-                  </ul>
-                ) : null}
               </li>
             ))}
           </ul>
@@ -162,25 +141,7 @@ export async function SiteFooter() {
         </div>
 
         <div>
-          <h2>Mobile App & Legal</h2>
-          <div className="site-footer-apps">
-            <a
-              href="https://play.google.com/store/apps/details?id=net.clientclub.app.kollab&hl=en"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="pressable"
-            >
-              Download App on Android
-            </a>
-            <a
-              href="https://apps.apple.com/us/app/gokollab/id6484272411"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="pressable"
-            >
-              Download App on iPhone
-            </a>
-          </div>
+          <h2>Legal</h2>
           <ul>
             <li>
               <Link href="/terms">Terms & Conditions</Link>
