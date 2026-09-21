@@ -281,10 +281,10 @@ a,
   padding: 0.5rem;
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 1rem;
-  background: rgba(10, 12, 18, 0.72);
+  background: rgba(8, 10, 15, 0.92);
   box-shadow: 0 18px 44px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(24px) saturate(160%);
-  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  backdrop-filter: blur(28px) saturate(140%);
+  -webkit-backdrop-filter: blur(28px) saturate(140%);
 }
 
 .site-nav-dropdown-link {
@@ -301,9 +301,9 @@ a,
 
 .site-nav-soon-badge {
   border-radius: 999px;
-  background: color-mix(in srgb, var(--brand) 22%, transparent);
+  background: rgba(96, 140, 255, 0.22);
   padding: 0.12rem 0.45rem;
-  color: var(--brand);
+  color: #9db8ff;
   font-size: 0.62rem;
   font-weight: 800;
   letter-spacing: 0.04em;
@@ -453,10 +453,10 @@ a,
   padding: 0.5rem;
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 1rem;
-  background: rgba(10, 12, 18, 0.72);
+  background: rgba(8, 10, 15, 0.92);
   box-shadow: 0 18px 44px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(24px) saturate(160%);
-  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  backdrop-filter: blur(28px) saturate(140%);
+  -webkit-backdrop-filter: blur(28px) saturate(140%);
 }
 
 .site-account-dropdown-head {
