@@ -1,5 +1,3 @@
-import { programs as catalogPrograms } from "@/data/programs";
-
 export const AFFILIATE_COOKIE = "jdc_aff";
 export const AFFILIATE_CAMPAIGN_COOKIE = "jdc_aff_campaign";
 export const AFFILIATE_COOKIE_MAX_AGE = 60 * 60 * 24 * 30;
@@ -42,19 +40,39 @@ const TIER_CAMPAIGNS: ProductCampaign[] = [
   },
 ];
 
-/** One campaign per catalog program, so partners can promote each program with its own link. */
-const PROGRAM_CAMPAIGNS: ProductCampaign[] = catalogPrograms.map((program) => ({
-  slug: program.slug,
-  title: program.title,
-  shortTitle: program.title,
-  description: `${program.shortDescription} Successful purchases earn 20%.`,
-  destinationPath: `/programs/${program.slug}`,
-  requiredProgram: "pioneer" as const,
-  commissionRate: 0.2,
-  open: true,
-}));
+/** The offers any affiliate can promote. Each gets its own tracked link, QR and campaign. */
+const OFFER_CAMPAIGNS: ProductCampaign[] = [
+  {
+    slug: "jdc-elite-society",
+    title: "JDC Elite Society",
+    shortTitle: "JDC Elite Society",
+    description: "Promote the JDC Elite Society portal and community. Successful purchases earn 20%.",
+    destinationPath: "/programs/jdc-elite-society",
+  },
+  {
+    slug: "jdc-mastermind",
+    title: "JDC Mastermind",
+    shortTitle: "JDC Mastermind",
+    description: "Promote JDC Mastermind with Coach Jayson Dela Cruz. Successful purchases earn 20%.",
+    destinationPath: "/programs/jdc-mastermind",
+  },
+  {
+    slug: "season-1-building",
+    title: "Season 1: Building",
+    shortTitle: "Season 1: Building",
+    description: "Promote Season 1, Building. Successful purchases earn 20%.",
+    destinationPath: "/building",
+  },
+  {
+    slug: "season-2-duplication",
+    title: "Season 2: Duplication",
+    shortTitle: "Season 2: Duplication",
+    description: "Promote Season 2, Duplication. Successful purchases earn 20%.",
+    destinationPath: "/duplication",
+  },
+].map((offer) => ({ ...offer, requiredProgram: "pioneer" as const, commissionRate: 0.2, open: true }));
 
-export const PRODUCT_CAMPAIGNS: ProductCampaign[] = [...TIER_CAMPAIGNS, ...PROGRAM_CAMPAIGNS];
+export const PRODUCT_CAMPAIGNS: ProductCampaign[] = [...TIER_CAMPAIGNS, ...OFFER_CAMPAIGNS];
 
 export function normalizeAffiliateCode(value: string) {
   return value.trim().toLowerCase().replace(/[^a-z0-9-]/g, "").slice(0, 32);

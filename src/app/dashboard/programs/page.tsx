@@ -7,6 +7,8 @@ import { listUserPrograms, syncUserProgramsFromCheckouts, type UserProgramStatus
 
 const EXTRA_PROGRAMS: Record<string, { title: string; href: string }> = {
   "jdc-elite-society": { title: "JDC Elite Society", href: "/programs/jdc-elite-society" },
+  "season-1-building": { title: "Season 1: Building", href: "/building" },
+  "season-2-duplication": { title: "Season 2: Duplication", href: "/duplication" },
 };
 
 const STATUS_LABEL: Record<UserProgramStatus, string> = {
@@ -44,12 +46,12 @@ export default async function ProgramsPage() {
       description: program.shortDescription,
       href: `/programs/${program.slug}`,
     })),
-    {
-      slug: "jdc-elite-society",
-      title: EXTRA_PROGRAMS["jdc-elite-society"].title,
-      description: "The JDC Elite Society portal and community.",
-      href: EXTRA_PROGRAMS["jdc-elite-society"].href,
-    },
+    ...Object.entries(EXTRA_PROGRAMS).map(([slug, extra]) => ({
+      slug,
+      title: extra.title,
+      description: "",
+      href: extra.href,
+    })),
   ];
 
   return (
@@ -70,7 +72,7 @@ export default async function ProgramsPage() {
                   <span className="status-pill is-quiet">Not availed</span>
                 )}
               </div>
-              <p className="m-0 text-[var(--muted)]">{entry.description}</p>
+              {entry.description ? <p className="m-0 text-[var(--muted)]">{entry.description}</p> : null}
               {availed && mine ? (
                 <p className="m-0 text-sm text-[var(--muted)]">Availed {formatDate(mine.availedAt)}</p>
               ) : null}
