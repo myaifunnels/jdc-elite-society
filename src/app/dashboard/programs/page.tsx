@@ -1,3 +1,4 @@
+import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
@@ -54,37 +55,61 @@ export default async function ProgramsPage() {
     })),
   ];
 
+  type Entry = (typeof catalogEntries)[number];
+  const mineOf = (entry: Entry) => items.find((item) => item.programSlug === entry.slug);
+  const availedEntries = catalogEntries.filter((entry) => availedSlugs.has(entry.slug));
+  const exploreEntries = catalogEntries.filter((entry) => !availedSlugs.has(entry.slug));
+
+  const renderCard = (entry: Entry, availed: boolean) => {
+    const mine = mineOf(entry);
+    return (
+      <li key={entry.slug} className="programs-card-item">
+        <Link href={entry.href} className={`programs-card${availed ? " is-availed" : ""}`}>
+          <span className="programs-card-mark" aria-hidden>
+            {entry.title.slice(0, 1)}
+          </span>
+          <span className="programs-card-copy">
+            <span className="programs-card-title">{entry.title}</span>
+            {entry.description ? <span className="programs-card-desc">{entry.description}</span> : null}
+            {availed && mine ? (
+              <span className="programs-card-meta">
+                <span className={`programs-dot is-${mine.status}`} aria-hidden />
+                {STATUS_LABEL[mine.status]} · since {formatDate(mine.availedAt)}
+              </span>
+            ) : null}
+          </span>
+          <span className="programs-card-go" aria-hidden>
+            {availed ? "Open" : "Learn more"}
+            <ChevronRight size={16} />
+          </span>
+        </Link>
+      </li>
+    );
+  };
+
   return (
-    <DashboardShell title="Programs" description="All our programs. The ones you've availed are marked, with where they stand.">
-      <div className="grid gap-4 md:grid-cols-2">
-        {catalogEntries.map((entry) => {
-          const mine = items.find((item) => item.programSlug === entry.slug);
-          const availed = availedSlugs.has(entry.slug);
-          return (
-            <article key={entry.slug} className="card-surface grid gap-2 p-6">
-              <div className="flex items-start justify-between gap-3">
-                <h2 className="m-0 text-lg font-semibold">{entry.title}</h2>
-                {availed && mine ? (
-                  <span className={mine.status === "active" ? "status-pill is-verified" : "status-pill is-quiet"}>
-                    {STATUS_LABEL[mine.status]}
-                  </span>
-                ) : (
-                  <span className="status-pill is-quiet">Not availed</span>
-                )}
-              </div>
-              {entry.description ? <p className="m-0 text-[var(--muted)]">{entry.description}</p> : null}
-              {availed && mine ? (
-                <p className="m-0 text-sm text-[var(--muted)]">Availed {formatDate(mine.availedAt)}</p>
-              ) : null}
-              <Link
-                href={entry.href}
-                className={`${availed ? "button-secondary" : "button-primary"} pressable mt-2 inline-flex w-fit`}
-              >
-                {availed ? "View program" : "Learn more"}
-              </Link>
-            </article>
-          );
-        })}
+    <DashboardShell title="Programs" description="What you've availed, and what you can grow into next.">
+      <div className="programs-page">
+        <section aria-labelledby="programs-yours">
+          <h2 id="programs-yours" className="programs-heading">
+            Your programs
+          </h2>
+          {availedEntries.length > 0 ? (
+            <ul className="programs-grid">{availedEntries.map((entry) => renderCard(entry, true))}</ul>
+          ) : (
+            <div className="programs-empty">
+              <p>You haven&apos;t availed a program yet. Pick one below to get started.</p>
+            </div>
+          )}
+        </section>
+        {exploreEntries.length > 0 ? (
+          <section aria-labelledby="programs-explore">
+            <h2 id="programs-explore" className="programs-heading">
+              Explore more
+            </h2>
+            <ul className="programs-grid">{exploreEntries.map((entry) => renderCard(entry, false))}</ul>
+          </section>
+        ) : null}
       </div>
     </DashboardShell>
   );
