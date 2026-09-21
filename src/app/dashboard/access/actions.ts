@@ -21,6 +21,7 @@ import { addGhlContactTags, lookupGhlContact, removeGhlContactTags } from "@/lib
 import { deletePasswordResetsForUser } from "@/lib/password-reset";
 import { requireCapability } from "@/lib/session";
 import { COURSE_ACCESS_TAGS, PAYMENT_REJECTED_TAG } from "@/lib/tags";
+import { removeUserProgram, upsertUserProgram, type UserProgramStatus } from "@/lib/user-programs-store";
 
 async function revokeCourseAccess(email: string, mobile: string) {
   try {
@@ -232,4 +233,26 @@ export async function deleteUserAction(
   revalidatePath("/dashboard/registrations");
   revalidatePath("/dashboard");
   redirect(redirectTo);
+}
+
+export async function grantUserProgramAction(formData: FormData) {
+  await requireCapability("access");
+  const userId = String(formData.get("userId") ?? "").trim();
+  const programSlug = String(formData.get("programSlug") ?? "").trim();
+  const rawStatus = String(formData.get("status") ?? "active");
+  const status: UserProgramStatus = rawStatus === "completed" || rawStatus === "cancelled" ? rawStatus : "active";
+  if (!userId || !programSlug) return;
+  await upsertUserProgram({ userId, programSlug, status, source: "admin" });
+  revalidatePath(`/dashboard/access/${userId}`);
+  revalidatePath("/dashboard/programs");
+}
+
+export async function removeUserProgramAction(formData: FormData) {
+  await requireCapability("access");
+  const userId = String(formData.get("userId") ?? "").trim();
+  const programSlug = String(formData.get("programSlug") ?? "").trim();
+  if (!userId || !programSlug) return;
+  await removeUserProgram(userId, programSlug);
+  revalidatePath(`/dashboard/access/${userId}`);
+  revalidatePath("/dashboard/programs");
 }
