@@ -1,5 +1,4 @@
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
-import { programs } from "@/data/programs";
 import { requireCapability } from "@/lib/session";
 import { ProgramsView, type ProgramsViewEntry } from "@/components/dashboard/programs-view";
 import { hasAffiliateWorkspace } from "@/lib/affiliate";
@@ -12,14 +11,14 @@ const EXTRA_PROGRAMS: Record<string, { title: string; href: string; description:
     description: "The JDC Elite Society portal and private community.",
   },
   "season-1-building": {
-    title: "Season 1: Building",
+    title: "JDC Mastermind: Season 1 - Building",
     href: "/building",
-    description: "Season 1 of the JDC Mastermind: build your foundation.",
+    description: "Build your foundation with Coach JDC in Season 1 of the JDC Mastermind.",
   },
   "season-2-duplication": {
-    title: "Season 2: Duplication",
+    title: "JDC Mastermind: Season 2 - Duplication",
     href: "/duplication",
-    description: "Season 2 of the JDC Mastermind: duplicate what works.",
+    description: "Duplicate what works with Coach JDC in Season 2 of the JDC Mastermind.",
   },
 };
 
@@ -52,12 +51,6 @@ export default async function ProgramsPage() {
   const availedSlugs = new Set(items.filter((item) => item.status !== "cancelled").map((item) => item.programSlug));
 
   const catalog = [
-    ...programs.map((program) => ({
-      slug: program.slug,
-      title: program.title,
-      description: program.shortDescription,
-      href: `/programs/${program.slug}`,
-    })),
     ...Object.entries(EXTRA_PROGRAMS).map(([slug, extra]) => ({
       slug,
       title: extra.title,
