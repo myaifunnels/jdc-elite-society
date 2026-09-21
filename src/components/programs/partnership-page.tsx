@@ -10,6 +10,9 @@ export const partnershipVsl =
 export const partnershipThankYouVsl =
   "https://assets.cdn.filesafe.space/Col3j2B7jRDX5y8J5bgN/media/697182fdeb392b81b66d5f1a.mp4";
 
+const heroBackgroundVideo =
+  "https://assets.cdn.filesafe.space/Col3j2B7jRDX5y8J5bgN/media/6a8425979f720b54ef08fd2f.mp4";
+
 const iconProps = {
   viewBox: "0 0 24 24",
   fill: "none",
@@ -59,36 +62,41 @@ export function PartnershipPage() {
       <SiteHeader />
       <div className="elite-offer">
         <section className="partner-hero">
-          <div className="elite-shell">
-            <p className="elite-kicker">Coach Jayson Dela Cruz</p>
-            <p className="elite-kicker" style={{ color: "#8fc8ff", fontSize: "0.95rem" }}>
-              The JDC Partnership Program
-            </p>
-            <h1 className="elite-display partner-headline">
-              Earn While You Help Others <em>Transform Their Life &amp; Business.</em>
-            </h1>
-            <p className="partner-sub">
-              Watch the short video below, then apply to become a JDC partner. Refer people, earn commissions, and
-              track it all in one place.
-            </p>
-            <PartnershipApply />
-            <div className="partner-chips">
-              {benefits.map((item) => (
-                <span key={item.title}>
-                  <strong>{item.title}</strong>
-                </span>
-              ))}
+          <video className="partner-hero-video" autoPlay muted loop playsInline preload="auto" aria-hidden="true">
+            <source src={heroBackgroundVideo} type="video/mp4" />
+          </video>
+          <div className="partner-hero-scrim" />
+          <div className="elite-shell partner-hero-grid">
+            <div>
+              <p className="elite-kicker">Coach Jayson Dela Cruz</p>
+              <p className="elite-kicker" style={{ color: "#8fc8ff", fontSize: "0.95rem" }}>
+                The JDC Partnership Program
+              </p>
+              <h1 className="elite-display partner-headline">
+                Earn While You Help Others <em>Transform Their Life &amp; Business.</em>
+              </h1>
+              <p className="partner-sub">
+                Watch the short video, then apply to become a JDC partner. Refer people, earn commissions, and track it
+                all in one place.
+              </p>
+              <PartnershipApply />
+              <div className="partner-chips">
+                {benefits.map((item) => (
+                  <span key={item.title}>
+                    <strong>{item.title}</strong>
+                  </span>
+                ))}
+              </div>
+            </div>
+            <div className="elite-glass partner-video">
+              <div className="partner-video-inner">
+                <PartnershipVideo src={partnershipVsl} autoPlay />
+              </div>
             </div>
           </div>
         </section>
 
-        <section className="elite-shell" style={{ paddingTop: "1.5rem" }}>
-          <div className="elite-glass partner-video">
-            <div className="partner-video-inner">
-              <PartnershipVideo src={partnershipVsl} autoPlay />
-            </div>
-          </div>
-
+        <section className="elite-shell">
           <div className="partner-benefits">
             {benefits.map((item) => (
               <div key={item.title} className="elite-glass partner-benefit">
