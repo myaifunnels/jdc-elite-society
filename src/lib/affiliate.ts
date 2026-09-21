@@ -67,6 +67,28 @@ const OFFER_CAMPAIGNS: ProductCampaign[] = [
 
 export const PRODUCT_CAMPAIGNS: ProductCampaign[] = [...TIER_CAMPAIGNS, ...OFFER_CAMPAIGNS];
 
+type CampaignRules = {
+  commissionType?: "percent" | "fixed";
+  level1Rate: number;
+  level2Rate: number;
+  level3Rate: number;
+  cookieDays?: number;
+};
+
+function formatRate(rate: number, type: "percent" | "fixed") {
+  return type === "fixed" ? `₱${rate.toLocaleString("en-PH", { maximumFractionDigits: 2 })}` : `${Math.round(rate * 10000) / 100}%`;
+}
+
+/** "20% direct · 5% level 2 · 30-day cookie", built from the campaign's own commission rules. */
+export function campaignTerms(campaign: CampaignRules) {
+  const type = campaign.commissionType ?? "percent";
+  const parts = [`${formatRate(campaign.level1Rate, type)} direct`];
+  if (campaign.level2Rate > 0) parts.push(`${formatRate(campaign.level2Rate, type)} level 2`);
+  if (campaign.level3Rate > 0) parts.push(`${formatRate(campaign.level3Rate, type)} level 3`);
+  if (campaign.cookieDays) parts.push(`${campaign.cookieDays}-day cookie`);
+  return parts.join(" · ");
+}
+
 export function normalizeAffiliateCode(value: string) {
   return value.trim().toLowerCase().replace(/[^a-z0-9-]/g, "").slice(0, 32);
 }

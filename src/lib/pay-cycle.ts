@@ -117,4 +117,4 @@ export function formatPhp(amount: number) {
 }
 
 export const PAYOUT_COPY =
-  "You earn 20% on recorded sales. Payouts are reviewed and released on the 15th and 30th of each month (last day of February). Nothing is deposited automatically.";
+  "You earn commission on recorded sales. Payouts are reviewed and released on the 15th and 30th of each month (last day of February). Nothing is deposited automatically.";

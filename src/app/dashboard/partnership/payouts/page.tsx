@@ -56,7 +56,7 @@ export default async function PartnershipPayoutsPage() {
       <MacosWindow title="Pay cycles" className="dashboard-span-2">
         {ordered.length === 0 ? (
           <p className="macos-lead" style={{ textAlign: "left" }}>
-            No recorded sales yet. Admin enters closed sales; 20% lands in the 1–15 or 16–end cycle.
+            No recorded sales yet. Commissions land in the 1–15 or 16–end cycle after a sale is recorded.
           </p>
         ) : (
           <div className="grid gap-4">
@@ -70,7 +70,7 @@ export default async function PartnershipPayoutsPage() {
                 <ul className="mt-3 grid gap-2 text-sm">
                   {cycle.items.map((sale) => (
                     <li key={sale.id}>
-                      {formatManilaDate(sale.soldAt)} · {sale.campaignSlug || sale.source || "Sale"} · {formatPhp(sale.commissionAmount)} ·{" "}
+                      {formatManilaDate(sale.soldAt)} · {sale.campaignSlug || sale.source || "Sale"}{sale.level > 1 ? ` · level ${sale.level}` : ""} · {formatPhp(sale.commissionAmount)} ·{" "}
                       {sale.status}
                       {sale.payoutId ? " · included in payout" : ""}
                     </li>

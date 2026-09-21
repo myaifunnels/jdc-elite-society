@@ -94,8 +94,8 @@ export default async function PartnershipAdminPage({
 
             <MacosWindow title="Grant access" className="dashboard-span-2">
               <p className="macos-lead" style={{ textAlign: "left" }}>
-                Tag a contact pioneer for the Foundation Course campaign. Tag jdc-partner (coaches only) to unlock the
-                extra 20% Mastermind Sessions 1 and 2 campaign with a separate link.
+                Give a contact affiliate access. Every affiliate can promote the open campaigns; jdc-partner (coaches only)
+                also unlocks the Mastermind Events campaign. Rates for each campaign are set in the Campaigns tab.
               </p>
               <div className="mt-4">
                 <GrantAccessForm users={users} profiles={profiles} />
@@ -118,8 +118,8 @@ export default async function PartnershipAdminPage({
 
             <MacosWindow title="Record a sale" className="dashboard-span-2">
               <p className="macos-lead" style={{ textAlign: "left" }}>
-                Enter a closed purchase. Foundation Course is for pioneers. Mastermind Sessions 1 and 2 is the extra 20%
-                campaign for jdc-partner coaches. Commission is not paid automatically.
+                Enter a closed purchase. The campaign&apos;s own rates decide the direct commission and any level 2 or 3
+                overrides for the affiliate&apos;s sponsors. Commission is not paid automatically.
               </p>
               <div className="mt-4">
                 <RecordSaleForm users={users} profiles={profiles} />

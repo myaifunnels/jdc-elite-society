@@ -53,7 +53,7 @@ export default async function PartnershipHomePage({
             <article className="dashboard-metric-card">
               <p className="macos-kicker">Paid to date</p>
               <p className="dashboard-metric-value">{formatPhp(stats.paidToDate)}</p>
-              <p className="dashboard-metric-copy">{labels} · 20% · paid on the 15th and 30th</p>
+              <p className="dashboard-metric-copy">{labels} · paid on the 15th and 30th</p>
             </article>
 
             <MacosWindow title="How payouts work" className="dashboard-span-2">

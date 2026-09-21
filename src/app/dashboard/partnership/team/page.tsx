@@ -13,8 +13,8 @@ export default async function PartnershipTeamPage() {
   return (
     <MacosWindow title="Genealogy">
       <p className="macos-lead" style={{ textAlign: "left" }}>
-        This is your structure for visibility. Commissions in this version are direct only — you do not see other
-        people’s earnings.
+        This is your structure for visibility. When a campaign pays level 2 or level 3 commissions, you earn on sales
+        made by the people below you. You do not see other people’s earnings.
       </p>
       <div className="mt-4">
         {tree ? (

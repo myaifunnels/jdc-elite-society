@@ -76,11 +76,11 @@ export function GrantAccessForm({
       </label>
       <label className="flex items-center gap-2 text-sm">
         <input type="checkbox" name="pioneer" defaultChecked />
-        Pioneer — Foundation Course (20%)
+        Pioneer — open campaigns
       </label>
       <label className="flex items-center gap-2 text-sm">
         <input type="checkbox" name="jdcPartner" />
-        jdc-partner — Mastermind Events extra 20%
+        jdc-partner — Mastermind Events
       </label>
       <label className="auth-field">
         Sponsor (optional)
@@ -220,7 +220,7 @@ export function RecordSaleForm({
         <select name="campaignSlug" className="macos-select" required defaultValue="foundation">
           {PRODUCT_CAMPAIGNS.map((campaign) => (
             <option key={campaign.slug} value={campaign.slug}>
-              {campaign.shortTitle} · 20%
+              {campaign.shortTitle}
             </option>
           ))}
         </select>
@@ -237,7 +237,7 @@ export function RecordSaleForm({
       {state.error ? <p className="text-sm text-red-500">{state.error}</p> : null}
       {state.success ? <p className="text-sm text-emerald-400">{state.success}</p> : null}
       <button type="submit" disabled={pending} className="macos-btn macos-btn-primary pressable w-fit disabled:opacity-70">
-        {pending ? "Saving…" : "Record 20% commission"}
+        {pending ? "Saving…" : "Record commission"}
       </button>
     </form>
   );
