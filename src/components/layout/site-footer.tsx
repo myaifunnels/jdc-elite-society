@@ -8,8 +8,8 @@ import { getResolvedBrandingSettings } from "@/lib/branding-store";
 type FooterLink = { href: string; label: string; comingSoon?: boolean; children?: FooterLink[] };
 
 const quickLinks: FooterLink[] = [
-  { href: "/programs", label: "JDC Partnership Program" },
   { href: "/programs/jdc-elite-society", label: "JDC Elite Society" },
+  { href: "/programs/jdc-partnership", label: "JDC Partnership Program" },
   {
     href: "/programs?program=jdc-mastermind",
     label: "JDC Mastermind",
