@@ -100,6 +100,10 @@ export type AffiliateSale = {
   scheduledPayDate: string;
   payoutId: string;
   createdAt: string;
+  /** 1 = the referrer; 2 and 3 = upline override commissions. */
+  level: number;
+  /** For level 2 and 3 rows: the level-1 sale they were generated from. */
+  parentSaleId: string;
 };
 
 export type AffiliatePayout = {
@@ -124,6 +128,12 @@ export type AffiliateCampaign = {
   destinationPath: string;
   requiredProgram: AffiliateProgramId | "";
   active: boolean;
+  commissionType: "percent" | "fixed";
+  /** Level 1 pays the referrer; levels 2 and 3 pay their sponsor and the sponsor's sponsor. */
+  level1Rate: number;
+  level2Rate: number;
+  level3Rate: number;
+  cookieDays: number;
 };
 
 export type AffiliateMaterial = {

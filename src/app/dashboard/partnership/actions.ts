@@ -263,12 +263,31 @@ export async function saveAffiliateCampaign(
   const description = String(formData.get("description") ?? "").trim();
   const destinationPath = String(formData.get("destinationPath") ?? "").trim();
   const active = String(formData.get("active") ?? "on") === "on";
+  const commissionType = String(formData.get("commissionType") ?? "percent") === "fixed" ? "fixed" : "percent";
+  // Percent rates are typed as whole numbers (20 = 20%); fixed rates are a peso amount per sale.
+  const toRate = (name: string) => {
+    const raw = Number(formData.get(name) ?? 0);
+    if (!Number.isFinite(raw) || raw < 0) return 0;
+    return commissionType === "percent" ? Math.min(raw, 100) / 100 : raw;
+  };
+  const cookieDays = Math.min(365, Math.max(1, Math.round(Number(formData.get("cookieDays") ?? 30)) || 30));
 
   if (!slug || !title || !destinationPath.startsWith("/")) {
     return { error: "Slug, title, and an on-site destination path are required." };
   }
 
-  await upsertCampaign({ slug, title, description, destinationPath, active });
+  await upsertCampaign({
+    slug,
+    title,
+    description,
+    destinationPath,
+    active,
+    commissionType,
+    level1Rate: toRate("level1Rate"),
+    level2Rate: toRate("level2Rate"),
+    level3Rate: toRate("level3Rate"),
+    cookieDays,
+  });
   revalidatePartnership();
   return { success: "Campaign saved." };
 }

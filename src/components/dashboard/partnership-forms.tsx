@@ -367,6 +367,27 @@ export function CampaignForm() {
           placeholder=" "
         />
       </FloatField>
+      <label className="grid gap-1 text-sm">
+        Commission type
+        <select name="commissionType" defaultValue="percent" className="input">
+          <option value="percent">Percent of sale</option>
+          <option value="fixed">Fixed amount (₱) per sale</option>
+        </select>
+      </label>
+      <div className="grid grid-cols-3 gap-3">
+        <FloatField label="Level 1 (referrer)">
+          <input name="level1Rate" type="number" min="0" step="0.01" defaultValue="20" placeholder=" " />
+        </FloatField>
+        <FloatField label="Level 2 (sponsor)">
+          <input name="level2Rate" type="number" min="0" step="0.01" defaultValue="0" placeholder=" " />
+        </FloatField>
+        <FloatField label="Level 3">
+          <input name="level3Rate" type="number" min="0" step="0.01" defaultValue="0" placeholder=" " />
+        </FloatField>
+      </div>
+      <FloatField label="Cookie days">
+        <input name="cookieDays" type="number" min="1" max="365" defaultValue="30" placeholder=" " />
+      </FloatField>
       <label className="flex items-center gap-2 text-sm">
         <input type="checkbox" name="active" defaultChecked />
         Active

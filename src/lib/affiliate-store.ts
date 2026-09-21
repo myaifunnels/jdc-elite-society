@@ -122,6 +122,8 @@ function mapSale(row: Record<string, unknown>): AffiliateSale {
     scheduledPayDate: String(row.scheduled_pay_date ?? ""),
     payoutId: String(row.payout_id ?? ""),
     createdAt: String(row.created_at ?? new Date().toISOString()),
+    level: Math.max(1, asNumber(row.level, 1)),
+    parentSaleId: String(row.parent_sale_id ?? ""),
   };
 }
 
@@ -151,6 +153,11 @@ function mapCampaign(row: Record<string, unknown>): AffiliateCampaign {
     destinationPath: String(row.destination_path ?? "/register"),
     requiredProgram: parseAffiliatePrograms(row.required_program)[0] ?? "",
     active: asBool(row.active ?? true),
+    commissionType: row.commission_type === "fixed" ? "fixed" : "percent",
+    level1Rate: asNumber(row.level1_rate, DEFAULT_COMMISSION_RATE),
+    level2Rate: asNumber(row.level2_rate, 0),
+    level3Rate: asNumber(row.level3_rate, 0),
+    cookieDays: Math.max(1, asNumber(row.cookie_days, 30)),
   };
 }
 
@@ -239,6 +246,8 @@ async function ensureTable(client: Pool) {
     ALTER TABLE affiliate_sales
     ADD COLUMN IF NOT EXISTS campaign_slug TEXT NOT NULL DEFAULT ''
   `);
+  await client.query(`ALTER TABLE affiliate_sales ADD COLUMN IF NOT EXISTS level INTEGER NOT NULL DEFAULT 1`);
+  await client.query(`ALTER TABLE affiliate_sales ADD COLUMN IF NOT EXISTS parent_sale_id TEXT NOT NULL DEFAULT ''`);
   await client.query(`
     CREATE TABLE IF NOT EXISTS affiliate_payouts (
       id TEXT PRIMARY KEY,
@@ -268,6 +277,11 @@ async function ensureTable(client: Pool) {
     ALTER TABLE affiliate_campaigns
     ADD COLUMN IF NOT EXISTS required_program TEXT NOT NULL DEFAULT ''
   `);
+  await client.query(`ALTER TABLE affiliate_campaigns ADD COLUMN IF NOT EXISTS commission_type TEXT NOT NULL DEFAULT 'percent'`);
+  await client.query(`ALTER TABLE affiliate_campaigns ADD COLUMN IF NOT EXISTS level1_rate NUMERIC NOT NULL DEFAULT 0.20`);
+  await client.query(`ALTER TABLE affiliate_campaigns ADD COLUMN IF NOT EXISTS level2_rate NUMERIC NOT NULL DEFAULT 0`);
+  await client.query(`ALTER TABLE affiliate_campaigns ADD COLUMN IF NOT EXISTS level3_rate NUMERIC NOT NULL DEFAULT 0`);
+  await client.query(`ALTER TABLE affiliate_campaigns ADD COLUMN IF NOT EXISTS cookie_days INTEGER NOT NULL DEFAULT 30`);
   await client.query(`
     CREATE TABLE IF NOT EXISTS affiliate_materials (
       id TEXT PRIMARY KEY,
@@ -315,6 +329,11 @@ const defaultCampaigns: AffiliateCampaign[] = PRODUCT_CAMPAIGNS.map((campaign) =
   destinationPath: campaign.destinationPath,
   requiredProgram: campaign.requiredProgram,
   active: true,
+  commissionType: "percent" as const,
+  level1Rate: campaign.commissionRate,
+  level2Rate: 0,
+  level3Rate: 0,
+  cookieDays: 30,
 }));
 
 async function ensureSeed() {
@@ -332,8 +351,11 @@ async function ensureSeed() {
       for (const campaign of defaultCampaigns) {
         await client.query(
           `
-          INSERT INTO affiliate_campaigns (id, slug, title, description, destination_path, active, required_program)
-          VALUES ($1, $2, $3, $4, $5, $6, $7)
+          INSERT INTO affiliate_campaigns (
+            id, slug, title, description, destination_path, active, required_program,
+            commission_type, level1_rate, level2_rate, level3_rate, cookie_days
+          )
+          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
           ON CONFLICT (slug) DO NOTHING
           `,
           [
@@ -344,6 +366,11 @@ async function ensureSeed() {
             campaign.destinationPath,
             campaign.active,
             campaign.requiredProgram,
+            campaign.commissionType,
+            campaign.level1Rate,
+            campaign.level2Rate,
+            campaign.level3Rate,
+            campaign.cookieDays,
           ],
         );
       }
@@ -581,6 +608,13 @@ export async function listSales(affiliateUserId?: string) {
   );
 }
 
+function commissionFor(campaign: AffiliateCampaign, level: number, grossAmount: number) {
+  const rate = level === 1 ? campaign.level1Rate : level === 2 ? campaign.level2Rate : campaign.level3Rate;
+  if (!(rate > 0)) return 0;
+  const amount = campaign.commissionType === "fixed" ? rate : grossAmount * rate;
+  return Math.round(amount * 100) / 100;
+}
+
 export async function recordSale(input: {
   affiliateUserId: string;
   grossAmount: number;
@@ -590,63 +624,99 @@ export async function recordSale(input: {
   status?: AffiliateSaleStatus;
 }) {
   const profile = await getProfile(input.affiliateUserId);
-  const campaign = getProductCampaign(input.campaignSlug);
-  if (!campaign) {
-    throw new Error("Choose Foundation Course or Mastermind Events.");
+  const codeCampaign = getProductCampaign(input.campaignSlug);
+  const campaign = (await getCampaignBySlug(input.campaignSlug)) ?? null;
+  if (!codeCampaign || !campaign) {
+    throw new Error("Choose one of the available campaigns.");
   }
-  if (!canPromoteCampaign(profile?.programs, campaign)) {
+  if (!canPromoteCampaign(profile?.programs, codeCampaign)) {
     throw new Error(
-      campaign.requiredProgram === "pioneer"
-        ? "That promoter needs the pioneer tag for the Foundation Course campaign."
+      codeCampaign.requiredProgram === "pioneer"
+        ? "That promoter needs the pioneer tag for this campaign."
         : "That promoter needs the jdc-partner tag for the Mastermind campaign.",
     );
   }
-  const rate = campaign.commissionRate;
   const soldAt = input.soldAt || manilaYmd();
   const cycle = cycleForYmd(soldAt);
-  const sale: AffiliateSale = {
-    id: newId("sale"),
-    affiliateUserId: input.affiliateUserId,
+  const status = input.status ?? "approved";
+  const createdAt = new Date().toISOString();
+  const base = {
     grossAmount: input.grossAmount,
-    commissionAmount: Math.round(input.grossAmount * rate * 100) / 100,
     source: input.source.trim() || campaign.title,
     campaignSlug: campaign.slug,
-    status: input.status ?? "approved",
+    status,
     soldAt,
     periodStart: cycle.periodStart,
     periodEnd: cycle.periodEnd,
     scheduledPayDate: cycle.scheduledPayDate,
     payoutId: "",
-    createdAt: new Date().toISOString(),
+    createdAt,
+  };
+  const sale: AffiliateSale = {
+    ...base,
+    id: newId("sale"),
+    affiliateUserId: input.affiliateUserId,
+    commissionAmount: commissionFor(campaign, 1, input.grossAmount),
+    level: 1,
+    parentSaleId: "",
   };
 
-  memory.sales.unshift(sale);
+  // Override commissions: level 2 pays the referrer's sponsor, level 3 the sponsor's sponsor.
+  const rows: AffiliateSale[] = [sale];
+  const profiles = await listProfiles();
+  let sponsorId = profile?.sponsorId ?? "";
+  const seen = new Set([input.affiliateUserId]);
+  for (const level of [2, 3]) {
+    if (!sponsorId || seen.has(sponsorId)) break;
+    seen.add(sponsorId);
+    const sponsor = profiles.find((item) => item.userId === sponsorId);
+    if (!sponsor || sponsor.status !== "active") break;
+    const amount = commissionFor(campaign, level, input.grossAmount);
+    if (amount > 0) {
+      rows.push({
+        ...base,
+        id: newId("sale"),
+        affiliateUserId: sponsor.userId,
+        commissionAmount: amount,
+        level,
+        parentSaleId: sale.id,
+      });
+    }
+    sponsorId = sponsor.sponsorId;
+  }
+
+  memory.sales.unshift(...rows);
   await withStore(
     async (client) => {
-      await client.query(
-        `
-        INSERT INTO affiliate_sales (
-          id, affiliate_user_id, gross_amount, commission_amount, source, status,
-          sold_at, period_start, period_end, scheduled_pay_date, payout_id, created_at, campaign_slug
-        )
-        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
-        `,
-        [
-          sale.id,
-          sale.affiliateUserId,
-          sale.grossAmount,
-          sale.commissionAmount,
-          sale.source,
-          sale.status,
-          sale.soldAt,
-          sale.periodStart,
-          sale.periodEnd,
-          sale.scheduledPayDate,
-          sale.payoutId,
-          sale.createdAt,
-          sale.campaignSlug,
-        ],
-      );
+      for (const row of rows) {
+        await client.query(
+          `
+          INSERT INTO affiliate_sales (
+            id, affiliate_user_id, gross_amount, commission_amount, source, status,
+            sold_at, period_start, period_end, scheduled_pay_date, payout_id, created_at, campaign_slug,
+            level, parent_sale_id
+          )
+          VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)
+          `,
+          [
+            row.id,
+            row.affiliateUserId,
+            row.grossAmount,
+            row.commissionAmount,
+            row.source,
+            row.status,
+            row.soldAt,
+            row.periodStart,
+            row.periodEnd,
+            row.scheduledPayDate,
+            row.payoutId,
+            row.createdAt,
+            row.campaignSlug,
+            row.level,
+            row.parentSaleId,
+          ],
+        );
+      }
       return sale;
     },
     () => sale,
@@ -661,14 +731,18 @@ export async function voidSale(id: string) {
   if (!sale || sale.payoutId) {
     return sale ?? null;
   }
-  sale.status = "void";
-  const index = memory.sales.findIndex((item) => item.id === id);
-  if (index >= 0) {
-    memory.sales[index] = sale;
+  // Voiding a level-1 sale also voids the override commissions generated from it.
+  const affected = new Set([id, ...sales.filter((item) => item.parentSaleId === id && !item.payoutId).map((item) => item.id)]);
+  for (const item of memory.sales) {
+    if (affected.has(item.id)) item.status = "void";
   }
+  sale.status = "void";
   await withStore(
     async (client) => {
-      await client.query("UPDATE affiliate_sales SET status = 'void' WHERE id = $1 AND payout_id = ''", [id]);
+      await client.query(
+        "UPDATE affiliate_sales SET status = 'void' WHERE (id = $1 OR parent_sale_id = $1) AND payout_id = ''",
+        [id],
+      );
       return sale;
     },
     () => sale,
@@ -984,6 +1058,11 @@ export async function upsertCampaign(input: {
   description: string;
   destinationPath: string;
   active?: boolean;
+  commissionType?: "percent" | "fixed";
+  level1Rate?: number;
+  level2Rate?: number;
+  level3Rate?: number;
+  cookieDays?: number;
 }) {
   const slug = normalizeAffiliateCode(input.slug);
   const existing = await getCampaignBySlug(slug);
@@ -995,6 +1074,11 @@ export async function upsertCampaign(input: {
     destinationPath: input.destinationPath.trim() || "/register",
     requiredProgram: existing?.requiredProgram ?? "",
     active: input.active ?? existing?.active ?? true,
+    commissionType: input.commissionType ?? existing?.commissionType ?? "percent",
+    level1Rate: input.level1Rate ?? existing?.level1Rate ?? DEFAULT_COMMISSION_RATE,
+    level2Rate: input.level2Rate ?? existing?.level2Rate ?? 0,
+    level3Rate: input.level3Rate ?? existing?.level3Rate ?? 0,
+    cookieDays: input.cookieDays ?? existing?.cookieDays ?? 30,
   };
 
   const index = memory.campaigns.findIndex((item) => item.id === next.id || item.slug === next.slug);
@@ -1008,15 +1092,35 @@ export async function upsertCampaign(input: {
     async (client) => {
       await client.query(
         `
-        INSERT INTO affiliate_campaigns (id, slug, title, description, destination_path, active)
-        VALUES ($1,$2,$3,$4,$5,$6)
+        INSERT INTO affiliate_campaigns (
+          id, slug, title, description, destination_path, active,
+          commission_type, level1_rate, level2_rate, level3_rate, cookie_days
+        )
+        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
         ON CONFLICT (slug) DO UPDATE SET
           title = EXCLUDED.title,
           description = EXCLUDED.description,
           destination_path = EXCLUDED.destination_path,
-          active = EXCLUDED.active
+          active = EXCLUDED.active,
+          commission_type = EXCLUDED.commission_type,
+          level1_rate = EXCLUDED.level1_rate,
+          level2_rate = EXCLUDED.level2_rate,
+          level3_rate = EXCLUDED.level3_rate,
+          cookie_days = EXCLUDED.cookie_days
         `,
-        [next.id, next.slug, next.title, next.description, next.destinationPath, next.active],
+        [
+          next.id,
+          next.slug,
+          next.title,
+          next.description,
+          next.destinationPath,
+          next.active,
+          next.commissionType,
+          next.level1Rate,
+          next.level2Rate,
+          next.level3Rate,
+          next.cookieDays,
+        ],
       );
       return next;
     },
