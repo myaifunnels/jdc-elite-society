@@ -11,7 +11,9 @@ const darkForm = "invert(0.92) hue-rotate(180deg) saturate(1.1)";
 export function PartnershipApply({
   title = "Apply to become a partner",
   subtext = "Free to join. Takes less than a minute.",
+  className,
 }: {
+  className?: string;
   title?: string;
   subtext?: string;
 }) {
@@ -24,7 +26,7 @@ export function PartnershipApply({
   }
 
   return (
-    <>
+    <div className={className}>
       <button type="button" onClick={open} className="elite-cta elite-cta-rich elite-cta-lg">
         <span className="elite-cta-copy">
           <strong>{title}</strong>
@@ -86,6 +88,6 @@ export function PartnershipApply({
           </div>
         ) : null}
       </dialog>
-    </>
+    </div>
   );
 }

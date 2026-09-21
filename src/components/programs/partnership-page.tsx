@@ -67,30 +67,31 @@ export function PartnershipPage() {
           </video>
           <div className="partner-hero-scrim" />
           <div className="elite-shell partner-hero-grid">
-            <div>
-              <p className="elite-kicker">Coach Jayson Dela Cruz</p>
+            <div className="partner-area-head">
               <p className="elite-kicker" style={{ color: "#8fc8ff", fontSize: "0.95rem" }}>
                 The JDC Partnership Program
               </p>
               <h1 className="elite-display partner-headline">
                 Earn While You Help Others <em>Transform Their Life &amp; Business.</em>
               </h1>
+            </div>
+            <div className="elite-glass partner-video partner-area-video">
+              <div className="partner-video-inner">
+                <PartnershipVideo src={partnershipVsl} autoPlay />
+              </div>
+            </div>
+            <div className="partner-area-body">
               <p className="partner-sub">
                 Watch the short video, then apply to become a JDC partner. Refer people, earn commissions, and track it
                 all in one place.
               </p>
-              <PartnershipApply />
+              <PartnershipApply className="partner-cta-desktop" />
               <div className="partner-chips">
                 {benefits.map((item) => (
                   <span key={item.title}>
                     <strong>{item.title}</strong>
                   </span>
                 ))}
-              </div>
-            </div>
-            <div className="elite-glass partner-video">
-              <div className="partner-video-inner">
-                <PartnershipVideo src={partnershipVsl} autoPlay />
               </div>
             </div>
           </div>
@@ -107,6 +108,8 @@ export function PartnershipPage() {
             ))}
           </div>
         </section>
+
+        <PartnershipApply className="partner-cta-sticky" />
 
         <section className="elite-shell partner-final">
           <h2 className="elite-display partner-headline" style={{ fontSize: "clamp(1.8rem, 3.6vw, 2.6rem)" }}>
