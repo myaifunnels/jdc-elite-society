@@ -73,7 +73,7 @@ export function PartnershipPage() {
               </p>
               <h1 className="elite-display partner-headline">
                 <span className="partner-line">Earn While You Help Others</span>{" "}
-                <em className="partner-line">Transform Their</em>{" "}
+                <em className="partner-line partner-noline">Transform Their</em>{" "}
                 <em className="partner-line">Life &amp; Business.</em>
               </h1>
             </div>

@@ -14,7 +14,8 @@
 .partner-area-head { grid-area: head; }
 @media (min-width: 960px) {
   .partner-area-head .partner-headline { max-width: none; font-size: clamp(2.2rem, 3.5vw, 3.3rem); }
-  .partner-line { display: block; white-space: nowrap; }
+  .partner-line, .partner-headline em.partner-line { display: block; width: fit-content; white-space: nowrap; }
+  .partner-headline em.partner-noline::after { display: none; }
 }
 .partner-area-video { grid-area: video; }
 .partner-area-body { grid-area: body; }
