@@ -1282,7 +1282,7 @@ a,
   display: flex;
   align-items: end;
   justify-content: space-between;
-  gap: 1rem;
+  gap: 1.25rem;
   margin-bottom: 1.25rem;
 }
 
@@ -1936,7 +1936,7 @@ a,
 
 .webinar-comments-section {
   display: grid;
-  gap: 1rem;
+  gap: 1.25rem;
   margin-top: 2rem;
   padding-top: 1.75rem;
   border-top: 1px solid var(--line);
@@ -3382,7 +3382,7 @@ a,
 .photo-upload {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 1.25rem;
 }
 
 .photo-upload-frame {
@@ -5125,7 +5125,7 @@ html[data-membership="both"] .macos-btn-primary {
 
 .app-store-grid {
   display: grid;
-  gap: 1rem;
+  gap: 1.25rem;
   grid-template-columns: repeat(auto-fill, minmax(17.5rem, 1fr));
 }
 
@@ -5241,7 +5241,7 @@ html[data-membership="both"] .macos-btn-primary {
 .app-store-detail-head {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 1.25rem;
   padding-bottom: 1.25rem;
   border-bottom: 1px solid var(--line);
   margin-bottom: 1.25rem;
@@ -5501,7 +5501,7 @@ html[data-membership="both"] .macos-btn-primary {
 
 .dashboard-profile-hero {
   display: flex;
-  gap: 1rem;
+  gap: 1.25rem;
   align-items: center;
 }
 
@@ -6052,7 +6052,7 @@ html[data-membership="both"] .macos-btn-primary {
 
 .account-dash-stack {
   display: grid;
-  gap: 1rem;
+  gap: 1.25rem;
 }
 
 .account-dash-inline-link {
@@ -6068,14 +6068,14 @@ html[data-membership="both"] .macos-btn-primary {
 
 .account-dash {
   display: grid;
-  gap: 1rem;
+  gap: 1.25rem;
 }
 
 .account-dash-hero {
   position: relative;
   overflow: hidden;
   display: grid;
-  gap: 1rem;
+  gap: 1.25rem;
   padding: 1.35rem 1.4rem 1.25rem;
   border: 1px solid var(--line);
   border-radius: 22px;
@@ -6151,7 +6151,7 @@ html[data-membership="both"] .macos-btn-primary {
 
 .account-dash-layout {
   display: grid;
-  gap: 1rem;
+  gap: 1.25rem;
 }
 
 @media (min-width: 980px) {
@@ -6163,7 +6163,7 @@ html[data-membership="both"] .macos-btn-primary {
 
 .account-dash-card {
   display: grid;
-  gap: 1rem;
+  gap: 1.25rem;
   padding: 1.15rem 1.2rem 1.25rem;
   border: 1px solid var(--line);
   border-radius: 22px;
@@ -6173,7 +6173,7 @@ html[data-membership="both"] .macos-btn-primary {
 
 .account-dash-main {
   display: grid;
-  gap: 1rem;
+  gap: 1.25rem;
 }
 
 .account-dash-identity {
@@ -7254,7 +7254,7 @@ html[data-membership="both"] .macos-btn-primary {
 .support-details {
   display: none;
   flex-direction: column;
-  gap: 1rem;
+  gap: 1.25rem;
   padding: 1rem 0.9rem;
   overflow-y: auto;
   background: color-mix(in srgb, var(--surface-elevated) 88%, transparent);
@@ -7508,7 +7508,7 @@ html[data-membership="both"] .macos-btn-primary {
 /* Payment rejected notice */
 .payment-rejected-notice {
   display: grid;
-  gap: 1rem;
+  gap: 1.25rem;
   max-width: 36rem;
   margin: 2rem auto;
   padding: 2rem 1.5rem;
@@ -7606,7 +7606,7 @@ html[data-membership="both"] .macos-btn-primary {
   display: grid;
   grid-template-columns: auto 1fr auto;
   align-items: center;
-  gap: 1rem;
+  gap: 1.25rem;
   height: 100%;
   padding: 1.15rem 1.25rem;
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -7636,7 +7636,7 @@ html[data-membership="both"] .macos-btn-primary {
 .programs-dot.is-completed { background: var(--brand); }
 .programs-dot.is-cancelled { background: var(--muted); }
 .programs-card-go {
-  display: inline-flex; align-items: center; gap: 0.3rem; min-height: 2.25rem; padding: 0 0.95rem;
+  display: inline-flex; align-items: center; gap: 0.5rem; min-height: 2.75rem; padding: 0 1.5rem;
   border: 1px solid color-mix(in srgb, var(--brand) 40%, transparent); border-radius: 999px;
   background: color-mix(in srgb, var(--brand) 14%, transparent); color: #fff;
   font-size: 0.82rem; font-weight: 650; letter-spacing: -0.005em; white-space: nowrap;
