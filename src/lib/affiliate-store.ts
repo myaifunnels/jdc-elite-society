@@ -51,7 +51,6 @@ const memory = {
 let pool: Pool | null | undefined;
 let tableReady = false;
 let seeded = false;
-let partnershipsBackfilled = false;
 
 function getPool() {
   const connectionString = process.env.DATABASE_URL;
@@ -211,12 +210,6 @@ async function ensureTable(client: Pool) {
     ADD COLUMN IF NOT EXISTS programs TEXT NOT NULL DEFAULT ''
   `);
   await client.query(`
-    UPDATE affiliate_profiles SET status = 'active' WHERE status = 'invited'
-  `);
-  await client.query(`
-    UPDATE affiliate_sales SET status = 'approved' WHERE status = 'pending'
-  `);
-  await client.query(`
     CREATE TABLE IF NOT EXISTS affiliate_payout_methods (
       user_id TEXT PRIMARY KEY,
       method TEXT NOT NULL,
@@ -341,12 +334,7 @@ async function ensureSeed() {
           `
           INSERT INTO affiliate_campaigns (id, slug, title, description, destination_path, active, required_program)
           VALUES ($1, $2, $3, $4, $5, $6, $7)
-          ON CONFLICT (slug) DO UPDATE SET
-            title = EXCLUDED.title,
-            description = EXCLUDED.description,
-            destination_path = EXCLUDED.destination_path,
-            required_program = EXCLUDED.required_program,
-            active = TRUE
+          ON CONFLICT (slug) DO NOTHING
           `,
           [
             campaign.id,
@@ -359,24 +347,22 @@ async function ensureSeed() {
           ],
         );
       }
+      // One-time cleanups for campaigns seeded earlier: retire the standalone ones and use the
+      // renamed Mastermind season titles. Idempotent, and it never re-activates a campaign.
+      await client.query(
+        "UPDATE affiliate_campaigns SET active = FALSE WHERE slug IN ('jdc-mastermind', '90-day-blueprint')",
+      );
+      await client.query(
+        "UPDATE affiliate_campaigns SET title = $2 WHERE slug = $1 AND title IN ('Season 1: Building', 'Season 2: Duplication')",
+        ["season-1-building", "JDC Mastermind: Season 1 - Building"],
+      );
+      await client.query(
+        "UPDATE affiliate_campaigns SET title = $2 WHERE slug = $1 AND title IN ('Season 1: Building', 'Season 2: Duplication')",
+        ["season-2-duplication", "JDC Mastermind: Season 2 - Duplication"],
+      );
     } catch (error) {
       console.error("Failed to seed affiliate campaigns", error);
     }
-  }
-
-  await backfillApprovedPartnerships();
-}
-
-async function backfillApprovedPartnerships() {
-  if (partnershipsBackfilled) {
-    return;
-  }
-  partnershipsBackfilled = true;
-  try {
-    await approveAllPartnerships({ includePausedWithPrograms: false, includeContactTags: false });
-  } catch (error) {
-    partnershipsBackfilled = false;
-    console.error("Failed to backfill approved partnerships", error);
   }
 }
 
