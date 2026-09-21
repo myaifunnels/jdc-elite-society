@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import {
   FolderDown,
   LayoutDashboard,
+  Megaphone,
   Network,
   QrCode,
   Shield,
@@ -16,6 +17,7 @@ import { cn } from "@/lib/utils";
 const items = [
   { href: "/dashboard/partnership", label: "Overview", icon: LayoutDashboard },
   { href: "/dashboard/partnership/link", label: "Link & QR", icon: QrCode },
+  { href: "/dashboard/partnership/campaigns", label: "Campaigns", icon: Megaphone },
   { href: "/dashboard/partnership/team", label: "Genealogy", icon: Network },
   { href: "/dashboard/partnership/materials", label: "Materials", icon: FolderDown },
   { href: "/dashboard/partnership/payouts", label: "Payouts", icon: Wallet },

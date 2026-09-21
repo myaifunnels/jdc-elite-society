@@ -1,3 +1,5 @@
+import { programs as catalogPrograms } from "@/data/programs";
+
 export const AFFILIATE_COOKIE = "jdc_aff";
 export const AFFILIATE_CAMPAIGN_COOKIE = "jdc_aff_campaign";
 export const AFFILIATE_COOKIE_MAX_AGE = 60 * 60 * 24 * 30;
@@ -13,9 +15,11 @@ export type ProductCampaign = {
   destinationPath: string;
   requiredProgram: AffiliateProgramId;
   commissionRate: number;
+  /** Any affiliate (pioneer or jdc-partner) can promote it, not only `requiredProgram`. */
+  open?: boolean;
 };
 
-export const PRODUCT_CAMPAIGNS: ProductCampaign[] = [
+const TIER_CAMPAIGNS: ProductCampaign[] = [
   {
     slug: "foundation",
     title: "JDC Elite Society Portal + Life and Money Foundation Course",
@@ -37,6 +41,20 @@ export const PRODUCT_CAMPAIGNS: ProductCampaign[] = [
     commissionRate: 0.2,
   },
 ];
+
+/** One campaign per catalog program, so partners can promote each program with its own link. */
+const PROGRAM_CAMPAIGNS: ProductCampaign[] = catalogPrograms.map((program) => ({
+  slug: program.slug,
+  title: program.title,
+  shortTitle: program.title,
+  description: `${program.shortDescription} Successful purchases earn 20%.`,
+  destinationPath: `/programs/${program.slug}`,
+  requiredProgram: "pioneer" as const,
+  commissionRate: 0.2,
+  open: true,
+}));
+
+export const PRODUCT_CAMPAIGNS: ProductCampaign[] = [...TIER_CAMPAIGNS, ...PROGRAM_CAMPAIGNS];
 
 export function normalizeAffiliateCode(value: string) {
   return value.trim().toLowerCase().replace(/[^a-z0-9-]/g, "").slice(0, 32);
@@ -98,7 +116,9 @@ export function canPromoteCampaign(
   campaign: ProductCampaign,
   isAdmin = false,
 ) {
-  return isAdmin || (programs ?? []).includes(campaign.requiredProgram);
+  if (isAdmin) return true;
+  if (campaign.open) return (programs ?? []).length > 0;
+  return (programs ?? []).includes(campaign.requiredProgram);
 }
 
 export function campaignsForPrograms(programs: AffiliateProgramId[] | undefined, isAdmin = false) {
