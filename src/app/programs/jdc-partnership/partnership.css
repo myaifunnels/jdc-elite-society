@@ -10,7 +10,7 @@
     linear-gradient(135deg, rgba(6, 30, 104, 0.9), rgba(10, 66, 190, 0.5) 55%, rgba(3, 12, 32, 0.85));
 }
 .partner-hero-grid { display: grid; gap: 1.6rem; grid-template-areas: "head" "video" "body"; }
-.partner-hero .elite-shell { width: min(1560px, calc(100% - 40px)); }
+.partner-hero .elite-shell { width: min(1280px, calc(100% - 64px)); }
 .partner-area-head { grid-area: head; }
 @media (min-width: 960px) {
   .partner-area-head .partner-headline { max-width: none; font-size: clamp(2.1rem, 3.2vw, 3.3rem); }
