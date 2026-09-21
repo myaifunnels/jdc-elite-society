@@ -14,6 +14,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { path: "/contact", priority: 0.5 },
     { path: "/elite", priority: 0.95 },
     { path: "/duplication", priority: 0.9 },
+    { path: "/programs/jdc-elite-society", priority: 0.7 },
+    { path: "/programs/group-coaching", priority: 0.4 },
     { path: "/passive-income", priority: 0.9 },
   ];
 

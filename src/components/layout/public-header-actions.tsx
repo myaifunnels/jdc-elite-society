@@ -29,6 +29,7 @@ function DesktopNavChild({ child }: { child: NavSubItem }) {
     <div className="site-nav-subitem-group">
       <Link href={child.href} className="site-nav-dropdown-link site-nav-subitem-trigger">
         {child.label}
+        {child.comingSoon ? <span className="site-nav-soon-badge">Soon</span> : null}
         <ChevronDown size={12} aria-hidden />
       </Link>
       <div className="site-nav-subdropdown">
@@ -77,6 +78,7 @@ function MobileNavSubItem({ child, onNavigate }: { child: NavSubItem; onNavigate
     return (
       <Link href={child.href} className="pressable" onClick={onNavigate}>
         {child.label}
+        {child.comingSoon ? <span className="site-nav-soon-badge">Soon</span> : null}
       </Link>
     );
   }
@@ -86,6 +88,7 @@ function MobileNavSubItem({ child, onNavigate }: { child: NavSubItem; onNavigate
       <div className="site-nav-drawer-group-head">
         <Link href={child.href} className="pressable" onClick={onNavigate}>
           {child.label}
+          {child.comingSoon ? <span className="site-nav-soon-badge">Soon</span> : null}
         </Link>
         <button
           type="button"

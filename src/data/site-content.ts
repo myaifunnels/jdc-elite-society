@@ -6,8 +6,33 @@ export const navItems: NavItem[] = [
     href: "/programs",
     label: "Programs",
     children: [
-      { href: "/elite", label: "JDC Mastermind" },
-      { href: "/programs/1-on-1-coaching", label: "1-on-1 Coaching", comingSoon: true },
+      { href: "/programs/jdc-elite-society", label: "JDC Elite Society" },
+      {
+        href: "/programs?program=jdc-mastermind",
+        label: "JDC Mastermind",
+        children: [
+          { href: "/elite", label: "Building" },
+          { href: "/duplication", label: "Duplication" },
+        ],
+      },
+      {
+        href: "/programs/group-coaching",
+        label: "Group Coaching",
+        comingSoon: true,
+        children: [
+          { href: "/programs/group-coaching/online", label: "Online Coaching" },
+          { href: "/programs/group-coaching/face-to-face", label: "Face-to-Face Coaching" },
+        ],
+      },
+      {
+        href: "/programs/1-on-1-coaching",
+        label: "1-on-1 Coaching",
+        comingSoon: true,
+        children: [
+          { href: "/programs/1-on-1-coaching/online", label: "Online Coaching" },
+          { href: "/programs/1-on-1-coaching/face-to-face", label: "Face-to-Face Coaching" },
+        ],
+      },
     ],
   },
   { href: "/webinars", label: "Webinars" },
