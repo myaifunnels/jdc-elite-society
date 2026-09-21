@@ -72,7 +72,9 @@ export function PartnershipPage() {
                 The JDC Partnership Program
               </p>
               <h1 className="elite-display partner-headline">
-                Earn While You Help Others <em>Transform Their Life &amp; Business.</em>
+                <span className="partner-line">Earn While You Help Others</span>{" "}
+                <em className="partner-line">Transform Their</em>{" "}
+                <em className="partner-line">Life &amp; Business.</em>
               </h1>
             </div>
             <div className="elite-glass partner-video partner-area-video">

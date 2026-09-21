@@ -5,9 +5,6 @@ import Script from "next/script";
 
 const formId = "hEadKGITGhjwVT5DwVcQ";
 
-/* The signup form is a white embed, so we invert it into dark mode; hue-rotate keeps brand colors true. */
-const darkForm = "invert(0.92) hue-rotate(180deg) saturate(1.1)";
-
 export function PartnershipApply({
   title = "Apply to become a partner",
   subtext = "Free to join. Takes less than a minute.",
@@ -67,7 +64,7 @@ export function PartnershipApply({
           <div style={{ padding: "0 0.6rem 0.8rem" }}>
             <iframe
               src={`https://api.myaifunnels.com/widget/form/${formId}`}
-              style={{ width: "100%", height: "100%", minHeight: 460, border: "none", filter: darkForm }}
+              style={{ width: "100%", height: "100%", minHeight: 460, border: "none" }}
               id={`inline-${formId}`}
               data-layout="{'id':'INLINE'}"
               data-trigger-type="alwaysShow"
