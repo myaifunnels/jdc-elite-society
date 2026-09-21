@@ -147,7 +147,7 @@ export const resetPasswordSchema = z
     },
   );
 
-export const elitePaymentMethods = ["BPI Bank", "GCash"] as const;
+export const elitePaymentMethods = ["GCash"] as const;
 
 export const eliteCheckoutSchema = z.object({
   fullName: z.string().min(2, "Kailangan ang iyong buong pangalan."),

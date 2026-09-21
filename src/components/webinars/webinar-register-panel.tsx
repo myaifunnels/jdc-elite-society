@@ -626,10 +626,6 @@ export function WebinarRegisterPanel({
                       {mastermindOffer.payments.gcash.label} &middot; {mastermindOffer.payments.gcash.name} &middot;{" "}
                       <strong className="text-white">{mastermindOffer.payments.gcash.number}</strong>
                     </p>
-                    <p className="m-0">
-                      {mastermindOffer.payments.bpi.label} &middot; {mastermindOffer.payments.bpi.name} &middot;{" "}
-                      <strong className="text-white">{mastermindOffer.payments.bpi.number}</strong>
-                    </p>
                   </div>
                 ) : null}
 

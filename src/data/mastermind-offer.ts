@@ -70,7 +70,6 @@ export const mastermindOffer = {
   funnelTrackingId: "tk_05790544d7b7482782736edf17e38d41",
   funnelLocationId: "Col3j2B7jRDX5y8J5bgN",
   payments: {
-    bpi: { label: "BPI BANK", name: "Jayson Dela Cruz", number: "1999 2819 16" },
     gcash: { label: "GCASH", name: "Jayson Dela Cruz", number: "0917 112 5369" },
   },
   support: {

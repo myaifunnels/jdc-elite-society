@@ -71,7 +71,7 @@ export function EliteCheckoutForm({ signedInUser }: { signedInUser: SignedInChec
     }
     return { iso: "PH", national: "" };
   });
-  const [paymentMethod, setPaymentMethod] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState("GCash");
   const [couponCode, setCouponCode] = useState("");
   const [couponApplied, setCouponApplied] = useState(false);
   const [couponError, setCouponError] = useState("");
@@ -515,7 +515,7 @@ export function EliteCheckoutForm({ signedInUser }: { signedInUser: SignedInChec
 }
 
 export function PaymentInstructions() {
-  const { bpi, gcash } = mastermindOffer.payments;
+  const { gcash } = mastermindOffer.payments;
   return (
     <div>
       {[
@@ -524,12 +524,6 @@ export function PaymentInstructions() {
           title: "SEND YOUR PAYMENT",
           body: (
             <>
-              <div className="elite-account">
-                {bpi.label}
-                <div>{bpi.name}</div>
-                <strong>{bpi.number}</strong>
-              </div>
-              <div style={{ height: 1, background: "var(--elite-line)", margin: "0.9rem 0" }} />
               <div className="elite-account">
                 {gcash.label}
                 <div>{gcash.name}</div>

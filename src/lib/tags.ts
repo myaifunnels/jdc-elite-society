@@ -72,7 +72,6 @@ export const TAG_GROUPS: TagGroup[] = [
       "Online Coaching",
       "In-person Coaching",
       "spartans-coupon",
-      "BPI Bank",
       "GCash",
     ],
   },

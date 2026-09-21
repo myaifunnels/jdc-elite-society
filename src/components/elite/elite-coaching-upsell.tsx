@@ -20,7 +20,7 @@ export function EliteCoachingUpsell({ firstName }: { firstName: string }) {
   const [claiming, setClaiming] = useState(false);
   const [coachingMode, setCoachingMode] = useState<"online" | "in-person">("online");
   const [coachingHours, setCoachingHours] = useState(1);
-  const [paymentMethod, setPaymentMethod] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState("GCash");
   const [receipt, setReceipt] = useState<File | null>(null);
   const [error, setError] = useState("");
   const [pending, setPending] = useState(false);
