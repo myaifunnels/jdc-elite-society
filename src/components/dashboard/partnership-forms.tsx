@@ -14,6 +14,7 @@ import {
   updateAffiliateProfile,
   voidAffiliateSale,
 } from "@/app/dashboard/partnership/actions";
+import { programs } from "@/data/programs";
 import { FloatField } from "@/components/forms/float-field";
 import { AffiliatePayoutMethod, AffiliateProfile, AuthUser, PayoutMethodKind } from "@/lib/types";
 import { maskAccountNumber, PRODUCT_CAMPAIGNS, programLabel } from "@/lib/affiliate";
@@ -334,19 +335,37 @@ export function PayoutMethodForm({ method }: { method: AffiliatePayoutMethod | n
 
 export function CampaignForm() {
   const [state, action, pending] = useActionState(saveAffiliateCampaign, initial);
+  const [programSlug, setProgramSlug] = useState("");
+  const selected = programs.find((program) => program.slug === programSlug);
   return (
-    <form action={action} className="grid gap-3">
+    <form action={action} className="grid gap-3" key={programSlug}>
+      <label className="grid gap-1 text-sm">
+        Start from a program
+        <select value={programSlug} onChange={(event) => setProgramSlug(event.target.value)} className="input">
+          <option value="">Custom campaign</option>
+          {programs.map((program) => (
+            <option key={program.slug} value={program.slug}>
+              {program.title}
+            </option>
+          ))}
+        </select>
+      </label>
       <FloatField label="Slug (facebook, register)">
-        <input name="slug" required placeholder=" " />
+        <input name="slug" required placeholder=" " defaultValue={selected?.slug ?? ""} />
       </FloatField>
       <FloatField label="Title">
-        <input name="title" required placeholder=" " />
+        <input name="title" required placeholder=" " defaultValue={selected?.title ?? ""} />
       </FloatField>
       <FloatField label="Description">
-        <input name="description" placeholder=" " />
+        <input name="description" placeholder=" " defaultValue={selected?.shortDescription ?? ""} />
       </FloatField>
       <FloatField label="Destination path">
-        <input name="destinationPath" defaultValue="/register" required placeholder=" " />
+        <input
+          name="destinationPath"
+          defaultValue={selected ? `/programs/${selected.slug}` : "/register"}
+          required
+          placeholder=" "
+        />
       </FloatField>
       <label className="flex items-center gap-2 text-sm">
         <input type="checkbox" name="active" defaultChecked />
