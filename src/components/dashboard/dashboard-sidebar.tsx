@@ -9,6 +9,7 @@ import {
   GraduationCap,
   Handshake,
   Inbox,
+  Layers,
   LayoutDashboard,
   LogOut,
   Menu,
@@ -44,6 +45,7 @@ const navCatalog: Array<{
   { href: "/dashboard/support", label: "Support", icon: MessageCircle, capability: "support" },
   { href: "/dashboard/profile", label: "Account", icon: UserRound, capability: "profile" },
   { href: "/dashboard/inbox", label: "Inbox", icon: Inbox, capability: "inbox" },
+  { href: "/dashboard/programs", label: "Programs", icon: Layers, capability: "programs" },
   { href: "/dashboard/contacts", label: "Contacts", icon: Users, capability: "contacts.view" },
   { href: "/dashboard/partnership", label: "Partnership", icon: Handshake, capability: "partnership" },
   { href: "/dashboard/access", label: "Access", icon: Shield, capability: "access" },
@@ -55,12 +57,21 @@ const navCatalog: Array<{
 ];
 
 function navItems(access: AccessMap) {
-  return navCatalog.filter((item) => {
-    if (item.href === "/dashboard/contacts") {
-      return access["contacts.view"] || access.registrations;
-    }
-    return access[item.capability];
-  });
+  return navCatalog
+    .filter((item) => {
+      if (item.href === "/dashboard/contacts") {
+        return access["contacts.view"] || access.registrations;
+      }
+      if (item.capability === "partnership") {
+        return true;
+      }
+      return access[item.capability];
+    })
+    .map((item) =>
+      item.capability === "partnership" && !access.partnership
+        ? { ...item, href: "/programs/jdc-partnership" }
+        : item,
+    );
 }
 
 function isActivePath(pathname: string, href: string) {

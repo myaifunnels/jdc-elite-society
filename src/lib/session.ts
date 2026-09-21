@@ -185,9 +185,10 @@ export async function requireAnyCapability(...capabilities: Capability[]) {
 }
 
 export async function requireAffiliateAccess() {
-  const { user, access } = await requireCapability("partnership");
-  if (!hasAffiliateWorkspace(user) && user.role !== "admin") {
-    redirect(dashboardHomeHref(access.resolved));
+  const sessionUser = await requireSessionUser();
+  if (!hasAffiliateWorkspace(sessionUser) && sessionUser.role !== "admin") {
+    redirect("/programs/jdc-partnership");
   }
+  const { user } = await requireCapability("partnership");
   return user;
 }

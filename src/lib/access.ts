@@ -19,6 +19,7 @@ export type Capability =
   | "myWebinars"
   | "settings"
   | "access"
+  | "programs"
   | "partnership"
   | "partnership.admin";
 
@@ -49,6 +50,7 @@ export const CAPABILITIES: Array<{ id: Capability; label: string; detail: string
   { id: "myWebinars", label: "My webinars", detail: "See the webinars they've registered for and their status." },
   { id: "settings", label: "Site settings", detail: "Branding and design system." },
   { id: "access", label: "Access control", detail: "Change roles and permission defaults." },
+  { id: "programs", label: "Programs", detail: "See the programs they have availed." },
   { id: "partnership", label: "Partnership", detail: "Affiliate link, tree, and payouts." },
   { id: "partnership.admin", label: "Partnership admin", detail: "Grant affiliate access and review payouts." },
 ];
@@ -78,6 +80,7 @@ export const ROLE_DEFAULTS: Record<AccessRole, AccessMap> = {
     myWebinars: false,
     settings: true,
     access: true,
+    programs: true,
     partnership: true,
     "partnership.admin": true,
   },
@@ -98,6 +101,7 @@ export const ROLE_DEFAULTS: Record<AccessRole, AccessMap> = {
     myWebinars: true,
     settings: false,
     access: false,
+    programs: true,
     partnership: false,
     "partnership.admin": false,
   },
@@ -118,6 +122,7 @@ export const ROLE_DEFAULTS: Record<AccessRole, AccessMap> = {
     myWebinars: true,
     settings: false,
     access: false,
+    programs: true,
     partnership: false,
     "partnership.admin": false,
   },
@@ -138,6 +143,7 @@ export const ROLE_DEFAULTS: Record<AccessRole, AccessMap> = {
     myWebinars: true,
     settings: false,
     access: false,
+    programs: true,
     partnership: false,
     "partnership.admin": false,
   },
