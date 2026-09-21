@@ -1,15 +1,26 @@
-import { ChevronRight } from "lucide-react";
-import Link from "next/link";
-
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { programs } from "@/data/programs";
 import { requireCapability } from "@/lib/session";
+import { ProgramsView, type ProgramsViewEntry } from "@/components/dashboard/programs-view";
+import { hasAffiliateWorkspace } from "@/lib/affiliate";
 import { listUserPrograms, syncUserProgramsFromCheckouts, type UserProgramStatus } from "@/lib/user-programs-store";
 
-const EXTRA_PROGRAMS: Record<string, { title: string; href: string }> = {
-  "jdc-elite-society": { title: "JDC Elite Society", href: "/programs/jdc-elite-society" },
-  "season-1-building": { title: "Season 1: Building", href: "/building" },
-  "season-2-duplication": { title: "Season 2: Duplication", href: "/duplication" },
+const EXTRA_PROGRAMS: Record<string, { title: string; href: string; description: string }> = {
+  "jdc-elite-society": {
+    title: "JDC Elite Society",
+    href: "/programs/jdc-elite-society",
+    description: "The JDC Elite Society portal and private community.",
+  },
+  "season-1-building": {
+    title: "Season 1: Building",
+    href: "/building",
+    description: "Season 1 of the JDC Mastermind: build your foundation.",
+  },
+  "season-2-duplication": {
+    title: "Season 2: Duplication",
+    href: "/duplication",
+    description: "Season 2 of the JDC Mastermind: duplicate what works.",
+  },
 };
 
 const STATUS_LABEL: Record<UserProgramStatus, string> = {
@@ -38,9 +49,9 @@ export default async function ProgramsPage() {
     console.error("Failed to sync availed programs", error);
   }
   const items = await listUserPrograms(user.id);
-
   const availedSlugs = new Set(items.filter((item) => item.status !== "cancelled").map((item) => item.programSlug));
-  const catalogEntries = [
+
+  const catalog = [
     ...programs.map((program) => ({
       slug: program.slug,
       title: program.title,
@@ -50,67 +61,28 @@ export default async function ProgramsPage() {
     ...Object.entries(EXTRA_PROGRAMS).map(([slug, extra]) => ({
       slug,
       title: extra.title,
-      description: "",
+      description: extra.description,
       href: extra.href,
     })),
   ];
 
-  type Entry = (typeof catalogEntries)[number];
-  const mineOf = (entry: Entry) => items.find((item) => item.programSlug === entry.slug);
-  const availedEntries = catalogEntries.filter((entry) => availedSlugs.has(entry.slug));
-  const exploreEntries = catalogEntries.filter((entry) => !availedSlugs.has(entry.slug));
+  const entries: ProgramsViewEntry[] = catalog.map((entry) => {
+    const mine = items.find((item) => item.programSlug === entry.slug);
+    const availed = availedSlugs.has(entry.slug) && Boolean(mine);
+    return {
+      ...entry,
+      availed,
+      status: mine?.status ?? "active",
+      statusLabel: mine ? STATUS_LABEL[mine.status] : "",
+      since: mine ? formatDate(mine.availedAt) : "",
+    };
+  });
 
-  const renderCard = (entry: Entry, availed: boolean) => {
-    const mine = mineOf(entry);
-    return (
-      <li key={entry.slug} className="programs-card-item">
-        <Link href={entry.href} className={`programs-card${availed ? " is-availed" : ""}`}>
-          <span className="programs-card-mark" aria-hidden>
-            {entry.title.slice(0, 1)}
-          </span>
-          <span className="programs-card-copy">
-            <span className="programs-card-title">{entry.title}</span>
-            {entry.description ? <span className="programs-card-desc">{entry.description}</span> : null}
-            {availed && mine ? (
-              <span className="programs-card-meta">
-                <span className={`programs-dot is-${mine.status}`} aria-hidden />
-                {STATUS_LABEL[mine.status]} · since {formatDate(mine.availedAt)}
-              </span>
-            ) : null}
-          </span>
-          <span className="programs-card-go" aria-hidden>
-            {availed ? "Open" : "Learn more"}
-            <ChevronRight size={16} />
-          </span>
-        </Link>
-      </li>
-    );
-  };
+  const promoteHref = hasAffiliateWorkspace(user) ? "/dashboard/partnership/campaigns" : "/programs/jdc-partnership";
 
   return (
-    <DashboardShell title="Programs" description="What you've availed, and what you can grow into next.">
-      <div className="programs-page">
-        <section aria-labelledby="programs-yours">
-          <h2 id="programs-yours" className="programs-heading">
-            Your programs
-          </h2>
-          {availedEntries.length > 0 ? (
-            <ul className="programs-grid">{availedEntries.map((entry) => renderCard(entry, true))}</ul>
-          ) : (
-            <div className="programs-empty">
-              <p>You haven&apos;t availed a program yet. Pick one below to get started.</p>
-            </div>
-          )}
-        </section>
-        {exploreEntries.length > 0 ? (
-          <section aria-labelledby="programs-explore">
-            <h2 id="programs-explore" className="programs-heading">
-              Explore more
-            </h2>
-            <ul className="programs-grid">{exploreEntries.map((entry) => renderCard(entry, false))}</ul>
-          </section>
-        ) : null}
-      </div>
+    <DashboardShell title="Programs" description="What you've availed, and what you can promote and grow into next.">
+      <ProgramsView entries={entries} promoteHref={promoteHref} />
     </DashboardShell>
   );
 }
