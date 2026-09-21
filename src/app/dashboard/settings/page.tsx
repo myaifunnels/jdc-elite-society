@@ -34,7 +34,7 @@ export default async function SettingsPage() {
           <div className="dashboard-disclosure-body">
             <ul className="grid gap-3 text-sm text-[var(--muted)]">
               <li>• Primary domain: `https://coachjdc.org`</li>
-              <li>• Mastermind offer: `https://elite.coachjdc.org` and `/elite`</li>
+              <li>• Mastermind offer: `https://elite.coachjdc.org` and `/building`</li>
               <li>• `DATABASE_URL` so saved Google Maps and R2 credentials persist across deploys</li>
               <li>• `RESEND_API_KEY` sends Mastermind buyer + team emails; AiFunnels SMS (or Twilio) sends text alerts</li>
               <li>• Optional env fallbacks: `NEXT_PUBLIC_GOOGLE_MAPS_EMBED_KEY` and R2 secrets</li>

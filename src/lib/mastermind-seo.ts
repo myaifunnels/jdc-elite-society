@@ -3,13 +3,13 @@ import type { Metadata } from "next";
 import { mastermindOffer } from "@/data/mastermind-offer";
 import { siteUrl } from "@/lib/site";
 
-const offerUrl = `${siteUrl}/elite`;
+const offerUrl = `${siteUrl}/building`;
 const ogImageUrl = `${siteUrl}${mastermindOffer.ogImage}`;
 
 export const mastermindSeo: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    absolute: mastermindOffer.title,
+    absolute: `${mastermindOffer.title} · Season 1 - Building`,
   },
   description: mastermindOffer.description,
   applicationName: "JDC Mastermind",

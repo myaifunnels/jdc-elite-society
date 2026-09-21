@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Program } from "@/lib/types";
 
 export function ProgramCard({ program, delayMs }: { program: Program; delayMs?: number }) {
-  const programHref = program.slug === "jdc-mastermind" ? "/elite" : `/programs/${program.slug}`;
+  const programHref = program.slug === "jdc-mastermind" ? "/building" : `/programs/${program.slug}`;
 
   return (
     <article
@@ -42,7 +42,7 @@ export function ProgramCard({ program, delayMs }: { program: Program; delayMs?: 
           <Link
             href={
               program.slug === "jdc-mastermind"
-                ? "/elite"
+                ? "/building"
                 : `/contact?program=${encodeURIComponent(program.title)}`
             }
             className="button-secondary pressable rounded-full px-4 py-2 font-medium"

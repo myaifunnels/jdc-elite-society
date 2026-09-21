@@ -5,7 +5,7 @@ import { siteUrl } from "@/lib/site";
 
 const offerUrl = `${siteUrl}/duplication`;
 const ogImageUrl = `${siteUrl}${mastermindOffer.ogImage}`;
-const title = "The Network Builder System: How to Build a Business That Grows Beyond You";
+const title = "JDC Mastermind Season 2 - Duplication: The Network Builder System";
 const description =
   `Join JDC Mastermind with Coach Jayson Dela Cruz — two live sessions, ${mastermindOffer.sessionDates.session1} and ${mastermindOffer.sessionDates.session2} (Foundation and Execution), plus lifetime replays and the private JDC Elite Society community.`;
 

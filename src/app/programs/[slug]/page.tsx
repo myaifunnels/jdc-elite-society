@@ -35,7 +35,7 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
   const { slug } = await params;
 
   if (slug === "jdc-mastermind") {
-    permanentRedirect("/elite");
+    permanentRedirect("/building");
   }
 
   const program = getProgram(slug);
@@ -68,7 +68,7 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
 
                 <div className="mt-8 flex flex-wrap gap-4">
                   <Link
-                    href={program.slug === "jdc-mastermind" ? "/elite" : `/contact?program=${encodeURIComponent(program.title)}`}
+                    href={program.slug === "jdc-mastermind" ? "/building" : `/contact?program=${encodeURIComponent(program.title)}`}
                     className="button-primary pressable rounded-full px-6 py-3 font-semibold"
                   >
                     {program.ctaLabel}

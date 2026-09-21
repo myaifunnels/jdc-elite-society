@@ -14,8 +14,8 @@ const quickLinks: FooterLink[] = [
     href: "/programs?program=jdc-mastermind",
     label: "JDC Mastermind",
     children: [
-      { href: "/elite", label: "Building" },
-      { href: "/duplication", label: "Duplication" },
+      { href: "/building", label: "Season 1 - Building" },
+      { href: "/duplication", label: "Season 2 - Duplication" },
     ],
   },
   {

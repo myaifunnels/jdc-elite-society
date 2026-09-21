@@ -59,7 +59,7 @@ export function ProgramsBoard({ initialSlug = ALL_TAB }: { initialSlug?: string 
             <p className="mt-3 text-[var(--muted)]">
               Open enrollment for the current Mastermind offer is on the dedicated checkout page. Use this form only if you need a question answered first.
             </p>
-            <a href="/elite" className="button-primary pressable mt-4 inline-flex rounded-full px-5 py-3 font-semibold">
+            <a href="/building" className="button-primary pressable mt-4 inline-flex rounded-full px-5 py-3 font-semibold">
               Open the JDC Mastermind offer
             </a>
           </div>

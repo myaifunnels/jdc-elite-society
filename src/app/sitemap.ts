@@ -12,7 +12,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { path: "/webinars", priority: 0.85 },
     { path: "/about", priority: 0.5 },
     { path: "/contact", priority: 0.5 },
-    { path: "/elite", priority: 0.95 },
+    { path: "/building", priority: 0.95 },
     { path: "/duplication", priority: 0.9 },
     { path: "/programs/jdc-elite-society", priority: 0.7 },
     { path: "/programs/group-coaching", priority: 0.4 },

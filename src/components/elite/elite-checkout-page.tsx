@@ -24,7 +24,7 @@ export function EliteCheckoutPage({ signedInUser }: { signedInUser: SignedInChec
     <main className="elite-offer elite-checkout-page">
       <div className="elite-checkout-glow" aria-hidden="true" />
       <div className="elite-shell elite-checkout-topbar">
-        <Link href="/elite" className="elite-back-link">
+        <Link href="/building" className="elite-back-link">
           <span aria-hidden="true">←</span> Back to JDC Mastermind
         </Link>
         <span className="elite-secure-label">
