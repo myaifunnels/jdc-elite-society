@@ -40,21 +40,38 @@ export default async function PartnershipHomePage({
       <div className="dashboard-widget-grid">
         {tab === "overview" ? (
           <>
-            <article className="dashboard-metric-card">
-              <p className="macos-kicker">Next payday</p>
-              <p className="dashboard-metric-value">{formatManilaDate(stats.payday)}</p>
-              <p className="dashboard-metric-copy">15th and 30th · Asia/Manila</p>
-            </article>
-            <article className="dashboard-metric-card">
-              <p className="macos-kicker">This cycle</p>
-              <p className="dashboard-metric-value">{formatPhp(stats.thisCycle)}</p>
-              <p className="dashboard-metric-copy">Approved, unpaid, due {formatManilaDate(stats.payday)}</p>
-            </article>
-            <article className="dashboard-metric-card">
-              <p className="macos-kicker">Paid to date</p>
-              <p className="dashboard-metric-value">{formatPhp(stats.paidToDate)}</p>
-              <p className="dashboard-metric-copy">{labels} · paid on the 15th and 30th</p>
-            </article>
+            <section className="pp-hero dashboard-span-2" aria-label="Earnings this cycle">
+              <p className="pp-eyebrow">This cycle · due {formatManilaDate(stats.payday)}</p>
+              <p className="pp-hero-value">{formatPhp(stats.thisCycle)}</p>
+              <p className="pp-hero-copy">
+                Approved and unpaid. Then {formatPhp(stats.nextCycle)} on {formatManilaDate(stats.followingPayday)}.
+              </p>
+              <div className="pp-hero-actions">
+                <Link href="/dashboard/partnership/link" className="pp-btn is-primary">
+                  Get my link
+                </Link>
+                <Link href="/dashboard/partnership/campaigns" className="pp-btn">
+                  View campaigns
+                </Link>
+              </div>
+            </section>
+
+            <div className="pp-stats dashboard-span-2">
+              <article className="pp-stat">
+                <p className="pp-stat-label">Paid to date</p>
+                <p className="pp-stat-value">{formatPhp(stats.paidToDate)}</p>
+              </article>
+              <article className="pp-stat">
+                <p className="pp-stat-label">Clicks (7 days)</p>
+                <p className="pp-stat-value">{stats.clicks7}</p>
+                <p className="pp-stat-note">{stats.clicks30} in 30 days</p>
+              </article>
+              <article className="pp-stat">
+                <p className="pp-stat-label">Your team</p>
+                <p className="pp-stat-value">{stats.downline}</p>
+                <p className="pp-stat-note">{labels}</p>
+              </article>
+            </div>
 
             <MacosWindow title="How payouts work" className="dashboard-span-2">
               <p className="macos-lead" style={{ textAlign: "left" }}>
@@ -64,9 +81,6 @@ export default async function PartnershipHomePage({
                   : "Use a separate link and QR for each campaign you are allowed to promote."}
               </p>
               <div className="macos-actions">
-                <Link href="/dashboard/partnership/link" className="macos-btn macos-btn-primary">
-                  Open my link
-                </Link>
                 <Link href="/dashboard/partnership/payouts" className="macos-btn macos-btn-secondary">
                   Payout details
                 </Link>

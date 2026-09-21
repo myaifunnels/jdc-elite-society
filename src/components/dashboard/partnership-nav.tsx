@@ -30,7 +30,7 @@ export function PartnershipNav({ isAdmin }: { isAdmin: boolean }) {
     : items;
 
   return (
-    <nav aria-label="Partnership" className="mb-5 flex flex-wrap gap-1">
+    <nav aria-label="Partnership" className="pp-nav">
       {links.map((item) => {
         const Icon = item.icon;
         const active =
@@ -41,7 +41,8 @@ export function PartnershipNav({ isAdmin }: { isAdmin: boolean }) {
           <Link
             key={item.href}
             href={item.href}
-            className={cn("dashboard-nav-item pressable !inline-flex w-auto", active && "is-active")}
+            className={cn("pp-nav-item", active && "is-active")}
+            aria-current={active ? "page" : undefined}
           >
             <Icon size={14} aria-hidden />
             {item.label}

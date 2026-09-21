@@ -7641,3 +7641,50 @@ html[data-membership="both"] .macos-btn-primary {
   .pg-promote:active, .pg-toggle:active { transform: none; }
   .pg-promote:hover svg { transform: none; }
 }
+
+/* Partnership portal — Apple-style: one clear hero number, quiet supporting stats, instant press feedback. */
+.pp-nav { display: flex; gap: 2px; margin-bottom: 1.25rem; padding: 3px; overflow-x: auto; border-radius: 999px; background: rgba(255, 255, 255, 0.06); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08); scrollbar-width: none; width: fit-content; max-width: 100%; }
+.pp-nav::-webkit-scrollbar { display: none; }
+.pp-nav-item { display: inline-flex; align-items: center; gap: 0.45rem; min-height: 2.5rem; padding: 0 1rem; border-radius: 999px; color: var(--muted); font-size: 0.86rem; font-weight: 650; text-decoration: none; white-space: nowrap; transition: background-color 160ms ease, color 160ms ease, transform 90ms ease; }
+.pp-nav-item:hover { color: var(--foreground); }
+.pp-nav-item:active { transform: scale(0.96); }
+.pp-nav-item.is-active { background: rgba(255, 255, 255, 0.14); color: #fff; box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16); }
+.pp-hero { display: grid; gap: 0.5rem; padding: 2rem 1.75rem; border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 26px; background: linear-gradient(135deg, color-mix(in srgb, var(--brand) 30%, #0b1020), color-mix(in srgb, var(--brand) 6%, #0b1020)); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14), 0 18px 44px rgba(0, 0, 0, 0.3); }
+.pp-eyebrow { margin: 0; color: rgba(255, 255, 255, 0.7); font-size: 0.82rem; font-weight: 650; letter-spacing: 0.02em; }
+.pp-hero-value { margin: 0; color: #fff; font-size: clamp(2.4rem, 6vw, 3.6rem); font-weight: 700; letter-spacing: -0.035em; line-height: 1.05; }
+.pp-hero-copy { margin: 0; color: rgba(255, 255, 255, 0.72); font-size: 0.95rem; }
+.pp-hero-actions { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 0.9rem; }
+.pp-btn { display: inline-flex; align-items: center; justify-content: center; min-height: 2.75rem; padding: 0 1.4rem; border: 1px solid rgba(255, 255, 255, 0.18); border-radius: 999px; background: rgba(255, 255, 255, 0.1); color: #fff; font-size: 0.88rem; font-weight: 650; text-decoration: none; transition: transform 200ms cubic-bezier(0.2, 0.8, 0.2, 1), background-color 160ms ease; }
+.pp-btn:hover { background: rgba(255, 255, 255, 0.18); }
+.pp-btn:active { transform: scale(0.96); transition-duration: 90ms; }
+.pp-btn.is-primary { border-color: transparent; background: var(--brand); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3), 0 6px 18px color-mix(in srgb, var(--brand) 40%, transparent); }
+.pp-btn.is-primary:hover { background: color-mix(in srgb, var(--brand) 88%, white); }
+.pp-stats { display: grid; gap: 0.9rem; grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr)); }
+.pp-stat { display: grid; gap: 0.2rem; padding: 1.15rem 1.25rem; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 20px; background: rgba(255, 255, 255, 0.04); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08); }
+.pp-stat-label { margin: 0; color: var(--muted); font-size: 0.78rem; font-weight: 650; }
+.pp-stat-value { margin: 0; font-size: 1.6rem; font-weight: 700; letter-spacing: -0.025em; }
+.pp-stat-note { margin: 0; color: var(--muted); font-size: 0.78rem; }
+.pp-campaigns { display: grid; gap: 1rem; margin: 0; padding: 0; list-style: none; }
+.pp-campaign { display: grid; grid-template-columns: 120px 1fr auto; align-items: center; gap: 1.25rem; overflow: hidden; padding-right: 1.25rem; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 22px; background: rgba(255, 255, 255, 0.04); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 10px 30px rgba(0, 0, 0, 0.18); }
+.pp-campaign-media { display: grid; align-self: stretch; min-height: 120px; place-items: center; background: linear-gradient(135deg, color-mix(in srgb, var(--brand) 32%, #0b1020), color-mix(in srgb, var(--brand) 8%, #0b1020)); color: rgba(255, 255, 255, 0.55); font-size: 2rem; font-weight: 700; }
+.pp-campaign-body { display: grid; gap: 0.5rem; padding: 1.1rem 0; min-width: 0; }
+.pp-campaign-title { margin: 0; font-size: 1.05rem; font-weight: 650; letter-spacing: -0.015em; }
+.pp-campaign-desc { margin: 0; color: var(--muted); font-size: 0.88rem; line-height: 1.5; }
+.pp-chips { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0; }
+.pp-chip { padding: 0.25rem 0.65rem; border-radius: 999px; background: color-mix(in srgb, var(--brand) 16%, transparent); color: var(--foreground); font-size: 0.76rem; font-weight: 650; }
+.pp-campaign-stats { display: flex; gap: 1.75rem; margin: 0.25rem 0 0; }
+.pp-campaign-stats dt { color: var(--muted); font-size: 0.74rem; font-weight: 650; }
+.pp-campaign-stats dd { margin: 0; font-size: 1.05rem; font-weight: 700; }
+.pp-empty { padding: 1.4rem; border: 1px dashed rgba(255, 255, 255, 0.16); border-radius: 22px; color: var(--muted); }
+.pp-empty p { margin: 0; }
+@media (max-width: 720px) {
+  .pp-campaign { grid-template-columns: 1fr; padding: 0 0 1.25rem; }
+  .pp-campaign-media { min-height: 96px; }
+  .pp-campaign-body { padding: 0 1.25rem; }
+  .pp-campaign-cta { margin: 0 1.25rem; }
+  .pp-hero { padding: 1.5rem 1.25rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pp-nav-item, .pp-btn { transition: background-color 120ms ease; }
+  .pp-nav-item:active, .pp-btn:active { transform: none; }
+}
