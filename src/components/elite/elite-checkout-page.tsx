@@ -1,5 +1,9 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
 
+import { EliteCheckoutEmbed } from "@/components/elite/elite-checkout-embed";
 import { EliteCheckoutForm, IncludeList, PaymentInstructions } from "@/components/elite/elite-checkout-form";
 import { formatPhp, mastermindOffer } from "@/data/mastermind-offer";
 
@@ -20,6 +24,8 @@ export type SignedInCheckoutUser = {
 };
 
 export function EliteCheckoutPage({ signedInUser }: { signedInUser: SignedInCheckoutUser | null }) {
+  const [mode, setMode] = useState<"standard" | "quick">("standard");
+
   return (
     <main className="elite-offer elite-checkout-page">
       <div className="elite-checkout-glow" aria-hidden="true" />
@@ -69,7 +75,34 @@ export function EliteCheckoutPage({ signedInUser }: { signedInUser: SignedInChec
               </div>
             </aside>
 
-            <EliteCheckoutForm signedInUser={signedInUser} />
+            <div className="elite-checkout-form-wrap">
+              <div className="elite-checkout-mode-toggle" role="tablist" aria-label="Checkout method">
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={mode === "standard"}
+                  className={mode === "standard" ? "is-active" : ""}
+                  onClick={() => setMode("standard")}
+                >
+                  Standard checkout
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={mode === "quick"}
+                  className={mode === "quick" ? "is-active" : ""}
+                  onClick={() => setMode("quick")}
+                >
+                  Quick checkout
+                </button>
+              </div>
+
+              {mode === "standard" ? (
+                <EliteCheckoutForm signedInUser={signedInUser} />
+              ) : (
+                <EliteCheckoutEmbed />
+              )}
+            </div>
           </div>
 
           <p className="elite-checkout-help">
