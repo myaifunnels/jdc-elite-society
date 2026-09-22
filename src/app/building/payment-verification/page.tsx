@@ -16,11 +16,11 @@ export default function BuildingPaymentVerificationPage() {
       <div className="elite-thanks">
         <div className="elite-thanks-check" aria-hidden="true">✓</div>
         <p className="elite-kicker">PAYMENT RECEIVED</p>
-        <h1 className="elite-display">We&apos;re verifying your payment.</h1>
+        <h1 className="elite-display">I&apos;m verifying your payment.</h1>
 
         <p className="elite-thanks-lead">
-          Salamat. Natanggap na namin ang iyong payment submission. Ang aming team ay magve-verify nito —
-          makakatanggap ka ng email na may link para i-set up ang iyong password kapag na-approve na ang iyong seat.
+          Salamat. Natanggap ko na ang iyong payment submission. Ve-verify ko ito, at makakatanggap ka ng email na
+          may link para i-set up ang iyong password kapag na-approve ko na ang iyong seat.
         </p>
 
         <div className="elite-verification-status" aria-label="Payment verification progress">
@@ -30,7 +30,7 @@ export default function BuildingPaymentVerificationPage() {
           </div>
           <div className="is-current">
             <span>2</span>
-            <div><strong>Payment verification</strong><small>In review by our team</small></div>
+            <div><strong>Payment verification</strong><small>I'm reviewing it now</small></div>
           </div>
           <div>
             <span>3</span>
@@ -47,7 +47,7 @@ export default function BuildingPaymentVerificationPage() {
             </li>
             <li>
               <span className="elite-dot">✓</span>
-              Access links para sa JDC Mastermind Sessions (Foundation &amp; Execution — recorded, watch anytime)
+              Access links para sa JDC Mastermind Sessions (Foundation and Execution, recorded, watch anytime)
             </li>
             <li>
               <span className="elite-dot">✓</span>
@@ -69,10 +69,10 @@ export default function BuildingPaymentVerificationPage() {
           {mastermindOffer.support.email} or call {mastermindOffer.support.phone}.
         </p>
         <p style={{ marginTop: "1.5rem" }}>
-          I-join ang aming community:{" "}
+          I-join ang JDC Elite Society community:{" "}
           <a href={mastermindOffer.communityUrl}>{mastermindOffer.communityUrl.replace("https://", "")}</a>
         </p>
-        <p>Coach JDC and the JDC Elite Society Team</p>
+        <p>Coach JDC</p>
       </div>
     </main>
   );
