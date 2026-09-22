@@ -6,6 +6,7 @@ const nextConfig: NextConfig = {
       { source: "/breakthrough", destination: "/duplication", permanent: true },
       { source: "/elite", destination: "/building", permanent: true },
       { source: "/elite/checkout", destination: "/building/checkout", permanent: true },
+      { source: "/elite/thank-you", destination: "/building/thank-you", permanent: true },
       { source: "/duplication/thank-you", destination: "/duplication/payment-verification", permanent: true },
     ];
   },

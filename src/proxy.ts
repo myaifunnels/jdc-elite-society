@@ -16,7 +16,7 @@ export function proxy(request: NextRequest) {
 
   if (pathname === "/thank-you") {
     const url = request.nextUrl.clone();
-    url.pathname = "/elite/thank-you";
+    url.pathname = "/building/thank-you";
     return NextResponse.rewrite(url);
   }
 
