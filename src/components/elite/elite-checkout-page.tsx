@@ -1,10 +1,7 @@
-"use client";
-
-import { useState } from "react";
 import Link from "next/link";
 
 import { EliteCheckoutEmbed } from "@/components/elite/elite-checkout-embed";
-import { EliteCheckoutForm, IncludeList, PaymentInstructions } from "@/components/elite/elite-checkout-form";
+import { IncludeList } from "@/components/elite/elite-checkout-form";
 import { formatPhp, mastermindOffer } from "@/data/mastermind-offer";
 
 function LockIcon() {
@@ -16,6 +13,17 @@ function LockIcon() {
   );
 }
 
+function ShieldIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M12 3.5 5 6v5.3c0 4.5 3 7.9 7 9.2 4-1.3 7-4.7 7-9.2V6l-7-2.5Z" />
+      <path d="m9 12 2 2 4-4.2" />
+    </svg>
+  );
+}
+
+// Kept for elite-checkout-form.tsx, which stays in the repo unused (but functional) as a
+// fallback if the GHL-embedded checkout ever needs to be swapped back out.
 export type SignedInCheckoutUser = {
   name: string;
   email: string;
@@ -23,9 +31,32 @@ export type SignedInCheckoutUser = {
   phoneCountry: string;
 };
 
-export function EliteCheckoutPage({ signedInUser }: { signedInUser: SignedInCheckoutUser | null }) {
-  const [mode, setMode] = useState<"standard" | "quick">("standard");
+function CheckoutSteps() {
+  const steps = [
+    { n: "1", title: "FILL OUT THE FORM", body: "Enter your name, email, and payment details in the secure form." },
+    { n: "2", title: "PAYMENT IS PROCESSED", body: "Your card or GCash payment is processed instantly and securely." },
+    {
+      n: "3",
+      title: "GET INSTANT ACCESS",
+      body: "Check your inbox for a JDC Mastermind account link so you can sign in at coachjdc.org.",
+    },
+  ];
+  return (
+    <div>
+      {steps.map((step) => (
+        <div className="elite-pay-row" key={step.n}>
+          <span className="elite-step">{step.n}</span>
+          <div>
+            <h4>{step.title}</h4>
+            <p>{step.body}</p>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
 
+export function EliteCheckoutPage() {
   return (
     <main className="elite-offer elite-checkout-page">
       <div className="elite-checkout-glow" aria-hidden="true" />
@@ -43,7 +74,7 @@ export function EliteCheckoutPage({ signedInUser }: { signedInUser: SignedInChec
           <p className="elite-kicker elite-center">COMPLETE YOUR ENROLLMENT</p>
           <h1 className="elite-display">One final step toward a higher standard.</h1>
           <p className="elite-sub elite-center">
-            Send your payment, upload the receipt, and we will verify it as soon as possible.
+            Complete the secure form below and get instant access to JDC Mastermind Season 1.
           </p>
 
           <div className="elite-checkout-layout">
@@ -70,38 +101,20 @@ export function EliteCheckoutPage({ signedInUser }: { signedInUser: SignedInChec
               </div>
 
               <div className="elite-glass elite-payment-card">
-                <p className="elite-kicker">HOW PAYMENT WORKS</p>
-                <PaymentInstructions />
+                <p className="elite-kicker">HOW IT WORKS</p>
+                <CheckoutSteps />
               </div>
             </aside>
 
             <div className="elite-checkout-form-wrap">
-              <div className="elite-checkout-mode-toggle" role="tablist" aria-label="Checkout method">
-                <button
-                  type="button"
-                  role="tab"
-                  aria-selected={mode === "standard"}
-                  className={mode === "standard" ? "is-active" : ""}
-                  onClick={() => setMode("standard")}
-                >
-                  Standard checkout
-                </button>
-                <button
-                  type="button"
-                  role="tab"
-                  aria-selected={mode === "quick"}
-                  className={mode === "quick" ? "is-active" : ""}
-                  onClick={() => setMode("quick")}
-                >
-                  Quick checkout
-                </button>
+              <div className="elite-checkout-form-head">
+                <p className="elite-kicker">SECURE ENROLLMENT FORM</p>
+                <h2>Enter your details to lock in your seat.</h2>
+                <span className="elite-checkout-form-secure">
+                  <ShieldIcon /> Encrypted &amp; PCI-compliant checkout
+                </span>
               </div>
-
-              {mode === "standard" ? (
-                <EliteCheckoutForm signedInUser={signedInUser} />
-              ) : (
-                <EliteCheckoutEmbed />
-              )}
+              <EliteCheckoutEmbed />
             </div>
           </div>
 
