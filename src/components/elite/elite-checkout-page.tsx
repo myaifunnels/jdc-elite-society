@@ -56,7 +56,17 @@ function CheckoutSteps() {
   );
 }
 
-export function EliteCheckoutPage() {
+const duplicationOfferSummary = [
+  "JDC Portal Access",
+  "JDC Mastermind Season 2: Duplication",
+  "Session 1: October 2",
+  "Session 2: October 9",
+  "Lifetime Session Replays",
+];
+
+export function EliteCheckoutPage({ src }: { src?: string }) {
+  const isDuplication = src === "duplication";
+
   return (
     <main className="elite-offer elite-checkout-page">
       <div className="elite-checkout-glow" aria-hidden="true" />
@@ -74,7 +84,8 @@ export function EliteCheckoutPage() {
           <p className="elite-kicker elite-center">COMPLETE YOUR ENROLLMENT</p>
           <h1 className="elite-display">One final step toward a higher standard.</h1>
           <p className="elite-sub elite-center">
-            Complete the secure form below and get instant access to JDC Mastermind Season 1.
+            Complete the secure form below and get instant access to{" "}
+            {isDuplication ? "JDC Mastermind Season 2 — Duplication" : "JDC Mastermind Season 1"}.
           </p>
 
           <div className="elite-checkout-layout">
@@ -83,12 +94,12 @@ export function EliteCheckoutPage() {
                 <p className="elite-kicker">YOUR ORDER</p>
                 <div className="elite-order-heading">
                   <div>
-                    <strong>JDC Mastermind</strong>
-                    <span>Lifetime access</span>
+                    <strong>{isDuplication ? "JDC Mastermind Season 2 — Duplication" : "JDC Mastermind"}</strong>
+                    <span>{isDuplication ? "Course access" : "Lifetime access"}</span>
                   </div>
                   <strong>{formatPhp(mastermindOffer.offerPrice)}</strong>
                 </div>
-                <IncludeList items={mastermindOffer.offerSummary} />
+                <IncludeList items={isDuplication ? duplicationOfferSummary : mastermindOffer.offerSummary} />
                 <div className="elite-order-total">
                   <span>Total value</span>
                   <s>{formatPhp(mastermindOffer.listPrice)}</s>
@@ -114,7 +125,7 @@ export function EliteCheckoutPage() {
                   <ShieldIcon /> Encrypted &amp; PCI-compliant checkout
                 </span>
               </div>
-              <EliteCheckoutEmbed />
+              <EliteCheckoutEmbed variant={isDuplication ? "duplication" : "building"} />
             </div>
           </div>
 

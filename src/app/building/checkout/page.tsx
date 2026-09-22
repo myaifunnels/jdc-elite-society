@@ -10,6 +10,11 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export default function CheckoutPage() {
-  return <EliteCheckoutPage />;
+export default async function CheckoutPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ src?: string }>;
+}) {
+  const { src } = await searchParams;
+  return <EliteCheckoutPage src={src} />;
 }

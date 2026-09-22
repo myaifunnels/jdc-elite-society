@@ -3,7 +3,10 @@
 import { useState } from "react";
 import Script from "next/script";
 
-const formId = "22fC57U5wPPBVd3tt22a";
+const forms = {
+  building: { formId: "22fC57U5wPPBVd3tt22a", height: 911, name: "S1 Building Checkout Form" },
+  duplication: { formId: "Y1d3jeoR1spHiZQ6Phkb", height: 1110, name: "S2 Duplication Checkout Form" },
+} as const;
 
 function LockIcon() {
   return (
@@ -14,8 +17,9 @@ function LockIcon() {
   );
 }
 
-export function EliteCheckoutEmbed() {
+export function EliteCheckoutEmbed({ variant = "building" }: { variant?: keyof typeof forms }) {
   const [loaded, setLoaded] = useState(false);
+  const { formId, height, name } = forms[variant];
 
   return (
     <div className="elite-checkout-embed">
@@ -27,8 +31,9 @@ export function EliteCheckoutEmbed() {
           </div>
         ) : null}
         <iframe
+          key={formId}
           src={`https://api.myaifunnels.com/widget/form/${formId}`}
-          style={{ width: "100%", height: 911, minHeight: 911, border: "none", colorScheme: "light" }}
+          style={{ width: "100%", height, minHeight: height, border: "none", colorScheme: "light" }}
           id={`inline-${formId}`}
           data-layout="{'id':'INLINE'}"
           data-trigger-type="alwaysShow"
@@ -37,13 +42,13 @@ export function EliteCheckoutEmbed() {
           data-activation-value=""
           data-deactivation-type="neverDeactivate"
           data-deactivation-value=""
-          data-form-name="S1 Building Checkout Form"
-          data-height="911"
+          data-form-name={name}
+          data-height={height}
           data-layout-iframe-id={`inline-${formId}`}
           data-form-id={formId}
           data-cookie-consent="true"
           data-cookie-consent-provider="auto"
-          title="S1 Building Checkout Form"
+          title={name}
           onLoad={() => setLoaded(true)}
         />
       </div>

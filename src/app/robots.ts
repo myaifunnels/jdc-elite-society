@@ -11,6 +11,7 @@ export default function robots(): MetadataRoute.Robots {
         "/dashboard",
         "/api",
         "/account",
+        "/building/checkout",
         "/elite/checkout",
         "/elite/thank-you",
         "/elite/coaching-offer",

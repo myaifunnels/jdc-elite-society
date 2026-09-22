@@ -147,7 +147,7 @@ export function mastermindBatch2JsonLd() {
         })),
         offers: {
           "@type": "Offer",
-          url: `${siteUrl}/elite/checkout?src=duplication`,
+          url: `${siteUrl}/building/checkout?src=duplication`,
           price: String(mastermindOffer.offerPrice),
           priceCurrency: "PHP",
           availability: "https://schema.org/InStock",

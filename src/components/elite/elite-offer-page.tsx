@@ -18,7 +18,7 @@ function ArrowIcon() {
 }
 
 function EliteCtaLink({
-  href = "/elite/checkout",
+  href = "/building/checkout",
   title,
   subtext,
   className = "",
