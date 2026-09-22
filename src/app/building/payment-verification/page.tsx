@@ -47,7 +47,7 @@ export default function BuildingPaymentVerificationPage() {
             </li>
             <li>
               <span className="elite-dot">✓</span>
-              Access links para sa JDC Mastermind Sessions ({mastermindOffer.sessionDates.combined})
+              Access links para sa JDC Mastermind Sessions (Foundation &amp; Execution — recorded, watch anytime)
             </li>
             <li>
               <span className="elite-dot">✓</span>
