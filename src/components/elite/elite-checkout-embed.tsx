@@ -6,6 +6,7 @@ import Script from "next/script";
 const forms = {
   building: { formId: "22fC57U5wPPBVd3tt22a", height: 911, name: "S1 Building Checkout Form" },
   duplication: { formId: "Y1d3jeoR1spHiZQ6Phkb", height: 1110, name: "S2 Duplication Checkout Form" },
+  "elite-society": { formId: "ohApYj9qLzpCxnG4tgYZ", height: 841, name: "JDC Elite Society Checkout Form" },
 } as const;
 
 function LockIcon() {

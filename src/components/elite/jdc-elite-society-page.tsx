@@ -10,7 +10,7 @@ import { IncludeList } from "@/components/elite/elite-checkout-form";
 import { EliteTestimonialsCarousel } from "@/components/elite/elite-testimonials-carousel";
 import { formatPhp, mastermindOffer } from "@/data/mastermind-offer";
 
-const CHECKOUT_HREF = "/building/checkout?src=elite-society";
+const OFFER_ANCHOR_HREF = "#offer";
 
 function ArrowIcon() {
   return (
@@ -30,7 +30,10 @@ function EliteSocietyCtaLink({
   className?: string;
 }) {
   return (
-    <Link href={CHECKOUT_HREF} className={`elite-cta elite-cta-rich ${className}`.trim()}>
+    <Link href={OFFER_ANCHOR_HREF} scroll={false} onClick={(event) => {
+      event.preventDefault();
+      document.getElementById("offer")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }} className={`elite-cta elite-cta-rich ${className}`.trim()}>
       <span className="elite-cta-copy">
         <strong>{title}</strong>
         <small>{subtext}</small>
@@ -217,7 +220,7 @@ export function JdcEliteSocietyPage() {
               <h3 style={{ margin: "0.6rem 0 1.2rem", fontSize: "1.3rem" }}>
                 Fill out the secure form and get instant access.
               </h3>
-              <EliteCheckoutEmbed variant="building" />
+              <EliteCheckoutEmbed variant="elite-society" />
             </div>
           </div>
         </div>
