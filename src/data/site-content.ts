@@ -12,8 +12,8 @@ export const navItems: NavItem[] = [
         href: "/programs?program=jdc-mastermind",
         label: "JDC Mastermind",
         children: [
-          { href: "/building", label: "Season 1 - Building" },
-          { href: "/duplication", label: "Season 2 - Duplication" },
+          { href: "/building", label: "Building Season" },
+          { href: "/duplication", label: "Duplication Season" },
         ],
       },
       {
