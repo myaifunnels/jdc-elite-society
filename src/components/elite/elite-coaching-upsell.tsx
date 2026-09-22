@@ -36,7 +36,7 @@ export function EliteCoachingUpsell({ firstName }: { firstName: string }) {
 
   function thankYouPath() {
     const fromDuplication = new URLSearchParams(window.location.search).get("src") === "duplication";
-    return fromDuplication ? "/duplication/payment-verification" : "/building/thank-you";
+    return fromDuplication ? "/duplication/payment-verification" : "/building/payment-verification";
   }
 
   function skip() {
