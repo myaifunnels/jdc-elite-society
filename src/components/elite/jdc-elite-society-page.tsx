@@ -11,6 +11,7 @@ import { EliteTestimonialsCarousel } from "@/components/elite/elite-testimonials
 import { formatPhp, mastermindOffer } from "@/data/mastermind-offer";
 
 const OFFER_ANCHOR_HREF = "#offer";
+const ELITE_SOCIETY_PRICE = 5000;
 
 function ArrowIcon() {
   return (
@@ -206,7 +207,7 @@ export function JdcEliteSocietyPage() {
               </div>
               <div style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem 1rem", justifyContent: "space-between", alignItems: "end" }}>
                 <span>Today, just</span>
-                <span className="elite-price">{formatPhp(mastermindOffer.offerPrice)}</span>
+                <span className="elite-price">{formatPhp(ELITE_SOCIETY_PRICE)}</span>
               </div>
               <EliteSocietyCtaLink
                 title="Join JDC Elite Society"
