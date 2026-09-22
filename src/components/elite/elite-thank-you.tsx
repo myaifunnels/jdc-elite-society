@@ -19,9 +19,10 @@ function SoundIcon({ muted }: { muted: boolean }) {
   );
 }
 
-export function EliteThankYou() {
+export function EliteThankYou({ offer = "building" }: { offer?: "building" | "duplication" }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [muted, setMuted] = useState(true);
+  const isDuplication = offer === "duplication";
 
   function toggleSound() {
     const video = videoRef.current;
@@ -36,7 +37,11 @@ export function EliteThankYou() {
       <div className="elite-thanks">
         <div className="elite-thanks-check" aria-hidden="true">✓</div>
         <p className="elite-kicker">YOU&apos;RE IN</p>
-        <h1 className="elite-display">Your JDC Mastermind access is unlocked.</h1>
+        <h1 className="elite-display">
+          {isDuplication
+            ? "Your JDC Mastermind Season 2 — Duplication access is unlocked."
+            : "Your JDC Mastermind access is unlocked."}
+        </h1>
 
         <div className="elite-thanks-video">
           <video ref={videoRef} autoPlay muted loop playsInline preload="auto">
@@ -85,16 +90,23 @@ export function EliteThankYou() {
           <ul className="elite-list">
             <li>
               <span className="elite-dot">✓</span>
-              Confirmation na approved ang iyong membership
+              Confirmation na approved ang iyong {isDuplication ? "enrollment" : "membership"}
             </li>
             <li>
               <span className="elite-dot">✓</span>
-              Access links para sa JDC Mastermind Sessions
+              Access links para sa JDC Mastermind Sessions ({mastermindOffer.sessionDates.combined})
             </li>
-            <li>
-              <span className="elite-dot">✓</span>
-              Invitation sa JDC Elite Society Portal (community.coachjdc.org)
-            </li>
+            {isDuplication ? (
+              <li>
+                <span className="elite-dot">✓</span>
+                Access sa JDC Portal (coachjdc.org)
+              </li>
+            ) : (
+              <li>
+                <span className="elite-dot">✓</span>
+                Invitation sa JDC Elite Society Portal (community.coachjdc.org)
+              </li>
+            )}
           </ul>
         </div>
 
@@ -103,10 +115,12 @@ export function EliteThankYou() {
           the background. If you need help, email {mastermindOffer.support.email} or call{" "}
           {mastermindOffer.support.phone}.
         </p>
-        <p style={{ marginTop: "1.5rem" }}>
-          I-join ang aming community:{" "}
-          <a href={mastermindOffer.communityUrl}>{mastermindOffer.communityUrl.replace("https://", "")}</a>
-        </p>
+        {isDuplication ? null : (
+          <p style={{ marginTop: "1.5rem" }}>
+            I-join ang aming community:{" "}
+            <a href={mastermindOffer.communityUrl}>{mastermindOffer.communityUrl.replace("https://", "")}</a>
+          </p>
+        )}
         <p className="elite-display elite-thanks-signoff">Your next chapter is already in motion.</p>
         <p>Coach JDC and the JDC Elite Society Team</p>
       </div>
