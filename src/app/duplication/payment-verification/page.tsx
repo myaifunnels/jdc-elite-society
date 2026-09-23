@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 
 import { mastermindOffer } from "@/data/mastermind-offer";
 
@@ -19,8 +18,8 @@ export default function DuplicationPaymentVerificationPage() {
         <h1 className="elite-display">We&apos;re verifying your payment.</h1>
 
         <p className="elite-thanks-lead">
-          Salamat. Natanggap na namin ang iyong resibo. Ang aming team ay magve-verify nito — makakatanggap ka ng
-          email kapag na-approve na ang iyong seat.
+          Salamat. Natanggap ko na ang iyong resibo. I-verify ko ito, makakatanggap ka ng email kapag na-approve
+          na ang iyong seat.
         </p>
 
         <div className="elite-verification-status" aria-label="Payment verification progress">
@@ -43,36 +42,25 @@ export default function DuplicationPaymentVerificationPage() {
           <ul className="elite-list">
             <li>
               <span className="elite-dot">✓</span>
-              Confirmation na approved ang iyong membership
+              Confirmation na approved ang iyong enrollment
             </li>
             <li>
               <span className="elite-dot">✓</span>
-              Access links para sa JDC Mastermind Sessions
+              Access links para sa JDC Mastermind Sessions (October 2 at October 9)
             </li>
             <li>
               <span className="elite-dot">✓</span>
-              Invitation sa JDC Elite Society Portal (community.coachjdc.org)
+              Access sa JDC Portal (coachjdc.org)
             </li>
           </ul>
         </div>
 
-        <Link href="/account/password" className="elite-cta elite-cta-lg elite-thanks-dashboard-link">
-          <span>
-            <strong>SET UP YOUR ACCOUNT</strong>
-            <small>Add your photo and set your password while you wait</small>
-          </span>
-          <span aria-hidden="true">→</span>
-        </Link>
-
         <p>
-          Please watch your inbox, including the spam and promotions folders. If you need help, email{" "}
-          {mastermindOffer.support.email} or call {mastermindOffer.support.phone}.
+          No further action is needed from you right now. Please watch your inbox, including the spam and
+          promotions folders. If you need help, email {mastermindOffer.support.email} or call{" "}
+          {mastermindOffer.support.phone}.
         </p>
-        <p style={{ marginTop: "1.5rem" }}>
-          I-join ang aming community:{" "}
-          <a href={mastermindOffer.communityUrl}>{mastermindOffer.communityUrl.replace("https://", "")}</a>
-        </p>
-        <p>Coach JDC and the JDC Elite Society Team</p>
+        <p>Coach JDC</p>
       </div>
     </main>
   );
