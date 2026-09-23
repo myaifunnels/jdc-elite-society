@@ -14,6 +14,7 @@ import {
   SmsFromNumberForm,
 } from "@/components/dashboard/sms-automation-forms";
 import { SmsTemplateCard } from "@/components/dashboard/sms-template-card";
+import { TemplateViewToggle } from "@/components/dashboard/template-view-toggle";
 import { EMAIL_TEMPLATE_GROUPS } from "@/lib/email-templates";
 import { listEmailTemplates } from "@/lib/email-templates-store";
 import { getResolvedIntegrationSettings } from "@/lib/integrations-store";
@@ -68,28 +69,30 @@ export default async function AutomationPage({
             <SendTestSmsForm templates={smsTemplates.map((item) => ({ id: item.id, label: item.label, body: item.body }))} />
           </MacosWindow>
 
-          {SMS_TEMPLATE_GROUPS.map((group) => (
-            <div key={group.id} className="dashboard-span-2 sms-template-group">
-              <h2 className="sms-template-group-title">{group.label}</h2>
-              <div className="template-list">
-                {group.keys.map((key) => {
-                  const template = smsByKey.get(key);
-                  return template ? <SmsTemplateCard key={template.id} template={template} /> : null;
-                })}
+          <TemplateViewToggle>
+            {SMS_TEMPLATE_GROUPS.map((group) => (
+              <div key={group.id} className="sms-template-group">
+                <h2 className="sms-template-group-title">{group.label}</h2>
+                <div className="template-list">
+                  {group.keys.map((key) => {
+                    const template = smsByKey.get(key);
+                    return template ? <SmsTemplateCard key={template.id} template={template} /> : null;
+                  })}
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
 
-          {smsCustom.length ? (
-            <div className="dashboard-span-2 sms-template-group">
-              <h2 className="sms-template-group-title">Custom</h2>
-              <div className="template-list">
-                {smsCustom.map((template) => (
-                  <SmsTemplateCard key={template.id} template={template} />
-                ))}
+            {smsCustom.length ? (
+              <div className="sms-template-group">
+                <h2 className="sms-template-group-title">Custom</h2>
+                <div className="template-list">
+                  {smsCustom.map((template) => (
+                    <SmsTemplateCard key={template.id} template={template} />
+                  ))}
+                </div>
               </div>
-            </div>
-          ) : null}
+            ) : null}
+          </TemplateViewToggle>
 
           <MacosWindow title="Add a custom template" className="dashboard-span-2">
             <p className="macos-lead" style={{ textAlign: "left" }}>
@@ -115,28 +118,30 @@ export default async function AutomationPage({
             />
           </MacosWindow>
 
-          {EMAIL_TEMPLATE_GROUPS.map((group) => (
-            <div key={group.id} className="dashboard-span-2 sms-template-group">
-              <h2 className="sms-template-group-title">{group.label}</h2>
-              <div className="template-list">
-                {group.keys.map((key) => {
-                  const template = emailByKey.get(key);
-                  return template ? <EmailTemplateCard key={template.id} template={template} /> : null;
-                })}
+          <TemplateViewToggle>
+            {EMAIL_TEMPLATE_GROUPS.map((group) => (
+              <div key={group.id} className="sms-template-group">
+                <h2 className="sms-template-group-title">{group.label}</h2>
+                <div className="template-list">
+                  {group.keys.map((key) => {
+                    const template = emailByKey.get(key);
+                    return template ? <EmailTemplateCard key={template.id} template={template} /> : null;
+                  })}
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
 
-          {emailCustom.length ? (
-            <div className="dashboard-span-2 sms-template-group">
-              <h2 className="sms-template-group-title">Custom</h2>
-              <div className="template-list">
-                {emailCustom.map((template) => (
-                  <EmailTemplateCard key={template.id} template={template} />
-                ))}
+            {emailCustom.length ? (
+              <div className="sms-template-group">
+                <h2 className="sms-template-group-title">Custom</h2>
+                <div className="template-list">
+                  {emailCustom.map((template) => (
+                    <EmailTemplateCard key={template.id} template={template} />
+                  ))}
+                </div>
               </div>
-            </div>
-          ) : null}
+            ) : null}
+          </TemplateViewToggle>
 
           <MacosWindow title="Add a custom template" className="dashboard-span-2">
             <p className="macos-lead" style={{ textAlign: "left" }}>

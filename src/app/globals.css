@@ -3596,6 +3596,21 @@ a,
   gap: 0.6rem;
 }
 
+.template-view-toggle-wrap {
+  display: grid;
+  gap: 1rem;
+}
+
+.template-view-body {
+  display: grid;
+  gap: 1.4rem;
+}
+
+[data-view="grid"] .template-list {
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  align-items: start;
+}
+
 .template-row {
   overflow: hidden;
   border: 1px solid color-mix(in srgb, var(--chrome-bright) 16%, transparent);

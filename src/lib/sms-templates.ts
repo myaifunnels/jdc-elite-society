@@ -25,6 +25,7 @@ export type SmsTemplateKey =
   | "duplication_followup_24h"
   | "duplication_followup_3h"
   | "duplication_followup_1h"
+  | "duplication_payment_verification"
   | "duplication_payment_confirmed"
   | "duplication_payment_rejected";
 
@@ -89,6 +90,7 @@ export const SMS_TEMPLATE_GROUPS: Array<{ id: string; label: string; keys: SmsTe
       "duplication_followup_24h",
       "duplication_followup_3h",
       "duplication_followup_1h",
+      "duplication_payment_verification",
       "duplication_payment_confirmed",
       "duplication_payment_rejected",
     ],
@@ -315,6 +317,15 @@ export const SMS_TEMPLATE_DEFINITIONS: SmsTemplateDefinition[] = [
     vars: ["name", "sessionLabel", "timeLabel"],
     defaultBody:
       "Hi {{name}},\n\n{{sessionLabel}} of JDC Mastermind Season 2, Duplication starts in 1 hour, at {{timeLabel}} (Manila time).\n\nCheck your email or your dashboard for the session link. See you there!\n\nBest Regards,\n-Team JDC Elite Society",
+  },
+  {
+    key: "duplication_payment_verification",
+    label: "Duplication — payment received, verifying",
+    description:
+      "Sent the moment a JDC Mastermind Season 2, Duplication checkout is submitted, before an admin has verified the receipt.",
+    vars: ["name"],
+    defaultBody:
+      "Hi {{name}},\n\nGot your payment for JDC Mastermind Season 2, Duplication. I'm verifying it now, no action needed from you.\n\nYou'll get an email once your seat is confirmed.\n\nBest Regards,\n-Team JDC Elite Society",
   },
   {
     key: "duplication_payment_confirmed",
