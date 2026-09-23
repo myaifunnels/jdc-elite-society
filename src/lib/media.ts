@@ -45,7 +45,14 @@ export function mediaSrc(value?: string | null) {
   }
   const key = extractR2ObjectKey(trimmed);
   if (key) {
-    return `/api/media?key=${encodeURIComponent(key)}`;
+    const params = new URLSearchParams({ key });
+    // If the original value was itself a fetchable URL (e.g. a receipt uploaded to a
+    // different R2 account than the one configured in Integrations), keep it as a
+    // fallback so the proxy can redirect there instead of dead-ending on a 404.
+    if (/^https?:\/\//i.test(trimmed)) {
+      params.set("fallback", trimmed);
+    }
+    return `/api/media?${params.toString()}`;
   }
   return trimmed;
 }
@@ -53,10 +60,6 @@ export function mediaSrc(value?: string | null) {
 export function isDisplayableImageSrc(value?: string | null) {
   const trimmed = String(value ?? "").trim();
   if (!trimmed) {
-    return false;
-  }
-  const key = extractR2ObjectKey(trimmed);
-  if (key?.startsWith("receipts/")) {
     return false;
   }
   const src = mediaSrc(trimmed);
@@ -69,5 +72,6 @@ export function isDisplayableImageSrc(value?: string | null) {
   if (src.startsWith("data:image") || src.startsWith("blob:")) {
     return true;
   }
-  return !/\.pdf(?:$|\?|%3F)/i.test(src);
+  // Receipts and other uploads can be PDFs; everything else we store is an image.
+  return !/\.pdf(?:$|\?|%3F)/i.test(trimmed);
 }

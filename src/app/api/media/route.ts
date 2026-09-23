@@ -35,13 +35,25 @@ export async function GET(request: Request) {
     }
   }
 
+  const fallbackParam = new URL(request.url).searchParams.get("fallback");
+  const fallback = fallbackParam && /^https?:\/\//i.test(fallbackParam) ? fallbackParam : null;
+
   const settings = await getResolvedIntegrationSettings();
   if (!isR2Ready(settings)) {
+    if (fallback) {
+      return NextResponse.redirect(fallback);
+    }
     return NextResponse.json({ error: "Cloudflare R2 is not connected." }, { status: 503 });
   }
 
   const file = await getR2Object(settings, key);
   if (!file.ok) {
+    // The object isn't in our configured R2 bucket (e.g. it was uploaded to a different
+    // R2 account, like a direct GHL upload). Fall back to the original URL rather than
+    // leaving the admin with a dead link.
+    if (fallback) {
+      return NextResponse.redirect(fallback);
+    }
     return NextResponse.json({ error: "File not found." }, { status: file.status === 403 ? 403 : 404 });
   }
 

@@ -6709,6 +6709,22 @@ html[data-membership="both"] .macos-btn-primary {
   margin-top: 0.5rem;
 }
 
+.pipeline-card-receipt-preview {
+  display: block;
+  width: 100%;
+  margin-bottom: 0.35rem;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.pipeline-card-receipt-preview img {
+  display: block;
+  width: 100%;
+  max-height: 140px;
+  object-fit: cover;
+}
+
 .pipeline-card-actions .macos-btn,
 .pipeline-card-actions .payment-approval-form .macos-btn {
   min-height: 1.7rem;

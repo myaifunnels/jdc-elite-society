@@ -15,7 +15,7 @@ import { DeactivateAccountButton } from "@/components/dashboard/deactivate-accou
 import type { PipelineBoard, PipelineBoardStage, PipelineCard, PipelineCheckout } from "@/lib/crm-store";
 import { pipelineStageValue } from "@/lib/pipeline";
 import { formatPhp } from "@/lib/pay-cycle";
-import { mediaSrc } from "@/lib/media";
+import { isDisplayableImageSrc, mediaSrc } from "@/lib/media";
 
 type Props = {
   board: PipelineBoard;
@@ -221,6 +221,21 @@ function PipelineCardItem({
       )}
       {checkout && canReviewPayments ? (
         <div className="pipeline-card-actions">
+          {checkout.receiptUrl && isDisplayableImageSrc(checkout.receiptUrl) ? (
+            <a
+              href={mediaSrc(checkout.receiptUrl) ?? checkout.receiptUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="pipeline-card-receipt-preview"
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={mediaSrc(checkout.receiptUrl) ?? checkout.receiptUrl}
+                alt={`Payment receipt from ${card.name}`}
+                loading="lazy"
+              />
+            </a>
+          ) : null}
           <a className="macos-btn macos-btn-secondary" href={mediaSrc(checkout.receiptUrl) ?? checkout.receiptUrl} target="_blank" rel="noreferrer">
             Receipt
           </a>
