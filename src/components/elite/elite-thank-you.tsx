@@ -36,10 +36,10 @@ export function EliteThankYou({ offer = "building" }: { offer?: "building" | "du
     <main className="elite-offer elite-thank-you-page">
       <div className="elite-thanks">
         <div className="elite-thanks-check" aria-hidden="true">✓</div>
-        <p className="elite-kicker">YOU&apos;RE IN</p>
+        <p className="elite-kicker">{isDuplication ? "PAYMENT RECEIVED" : "YOU'RE IN"}</p>
         <h1 className="elite-display">
           {isDuplication
-            ? "Your JDC Mastermind Season 2 — Duplication access is unlocked."
+            ? "We're verifying your payment."
             : "Your JDC Mastermind access is unlocked."}
         </h1>
 
@@ -57,33 +57,53 @@ export function EliteThankYou({ offer = "building" }: { offer?: "building" | "du
           </button>
         </div>
 
-        <Link href="/account/password" className="elite-cta elite-cta-lg elite-thanks-dashboard-link">
-          <span>
-            <strong>ACCESS YOUR DASHBOARD</strong>
-            <small>Add your photo and set your password to finish setup</small>
-          </span>
-          <span aria-hidden="true">→</span>
-        </Link>
+        {isDuplication ? null : (
+          <Link href="/account/password" className="elite-cta elite-cta-lg elite-thanks-dashboard-link">
+            <span>
+              <strong>ACCESS YOUR DASHBOARD</strong>
+              <small>Add your photo and set your password to finish setup</small>
+            </span>
+            <span aria-hidden="true">→</span>
+          </Link>
+        )}
 
         <p className="elite-thanks-lead">
-          Salamat. Natanggap na namin ang iyong submission — hindi mo na kailangang maghintay, bukas na agad ang
-          iyong access. Bini-verify pa rin namin ang resibo sa background, para lang siguradong maayos ang lahat.
+          {isDuplication
+            ? "Salamat. Natanggap na namin ang iyong submission. Ina-verify ko pa ang iyong resibo, makakatanggap ka ng email sa loob ng ilang oras kapag na-confirm na ang iyong seat."
+            : "Salamat. Natanggap na namin ang iyong submission. Hindi mo na kailangang maghintay, bukas na agad ang iyong access. Bini-verify pa rin namin ang resibo sa background, para lang siguradong maayos ang lahat."}
         </p>
 
-        <div className="elite-verification-status" aria-label="Payment verification progress">
-          <div className="is-complete">
-            <span>✓</span>
-            <div><strong>Payment submitted</strong><small>Complete</small></div>
+        {isDuplication ? (
+          <div className="elite-verification-status" aria-label="Payment verification progress">
+            <div className="is-complete">
+              <span>✓</span>
+              <div><strong>Payment submitted</strong><small>Complete</small></div>
+            </div>
+            <div className="is-current">
+              <span>2</span>
+              <div><strong>Payment verification</strong><small>In review by our team</small></div>
+            </div>
+            <div>
+              <span>3</span>
+              <div><strong>Seat confirmed</strong><small>You&apos;ll get an email</small></div>
+            </div>
           </div>
-          <div className="is-complete">
-            <span>✓</span>
-            <div><strong>Access unlocked</strong><small>Ready now</small></div>
+        ) : (
+          <div className="elite-verification-status" aria-label="Payment verification progress">
+            <div className="is-complete">
+              <span>✓</span>
+              <div><strong>Payment submitted</strong><small>Complete</small></div>
+            </div>
+            <div className="is-complete">
+              <span>✓</span>
+              <div><strong>Access unlocked</strong><small>Ready now</small></div>
+            </div>
+            <div className="is-current">
+              <span>3</span>
+              <div><strong>Receipt verification</strong><small>Running in the background</small></div>
+            </div>
           </div>
-          <div className="is-current">
-            <span>3</span>
-            <div><strong>Receipt verification</strong><small>Running in the background</small></div>
-          </div>
-        </div>
+        )}
 
         <p className="elite-thanks-expect">Once verified, makakatanggap ka ng email na may:</p>
         <div className="elite-glass elite-thanks-card">
