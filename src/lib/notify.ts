@@ -135,6 +135,26 @@ export async function notifyCoachingOfferPurchase(input: CoachingOfferNotice) {
   ]);
 }
 
+/** Sent the moment a JDC Mastermind Season 2, Duplication checkout is submitted (GHL-hosted
+ * form), before an admin verifies the receipt. Deliberately SMS + team alert only, no email and
+ * no access grant here — GHL owns the pipeline stage and the manual verification step. */
+export async function notifyDuplicationPaymentReceived(input: { name: string; email: string; phone: string }) {
+  const body = renderTemplate(await getSmsTemplateBody("duplication_payment_verification"), { name: input.name });
+  await Promise.allSettled([
+    sendSms({ to: input.phone, body, name: input.name, email: input.email }),
+    sendSms({
+      to: notifyPhone(),
+      body: `New Duplication payment.\n\nName: ${input.name}\nEmail: ${input.email}\nPhone: ${input.phone}\n\nVerify the receipt in GHL's Payment Verification stage.\n\nBest Regards,\n-Team JDC Elite Society`,
+      name: "JDC Team Alerts",
+      email: notifyEmails()[0] || mastermindOffer.support.email,
+    }),
+    notifyAdminsOfPurchase({
+      title: `Duplication payment · ${input.name}`,
+      body: "Submitted via S2 Duplication Checkout Form, awaiting verification",
+    }),
+  ]);
+}
+
 export async function notifyPaymentApproved(input: { id?: string; name: string; email: string; phone: string }) {
   const { notifyMemberPaymentDecision } = await import("@/lib/activity-notify");
   const body = renderTemplate(await getSmsTemplateBody("payment_approved"), { name: input.name });
