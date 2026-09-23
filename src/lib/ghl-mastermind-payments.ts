@@ -12,6 +12,7 @@ import {
 } from "@/lib/ghl-opportunities";
 import type { EliteCheckoutOrder } from "@/lib/elite-checkout-store";
 import { getResolvedIntegrationSettings } from "@/lib/integrations-store";
+import { mediaSrc } from "@/lib/media";
 
 /** Mastermind checkout payments live in the same campaign pipeline as the webinar registrants
  * ("B2 Duplication Campaign"): a pending receipt belongs in its "Payment for Verification" stage so
@@ -42,7 +43,12 @@ function noteFor(order: EliteCheckoutOrder) {
     `Phone: ${order.mobile || "—"}`,
   ];
   if (order.receiptUrl) {
-    lines.unshift(`PAYMENT RECEIPT: ${order.receiptUrl}`, "");
+    // Route through our own media proxy rather than the raw receiptUrl: some admins
+    // are on networks that can't resolve r2.dev directly ("site can't be reached"),
+    // and the proxy fetches the file itself so their browser never has to.
+    const proxied = mediaSrc(order.receiptUrl);
+    const receiptLink = proxied?.startsWith("/api/media") ? `https://coachjdc.org${proxied}` : order.receiptUrl;
+    lines.unshift(`PAYMENT RECEIPT: ${receiptLink}`, "");
   }
   return lines.join("\n");
 }
