@@ -19,6 +19,7 @@ import {
   TextBeeLogo,
 } from "@/components/dashboard/integration-logos";
 import { MigrateFilesToR2Button } from "@/components/dashboard/migrate-files-button";
+import { RepostReceiptNotesButton } from "@/components/dashboard/repost-receipt-notes-button";
 import { AddressMap } from "@/components/maps/address-map";
 import {
   isFacebookAuthReady,
@@ -264,6 +265,17 @@ export default async function IntegrationsPage({
               <br />
               In AiFunnels, add this URL for Contact Tag Update, Contact Update, and Opportunity Stage Update so the Contacts pipeline stays in sync. Only the <code>jdc-mastermind-buyer</code> pipeline is mirrored.
             </p>
+            {ghlReady ? (
+              <div className="mt-6 border-t border-[var(--line)] pt-6">
+                <p className="text-sm font-semibold">Repost receipt links</p>
+                <p className="mt-1 text-sm text-[var(--muted)]">
+                  Pending orders synced before the media-proxy fix still have the old raw receipt link on their
+                  GHL note, which some admins can't open. Post a corrected note on every pending order now. Safe
+                  to run more than once.
+                </p>
+                <RepostReceiptNotesButton />
+              </div>
+            ) : null}
           </>
         ) : null}
 

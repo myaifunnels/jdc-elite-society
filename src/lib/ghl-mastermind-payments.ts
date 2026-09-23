@@ -136,6 +136,39 @@ async function syncOnce(order: EliteCheckoutOrder): Promise<MastermindPaymentSyn
   return { status: "synced", action: "created" };
 }
 
+/** Posts a fresh note (with the corrected, proxied receipt link) on every pending order's
+ * GHL contact. For orders synced before the media-proxy fix, whose existing note still has
+ * the old raw r2.dev link baked in. Runs to completion and returns a summary; call this from
+ * an explicit admin action, not on every request. */
+export async function repostReceiptNotesForPending(orders: EliteCheckoutOrder[]) {
+  const pending = orders.filter((order) => order.status === "pending" && order.receiptUrl);
+  let posted = 0;
+  const errors: string[] = [];
+
+  for (const order of pending) {
+    try {
+      const settings = await getResolvedIntegrationSettings();
+      if (!settings.ghlApiKey || !settings.ghlLocationId) {
+        errors.push("AiFunnels isn't connected.");
+        break;
+      }
+      const contact =
+        (await findGhlContactDuplicate(order.email, order.mobile)) ?? (await lookupGhlContact(order.email, order.mobile));
+      if (!contact?.id) {
+        errors.push(`${order.email}: contact not found`);
+        continue;
+      }
+      await addContactNote(contact.id, noteFor(order));
+      posted += 1;
+    } catch (error) {
+      errors.push(`${order.email}: ${error instanceof Error ? error.message : "unknown error"}`);
+    }
+    await new Promise((resolve) => setTimeout(resolve, 400));
+  }
+
+  return { total: pending.length, posted, errors };
+}
+
 let lastBackfillAt = 0;
 let backfillRunning = false;
 const BACKFILL_THROTTLE_MS = 10 * 60 * 1000;

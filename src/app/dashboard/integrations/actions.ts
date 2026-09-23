@@ -11,6 +11,8 @@ import {
   isTextBeeReady,
 } from "@/lib/integrations";
 import { getResolvedIntegrationSettings, saveIntegrationSettings } from "@/lib/integrations-store";
+import { listEliteCheckoutOrders } from "@/lib/elite-checkout-store";
+import { repostReceiptNotesForPending } from "@/lib/ghl-mastermind-payments";
 import { migrateDataUrlFilesToR2 } from "@/lib/r2-migrate";
 import { requireCapability } from "@/lib/session";
 
@@ -218,4 +220,24 @@ export async function migrateFilesToR2Action(
   }
 
   return { success: `Migrated ${parts.join(", ")} to Cloudflare R2.` };
+}
+
+export async function repostReceiptNotesAction(
+  _prevState: IntegrationFormState,
+  _formData: FormData,
+): Promise<IntegrationFormState> {
+  await requireCapability("integrations");
+
+  const orders = await listEliteCheckoutOrders();
+  const result = await repostReceiptNotesForPending(orders);
+
+  if (result.total === 0) {
+    return { success: "Nothing to repost — no pending orders with a receipt on file." };
+  }
+  if (result.errors.length > 0) {
+    return {
+      error: `Reposted ${result.posted}/${result.total}. ${result.errors.length} failed: ${result.errors.slice(0, 3).join("; ")}${result.errors.length > 3 ? "…" : ""}`,
+    };
+  }
+  return { success: `Reposted the corrected receipt link on ${result.posted} pending order${result.posted === 1 ? "" : "s"}.` };
 }
