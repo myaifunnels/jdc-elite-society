@@ -38,23 +38,44 @@ export async function GET(request: Request) {
   const fallbackParam = new URL(request.url).searchParams.get("fallback");
   const fallback = fallbackParam && /^https?:\/\//i.test(fallbackParam) ? fallbackParam : null;
 
+  // Fetch the fallback URL ourselves and stream it back, rather than redirecting the
+  // browser there. Some admins are on networks (corporate firewalls, certain ISPs) that
+  // can't resolve r2.dev at all, so sending their browser there directly just trades one
+  // dead link for another. Our server can reach it even when their browser can't.
+  async function proxyFallback() {
+    if (!fallback) return null;
+    try {
+      const response = await fetch(fallback, { cache: "no-store" });
+      if (!response.ok) return null;
+      const bytes = Buffer.from(await response.arrayBuffer());
+      return new NextResponse(new Uint8Array(bytes), {
+        headers: {
+          "Content-Type": response.headers.get("content-type") ?? "application/octet-stream",
+          "Content-Length": String(bytes.length),
+          "Cache-Control": "private, max-age=300",
+          "Content-Disposition": "inline",
+          "X-Content-Type-Options": "nosniff",
+        },
+      });
+    } catch {
+      return null;
+    }
+  }
+
   const settings = await getResolvedIntegrationSettings();
   if (!isR2Ready(settings)) {
-    if (fallback) {
-      return NextResponse.redirect(fallback);
-    }
-    return NextResponse.json({ error: "Cloudflare R2 is not connected." }, { status: 503 });
+    return (await proxyFallback()) ?? NextResponse.json({ error: "Cloudflare R2 is not connected." }, { status: 503 });
   }
 
   const file = await getR2Object(settings, key);
   if (!file.ok) {
     // The object isn't in our configured R2 bucket (e.g. it was uploaded to a different
-    // R2 account, like a direct GHL upload). Fall back to the original URL rather than
-    // leaving the admin with a dead link.
-    if (fallback) {
-      return NextResponse.redirect(fallback);
-    }
-    return NextResponse.json({ error: "File not found." }, { status: file.status === 403 ? 403 : 404 });
+    // R2 account, like a direct GHL upload). Fall back to fetching the original URL
+    // ourselves rather than leaving the admin with a dead link.
+    return (
+      (await proxyFallback()) ??
+      NextResponse.json({ error: "File not found." }, { status: file.status === 403 ? 403 : 404 })
+    );
   }
 
   return new NextResponse(new Uint8Array(file.body), {
