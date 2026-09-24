@@ -27,7 +27,9 @@ export type SmsTemplateKey =
   | "duplication_followup_1h"
   | "duplication_payment_verification"
   | "duplication_payment_confirmed"
-  | "duplication_payment_rejected";
+  | "duplication_payment_rejected"
+  | "partnership_qualified"
+  | "partnership_not_qualified";
 
 export type SmsTemplateDefinition = {
   key: SmsTemplateKey;
@@ -94,6 +96,11 @@ export const SMS_TEMPLATE_GROUPS: Array<{ id: string; label: string; keys: SmsTe
       "duplication_payment_confirmed",
       "duplication_payment_rejected",
     ],
+  },
+  {
+    id: "partnership",
+    label: "JDC Partnership Program",
+    keys: ["partnership_qualified", "partnership_not_qualified"],
   },
 ];
 
@@ -342,6 +349,22 @@ export const SMS_TEMPLATE_DEFINITIONS: SmsTemplateDefinition[] = [
     vars: ["name"],
     defaultBody:
       "Hi {{name}},\n\nWe could not verify your payment for JDC Mastermind: Duplication Season.\n\nOpen Support on your dashboard to resend your receipt or message us.\n\nBest Regards,\n-Team JDC Elite Society",
+  },
+  {
+    key: "partnership_qualified",
+    label: "Partnership — qualified",
+    description: "Sent when a contact moves to the Qualified stage in the JDC Partnership Program pipeline.",
+    vars: ["name"],
+    defaultBody:
+      "Hi {{name}}, you're in! I'm approving you as an official JDC partner. Log in at coachjdc.org, then open Partnership > Link & QR to get your referral link.\n\n-Coach JDC",
+  },
+  {
+    key: "partnership_not_qualified",
+    label: "Partnership — not qualified",
+    description: "Sent when a contact moves to the Not Qualified stage in the JDC Partnership Program pipeline.",
+    vars: ["name"],
+    defaultBody:
+      "Hi {{name}}, thanks for applying. Partners are JDC Elite Society members first. Join here: coachjdc.org/programs/jdc-elite-society and I'll approve you right away.\n\n-Coach JDC",
   },
 ];
 

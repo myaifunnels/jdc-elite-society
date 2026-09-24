@@ -195,3 +195,25 @@ export async function notifyPaymentRejected(input: { id?: string; name: string; 
     notifyMemberPaymentDecision({ ...input, approved: false }),
   ]);
 }
+
+/** Sent when a contact moves to the Qualified stage in the JDC Partnership Program pipeline
+ * (GHL workflow webhook). SMS only, mirrors notifyDuplicationPaymentConfirmed; the matching
+ * email is sent separately from GHL using email-templates/partnership-qualified.html. */
+export async function notifyPartnershipQualified(input: { name: string; email: string; phone: string }) {
+  const body = renderTemplate(await getSmsTemplateBody("partnership_qualified"), { name: input.name });
+  await Promise.allSettled([
+    sendSms({ to: input.phone, body, name: input.name, email: input.email }),
+    notifyAdminsOfPurchase({ title: `Partner qualified · ${input.name}`, body: "Moved to Qualified" }),
+  ]);
+}
+
+/** Sent when a contact moves to the Not Qualified stage in the JDC Partnership Program pipeline
+ * (GHL workflow webhook). SMS only; the matching email is sent separately from GHL using
+ * email-templates/partnership-not-qualified.html. */
+export async function notifyPartnershipNotQualified(input: { name: string; email: string; phone: string }) {
+  const body = renderTemplate(await getSmsTemplateBody("partnership_not_qualified"), { name: input.name });
+  await Promise.allSettled([
+    sendSms({ to: input.phone, body, name: input.name, email: input.email }),
+    notifyAdminsOfPurchase({ title: `Partner not qualified · ${input.name}`, body: "Moved to Not Qualified" }),
+  ]);
+}
