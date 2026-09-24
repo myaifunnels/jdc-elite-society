@@ -80,19 +80,13 @@ async function ensureGhlContactId(name: string, email: string, phone: string) {
   return synced.contactId;
 }
 
+/** TextBee is the SMS provider we actually run on; GHL's native SMS channel only sits at the
+ * end as a last-resort fallback since it reports API-level "accepted" even when the number
+ * behind it never delivers, which used to mask real failures by stopping the chain early. */
 export async function sendSms(input: { to: string; body: string; name?: string; email?: string }) {
   const to = toE164Phone(input.to);
   if (!to) {
     return { sent: false as const };
-  }
-
-  const contactId = await ensureGhlContactId(input.name || to, input.email || `${to.replace(/\D/g, "")}@sms.coachjdc.org`, to);
-  if (contactId) {
-    const ghl = await sendGhlSms(contactId, input.body);
-    if (ghl.ok) {
-      await logCommunication({ channel: "sms", to, body: input.body });
-      return { sent: true as const };
-    }
   }
 
   const textbee = await sendTextBeeSms(to, input.body);
@@ -105,6 +99,15 @@ export async function sendSms(input: { to: string; body: string; name?: string; 
   if (twilio.sent) {
     await logCommunication({ channel: "sms", to, body: input.body });
     return { sent: true as const };
+  }
+
+  const contactId = await ensureGhlContactId(input.name || to, input.email || `${to.replace(/\D/g, "")}@sms.coachjdc.org`, to);
+  if (contactId) {
+    const ghl = await sendGhlSms(contactId, input.body);
+    if (ghl.ok) {
+      await logCommunication({ channel: "sms", to, body: input.body });
+      return { sent: true as const };
+    }
   }
 
   console.info(`SMS skipped: ${to} :: ${input.body}`);

@@ -46,7 +46,7 @@ export default async function AutomationPage({
   return (
     <DashboardShell
       title="Automation"
-      description="SMS and email copy for JDC Elite Society, account, and support. Texts send through AiFunnels, then TextBee, then Twilio; emails send through Resend. Edit wording here, then test a send."
+      description="SMS and email copy for JDC Elite Society, account, and support. Texts send through TextBee, then Twilio, then AiFunnels; emails send through Resend. Edit wording here, then test a send."
     >
       <div className="macos-toolbar" style={{ padding: "0 0 0.9rem" }}>
         <div className="macos-segment" style={{ gridTemplateColumns: "1fr 1fr", width: "min(20rem, 100%)" }}>

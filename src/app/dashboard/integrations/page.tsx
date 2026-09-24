@@ -285,8 +285,8 @@ export default async function IntegrationsPage({
               Device: <code>{settings.textbeeDeviceId || "not set"}</code>
             </p>
             <p className="macos-lead" style={{ textAlign: "left" }}>
-              Texts try AiFunnels first, then TextBee, then Twilio. Forgot-password codes, Elite checkout, payment
-              review, University welcome, and Support messages all use this chain.
+              Texts try TextBee first, then Twilio, then AiFunnels as a last resort. Forgot-password codes, Elite
+              checkout, payment review, University welcome, and Support messages all use this chain.
             </p>
             <TextBeeIntegrationForm configured={textbeeReady} deviceId={settings.textbeeDeviceId} />
           </>
