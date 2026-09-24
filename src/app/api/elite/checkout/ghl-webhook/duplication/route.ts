@@ -85,8 +85,8 @@ export async function POST(request: Request) {
       address: "",
       city: "",
       tags,
-      bestDescribesYou: "JDC Mastermind Season 2, Duplication buyer",
-      programInterest: "JDC Mastermind Season 2 - Duplication",
+      bestDescribesYou: "JDC Mastermind: Duplication Season buyer",
+      programInterest: "JDC Mastermind: Duplication Season",
       source: "S2 Duplication Checkout Form (GHL)",
     });
   } catch (error) {

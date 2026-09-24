@@ -135,7 +135,7 @@ export async function notifyCoachingOfferPurchase(input: CoachingOfferNotice) {
   ]);
 }
 
-/** Sent the moment a JDC Mastermind Season 2, Duplication checkout is submitted (GHL-hosted
+/** Sent the moment a JDC Mastermind: Duplication Season checkout is submitted (GHL-hosted
  * form), before an admin verifies the receipt. Deliberately SMS + team alert only, no email and
  * no access grant here — GHL owns the pipeline stage and the manual verification step. */
 export async function notifyDuplicationPaymentReceived(input: { name: string; email: string; phone: string }) {

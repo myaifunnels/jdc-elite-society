@@ -58,9 +58,9 @@ const OFFER_CAMPAIGNS: ProductCampaign[] = [
   },
   {
     slug: "season-2-duplication",
-    title: "JDC Mastermind: Season 2 - Duplication",
+    title: "JDC Mastermind: Duplication Season",
     shortTitle: "JDC Mastermind: Season 2",
-    description: "Promote JDC Mastermind Season 2, Duplication. Successful purchases earn 20%.",
+    description: "Promote JDC Mastermind: Duplication Season. Successful purchases earn 20%.",
     destinationPath: "/duplication",
   },
 ].map((offer) => ({ ...offer, requiredProgram: "pioneer" as const, commissionRate: 0.2, open: true }));

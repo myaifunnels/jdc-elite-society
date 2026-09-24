@@ -384,8 +384,8 @@ async function ensureSeed() {
         ["season-1-building", "JDC Mastermind: Season 1 - Building"],
       );
       await client.query(
-        "UPDATE affiliate_campaigns SET title = $2 WHERE slug = $1 AND title IN ('Season 1: Building', 'Season 2: Duplication')",
-        ["season-2-duplication", "JDC Mastermind: Season 2 - Duplication"],
+        "UPDATE affiliate_campaigns SET title = $2 WHERE slug = $1 AND title IN ('Season 1: Building', 'Season 2: Duplication', 'JDC Mastermind: Season 2 - Duplication')",
+        ["season-2-duplication", "JDC Mastermind: Duplication Season"],
       );
     } catch (error) {
       console.error("Failed to seed affiliate campaigns", error);

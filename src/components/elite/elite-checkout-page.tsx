@@ -58,7 +58,7 @@ function CheckoutSteps() {
 
 const duplicationOfferSummary = [
   "JDC Portal Access",
-  "JDC Mastermind Season 2: Duplication",
+  "JDC Mastermind: Duplication Season",
   "Session 1: October 2",
   "Session 2: October 9",
   "Lifetime Session Replays",
@@ -85,7 +85,7 @@ export function EliteCheckoutPage({ src }: { src?: string }) {
           <h1 className="elite-display">One final step toward a higher standard.</h1>
           <p className="elite-sub elite-center">
             Complete the secure form below and get instant access to{" "}
-            {isDuplication ? "JDC Mastermind Season 2, Duplication" : "JDC Mastermind Season 1"}.
+            {isDuplication ? "JDC Mastermind: Duplication Season" : "JDC Mastermind Season 1"}.
           </p>
 
           <div className="elite-checkout-layout">
@@ -94,7 +94,7 @@ export function EliteCheckoutPage({ src }: { src?: string }) {
                 <p className="elite-kicker">YOUR ORDER</p>
                 <div className="elite-order-heading">
                   <div>
-                    <strong>{isDuplication ? "JDC Mastermind Season 2, Duplication" : "JDC Mastermind"}</strong>
+                    <strong>{isDuplication ? "JDC Mastermind: Duplication Season" : "JDC Mastermind"}</strong>
                     <span>{isDuplication ? "Course access" : "Lifetime access"}</span>
                   </div>
                   <strong>{formatPhp(mastermindOffer.offerPrice)}</strong>

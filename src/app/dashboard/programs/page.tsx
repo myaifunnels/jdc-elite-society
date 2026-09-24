@@ -16,7 +16,7 @@ const EXTRA_PROGRAMS: Record<string, { title: string; href: string; description:
     description: "Build your foundation with Coach JDC in Season 1 of the JDC Mastermind.",
   },
   "season-2-duplication": {
-    title: "JDC Mastermind: Season 2 - Duplication",
+    title: "JDC Mastermind: Duplication Season",
     href: "/duplication",
     description: "Duplicate what works with Coach JDC in Season 2 of the JDC Mastermind.",
   },

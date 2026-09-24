@@ -268,80 +268,80 @@ export const SMS_TEMPLATE_DEFINITIONS: SmsTemplateDefinition[] = [
     key: "duplication_followup_5d",
     label: "Duplication follow-up — 5 days before",
     description:
-      "Sent 5 days before a JDC Mastermind Season 2, Duplication session to everyone enrolled. No links in SMS by design.",
+      "Sent 5 days before a JDC Mastermind: Duplication Season session to everyone enrolled. No links in SMS by design.",
     vars: ["name", "sessionLabel", "dateLabel", "timeLabel"],
     defaultBody:
-      "Hi {{name}},\n\n{{sessionLabel}} of JDC Mastermind Season 2, Duplication is in 5 days, {{dateLabel}} at {{timeLabel}} (Manila time).\n\nCheck your email or your dashboard for details.\n\nBest Regards,\n-Team JDC Elite Society",
+      "Hi {{name}},\n\n{{sessionLabel}} of JDC Mastermind: Duplication Season is in 5 days, {{dateLabel}} at {{timeLabel}} (Manila time).\n\nCheck your email or your dashboard for details.\n\nBest Regards,\n-Team JDC Elite Society",
   },
   {
     key: "duplication_followup_3d",
     label: "Duplication follow-up — 3 days before",
     description:
-      "Sent 3 days before a JDC Mastermind Season 2, Duplication session to everyone enrolled. No links in SMS by design.",
+      "Sent 3 days before a JDC Mastermind: Duplication Season session to everyone enrolled. No links in SMS by design.",
     vars: ["name", "sessionLabel", "dateLabel", "timeLabel"],
     defaultBody:
-      "Hi {{name}},\n\n{{sessionLabel}} of JDC Mastermind Season 2, Duplication is in 3 days, {{dateLabel}} at {{timeLabel}} (Manila time).\n\nCheck your email or your dashboard for details.\n\nBest Regards,\n-Team JDC Elite Society",
+      "Hi {{name}},\n\n{{sessionLabel}} of JDC Mastermind: Duplication Season is in 3 days, {{dateLabel}} at {{timeLabel}} (Manila time).\n\nCheck your email or your dashboard for details.\n\nBest Regards,\n-Team JDC Elite Society",
   },
   {
     key: "duplication_followup_2d",
     label: "Duplication follow-up — 2 days before",
     description:
-      "Sent 2 days before a JDC Mastermind Season 2, Duplication session to everyone enrolled. No links in SMS by design.",
+      "Sent 2 days before a JDC Mastermind: Duplication Season session to everyone enrolled. No links in SMS by design.",
     vars: ["name", "sessionLabel", "dateLabel", "timeLabel"],
     defaultBody:
-      "Hi {{name}},\n\n{{sessionLabel}} of JDC Mastermind Season 2, Duplication is in 2 days, {{dateLabel}} at {{timeLabel}} (Manila time).\n\nCheck your email or your dashboard for details.\n\nBest Regards,\n-Team JDC Elite Society",
+      "Hi {{name}},\n\n{{sessionLabel}} of JDC Mastermind: Duplication Season is in 2 days, {{dateLabel}} at {{timeLabel}} (Manila time).\n\nCheck your email or your dashboard for details.\n\nBest Regards,\n-Team JDC Elite Society",
   },
   {
     key: "duplication_followup_24h",
     label: "Duplication follow-up — 24 hours before",
     description:
-      "Sent 24 hours before a JDC Mastermind Season 2, Duplication session to everyone enrolled. No links in SMS by design.",
+      "Sent 24 hours before a JDC Mastermind: Duplication Season session to everyone enrolled. No links in SMS by design.",
     vars: ["name", "sessionLabel", "dateLabel", "timeLabel"],
     defaultBody:
-      "Hi {{name}},\n\n{{sessionLabel}} of JDC Mastermind Season 2, Duplication is tomorrow, {{dateLabel}} at {{timeLabel}} (Manila time).\n\nCheck your email or your dashboard for details.\n\nBest Regards,\n-Team JDC Elite Society",
+      "Hi {{name}},\n\n{{sessionLabel}} of JDC Mastermind: Duplication Season is tomorrow, {{dateLabel}} at {{timeLabel}} (Manila time).\n\nCheck your email or your dashboard for details.\n\nBest Regards,\n-Team JDC Elite Society",
   },
   {
     key: "duplication_followup_3h",
     label: "Duplication follow-up — 3 hours before",
     description:
-      "Sent 3 hours before a JDC Mastermind Season 2, Duplication session to everyone enrolled. No links in SMS by design.",
+      "Sent 3 hours before a JDC Mastermind: Duplication Season session to everyone enrolled. No links in SMS by design.",
     vars: ["name", "sessionLabel", "timeLabel"],
     defaultBody:
-      "Hi {{name}},\n\n{{sessionLabel}} of JDC Mastermind Season 2, Duplication starts in 3 hours, at {{timeLabel}} (Manila time).\n\nCheck your email or your dashboard for the session link.\n\nBest Regards,\n-Team JDC Elite Society",
+      "Hi {{name}},\n\n{{sessionLabel}} of JDC Mastermind: Duplication Season starts in 3 hours, at {{timeLabel}} (Manila time).\n\nCheck your email or your dashboard for the session link.\n\nBest Regards,\n-Team JDC Elite Society",
   },
   {
     key: "duplication_followup_1h",
     label: "Duplication follow-up — 1 hour before",
     description:
-      "Sent 1 hour before a JDC Mastermind Season 2, Duplication session to everyone enrolled. No links in SMS by design.",
+      "Sent 1 hour before a JDC Mastermind: Duplication Season session to everyone enrolled. No links in SMS by design.",
     vars: ["name", "sessionLabel", "timeLabel"],
     defaultBody:
-      "Hi {{name}},\n\n{{sessionLabel}} of JDC Mastermind Season 2, Duplication starts in 1 hour, at {{timeLabel}} (Manila time).\n\nCheck your email or your dashboard for the session link. See you there!\n\nBest Regards,\n-Team JDC Elite Society",
+      "Hi {{name}},\n\n{{sessionLabel}} of JDC Mastermind: Duplication Season starts in 1 hour, at {{timeLabel}} (Manila time).\n\nCheck your email or your dashboard for the session link. See you there!\n\nBest Regards,\n-Team JDC Elite Society",
   },
   {
     key: "duplication_payment_verification",
     label: "Duplication — payment received, verifying",
     description:
-      "Sent the moment a JDC Mastermind Season 2, Duplication checkout is submitted, before an admin has verified the receipt.",
+      "Sent the moment a JDC Mastermind: Duplication Season checkout is submitted, before an admin has verified the receipt.",
     vars: ["name"],
     defaultBody:
-      "Hi {{name}},\n\nGot your payment for JDC Mastermind Season 2, Duplication. I'm verifying it now, no action needed from you.\n\nYou'll get an email once your seat is confirmed.\n\nBest Regards,\n-Team JDC Elite Society",
+      "Hi {{name}},\n\nGot your payment for JDC Mastermind: Duplication Season. I'm verifying it now, no action needed from you.\n\nYou'll get an email once your seat is confirmed.\n\nBest Regards,\n-Team JDC Elite Society",
   },
   {
     key: "duplication_payment_confirmed",
     label: "Duplication — payment confirmed",
-    description: "Sent to the buyer when an admin verifies their JDC Mastermind Season 2, Duplication payment.",
+    description: "Sent to the buyer when an admin verifies their JDC Mastermind: Duplication Season payment.",
     vars: ["name"],
     defaultBody:
-      "Hi {{name}},\n\nYour payment for JDC Mastermind Season 2, Duplication is verified. Your seat is confirmed for October 2 and October 9.\n\nOpen your dashboard for details.\n\nBest Regards,\n-Team JDC Elite Society",
+      "Hi {{name}},\n\nYour payment for JDC Mastermind: Duplication Season is verified. Your seat is confirmed for October 2 and October 9.\n\nOpen your dashboard for details.\n\nBest Regards,\n-Team JDC Elite Society",
   },
   {
     key: "duplication_payment_rejected",
     label: "Duplication — payment rejected",
-    description: "Sent to the buyer when an admin rejects their JDC Mastermind Season 2, Duplication payment.",
+    description: "Sent to the buyer when an admin rejects their JDC Mastermind: Duplication Season payment.",
     vars: ["name"],
     defaultBody:
-      "Hi {{name}},\n\nWe could not verify your payment for JDC Mastermind Season 2, Duplication.\n\nOpen Support on your dashboard to resend your receipt or message us.\n\nBest Regards,\n-Team JDC Elite Society",
+      "Hi {{name}},\n\nWe could not verify your payment for JDC Mastermind: Duplication Season.\n\nOpen Support on your dashboard to resend your receipt or message us.\n\nBest Regards,\n-Team JDC Elite Society",
   },
 ];
 

@@ -4,7 +4,7 @@ import { mastermindOffer } from "@/data/mastermind-offer";
 
 export const metadata: Metadata = {
   title: {
-    absolute: "Payment Verification | JDC Mastermind Season 2 - Duplication",
+    absolute: "Payment Verification | JDC Mastermind: Duplication Season",
   },
   robots: { index: false, follow: false },
 };
