@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 
 import { createLead } from "@/lib/crm-store";
+import { upsertPendingDuplicationEnrollment } from "@/lib/duplication-enrollments-store";
+import { checkWebhookSecret, contactFromPayload, readGhlWebhookPayload } from "@/lib/ghl-webhook-payload";
 import { notifyDuplicationPaymentReceived } from "@/lib/notify";
 import { DUPLICATION_PAYMENT_VERIFICATION_TAG, uniqueTags } from "@/lib/tags";
 
@@ -15,64 +17,20 @@ export const dynamic = "force-dynamic";
  * Dashboard > Integrations), unlike the S1 Building form which grants instant access.
  */
 
-function asRecord(value: unknown): Record<string, unknown> {
-  return value && typeof value === "object" ? (value as Record<string, unknown>) : {};
-}
-
-async function readPayload(request: Request): Promise<Record<string, unknown>> {
-  const contentType = request.headers.get("content-type") ?? "";
-  if (contentType.includes("application/x-www-form-urlencoded")) {
-    const form = await request.formData();
-    const payload: Record<string, unknown> = {};
-    form.forEach((value, key) => {
-      payload[key] = typeof value === "string" ? value : value.name;
-    });
-    return payload;
-  }
-
-  try {
-    return asRecord(await request.json());
-  } catch {
-    return {};
-  }
-}
-
-function pickString(payload: Record<string, unknown>, ...keys: string[]) {
-  for (const key of keys) {
-    const value = payload[key];
-    if (typeof value === "string" && value.trim()) {
-      return value.trim();
-    }
-  }
-  return "";
-}
-
 export async function GET() {
   return NextResponse.json({ ok: true, service: "elite-checkout-ghl-webhook-duplication" });
 }
 
 export async function POST(request: Request) {
-  const secret = (process.env.GHL_DUPLICATION_CHECKOUT_WEBHOOK_SECRET ?? process.env.GHL_WEBHOOK_SECRET)?.trim();
-  if (secret) {
-    const header = request.headers.get("x-webhook-secret") ?? request.headers.get("authorization") ?? "";
-    if (!header.includes(secret)) {
-      return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
-    }
+  if (!checkWebhookSecret(request, process.env.GHL_DUPLICATION_CHECKOUT_WEBHOOK_SECRET, process.env.GHL_WEBHOOK_SECRET)) {
+    return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
   }
 
-  const payload = await readPayload(request);
-  const contact = asRecord(payload.contact);
-  const source = Object.keys(contact).length ? contact : payload;
-
-  const email = pickString(source, "email").toLowerCase();
+  const payload = await readGhlWebhookPayload(request);
+  const { email, fullName, phone } = contactFromPayload(payload);
   if (!email) {
     return NextResponse.json({ error: "Missing contact email." }, { status: 400 });
   }
-
-  const firstName = pickString(source, "first_name", "firstName");
-  const lastName = pickString(source, "last_name", "lastName");
-  const fullName = pickString(source, "full_name", "name", "fullName") || `${firstName} ${lastName}`.trim() || email;
-  const phone = pickString(source, "phone");
 
   const tags = uniqueTags(["JDC Mastermind", "jdc-mastermind", "S2 Duplication Checkout Form", DUPLICATION_PAYMENT_VERIFICATION_TAG]);
 
@@ -95,6 +53,10 @@ export async function POST(request: Request) {
 
   notifyDuplicationPaymentReceived({ name: fullName, email, phone }).catch((error) => {
     console.error("S2 Duplication GHL webhook purchase notice failed", error);
+  });
+
+  await upsertPendingDuplicationEnrollment({ name: fullName, email, phone }).catch((error) => {
+    console.error("S2 Duplication GHL webhook enrollment tracking failed", error);
   });
 
   return NextResponse.json({ ok: true });

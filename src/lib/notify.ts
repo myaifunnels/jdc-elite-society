@@ -155,6 +155,29 @@ export async function notifyDuplicationPaymentReceived(input: { name: string; em
   ]);
 }
 
+/** Sent when an admin confirms a Duplication payment in GHL. SMS only, same as
+ * notifyDuplicationPaymentReceived: the confirmation email is sent separately from GHL's own
+ * email action using email-templates/duplication-payment-verified.html, and no account/access
+ * grant happens here either. */
+export async function notifyDuplicationPaymentConfirmed(input: { name: string; email: string; phone: string }) {
+  const body = renderTemplate(await getSmsTemplateBody("duplication_payment_confirmed"), { name: input.name });
+  await Promise.allSettled([
+    sendSms({ to: input.phone, body, name: input.name, email: input.email }),
+    notifyAdminsOfPurchase({ title: `Duplication payment confirmed · ${input.name}`, body: "Seat confirmed" }),
+  ]);
+}
+
+/** Sent when an admin rejects a Duplication payment in GHL. SMS only, mirrors
+ * notifyDuplicationPaymentConfirmed; the rejection email is sent separately from GHL using
+ * email-templates/duplication-payment-rejected.html. */
+export async function notifyDuplicationPaymentRejected(input: { name: string; email: string; phone: string }) {
+  const body = renderTemplate(await getSmsTemplateBody("duplication_payment_rejected"), { name: input.name });
+  await Promise.allSettled([
+    sendSms({ to: input.phone, body, name: input.name, email: input.email }),
+    notifyAdminsOfPurchase({ title: `Duplication payment rejected · ${input.name}`, body: "Receipt could not be verified" }),
+  ]);
+}
+
 export async function notifyPaymentApproved(input: { id?: string; name: string; email: string; phone: string }) {
   const { notifyMemberPaymentDecision } = await import("@/lib/activity-notify");
   const body = renderTemplate(await getSmsTemplateBody("payment_approved"), { name: input.name });
