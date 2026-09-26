@@ -80,6 +80,16 @@ async function ensureGhlContactId(name: string, email: string, phone: string) {
   return synced.contactId;
 }
 
+/** Philippine carriers flag texts containing links or domains as spam and silently drop them,
+ * so strip anything link-shaped (including bare domains) from every outgoing SMS. */
+export function stripSmsLinks(body: string) {
+  return body
+    .replace(/\b(?:https?:\/\/|www\.)\S+/gi, "")
+    .replace(/\b[a-z0-9-]+(?:\.[a-z0-9-]+)*\.(?:org|com|net|ph|io|co|app|dev|me|link|ly)\b(?:\/\S*)?/gi, "")
+    .replace(/[ \t]{2,}/g, " ")
+    .trim();
+}
+
 /** TextBee is the SMS provider we actually run on; GHL's native SMS channel only sits at the
  * end as a last-resort fallback since it reports API-level "accepted" even when the number
  * behind it never delivers, which used to mask real failures by stopping the chain early. */
@@ -88,6 +98,7 @@ export async function sendSms(input: { to: string; body: string; name?: string; 
   if (!to) {
     return { sent: false as const };
   }
+  input = { ...input, body: stripSmsLinks(input.body) };
 
   const textbee = await sendTextBeeSms(to, input.body);
   if (textbee.sent) {

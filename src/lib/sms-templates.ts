@@ -356,7 +356,7 @@ export const SMS_TEMPLATE_DEFINITIONS: SmsTemplateDefinition[] = [
     description: "Sent when a contact moves to the Qualified stage in the JDC Partnership Program pipeline.",
     vars: ["name"],
     defaultBody:
-      "Hi {{name}}, you're in! I'm approving you as an official JDC partner. Log in at coachjdc.org, then open Partnership > Link & QR to get your referral link.\n\n-Coach JDC",
+      "Hi {{name}}, you're in! I'm approving you as an official JDC partner. Sign in to your JDC dashboard, then open Partnership > Link & QR to get your referral link. Check your email for the full details.\n\n-Coach JDC",
   },
   {
     key: "partnership_not_qualified",
@@ -364,7 +364,7 @@ export const SMS_TEMPLATE_DEFINITIONS: SmsTemplateDefinition[] = [
     description: "Sent when a contact moves to the Not Qualified stage in the JDC Partnership Program pipeline.",
     vars: ["name"],
     defaultBody:
-      "Hi {{name}}, thanks for applying. Partners are JDC Elite Society members first. Join here: coachjdc.org/programs/jdc-elite-society and I'll approve you right away.\n\n-Coach JDC",
+      "Hi {{name}}, thanks for applying. Partners are JDC Elite Society members first. Check your email for how to join JDC Elite Society, and I'll approve you right away.\n\n-Coach JDC",
   },
 ];
 
