@@ -356,7 +356,7 @@ export const SMS_TEMPLATE_DEFINITIONS: SmsTemplateDefinition[] = [
     description: "Sent when a contact moves to the Qualified stage in the JDC Partnership Program pipeline.",
     vars: ["name"],
     defaultBody:
-      "Hi {{name}}, you're in! I'm approving you as an official JDC partner. Sign in to your JDC dashboard, then open Partnership > Link & QR to get your referral link. Check your email for the full details.\n\n-Coach JDC",
+      "Hi {{name}},\n\nWe've approved your application as an official JDC partner. Your partnership link is ready in your Dashboard > University > Partnership. You can sign in and start sharing it with people who may benefit from JDC Elite Society.\n\n-JDC Elite Society Team",
   },
   {
     key: "partnership_not_qualified",
@@ -364,7 +364,7 @@ export const SMS_TEMPLATE_DEFINITIONS: SmsTemplateDefinition[] = [
     description: "Sent when a contact moves to the Not Qualified stage in the JDC Partnership Program pipeline.",
     vars: ["name"],
     defaultBody:
-      "Hi {{name}}, thanks for applying. Partners are JDC Elite Society members first. Check your email for how to join JDC Elite Society, and I'll approve you right away.\n\n-Coach JDC",
+      "Hi {{name}},\n\nThank you for applying to the JDC Partnership Program. Our partners must first be active JDC Elite Society members. Please check your email for the next steps. Once your membership is active, our team will review and approve your partnership access.\n\n-JDC Elite Society Team",
   },
 ];
 
