@@ -189,15 +189,14 @@ export function overrideCount(overrides: AccessOverride) {
 }
 
 /**
- * `hasWebinarRegistrations` sends a webinar registrant straight to their "My webinars" list
- * instead of University — University may still show locked (profile/payment not complete just
- * from registering for a webinar), so it's a dead end for them, while their webinar registration
- * is exactly what they came here to find.
+ * University is the priority landing spot on login. `hasWebinarRegistrations` only sends a
+ * webinar registrant to their "My webinars" list when University isn't open for them at all —
+ * otherwise University is exactly where we want members to land.
  */
 export function dashboardHomeHref(access: AccessMap, hasWebinarRegistrations = false) {
   if (access.dashboard) return "/dashboard";
-  if (hasWebinarRegistrations && access.myWebinars) return "/dashboard/my-webinars";
   if (access.university) return "/dashboard/university";
+  if (hasWebinarRegistrations && access.myWebinars) return "/dashboard/my-webinars";
   if (access.support) return "/dashboard/support";
   if (access.profile) return "/dashboard/profile";
   return "/dashboard";
