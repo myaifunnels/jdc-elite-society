@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 import { PartnershipPage } from "@/components/programs/partnership-page";
 
-const socialImage = "https://assets.cdn.filesafe.space/Col3j2B7jRDX5y8J5bgN/media/6abb5ba0b5e520ac174ffd19.png";
+const socialImage = "https://assets.cdn.filesafe.space/Col3j2B7jRDX5y8J5bgN/media/6abb5c5bdf795f5ccc776551.png";
 
 export const metadata: Metadata = {
   title: "JDC Partnership Program",
