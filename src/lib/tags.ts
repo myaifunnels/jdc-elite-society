@@ -71,7 +71,7 @@ export const TAG_GROUPS: TagGroup[] = [
       "1-on-1 Coaching",
       "Online Coaching",
       "In-person Coaching",
-      "spartans-coupon",
+      "mastermind-coupon",
       "GCash",
     ],
   },
@@ -99,7 +99,7 @@ export function mastermindCheckoutTags(input: {
     ...COURSE_ACCESS_TAGS,
     input.paymentMethod,
     input.priceLabel,
-    input.couponApplied ? "spartans-coupon" : "",
+    input.couponApplied ? "mastermind-coupon" : "",
     ...(input.extra ?? []),
   ]);
 }

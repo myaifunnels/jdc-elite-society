@@ -37,7 +37,6 @@ async function upsertFunnelContact(input: {
   receiptName: string;
   receiptUrl: string;
   priceLabel: string;
-  spartans: boolean;
   tags: string[];
 }) {
   await fetch("https://api.myaifunnels.com/contacts/upsert", {
@@ -84,8 +83,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "I-upload ang iyong resibo." }, { status: 400 });
   }
 
-  const spartans = isCouponValid(parsed.data.couponCode);
-  const price = spartans ? mastermindOffer.couponPrice : mastermindOffer.offerPrice;
+  const couponApplied = isCouponValid(parsed.data.couponCode);
+  const price = couponApplied ? mastermindOffer.couponPrice : mastermindOffer.offerPrice;
   const priceLabel = `PHP ${price.toLocaleString("en-PH")}`;
   const mobile = formatInternationalPhone(parsed.data.phoneCountry, parsed.data.phoneNational);
 
@@ -130,7 +129,7 @@ export async function POST(request: Request) {
   const tags = mastermindCheckoutTags({
     paymentMethod: parsed.data.paymentMethod,
     priceLabel,
-    couponApplied: spartans,
+    couponApplied,
     extra: [...extraTags, ...(fromDuplication ? [DUPLICATION_PAYMENT_VERIFICATION_TAG] : [])],
   });
 
@@ -260,7 +259,6 @@ export async function POST(request: Request) {
     receiptName: receipt.name,
     receiptUrl,
     priceLabel,
-    spartans,
     tags,
   });
 

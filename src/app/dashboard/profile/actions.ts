@@ -26,7 +26,6 @@ export async function updateOwnAccountProfile(
     phoneCountry: String(formData.get("phoneCountry") ?? user.phoneCountry ?? "PH")
       .trim()
       .toUpperCase(),
-    memberships: formData.getAll("memberships").map(String),
     bestDescribesYou: String(formData.get("bestDescribesYou") ?? ""),
     bestDescribesYouOther: String(formData.get("bestDescribesYouOther") ?? "").trim(),
     dateOfBirth: String(formData.get("dateOfBirth") ?? "").trim(),
@@ -35,7 +34,6 @@ export async function updateOwnAccountProfile(
     currentPassword: String(formData.get("currentPassword") ?? ""),
     newPassword: String(formData.get("newPassword") ?? ""),
     confirmPassword: String(formData.get("confirmPassword") ?? ""),
-    requireMembership: user.role !== "contact",
   });
 
   if (!parsed.success) {
@@ -60,7 +58,7 @@ export async function updateOwnAccountProfile(
       phone: parsed.data.phone,
       phoneCountry: parsed.data.phoneCountry,
       company: parsed.data.company,
-      memberships: parsed.data.memberships,
+      memberships: user.role === "contact" ? user.memberships : ["jes"],
       bestDescribesYou: audience,
       dateOfBirth: parsed.data.dateOfBirth,
       address: parsed.data.address,
@@ -97,10 +95,7 @@ export async function updateOwnAccountProfile(
       facebookProfileUrl: parsed.data.facebookProfileUrl,
       facebookPhotoUrl: photoUrl,
       source: "Account profile",
-      tags: [
-        "Profile complete",
-        ...parsed.data.memberships.map((item) => (item === "jes" ? "JES Member" : "Spartans")),
-      ],
+      tags: ["Profile complete", ...(user.role === "contact" ? [] : ["JES Member"])],
     });
   } catch (error) {
     return {

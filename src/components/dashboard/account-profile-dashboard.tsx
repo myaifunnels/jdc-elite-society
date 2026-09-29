@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useMemo, useState } from "react";
+import { useActionState, useMemo, useState } from "react";
 import Link from "next/link";
 import { CalendarDays, Lock, Mail, MapPin, ShieldCheck, Sparkles } from "lucide-react";
 
@@ -10,7 +10,7 @@ import { AddressAutocomplete } from "@/components/forms/address-autocomplete";
 import { PhoneField } from "@/components/forms/phone-field";
 import { PhotoUploadField } from "@/components/forms/photo-upload-field";
 import { nationalDigitsFromInternational } from "@/lib/countries";
-import { membershipLabel, membershipTheme, type Membership } from "@/lib/membership";
+import { membershipLabel } from "@/lib/membership";
 import { AuthUser } from "@/lib/types";
 import { audienceOptions, splitAudienceValue } from "@/lib/validations";
 
@@ -44,36 +44,11 @@ export function AccountProfileDashboard({
 }) {
   const audience = useMemo(() => splitAudienceValue(user.bestDescribesYou ?? ""), [user.bestDescribesYou]);
   const [state, formAction, pending] = useActionState(updateOwnAccountProfile, initialState);
-  const [memberships, setMemberships] = useState<Membership[]>(user.memberships);
   const [audienceOption, setAudienceOption] = useState<string>(audience.option);
   const firstName = user.name.split(" ")[0] || "there";
   const verified = user.accountStatus === "verified";
   const nationalPhone = nationalDigitsFromInternational(user.phoneCountry || "PH", user.phone || "");
 
-  useEffect(() => {
-    const root = document.documentElement;
-    const previous = root.dataset.membership ?? "";
-    const next = membershipTheme(memberships);
-    if (next) {
-      root.dataset.membership = next;
-    } else {
-      delete root.dataset.membership;
-    }
-
-    return () => {
-      if (previous) {
-        root.dataset.membership = previous;
-      } else {
-        delete root.dataset.membership;
-      }
-    };
-  }, [memberships]);
-
-  function toggleMembership(value: Membership) {
-    setMemberships((current) =>
-      current.includes(value) ? current.filter((item) => item !== value) : [...current, value],
-    );
-  }
 
   return (
     <div className="account-dash">
@@ -251,38 +226,6 @@ export function AccountProfileDashboard({
               <span>Mobile number</span>
               <PhoneField defaultIso={user.phoneCountry || "PH"} defaultNational={nationalPhone} />
             </label>
-          </section>
-
-          <section className="account-dash-card">
-            <header className="account-dash-section-head">
-              <h3>Membership</h3>
-              <p>JES means JDC Elite Society. Pick the room you belong in.</p>
-            </header>
-            <fieldset className="auth-roles">
-              <legend className="sr-only">Membership</legend>
-              <div className="auth-roles-row">
-                <label>
-                  <input
-                    type="checkbox"
-                    name="memberships"
-                    value="spartan"
-                    checked={memberships.includes("spartan")}
-                    onChange={() => toggleMembership("spartan")}
-                  />
-                  Spartans
-                </label>
-                <label>
-                  <input
-                    type="checkbox"
-                    name="memberships"
-                    value="jes"
-                    checked={memberships.includes("jes")}
-                    onChange={() => toggleMembership("jes")}
-                  />
-                  JES Member
-                </label>
-              </div>
-            </fieldset>
           </section>
 
           <section className="account-dash-card">

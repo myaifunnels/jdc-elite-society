@@ -42,7 +42,7 @@ export function PendingMemberHome({
           <li className={user.profileComplete ? "is-done" : "is-current"}>
             <span>1</span>
             <strong>Profile</strong>
-            <em>{user.profileComplete ? "Saved. Keep it current." : "Photo, story, and membership."}</em>
+            <em>{user.profileComplete ? "Saved. Keep it current." : "Photo, story, and contact details."}</em>
           </li>
           <li className={user.paymentVerified ? "is-done" : user.profileComplete ? "is-current" : ""}>
             <span>2</span>

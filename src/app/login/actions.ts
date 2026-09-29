@@ -206,7 +206,6 @@ export async function completeAccountProfile(
 ): Promise<AuthFormState> {
   const user = await requireSessionUser();
   const parsed = completeProfileSchema.safeParse({
-    memberships: formData.getAll("memberships").map(String),
     bestDescribesYou: String(formData.get("bestDescribesYou") ?? ""),
     bestDescribesYouOther: String(formData.get("bestDescribesYouOther") ?? "").trim(),
     dateOfBirth: String(formData.get("dateOfBirth") ?? "").trim(),
@@ -232,7 +231,7 @@ export async function completeAccountProfile(
 
     const audience = resolveAudienceLabel(parsed.data.bestDescribesYou, parsed.data.bestDescribesYouOther);
     await completeMemberProfile(user.id, {
-      memberships: parsed.data.memberships,
+      memberships: ["jes"],
       bestDescribesYou: audience,
       dateOfBirth: parsed.data.dateOfBirth,
       address: parsed.data.address,
@@ -252,10 +251,7 @@ export async function completeAccountProfile(
       lat: Number.isFinite(lat) ? lat : undefined,
       lng: Number.isFinite(lng) ? lng : undefined,
       source: "Account profile",
-      tags: [
-        "Profile complete",
-        ...parsed.data.memberships.map((item) => (item === "jes" ? "JES Member" : "Spartans")),
-      ],
+      tags: ["Profile complete", "JES Member"],
     });
     await syncContactToGhl({
       name: user.name,
@@ -268,10 +264,7 @@ export async function completeAccountProfile(
       facebookProfileUrl: parsed.data.facebookProfileUrl,
       facebookPhotoUrl: photoUrl,
       source: "Account profile",
-      tags: [
-        "Profile complete",
-        ...parsed.data.memberships.map((item) => (item === "jes" ? "JES Member" : "Spartans")),
-      ],
+      tags: ["Profile complete", "JES Member"],
     });
   } catch (error) {
     return {

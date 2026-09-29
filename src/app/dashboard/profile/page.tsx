@@ -15,7 +15,7 @@ export default async function AccountProfilePage() {
       description={
         needsAddressConfirm
           ? "Replace the temporary map address with your real location so we can verify your Contact account."
-          : "Edit your photo, details, membership, and password. Email stays on this login."
+          : "Edit your photo, details, and password. Email stays on this login."
       }
     >
       {needsAddressConfirm ? (

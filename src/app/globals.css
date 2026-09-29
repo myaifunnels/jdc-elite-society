@@ -4296,44 +4296,6 @@ html[data-membership="jes"] {
   --brand-soft: color-mix(in srgb, #007bff 22%, transparent);
 }
 
-html[data-membership="spartan"] {
-  --custom-brand: #e50914;
-  --custom-brand-dark: #b20710;
-  --brand: #e50914 !important;
-  --brand-dark: #b20710 !important;
-  --brand-soft: color-mix(in srgb, #e50914 22%, transparent) !important;
-  --custom-brand: #e50914 !important;
-  --custom-brand-dark: #b20710 !important;
-  --custom-dark-glow: #e50914 !important;
-}
-
-html[data-membership="spartan"] .auth-screen-centered {
-  background:
-    linear-gradient(155deg, rgba(229, 9, 20, 0.18) 0%, transparent 46%),
-    linear-gradient(-20deg, rgba(20, 20, 20, 0.32) 0%, transparent 55%),
-    linear-gradient(180deg, #1a1a1a 0%, #141414 100%);
-}
-
-html[data-membership="both"] {
-  --custom-brand: #007bff !important;
-  --custom-brand-dark: #e50914 !important;
-  --brand: #007bff !important;
-  --brand-dark: #e50914 !important;
-  --brand-soft: color-mix(in srgb, #007bff 16%, #e50914 12%) !important;
-  --custom-dark-glow: #e50914 !important;
-}
-
-html[data-membership="both"] .auth-screen-centered {
-  background:
-    linear-gradient(155deg, rgba(0, 123, 255, 0.2) 0%, transparent 46%),
-    linear-gradient(-20deg, rgba(229, 9, 20, 0.16) 0%, transparent 50%),
-    linear-gradient(180deg, #0f172a 0%, #141414 100%);
-}
-
-html[data-membership="both"] .macos-btn-primary {
-  background: linear-gradient(180deg, #3d9bff 0%, #007bff 46%, #e50914 100%);
-}
-
 @media (min-width: 860px) {
   .auth-split {
     grid-template-columns: 1fr 1fr;

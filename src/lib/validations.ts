@@ -1,7 +1,5 @@
 import { z } from "zod";
 
-import { membershipOptions } from "@/lib/membership";
-
 export const audienceOptions = [
   "OFW",
   "Employee",
@@ -45,7 +43,6 @@ export const registerSchema = z
 
 export const completeProfileSchema = z
   .object({
-    memberships: z.array(z.enum(membershipOptions)).min(1, "Choose Spartans, JES Member, or both."),
     bestDescribesYou: z.enum(audienceOptions, { message: "Tell me what best describes you." }),
     bestDescribesYouOther: z.string().optional().default(""),
     dateOfBirth: z.string().min(1, "Date of birth is required."),
@@ -86,7 +83,6 @@ export const accountProfileSchema = z
     company: z.string().min(2, "Company is required."),
     phone: z.string().min(8, "Phone number is required."),
     phoneCountry: z.string().min(2, "Choose a country."),
-    memberships: z.array(z.enum(membershipOptions)),
     bestDescribesYou: z.enum(audienceOptions, { message: "Tell me what best describes you." }),
     bestDescribesYouOther: z.string().optional().default(""),
     dateOfBirth: z.string().min(1, "Date of birth is required."),
@@ -95,15 +91,10 @@ export const accountProfileSchema = z
     currentPassword: z.string().optional().default(""),
     newPassword: z.string().optional().default(""),
     confirmPassword: z.string().optional().default(""),
-    requireMembership: z.boolean().optional().default(true),
   })
   .refine((value) => value.bestDescribesYou !== "Other" || value.bestDescribesYouOther.trim().length >= 2, {
     message: "Tell us what “other” is.",
     path: ["bestDescribesYouOther"],
-  })
-  .refine((value) => !value.requireMembership || value.memberships.length >= 1, {
-    message: "Choose Spartans, JES Member, or both.",
-    path: ["memberships"],
   })
   .refine((value) => !value.newPassword || value.newPassword.length >= 8, {
     message: "Use at least 8 characters.",

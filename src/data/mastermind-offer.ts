@@ -52,10 +52,8 @@ export const mastermindOffer = {
   regularPrice: 5000,
   offerPrice: 2000,
   couponPrice: 1500,
-  couponCode: "SPARTANS",
   couponDiscount: 500,
   coupons: [
-    { code: "SPARTANS" },
     { code: "DUPLICATION", expiresAt: "2026-09-19T12:00:35.000Z" },
   ] as { code: string; expiresAt?: string }[],
   coachingPricePerHour: 5000,
