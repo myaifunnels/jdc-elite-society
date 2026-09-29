@@ -16,14 +16,14 @@ async function sendTextBeeSms(to: string, body: string) {
 
   try {
     const response = await fetch(
-      `https://api.textbee.dev/api/v1/gateway/devices/${settings.textbeeDeviceId}/send-sms`,
+      "https://api.textbee.dev/api/v1/gateway/send-sms",
       {
         method: "POST",
         headers: {
           "x-api-key": settings.textbeeApiKey,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ recipients: [to], message: body }),
+        body: JSON.stringify({ recipients: [to], message: body, deviceId: settings.textbeeDeviceId }),
       },
     );
 

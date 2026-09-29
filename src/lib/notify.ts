@@ -201,10 +201,11 @@ export async function notifyPaymentRejected(input: { id?: string; name: string; 
  * email is sent separately from GHL using email-templates/partnership-qualified.html. */
 export async function notifyPartnershipQualified(input: { name: string; email: string; phone: string }) {
   const body = renderTemplate(await getSmsTemplateBody("partnership_qualified"), { name: input.name });
-  await Promise.allSettled([
-    sendSms({ to: input.phone, body, name: input.name, email: input.email }),
-    notifyAdminsOfPurchase({ title: `Partner qualified · ${input.name}`, body: "Moved to Qualified" }),
-  ]);
+  const sms = await sendSms({ to: input.phone, body, name: input.name, email: input.email });
+  await notifyAdminsOfPurchase({ title: `Partner qualified · ${input.name}`, body: "Moved to Qualified" }).catch(
+    (error) => console.error("Partnership qualified admin notice failed", error),
+  );
+  return sms;
 }
 
 /** Sent when a contact moves to the Not Qualified stage in the JDC Partnership Program pipeline
@@ -212,8 +213,9 @@ export async function notifyPartnershipQualified(input: { name: string; email: s
  * email-templates/partnership-not-qualified.html. */
 export async function notifyPartnershipNotQualified(input: { name: string; email: string; phone: string }) {
   const body = renderTemplate(await getSmsTemplateBody("partnership_not_qualified"), { name: input.name });
-  await Promise.allSettled([
-    sendSms({ to: input.phone, body, name: input.name, email: input.email }),
-    notifyAdminsOfPurchase({ title: `Partner not qualified · ${input.name}`, body: "Moved to Not Qualified" }),
-  ]);
+  const sms = await sendSms({ to: input.phone, body, name: input.name, email: input.email });
+  await notifyAdminsOfPurchase({ title: `Partner not qualified · ${input.name}`, body: "Moved to Not Qualified" }).catch(
+    (error) => console.error("Partnership not-qualified admin notice failed", error),
+  );
+  return sms;
 }

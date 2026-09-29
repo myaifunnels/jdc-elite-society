@@ -27,9 +27,14 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Missing contact phone." }, { status: 400 });
   }
 
-  notifyPartnershipNotQualified({ name: fullName, email, phone }).catch((error) => {
+  const result = await notifyPartnershipNotQualified({ name: fullName, email, phone }).catch((error) => {
     console.error("Partnership not qualified webhook notice failed", error);
+    return { sent: false as const };
   });
 
-  return NextResponse.json({ ok: true });
+  if (!result.sent) {
+    return NextResponse.json({ error: "SMS could not be queued." }, { status: 502 });
+  }
+
+  return NextResponse.json({ ok: true, sms: "queued" });
 }
