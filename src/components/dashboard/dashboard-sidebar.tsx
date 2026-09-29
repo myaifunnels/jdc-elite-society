@@ -56,9 +56,12 @@ const navCatalog: Array<{
   { href: "/dashboard/settings", label: "Settings", icon: Settings2, capability: "settings" },
 ];
 
-function navItems(access: AccessMap) {
+function navItems(access: AccessMap, role: DashboardRole) {
   return navCatalog
     .filter((item) => {
+      if (role !== "admin" && (item.capability === "programs" || item.capability === "partnership")) {
+        return false;
+      }
       if (item.href === "/dashboard/contacts") {
         return access["contacts.view"] || access.registrations;
       }
@@ -148,7 +151,7 @@ function SidebarPanel({
       </div>
 
       <nav aria-label="Dashboard" className="mt-3 grid gap-1.5 px-3">
-        {navItems(access).map((item) => {
+        {navItems(access, role).map((item) => {
           const Icon = item.icon;
           const active = isActivePath(pathname, item.href);
 
