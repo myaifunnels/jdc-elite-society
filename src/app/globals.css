@@ -4401,7 +4401,10 @@ html[data-membership="jes"] {
   --heading: #f4f8ff;
   --muted: #b9c6da;
   --line: color-mix(in srgb, white 14%, transparent);
-  background: linear-gradient(180deg, #111c30 0%, #0a1221 100%);
+  background:
+    radial-gradient(circle at 12% 4%, rgba(48, 132, 255, 0.34), transparent 34%),
+    radial-gradient(circle at 88% 42%, rgba(16, 72, 180, 0.18), transparent 42%),
+    linear-gradient(180deg, #123468 0%, #0b2248 32%, #09172f 62%, #070e1d 100%);
   border-right: 1px solid color-mix(in srgb, white 12%, transparent);
   backdrop-filter: blur(44px) saturate(200%);
   -webkit-backdrop-filter: blur(44px) saturate(200%);
@@ -4555,9 +4558,32 @@ html[data-membership="jes"] {
 }
 
 .dashboard-nav-item.is-active {
-  background: color-mix(in srgb, #111827 82%, var(--brand) 18%);
+  overflow: hidden;
+  background: linear-gradient(
+    110deg,
+    rgba(17, 57, 112, 0.96) 0%,
+    rgba(17, 75, 145, 0.98) 38%,
+    rgba(25, 105, 205, 0.96) 52%,
+    rgba(17, 75, 145, 0.98) 66%,
+    rgba(17, 57, 112, 0.96) 100%
+  );
+  background-size: 240% 100%;
   color: #ffffff;
-  box-shadow: inset 3px 0 0 var(--brand);
+  box-shadow:
+    inset 3px 0 0 #49a6ff,
+    0 5px 16px rgba(0, 72, 190, 0.22);
+  animation: dashboardActiveFlow 3.4s ease-in-out infinite;
+}
+
+.dashboard-nav-item.is-active::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border: 1px solid rgba(116, 185, 255, 0.34);
+  border-radius: inherit;
+  box-shadow: inset 0 0 14px rgba(80, 162, 255, 0.12);
+  pointer-events: none;
+  animation: dashboardActivePulse 2.2s ease-in-out infinite;
 }
 
 .dashboard-nav-item.is-active svg:not(.dashboard-nav-lock) {
@@ -4567,6 +4593,23 @@ html[data-membership="jes"] {
 .dashboard-nav-item svg {
   flex: none;
   color: #aebbd0;
+}
+
+@keyframes dashboardActiveFlow {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+@keyframes dashboardActivePulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dashboard-nav-item.is-active,
+  .dashboard-nav-item.is-active::after {
+    animation: none;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

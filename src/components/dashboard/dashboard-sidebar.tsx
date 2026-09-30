@@ -136,15 +136,12 @@ function SidebarPanel({
         <SiteLogo branding={branding} href={homeHref} compact />
       </div>
 
-      <div className="dashboard-sidebar-profile" title={userEmail}>
+      <div className="dashboard-sidebar-profile">
         <ContactAvatar name={userName} photoUrl={userPhotoUrl} size="sm" />
         <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-semibold">{userName}</p>
-          <p
-            id={titleId}
-            className="truncate text-[0.65rem] font-semibold uppercase tracking-[0.1em] text-[var(--muted)]"
-          >
-            {role === "member" || role === "contact" ? membershipLabel : role} workspace
+          <p id={titleId} className="truncate text-sm font-semibold">{userName}</p>
+          <p className="truncate text-[0.68rem] text-[var(--muted)]">
+            {userEmail || `${role === "member" || role === "contact" ? membershipLabel : role} workspace`}
           </p>
         </div>
       </div>
