@@ -132,25 +132,24 @@ function SidebarPanel({
         </div>
       ) : null}
 
-      <div className="px-3 pb-3">
+      <div className="dashboard-sidebar-brand px-3 pb-2">
         <SiteLogo branding={branding} href={homeHref} compact />
       </div>
 
-      <div className="dashboard-sidebar-profile px-4 pb-4">
-        <ContactAvatar name={userName} photoUrl={userPhotoUrl} size="lg" />
-        <div className="min-w-0 max-w-full text-center">
-          <p className="truncate text-base font-semibold">{userName}</p>
-          {userEmail ? <p className="truncate text-xs text-[var(--muted)]">{userEmail}</p> : null}
+      <div className="dashboard-sidebar-profile" title={userEmail}>
+        <ContactAvatar name={userName} photoUrl={userPhotoUrl} size="sm" />
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-sm font-semibold">{userName}</p>
           <p
             id={titleId}
-            className="mt-1.5 truncate text-[0.66rem] font-semibold uppercase tracking-[0.16em] text-[var(--muted)]"
+            className="truncate text-[0.65rem] font-semibold uppercase tracking-[0.1em] text-[var(--muted)]"
           >
             {role === "member" || role === "contact" ? membershipLabel : role} workspace
           </p>
         </div>
       </div>
 
-      <nav aria-label="Dashboard" className="mt-3 grid gap-1.5 px-3">
+      <nav aria-label="Dashboard" className="dashboard-sidebar-nav grid gap-1 px-2">
         {navItems(access, role).map((item) => {
           const Icon = item.icon;
           const active = isActivePath(pathname, item.href);
@@ -174,7 +173,7 @@ function SidebarPanel({
         </Link>
       </nav>
 
-      <div className="mt-auto grid gap-3 border-t border-[var(--line)] p-3">
+      <div className="dashboard-sidebar-footer mt-auto grid gap-2 border-t border-[var(--line)] p-2">
         <div className="flex items-center justify-between gap-3">
           <p className="truncate text-xs font-semibold text-[var(--muted)]">
             {role === "member" || role === "contact"
@@ -290,7 +289,7 @@ export function DashboardSidebar({
         aria-hidden={!open}
         inert={!open}
         className={cn(
-          "dashboard-sidebar fixed inset-y-0 left-0 z-50 flex w-[18.5rem] flex-col overflow-y-auto transition-transform duration-200 ease-out lg:hidden",
+          "dashboard-sidebar fixed inset-y-0 left-0 z-50 flex w-[17rem] flex-col overflow-hidden transition-transform duration-200 ease-out lg:hidden",
           open ? "translate-x-0" : "-translate-x-full",
         )}
       >
@@ -314,7 +313,7 @@ export function DashboardSidebar({
 
       <aside
         aria-labelledby={`${titleId}-desktop`}
-        className="dashboard-sidebar hidden w-[19.5rem] shrink-0 flex-col overflow-y-auto lg:flex"
+        className="dashboard-sidebar hidden w-[13.75rem] shrink-0 flex-col overflow-hidden lg:flex"
       >
         <span className="dashboard-sidebar-glow-mid" aria-hidden />
         <SidebarPanel

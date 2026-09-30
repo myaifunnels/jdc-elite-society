@@ -4326,6 +4326,7 @@ html[data-membership="jes"] {
 .dashboard-desktop {
   min-height: 100dvh;
   padding: 0;
+  color-scheme: dark;
   background:
     linear-gradient(155deg, color-mix(in srgb, var(--brand) 14%, transparent) 0%, transparent 50%),
     linear-gradient(180deg, #1a2030 0%, #0b1018 100%);
@@ -4400,13 +4401,7 @@ html[data-membership="jes"] {
   --heading: #f4f8ff;
   --muted: color-mix(in srgb, #f4f8ff 60%, transparent);
   --line: color-mix(in srgb, white 14%, transparent);
-  background: linear-gradient(
-    to top,
-    #020306 0%,
-    #050914 32%,
-    color-mix(in srgb, var(--brand-dark) 80%, #050914 20%) 66%,
-    color-mix(in srgb, var(--brand) 70%, #050914 10%) 100%
-  );
+  background: linear-gradient(180deg, #111c30 0%, #0a1221 100%);
   border-right: 1px solid color-mix(in srgb, white 12%, transparent);
   backdrop-filter: blur(44px) saturate(200%);
   -webkit-backdrop-filter: blur(44px) saturate(200%);
@@ -4422,12 +4417,7 @@ html[data-membership="jes"] {
 
 .dashboard-sidebar::before,
 .dashboard-sidebar::after {
-  content: "";
-  position: absolute;
-  z-index: -1;
-  border-radius: 999px;
-  filter: blur(58px);
-  pointer-events: none;
+  display: none;
 }
 
 .dashboard-sidebar::before {
@@ -4451,19 +4441,7 @@ html[data-membership="jes"] {
 }
 
 .dashboard-sidebar-glow-mid {
-  display: block;
-  position: absolute;
-  z-index: -1;
-  top: 38%;
-  left: 10%;
-  width: 60%;
-  height: 30%;
-  border-radius: 999px;
-  filter: blur(64px);
-  opacity: 0.28;
-  background: radial-gradient(circle, color-mix(in srgb, var(--brand) 60%, #57d1ff 30%) 0%, transparent 72%);
-  animation: sidebarGlowDriftC 26s ease-in-out infinite;
-  pointer-events: none;
+  display: none;
 }
 
 @keyframes sidebarGlowDriftA {
@@ -4501,41 +4479,58 @@ html[data-membership="jes"] {
   display: none;
 }
 
+.dashboard-sidebar-brand {
+  display: flex;
+  min-height: 3.5rem;
+  align-items: center;
+}
+
 .dashboard-sidebar-profile {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
-  gap: 0.6rem;
-  margin: 0.2rem 0.85rem 0.9rem;
-  padding: 1.1rem 1rem 1.15rem;
-  border-radius: 20px;
-  border: 1px solid color-mix(in srgb, white 30%, transparent);
-  background: color-mix(in srgb, white 12%, transparent);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
-  box-shadow:
-    0 14px 30px rgba(4, 10, 28, 0.22),
-    inset 0 1px 0 color-mix(in srgb, white 40%, transparent);
-  text-align: center;
+  gap: 0.65rem;
+  margin: 0 0.5rem 0.65rem;
+  padding: 0.55rem 0.65rem;
+  border-radius: 10px;
+  border: 1px solid color-mix(in srgb, white 12%, transparent);
+  background: color-mix(in srgb, white 8%, transparent);
+  text-align: left;
 }
 
 .dashboard-sidebar-profile .contact-avatar {
   flex: none;
-  box-shadow:
-    0 0 0 3px color-mix(in srgb, white 65%, transparent),
-    0 10px 26px rgba(4, 10, 28, 0.35);
+  box-shadow: 0 0 0 1px color-mix(in srgb, white 28%, transparent);
+}
+
+.dashboard-sidebar-nav {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.dashboard-sidebar-nav::-webkit-scrollbar {
+  display: none;
+}
+
+.dashboard-sidebar-footer .macos-btn {
+  min-height: 2.15rem;
+  border-radius: 8px;
+  font-size: 0.75rem;
 }
 
 .dashboard-nav-item {
   position: relative;
   display: inline-flex;
-  min-height: 2.5rem;
+  min-height: 2.25rem;
   align-items: center;
-  gap: 0.75rem;
-  border-radius: 12px;
-  padding: 0 0.85rem;
+  gap: 0.65rem;
+  border-radius: 8px;
+  padding: 0 0.7rem;
   color: var(--muted);
-  font-size: 0.92rem;
+  font-size: 0.82rem;
   font-weight: 600;
   text-decoration: none;
   transition: background 160ms var(--ease-out), color 160ms var(--ease-out), transform 160ms var(--ease-out),
@@ -4548,12 +4543,9 @@ html[data-membership="jes"] {
 }
 
 .dashboard-nav-item.is-active {
-  background: color-mix(in srgb, white 26%, transparent);
+  background: color-mix(in srgb, #111827 82%, var(--brand) 18%);
   color: var(--foreground);
-  box-shadow:
-    0 6px 16px rgba(4, 10, 28, 0.22),
-    inset 0 1px 0 color-mix(in srgb, white 55%, transparent),
-    inset 0 0 0 1px color-mix(in srgb, white 35%, transparent);
+  box-shadow: inset 3px 0 0 var(--brand);
 }
 
 .dashboard-nav-item.is-active svg:not(.dashboard-nav-lock) {
@@ -4810,6 +4802,7 @@ html[data-membership="jes"] {
 .university-community-window.is-live {
   position: relative;
   background: #0b1220;
+  color-scheme: dark;
 }
 
 .university-community-frame {
@@ -4819,6 +4812,8 @@ html[data-membership="jes"] {
   height: 100%;
   min-height: 0;
   border: 0;
+  background: #050914;
+  color-scheme: dark;
 }
 
 .university-locked-state {

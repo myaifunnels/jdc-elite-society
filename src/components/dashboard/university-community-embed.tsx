@@ -18,6 +18,7 @@ export function UniversityCommunityEmbed({
           title="JDC Elite Society community"
           src={UNIVERSITY_COMMUNITY_URL}
           className="university-community-frame"
+          style={{ colorScheme: "dark" }}
           allow="clipboard-read; clipboard-write; fullscreen; autoplay"
           referrerPolicy="strict-origin-when-cross-origin"
         />
