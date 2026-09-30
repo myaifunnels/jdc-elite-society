@@ -4399,7 +4399,7 @@ html[data-membership="jes"] {
   -ms-overflow-style: none;
   --foreground: #f4f8ff;
   --heading: #f4f8ff;
-  --muted: color-mix(in srgb, #f4f8ff 60%, transparent);
+  --muted: #b9c6da;
   --line: color-mix(in srgb, white 14%, transparent);
   background: linear-gradient(180deg, #111c30 0%, #0a1221 100%);
   border-right: 1px solid color-mix(in srgb, white 12%, transparent);
@@ -4408,7 +4408,7 @@ html[data-membership="jes"] {
   box-shadow:
     6px 0 18px rgba(2, 4, 12, 0.14),
     inset -1px 0 0 color-mix(in srgb, white 10%, transparent);
-  color: var(--foreground);
+  color: #f8fbff;
 }
 
 .dashboard-sidebar::-webkit-scrollbar {
@@ -4503,6 +4503,15 @@ html[data-membership="jes"] {
   box-shadow: 0 0 0 1px color-mix(in srgb, white 28%, transparent);
 }
 
+.dashboard-sidebar-profile p:first-child {
+  color: #ffffff;
+}
+
+.dashboard-sidebar-profile p:last-child,
+.dashboard-sidebar-footer p {
+  color: #b9c6da !important;
+}
+
 .dashboard-sidebar-nav {
   min-height: 0;
   overflow-y: auto;
@@ -4518,6 +4527,9 @@ html[data-membership="jes"] {
 .dashboard-sidebar-footer .macos-btn {
   min-height: 2.15rem;
   border-radius: 8px;
+  border-color: rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.08);
+  color: #f8fbff;
   font-size: 0.75rem;
 }
 
@@ -4529,7 +4541,7 @@ html[data-membership="jes"] {
   gap: 0.65rem;
   border-radius: 8px;
   padding: 0 0.7rem;
-  color: var(--muted);
+  color: #c5cfdf;
   font-size: 0.82rem;
   font-weight: 600;
   text-decoration: none;
@@ -4539,17 +4551,22 @@ html[data-membership="jes"] {
 
 .dashboard-nav-item:hover {
   background: color-mix(in srgb, white 16%, transparent);
-  color: var(--foreground);
+  color: #ffffff;
 }
 
 .dashboard-nav-item.is-active {
   background: color-mix(in srgb, #111827 82%, var(--brand) 18%);
-  color: var(--foreground);
+  color: #ffffff;
   box-shadow: inset 3px 0 0 var(--brand);
 }
 
 .dashboard-nav-item.is-active svg:not(.dashboard-nav-lock) {
-  color: var(--foreground);
+  color: #ffffff;
+}
+
+.dashboard-nav-item svg {
+  flex: none;
+  color: #aebbd0;
 }
 
 @media (prefers-reduced-motion: reduce) {
