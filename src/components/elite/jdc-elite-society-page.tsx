@@ -11,7 +11,21 @@ import { EliteTestimonialsCarousel } from "@/components/elite/elite-testimonials
 import { formatPhp, mastermindOffer } from "@/data/mastermind-offer";
 
 const OFFER_ANCHOR_HREF = "#offer";
-const ELITE_SOCIETY_PRICE = 5000;
+const ELITE_SOCIETY_REGULAR_PRICE = 5000;
+const ELITE_SOCIETY_EARLY_BIRD_PRICE = 2000;
+const EARLY_BIRD_DEADLINE = new Date("2026-10-05T12:45:00+08:00").getTime();
+const INITIAL_PROMO_TIME_LEFT = { active: true, hours: 48, minutes: 0, seconds: 0 };
+
+function getPromoTimeLeft(now: number) {
+  const remaining = Math.max(0, EARLY_BIRD_DEADLINE - now);
+
+  return {
+    active: remaining > 0,
+    hours: Math.floor(remaining / 3_600_000),
+    minutes: Math.floor((remaining % 3_600_000) / 60_000),
+    seconds: Math.floor((remaining % 60_000) / 1000),
+  };
+}
 
 function ArrowIcon() {
   return (
@@ -121,7 +135,16 @@ const pillars = [
 
 export function JdcEliteSocietyPage() {
   const [sticky, setSticky] = useState(false);
+  const [promoTimeLeft, setPromoTimeLeft] = useState(INITIAL_PROMO_TIME_LEFT);
   const rootRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const updatePromoTime = () => setPromoTimeLeft(getPromoTimeLeft(Date.now()));
+    updatePromoTime();
+    const timer = window.setInterval(updatePromoTime, 1000);
+
+    return () => window.clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     const onScroll = () => setSticky(window.scrollY > window.innerHeight * 0.8);
@@ -176,7 +199,11 @@ export function JdcEliteSocietyPage() {
             a community that pushes you forward.
           </p>
           <div className="elite-hero-actions">
-            <EliteSocietyCtaLink title="Join JDC Elite Society" subtext="Limited slots only" className="elite-cta-lg" />
+            <EliteSocietyCtaLink
+              title={promoTimeLeft.active ? "Join for ₱2,000" : "Join JDC Elite Society"}
+              subtext={promoTimeLeft.active ? "48-hour early bird" : "Limited slots only"}
+              className="elite-cta-lg"
+            />
           </div>
           <div className="elite-stats">
             <span>
@@ -197,6 +224,25 @@ export function JdcEliteSocietyPage() {
           <p className="elite-kicker elite-center">LIMITED SLOTS ONLY</p>
           <h2 style={{ textAlign: "center" }}>Get full access.</h2>
 
+          <div className="elite-promo-clock">
+            <p>{promoTimeLeft.active ? "₱2,000 EARLY BIRD ENDS IN" : "EARLY BIRD PROMO HAS ENDED"}</p>
+            {promoTimeLeft.active ? (
+              <div className="elite-promo-clock-units" aria-label={`${promoTimeLeft.hours} hours, ${promoTimeLeft.minutes} minutes, and ${promoTimeLeft.seconds} seconds remaining`}>
+                {[
+                  [String(promoTimeLeft.hours).padStart(2, "0"), "HOURS"],
+                  [String(promoTimeLeft.minutes).padStart(2, "0"), "MINUTES"],
+                  [String(promoTimeLeft.seconds).padStart(2, "0"), "SECONDS"],
+                ].map(([value, label]) => (
+                  <span key={label}>
+                    <strong>{value}</strong>
+                    <small>{label}</small>
+                  </span>
+                ))}
+              </div>
+            ) : null}
+            <small>Offer ends October 5, 2026 at 12:45 PM Philippine time.</small>
+          </div>
+
           <div className="elite-grid-2" style={{ marginTop: "clamp(2.5rem, 5vw, 3.5rem)" }}>
             <div className="elite-glass elite-reveal-item" style={{ padding: "1.75rem" }}>
               <p className="elite-kicker">HERE&apos;S WHAT YOU GET</p>
@@ -206,12 +252,18 @@ export function JdcEliteSocietyPage() {
                 <span className="elite-strike">{formatPhp(mastermindOffer.listPrice)}</span>
               </div>
               <div style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem 1rem", justifyContent: "space-between", alignItems: "end" }}>
-                <span>Today, just</span>
-                <span className="elite-price">{formatPhp(ELITE_SOCIETY_PRICE)}</span>
+                <span>{promoTimeLeft.active ? "Regular price" : "Current price"}</span>
+                <span className={promoTimeLeft.active ? "elite-strike" : "elite-price"}>{formatPhp(ELITE_SOCIETY_REGULAR_PRICE)}</span>
               </div>
+              {promoTimeLeft.active ? (
+                <div className="elite-promo-price-row">
+                  <span>48-hour early bird</span>
+                  <span className="elite-price">{formatPhp(ELITE_SOCIETY_EARLY_BIRD_PRICE)}</span>
+                </div>
+              ) : null}
               <EliteSocietyCtaLink
-                title="Join JDC Elite Society"
-                subtext="One payment. Lifetime access."
+                title={promoTimeLeft.active ? "Claim the ₱2,000 early bird" : "Join JDC Elite Society"}
+                subtext={promoTimeLeft.active ? "48 hours only · One payment" : "One payment. Lifetime access."}
                 className="elite-cta-lg elite-cta-block"
               />
             </div>
@@ -273,12 +325,19 @@ export function JdcEliteSocietyPage() {
             It happens when you decide to operate at a higher standard. If you&apos;re serious about discipline,
             leadership, and long-term success, this is your entry point.
           </p>
-          <EliteSocietyCtaLink title="Join JDC Elite Society" subtext="Limited slots only" className="elite-cta-lg" />
+          <EliteSocietyCtaLink
+            title={promoTimeLeft.active ? "Claim the ₱2,000 early bird" : "Join JDC Elite Society"}
+            subtext={promoTimeLeft.active ? "Ends October 5 at 12:45 PM PHT" : "Limited slots only"}
+            className="elite-cta-lg"
+          />
         </div>
       </section>
 
       <div className="elite-sticky-mobile" hidden={!sticky} style={{ display: sticky ? undefined : "none" }}>
-        <EliteSocietyCtaLink title="Join JDC Elite Society" subtext="Continue to checkout" />
+        <EliteSocietyCtaLink
+          title={promoTimeLeft.active ? "Claim ₱2,000 early bird" : "Join JDC Elite Society"}
+          subtext={promoTimeLeft.active ? "48 hours only" : "Continue to checkout"}
+        />
       </div>
     </div>
   );
