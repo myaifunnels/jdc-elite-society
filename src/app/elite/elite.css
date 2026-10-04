@@ -830,8 +830,8 @@ body:has(.elite-offer) {
   .elite-sub { color: #e4e8f1; }
 }
 
-/* Branded glass card — JDC cobalt on midnight. Usage: <div className="elite-glass-card">, add --featured for the highlighted tier. */
-.elite-glass-card {
+/* Branded glass card — JDC cobalt on midnight. Usage: <div className="glass-card">, add --featured for the highlighted tier. */
+.glass-card {
   --glass-radius: 28px;
   --glass-edge: rgba(143, 200, 255, 0.2);
   --glass-glow: rgba(23, 105, 255, 0.22);
@@ -857,7 +857,7 @@ body:has(.elite-offer) {
 }
 
 /* top-edge cobalt specular line */
-.elite-glass-card::before {
+.glass-card::before {
   content: "";
   position: absolute;
   inset: 0 12% auto;
@@ -868,7 +868,7 @@ body:has(.elite-offer) {
 }
 
 /* soft sheen that follows hover */
-.elite-glass-card::after {
+.glass-card::after {
   content: "";
   position: absolute;
   inset: 0;
@@ -880,11 +880,11 @@ body:has(.elite-offer) {
   pointer-events: none;
 }
 
-.elite-glass-card h3,
-.elite-glass-card h4 { margin-top: 0; color: var(--elite-text); letter-spacing: -0.02em; }
-.elite-glass-card .eyebrow { color: var(--elite-blue-soft); font-size: 0.74rem; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; }
+.glass-card h3,
+.glass-card h4 { margin-top: 0; color: var(--elite-text); letter-spacing: -0.02em; }
+.glass-card .eyebrow { color: var(--elite-blue-soft); font-size: 0.74rem; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; }
 
-.elite-glass-card--featured {
+.glass-card--featured {
   --glass-edge: rgba(87, 165, 255, 0.5);
   --glass-glow: rgba(23, 105, 255, 0.4);
   box-shadow:
@@ -895,21 +895,21 @@ body:has(.elite-offer) {
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .elite-glass-card:hover {
+  .glass-card:hover {
     --glass-edge: rgba(87, 165, 255, 0.42);
     transform: translateY(-4px);
   }
-  .elite-glass-card:hover::after { opacity: 1; transform: translateX(30%); }
+  .glass-card:hover::after { opacity: 1; transform: translateX(30%); }
 }
 
 /* Browsers without backdrop-filter, or users who prefer less transparency: go solid navy */
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .elite-glass-card { background: radial-gradient(120% 90% at 0% 0%, var(--glass-glow), transparent 55%), var(--elite-surface-strong); }
+  .glass-card { background: radial-gradient(120% 90% at 0% 0%, var(--glass-glow), transparent 55%), var(--elite-surface-strong); }
 }
 @media (prefers-reduced-transparency: reduce) {
-  .elite-glass-card { background: var(--elite-surface-strong); -webkit-backdrop-filter: none; backdrop-filter: none; }
+  .glass-card { background: var(--elite-surface-strong); -webkit-backdrop-filter: none; backdrop-filter: none; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .elite-glass-card, .elite-glass-card::after { transition: none; }
-  .elite-glass-card:hover { transform: none; }
+  .glass-card, .glass-card::after { transition: none; }
+  .glass-card:hover { transform: none; }
 }
