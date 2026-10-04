@@ -829,3 +829,87 @@ body:has(.elite-offer) {
   .elite-card, .elite-glass, .elite-form input, .elite-form select { border-color: rgba(255, 255, 255, 0.38); }
   .elite-sub { color: #e4e8f1; }
 }
+
+/* Branded glass card — JDC cobalt on midnight. Usage: <div className="elite-glass-card">, add --featured for the highlighted tier. */
+.elite-glass-card {
+  --glass-radius: 28px;
+  --glass-edge: rgba(143, 200, 255, 0.2);
+  --glass-glow: rgba(23, 105, 255, 0.22);
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  padding: clamp(1.4rem, 3vw, 2.1rem);
+  border: 1px solid var(--glass-edge);
+  border-radius: var(--glass-radius);
+  background:
+    radial-gradient(120% 90% at 0% 0%, var(--glass-glow), transparent 55%),
+    linear-gradient(155deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.02) 48%),
+    rgba(7, 12, 26, 0.72);
+  box-shadow:
+    0 28px 80px rgba(0, 0, 0, 0.42),
+    0 0 40px rgba(23, 105, 255, 0.12),
+    inset 0 1px rgba(255, 255, 255, 0.14),
+    inset 0 -1px rgba(0, 0, 0, 0.35);
+  color: var(--elite-body);
+  -webkit-backdrop-filter: blur(26px) saturate(165%);
+  backdrop-filter: blur(26px) saturate(165%);
+  transition: transform 260ms var(--elite-ease-out), border-color 200ms ease, box-shadow 260ms var(--elite-ease-out);
+}
+
+/* top-edge cobalt specular line */
+.elite-glass-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 12% auto;
+  z-index: -1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--elite-blue-soft), transparent);
+  opacity: 0.7;
+}
+
+/* soft sheen that follows hover */
+.elite-glass-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(115deg, transparent 35%, rgba(143, 200, 255, 0.1) 50%, transparent 65%);
+  opacity: 0;
+  transform: translateX(-30%);
+  transition: opacity 320ms ease, transform 600ms var(--elite-ease-out);
+  pointer-events: none;
+}
+
+.elite-glass-card h3,
+.elite-glass-card h4 { margin-top: 0; color: var(--elite-text); letter-spacing: -0.02em; }
+.elite-glass-card .eyebrow { color: var(--elite-blue-soft); font-size: 0.74rem; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; }
+
+.elite-glass-card--featured {
+  --glass-edge: rgba(87, 165, 255, 0.5);
+  --glass-glow: rgba(23, 105, 255, 0.4);
+  box-shadow:
+    0 30px 90px rgba(0, 0, 0, 0.45),
+    0 0 64px rgba(23, 105, 255, 0.28),
+    inset 0 1px rgba(255, 255, 255, 0.2),
+    inset 0 -1px rgba(0, 0, 0, 0.35);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .elite-glass-card:hover {
+    --glass-edge: rgba(87, 165, 255, 0.42);
+    transform: translateY(-4px);
+  }
+  .elite-glass-card:hover::after { opacity: 1; transform: translateX(30%); }
+}
+
+/* Browsers without backdrop-filter, or users who prefer less transparency: go solid navy */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .elite-glass-card { background: radial-gradient(120% 90% at 0% 0%, var(--glass-glow), transparent 55%), var(--elite-surface-strong); }
+}
+@media (prefers-reduced-transparency: reduce) {
+  .elite-glass-card { background: var(--elite-surface-strong); -webkit-backdrop-filter: none; backdrop-filter: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .elite-glass-card, .elite-glass-card::after { transition: none; }
+  .elite-glass-card:hover { transform: none; }
+}
