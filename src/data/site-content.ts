@@ -9,7 +9,7 @@ export const navItems: NavItem[] = [
       { href: "/programs/jdc-elite-society", label: "JDC Elite Society" },
       { href: "/programs/jdc-partnership", label: "JDC Partnership Program" },
       {
-        href: "/programs?program=jdc-mastermind",
+        href: "/programs#jdc-mastermind",
         label: "JDC Mastermind",
         children: [
           { href: "/building", label: "Building Season" },
@@ -54,11 +54,11 @@ export const siteContent = {
   subheadline:
     "I coach OFWs, employees, and first-time entrepreneurs: mindset, business, and the discipline to follow through.",
   heroTags: ["OFWs", "Employees", "First-time entrepreneurs"],
-  primaryCta: { href: "/programs", label: "See Programs" },
-  secondaryCta: { href: "/contact", label: "Talk to me" },
+  primaryCta: { href: "/login", label: "Sign in" },
+  secondaryCta: { href: "/programs", label: "See Programs" },
   headerCta: "See Programs",
   programsEyebrow: "Where we start",
-  programsHeading: "Six tracks. One standard: you do the work.",
+  programsHeading: "Five programs. One standard: you do the work.",
   programsLink: "See all programs",
   problemEyebrow: "Let me talk to you",
   problemHeading: "If this is your life right now, we should talk.",
