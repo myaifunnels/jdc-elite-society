@@ -94,13 +94,6 @@ export function AuthPanel({
           <button type="button" className={mode === "login" ? "is-active" : ""} onClick={() => router.replace("/login")}>
             Sign In
           </button>
-          <button
-            type="button"
-            className={mode === "register" ? "is-active" : ""}
-            onClick={() => router.replace("/register")}
-          >
-            Register
-          </button>
         </div>
       </div>
 
@@ -168,12 +161,6 @@ export function AuthPanel({
             {loginState.error ? <p className="auth-error">{loginState.error}</p> : null}
 
             <div className="macos-actions">
-              <p className="auth-switch-copy">
-                Don&apos;t have an account?{" "}
-                <Link href="/register" className="auth-forgot">
-                  Create Account
-                </Link>
-              </p>
               <button type="submit" className="macos-btn macos-btn-primary auth-submit-btn" disabled={loginPending}>
                 <span>{loginPending ? "Signing In..." : "Sign In"}</span>
                 <ArrowRight size={17} aria-hidden />

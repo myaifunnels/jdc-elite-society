@@ -26,7 +26,6 @@ const quickLinks: FooterLink[] = [
   },
   { href: "/about", label: "About Coach JDC" },
   { href: "/about", label: "Success Stories" },
-  { href: "/register", label: "Register" },
   { href: "/login", label: "Sign in" },
 ];
 

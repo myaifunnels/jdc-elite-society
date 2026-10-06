@@ -37,15 +37,6 @@ export function LoginForm({ showRegisterLink = true }: { showRegisterLink?: bool
       >
         {pending ? "Signing in..." : "Sign in"}
       </button>
-
-      {showRegisterLink ? (
-        <p className="mt-4 text-sm text-[var(--muted)]">
-          New here?{" "}
-          <Link href="/register" className="font-semibold text-[var(--brand-dark)]">
-            Register
-          </Link>
-        </p>
-      ) : null}
     </form>
   );
 }
