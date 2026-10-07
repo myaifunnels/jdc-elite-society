@@ -189,12 +189,15 @@ a,
 
 /* JDC mark: white on dark themes, blue on light ones. .is-on-dark pins the white version. */
 .brand-logo { display: inline-flex; align-items: center; line-height: 0; }
-.brand-logo img { height: 2.25rem; width: auto; max-width: none; object-fit: contain; }
+.brand-logo img { height: 1.7rem; width: auto; max-width: none; object-fit: contain; }
 .brand-logo .brand-logo-blue { display: none; }
 :root:not(.dark) .brand-logo:not(.is-on-dark) .brand-logo-white { display: none; }
 :root:not(.dark) .brand-logo:not(.is-on-dark) .brand-logo-blue { display: block; }
 .auth-fullscreen-brand { display: inline-flex; justify-content: center; }
-.auth-fullscreen-brand .brand-logo img { height: 3rem; }
+.auth-fullscreen-brand .brand-logo img { height: 2.3rem; }
+.dashboard-sidebar-brand { display: flex; justify-content: center; }
+.dashboard-sidebar-brand .site-logo { justify-content: center; padding-right: 0; }
+.dashboard-sidebar-brand .brand-logo img { height: 1.9rem; }
 
 .jdc-wordmark {
   display: inline-flex;
