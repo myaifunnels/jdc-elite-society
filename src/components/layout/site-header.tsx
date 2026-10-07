@@ -12,7 +12,7 @@ export async function SiteHeader({ overlay = false }: { overlay?: boolean }) {
     <header className={overlay ? "site-header site-header-overlay" : "site-header"}>
       <div className="container-shell site-header-bar">
         <div className="site-header-brand fade-up">
-          <SiteLogo branding={branding} href="/" inverted={overlay} compact={Boolean(branding.logoUrl)} />
+          <SiteLogo branding={branding} href="/" inverted={overlay} compact />
         </div>
         <PublicHeaderActions
           overlay={overlay}

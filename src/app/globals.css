@@ -187,6 +187,15 @@ a,
   max-width: min(10.5rem, 42vw);
 }
 
+/* JDC mark: white on dark themes, blue on light ones. .is-on-dark pins the white version. */
+.brand-logo { display: inline-flex; align-items: center; line-height: 0; }
+.brand-logo img { height: 2.25rem; width: auto; max-width: none; object-fit: contain; }
+.brand-logo .brand-logo-blue { display: none; }
+:root:not(.dark) .brand-logo:not(.is-on-dark) .brand-logo-white { display: none; }
+:root:not(.dark) .brand-logo:not(.is-on-dark) .brand-logo-blue { display: block; }
+.auth-fullscreen-brand { display: inline-flex; justify-content: center; }
+.auth-fullscreen-brand .brand-logo img { height: 3rem; }
+
 .jdc-wordmark {
   display: inline-flex;
   align-items: flex-end;

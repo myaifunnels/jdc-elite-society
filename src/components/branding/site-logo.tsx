@@ -1,7 +1,6 @@
 import Link from "next/link";
 
-import { JdcWordmark } from "@/components/branding/jdc-wordmark";
-import { LogoImage } from "@/components/branding/logo-image";
+import { BrandLogo } from "@/components/branding/brand-logo";
 import { BrandingSettings, resolveLogoHref } from "@/lib/branding";
 import { cn } from "@/lib/utils";
 
@@ -26,11 +25,7 @@ export function SiteLogo({
 
   const content = (
     <>
-      {branding.logoUrl ? (
-        <LogoImage src={branding.logoUrl} alt={branding.logoAlt || "Coach JDC"} compact={compact} />
-      ) : (
-        <JdcWordmark compact={compact} />
-      )}
+      <BrandLogo alt={label} onDark={inverted} compact={compact} />
       {!compact ? (
         <span className="min-w-0">
           <span className="block text-[0.68rem] font-semibold uppercase tracking-[0.28em] text-[var(--chrome)]">

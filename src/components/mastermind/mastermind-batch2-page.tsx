@@ -3,6 +3,7 @@
 /* eslint-disable @next/next/no-img-element */
 
 import { useEffect, useRef, useState } from "react";
+import { EliteBrandBar } from "@/components/branding/elite-brand-bar";
 import Link from "next/link";
 
 import { EliteTestimonialsCarousel } from "@/components/elite/elite-testimonials-carousel";
@@ -85,6 +86,7 @@ export function MastermindBatch2Page() {
 
   return (
     <div ref={rootRef} className="elite-offer" data-motion-ready="false">
+      <EliteBrandBar />
       <section className="elite-hero elite-hero-compact" id="top">
         <video className="elite-hero-video" autoPlay muted loop playsInline preload="auto">
           <source src={mastermindOffer.heroVideo} />

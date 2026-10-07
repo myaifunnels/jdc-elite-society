@@ -10,6 +10,12 @@ export const defaultBrandingSettings: BrandingSettings = {
   logoAlt: "Coach Jayson Dela Cruz",
 };
 
+/** The JDC mark: white for dark themes, blue for light ones. */
+export const BRAND_LOGO_WHITE_URL =
+  "https://assets.cdn.filesafe.space/Col3j2B7jRDX5y8J5bgN/media/698220991dfc025bfd0a5ee3.png";
+export const BRAND_LOGO_BLUE_URL =
+  "https://assets.cdn.filesafe.space/Col3j2B7jRDX5y8J5bgN/media/698220996860b8202326b116.png";
+
 /** The permanent, self-hosted JDC logo, used when the saved logo URL can't be trusted. */
 export const FALLBACK_LOGO_URL =
   "https://vibe.filesafe.space/1780838141047994819/attachments/5738db11-cc5d-4ee5-91d6-b11707063731.png";

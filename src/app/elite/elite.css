@@ -913,3 +913,11 @@ body:has(.elite-offer) {
   .glass-card, .glass-card::after { transition: none; }
   .glass-card:hover { transform: none; }
 }
+
+/* Brand mark pinned over the top of every Elite / Duplication landing page */
+.elite-brand-bar { position: absolute; top: 0; left: 0; right: 0; z-index: 30; padding: 1.1rem 0; pointer-events: none; }
+.elite-brand-bar .elite-shell { display: flex; align-items: center; }
+.elite-brand-bar a { display: inline-flex; pointer-events: auto; }
+.elite-brand-bar .brand-logo img { height: 2.4rem; }
+.elite-offer { position: relative; }
+@media (max-width: 640px) { .elite-brand-bar .brand-logo img { height: 2rem; } }
