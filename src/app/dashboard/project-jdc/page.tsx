@@ -1,4 +1,5 @@
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
+import { ProjectJdcPersonSearch } from "@/components/dashboard/project-jdc-person-search";
 import { listAllUsers } from "@/lib/auth-store";
 import {
   addChecklistItemAction,
@@ -55,17 +56,10 @@ function PersonSection({
         </div>
       </div>
 
-      <form action={createProjectJdcPersonAction} className="pjdc-toolbar">
+      <form action={createProjectJdcPersonAction} className="pjdc-toolbar" style={{ alignItems: "flex-start" }}>
         <input type="hidden" name="role" value={role} />
-        <label className="pjdc-field">
-          Name
-          <input type="text" name="name" required />
-        </label>
-        <label className="pjdc-field">
-          Email
-          <input type="email" name="email" required />
-        </label>
-        <button type="submit" className="macos-btn macos-btn-primary">
+        <ProjectJdcPersonSearch namePlaceholder={`New ${role} name`} />
+        <button type="submit" className="macos-btn macos-btn-primary" style={{ marginTop: "1.6rem" }}>
           Add {title.slice(0, -1).toLowerCase()}
         </button>
       </form>
