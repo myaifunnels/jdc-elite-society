@@ -7748,3 +7748,85 @@ html[data-membership="jes"] {
   .pp-nav-item, .pp-btn { transition: background-color 120ms ease; }
   .pp-nav-item:active, .pp-btn:active { transform: none; }
 }
+
+/* Project JDC */
+.pjdc-page { display: grid; gap: 1.5rem; }
+.pjdc-grid { display: grid; gap: 1.5rem; grid-template-columns: repeat(auto-fit, minmax(22rem, 1fr)); align-items: start; }
+.pjdc-card {
+  padding: 1.5rem;
+  border-radius: 1.25rem;
+  border: 1px solid var(--line);
+  background: var(--card);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  box-shadow: var(--shadow-lg);
+}
+.pjdc-card-header { display: flex; align-items: baseline; justify-content: space-between; gap: 0.75rem; margin-bottom: 1rem; }
+.pjdc-card-title { margin: 0; font-size: 1.05rem; font-weight: 650; letter-spacing: -0.015em; }
+.pjdc-card-subtitle { margin: 0.2rem 0 0; color: var(--muted); font-size: 0.82rem; }
+.pjdc-card-count {
+  flex-shrink: 0;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--brand) 16%, transparent);
+  color: var(--foreground);
+  font-size: 0.74rem;
+  font-weight: 650;
+}
+
+.pjdc-toolbar { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: flex-end; margin-bottom: 1.1rem; }
+.pjdc-field { display: grid; gap: 0.3rem; font-size: 0.76rem; font-weight: 600; color: var(--muted); min-width: 10rem; flex: 1 1 10rem; }
+.pjdc-field input,
+.pjdc-field select {
+  min-height: 2.35rem;
+  padding: 0 0.75rem;
+  border-radius: 0.7rem;
+  border: 1px solid var(--line-strong);
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  color: var(--foreground);
+  font-size: 0.86rem;
+  font-weight: 500;
+  transition: border-color 150ms var(--ease-out), box-shadow 150ms var(--ease-out);
+}
+.pjdc-field input:focus,
+.pjdc-field select:focus {
+  outline: none;
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 24%, transparent);
+}
+.pjdc-row-form { display: flex; align-items: center; gap: 0.5rem; }
+.pjdc-row-form input { min-height: 2.1rem; padding: 0 0.6rem; border-radius: 0.6rem; border: 1px solid var(--line-strong); background: color-mix(in srgb, var(--surface) 92%, transparent); color: var(--foreground); font-size: 0.84rem; min-width: 0; flex: 1 1 auto; }
+
+.pjdc-table-wrap { border-radius: 0.9rem; overflow: hidden; border: 1px solid var(--line); }
+.pjdc-table-wrap .dashboard-table { font-size: 0.84rem; }
+.pjdc-table-wrap .dashboard-table th { background: color-mix(in srgb, var(--surface-elevated) 70%, transparent); }
+.pjdc-table-wrap .dashboard-table tr:hover td { background: color-mix(in srgb, var(--brand) 5%, transparent); }
+
+.pjdc-empty { padding: 1.5rem; text-align: center; color: var(--muted); font-size: 0.86rem; }
+
+.pjdc-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.22rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.74rem;
+  font-weight: 650;
+  letter-spacing: -0.005em;
+}
+.pjdc-pill::before { content: ""; width: 0.4rem; height: 0.4rem; border-radius: 999px; background: currentColor; }
+.pjdc-pill.is-approved { background: color-mix(in srgb, #30d158 18%, transparent); color: #30d158; }
+.pjdc-pill.is-waiting { background: color-mix(in srgb, #ff9f0a 18%, transparent); color: #ff9f0a; }
+.pjdc-pill.is-pending { background: color-mix(in srgb, var(--muted) 18%, transparent); color: var(--muted); }
+
+.pjdc-hero { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; }
+.pjdc-hero-progress { display: flex; align-items: center; gap: 0.9rem; }
+.pjdc-ring { position: relative; width: 3.4rem; height: 3.4rem; border-radius: 999px; display: grid; place-items: center; background: conic-gradient(var(--brand) calc(var(--pjdc-pct, 0) * 1%), color-mix(in srgb, var(--line-strong) 60%, transparent) 0); }
+.pjdc-ring::before { content: ""; position: absolute; inset: 0.3rem; border-radius: 999px; background: var(--surface-elevated); }
+.pjdc-ring span { position: relative; font-size: 0.72rem; font-weight: 700; }
+.pjdc-day-label { margin: 0; color: var(--muted); font-size: 0.8rem; }
+.pjdc-day-value { margin: 0; font-size: 1.3rem; font-weight: 700; letter-spacing: -0.02em; }
+
+@media (prefers-reduced-motion: reduce) {
+  .pjdc-field input, .pjdc-field select { transition: none; }
+}

@@ -14,6 +14,9 @@ export const COURSE_ACCESS_TAGS = [
 
 export const PAYMENT_REJECTED_TAG = "Payment Rejected";
 
+/** Tag a GHL contact with this to have them synced into Project JDC as a Student. */
+export const PROJECT_JDC_SYNC_TAG = "Project JDC";
+
 /** Applied on Elite checkout submit so GHL "Payment Verification Workflow" can move the contact. */
 export const JDC_MASTERMIND_PAYMENT_VERIFICATION_TAG = "jdc-mastermind-payment-verification";
 
@@ -52,7 +55,16 @@ export const TAG_GROUPS: TagGroup[] = [
   {
     id: "membership",
     label: "Membership",
-    tags: ["JDC Elite Society", "University", "Website", "Inquiry", "Registration", "pioneer", "jdc-partner"],
+    tags: [
+      "JDC Elite Society",
+      "University",
+      "Website",
+      "Inquiry",
+      "Registration",
+      "pioneer",
+      "jdc-partner",
+      PROJECT_JDC_SYNC_TAG,
+    ],
   },
   {
     id: "offer",
