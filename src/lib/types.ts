@@ -33,7 +33,7 @@ export type SiteStat = {
   value: string;
 };
 
-export type DashboardRole = "admin" | "partner" | "member" | "contact";
+export type DashboardRole = "admin" | "partner" | "member" | "contact" | "facilitator" | "student";
 export type AccountStatus = "pending" | "verified";
 
 export type AuthUser = {

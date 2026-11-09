@@ -57,6 +57,8 @@ export function UserAccessForm({
           <option value="partner">Partner</option>
           <option value="member">Member</option>
           <option value="contact">Contact</option>
+          <option value="facilitator">Facilitator</option>
+          <option value="student">Student</option>
         </select>
       </label>
       <ul className="access-capability-list">

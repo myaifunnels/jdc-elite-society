@@ -21,7 +21,8 @@ export type Capability =
   | "access"
   | "programs"
   | "partnership"
-  | "partnership.admin";
+  | "partnership.admin"
+  | "projectJdc";
 
 export type AccessMap = Record<Capability, boolean>;
 export type AccessOverride = Partial<Record<Capability, boolean>>;
@@ -53,6 +54,7 @@ export const CAPABILITIES: Array<{ id: Capability; label: string; detail: string
   { id: "programs", label: "Programs", detail: "See the programs they have availed." },
   { id: "partnership", label: "Partnership", detail: "Affiliate link, tree, and payouts." },
   { id: "partnership.admin", label: "Partnership admin", detail: "Grant affiliate access and review payouts." },
+  { id: "projectJdc", label: "Project JDC", detail: "Daily checklist: facilitators assign and check it, students complete it." },
 ];
 
 export const ACCESS_ROLES: Array<{ id: AccessRole; label: string; detail: string }> = [
@@ -60,6 +62,8 @@ export const ACCESS_ROLES: Array<{ id: AccessRole; label: string; detail: string
   { id: "partner", label: "Partner", detail: "Assigned contacts, University, own account, and optional partnership." },
   { id: "member", label: "Member", detail: "Verified membership: University and profile." },
   { id: "contact", label: "Contact", detail: "Limited portal for CRM contacts: home, account, and University." },
+  { id: "facilitator", label: "Facilitator", detail: "Assigned students, Project JDC checklist, own account." },
+  { id: "student", label: "Student", detail: "Project JDC checklist, own account, and University." },
 ];
 
 export const ROLE_DEFAULTS: Record<AccessRole, AccessMap> = {
@@ -83,6 +87,7 @@ export const ROLE_DEFAULTS: Record<AccessRole, AccessMap> = {
     programs: true,
     partnership: true,
     "partnership.admin": true,
+    projectJdc: true,
   },
   partner: {
     dashboard: true,
@@ -104,6 +109,7 @@ export const ROLE_DEFAULTS: Record<AccessRole, AccessMap> = {
     programs: true,
     partnership: false,
     "partnership.admin": false,
+    projectJdc: false,
   },
   member: {
     dashboard: false,
@@ -125,6 +131,7 @@ export const ROLE_DEFAULTS: Record<AccessRole, AccessMap> = {
     programs: true,
     partnership: false,
     "partnership.admin": false,
+    projectJdc: false,
   },
   contact: {
     dashboard: false,
@@ -146,6 +153,51 @@ export const ROLE_DEFAULTS: Record<AccessRole, AccessMap> = {
     programs: true,
     partnership: false,
     "partnership.admin": false,
+    projectJdc: false,
+  },
+  facilitator: {
+    dashboard: false,
+    university: false,
+    profile: true,
+    inbox: true,
+    support: true,
+    "support.admin": false,
+    "contacts.view": false,
+    "contacts.all": false,
+    "contacts.tags": false,
+    registrations: false,
+    integrations: false,
+    automation: false,
+    webinars: false,
+    myWebinars: false,
+    settings: false,
+    access: false,
+    programs: false,
+    partnership: false,
+    "partnership.admin": false,
+    projectJdc: true,
+  },
+  student: {
+    dashboard: false,
+    university: true,
+    profile: true,
+    inbox: true,
+    support: true,
+    "support.admin": false,
+    "contacts.view": false,
+    "contacts.all": false,
+    "contacts.tags": false,
+    registrations: false,
+    integrations: false,
+    automation: false,
+    webinars: false,
+    myWebinars: false,
+    settings: false,
+    access: false,
+    programs: false,
+    partnership: false,
+    "partnership.admin": false,
+    projectJdc: true,
   },
 };
 
@@ -154,7 +206,14 @@ export function emptyAccessMap(): AccessMap {
 }
 
 export function parseAccessRole(value: string | undefined | null): AccessRole {
-  if (value === "admin" || value === "partner" || value === "member" || value === "contact") {
+  if (
+    value === "admin" ||
+    value === "partner" ||
+    value === "member" ||
+    value === "contact" ||
+    value === "facilitator" ||
+    value === "student"
+  ) {
     return value;
   }
   return "member";
@@ -197,6 +256,7 @@ export function dashboardHomeHref(access: AccessMap, hasWebinarRegistrations = f
   if (access.dashboard) return "/dashboard";
   if (access.university) return "/dashboard/university";
   if (hasWebinarRegistrations && access.myWebinars) return "/dashboard/my-webinars";
+  if (access.projectJdc) return "/dashboard/project-jdc";
   if (access.support) return "/dashboard/support";
   if (access.profile) return "/dashboard/profile";
   return "/dashboard";

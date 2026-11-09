@@ -28,6 +28,8 @@ function roleLabel(role: AuthUser["role"]) {
   if (role === "admin") return "Admin";
   if (role === "partner") return "Partner";
   if (role === "contact") return "Contact";
+  if (role === "facilitator") return "Facilitator";
+  if (role === "student") return "Student";
   return "Member";
 }
 

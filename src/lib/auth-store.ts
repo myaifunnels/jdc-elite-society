@@ -82,7 +82,12 @@ function publicUser(user: AuthUserRecord): AuthUser {
 
 function mapRow(row: Record<string, unknown>): AuthUserRecord {
   const role =
-    row.role === "admin" || row.role === "partner" || row.role === "member" || row.role === "contact"
+    row.role === "admin" ||
+    row.role === "partner" ||
+    row.role === "member" ||
+    row.role === "contact" ||
+    row.role === "facilitator" ||
+    row.role === "student"
       ? row.role
       : "member";
   const privileged = isPrivileged(role);

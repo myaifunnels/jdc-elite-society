@@ -17,6 +17,8 @@ const memoryRoleDefaults: Record<AccessRole, AccessMap> = {
   partner: { ...ROLE_DEFAULTS.partner },
   member: { ...ROLE_DEFAULTS.member },
   contact: { ...ROLE_DEFAULTS.contact },
+  facilitator: { ...ROLE_DEFAULTS.facilitator },
+  student: { ...ROLE_DEFAULTS.student },
 };
 const memoryUserAccess = new Map<string, { role: AccessRole; overrides: AccessOverride }>();
 
@@ -88,6 +90,8 @@ async function loadRoleDefaults(): Promise<Record<AccessRole, AccessMap>> {
     partner: { ...memoryRoleDefaults.partner },
     member: { ...memoryRoleDefaults.member },
     contact: { ...memoryRoleDefaults.contact },
+    facilitator: { ...memoryRoleDefaults.facilitator },
+    student: { ...memoryRoleDefaults.student },
   };
   const client = getPool();
   if (!client) {
