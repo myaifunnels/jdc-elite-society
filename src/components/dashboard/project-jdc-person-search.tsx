@@ -66,9 +66,13 @@ export function ProjectJdcPersonSearch({ namePlaceholder }: { namePlaceholder: s
     return () => window.removeEventListener("pointerdown", onPointerDown);
   }, []);
 
+  function hasRealEmail(email: string) {
+    return Boolean(email) && !email.toLowerCase().endsWith("@ghl.invalid");
+  }
+
   function choose(person: Suggestion) {
     setName(person.name);
-    setEmail(person.email);
+    setEmail(hasRealEmail(person.email) ? person.email : "");
     setQuery(person.name);
     setOpen(false);
   }
@@ -128,7 +132,7 @@ export function ProjectJdcPersonSearch({ namePlaceholder }: { namePlaceholder: s
               <span>
                 <strong>{person.name}</strong>
                 <em>
-                  {person.email}
+                  {hasRealEmail(person.email) ? person.email : "No email on file"}
                   {person.city ? ` · ${person.city}` : ""}
                 </em>
               </span>
