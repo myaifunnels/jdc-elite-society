@@ -23,6 +23,7 @@ export function ProjectJdcPersonSearch({ namePlaceholder }: { namePlaceholder: s
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [people, setPeople] = useState<Suggestion[]>([]);
+  const [active, setActive] = useState(0);
 
   useEffect(() => {
     const needle = query.trim();
@@ -41,6 +42,7 @@ export function ProjectJdcPersonSearch({ namePlaceholder }: { namePlaceholder: s
         if (!response.ok) return;
         const payload = (await response.json()) as { contacts?: Suggestion[] };
         setPeople(payload.contacts ?? []);
+        setActive(0);
       } catch {
         if (controller.signal.aborted) return;
       } finally {
@@ -84,10 +86,26 @@ export function ProjectJdcPersonSearch({ namePlaceholder }: { namePlaceholder: s
           aria-autocomplete="list"
           placeholder="Search name, email, or phone"
           autoComplete="off"
+          aria-activedescendant={open && people[active] ? `${listId}-${people[active].id}` : undefined}
           onFocus={() => setOpen(true)}
           onChange={(event) => {
             setQuery(event.target.value);
             setOpen(true);
+          }}
+          onKeyDown={(event) => {
+            if (event.key === "ArrowDown") {
+              event.preventDefault();
+              setOpen(true);
+              setActive((current) => Math.min(current + 1, Math.max(people.length - 1, 0)));
+            } else if (event.key === "ArrowUp") {
+              event.preventDefault();
+              setActive((current) => Math.max(current - 1, 0));
+            } else if (event.key === "Escape") {
+              setOpen(false);
+            } else if (event.key === "Enter" && open && people[active]) {
+              event.preventDefault();
+              choose(people[active]);
+            }
           }}
         />
       </label>
@@ -96,12 +114,15 @@ export function ProjectJdcPersonSearch({ namePlaceholder }: { namePlaceholder: s
         <div id={listId} role="listbox" className="contact-search-menu">
           {loading ? <p className="contact-search-note">Searching…</p> : null}
           {!loading && people.length === 0 ? <p className="contact-search-note">No GHL contacts match that.</p> : null}
-          {people.map((person) => (
+          {people.map((person, index) => (
             <button
               key={person.id}
+              id={`${listId}-${person.id}`}
               type="button"
               role="option"
-              className={cn("contact-search-option")}
+              aria-selected={active === index}
+              className={cn("contact-search-option", active === index && "is-active")}
+              onMouseEnter={() => setActive(index)}
               onClick={() => choose(person)}
             >
               <span>
