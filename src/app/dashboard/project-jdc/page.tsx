@@ -4,7 +4,10 @@ import {
   addChecklistItemAction,
   approveChecklistItemAction,
   assignStudentAction,
+  createProjectJdcPersonAction,
+  deleteProjectJdcPersonAction,
   markChecklistItemDoneAction,
+  renameProjectJdcPersonAction,
 } from "@/app/dashboard/project-jdc/actions";
 import {
   dayNumberFor,
@@ -20,6 +23,75 @@ function todayIso() {
   return new Date().toISOString().slice(0, 10);
 }
 
+function PersonSection({
+  title,
+  role,
+  people,
+}: {
+  title: string;
+  role: "facilitator" | "student";
+  people: Array<{ id: string; name: string; email: string }>;
+}) {
+  return (
+    <>
+      <h2>{title}</h2>
+      <form action={createProjectJdcPersonAction} style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", alignItems: "end", marginBottom: "1rem" }}>
+        <input type="hidden" name="role" value={role} />
+        <label>
+          Name
+          <input type="text" name="name" required />
+        </label>
+        <label>
+          Email
+          <input type="email" name="email" required />
+        </label>
+        <button type="submit" className="macos-btn macos-btn-primary">
+          Add {title.slice(0, -1).toLowerCase()}
+        </button>
+      </form>
+      <table className="dashboard-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {people.length === 0 ? (
+            <tr>
+              <td colSpan={3}>No {title.toLowerCase()} yet.</td>
+            </tr>
+          ) : (
+            people.map((person) => (
+              <tr key={person.id}>
+                <td>
+                  <form action={renameProjectJdcPersonAction} style={{ display: "flex", gap: "0.4rem" }}>
+                    <input type="hidden" name="userId" value={person.id} />
+                    <input type="text" name="name" defaultValue={person.name} />
+                    <button type="submit" className="macos-btn macos-btn-secondary">
+                      Save
+                    </button>
+                  </form>
+                </td>
+                <td>{person.email}</td>
+                <td>
+                  <form action={deleteProjectJdcPersonAction}>
+                    <input type="hidden" name="userId" value={person.id} />
+                    <button type="submit" className="macos-btn macos-btn-danger">
+                      Delete
+                    </button>
+                  </form>
+                </td>
+              </tr>
+            ))
+          )}
+        </tbody>
+      </table>
+    </>
+  );
+}
+
 export default async function ProjectJdcPage() {
   const { user } = await requireCapability("projectJdc");
 
@@ -30,7 +102,11 @@ export default async function ProjectJdcPage() {
     const nameById = new Map(users.map((item) => [item.id, item.name]));
 
     return (
-      <DashboardShell title="Project JDC" description="Assign students to facilitators for the daily checklist.">
+      <DashboardShell title="Project JDC" description="Manage facilitators and students, and assign students to a facilitator.">
+        <PersonSection title="Facilitators" role="facilitator" people={facilitators} />
+        <PersonSection title="Students" role="student" people={students} />
+
+        <h2>Assign a student to a facilitator</h2>
         <form action={assignStudentAction} style={{ display: "grid", gap: "0.75rem", maxWidth: "28rem", marginBottom: "2rem" }}>
           <label>
             Student

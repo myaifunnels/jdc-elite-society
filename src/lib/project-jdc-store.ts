@@ -309,6 +309,27 @@ export async function approveChecklistItem(itemId: string, facilitatorId: string
   }
 }
 
+export async function removeEnrollmentsForUser(userId: string): Promise<void> {
+  for (let i = memoryEnrollments.length - 1; i >= 0; i -= 1) {
+    if (memoryEnrollments[i].studentId === userId || memoryEnrollments[i].facilitatorId === userId) {
+      memoryEnrollments.splice(i, 1);
+    }
+  }
+
+  const client = getPool();
+  if (!client) return;
+
+  try {
+    await ensureTables(client);
+    await client.query(
+      "DELETE FROM project_jdc_enrollments WHERE student_id = $1 OR facilitator_id = $1",
+      [userId],
+    );
+  } catch (error) {
+    console.error("Failed to remove Project JDC enrollments for user", error);
+  }
+}
+
 export function dayNumberFor(startDate: string, itemDate: string): number {
   const start = new Date(`${startDate}T00:00:00Z`).getTime();
   const current = new Date(`${itemDate}T00:00:00Z`).getTime();

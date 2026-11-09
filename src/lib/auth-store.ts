@@ -888,6 +888,17 @@ export async function completeMemberProfile(
   return publicUser(next);
 }
 
+export async function renameUser(userId: string, name: string) {
+  const user = await findUserById(userId);
+  if (!user) {
+    throw new Error("Account not found.");
+  }
+
+  const next: AuthUserRecord = { ...user, name: name.trim() || user.name };
+  await persistUserUpdate(next);
+  return publicUser(next);
+}
+
 export async function updateOwnAccount(
   userId: string,
   input: {

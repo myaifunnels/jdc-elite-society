@@ -1,14 +1,83 @@
 "use server";
 
+import { randomBytes } from "node:crypto";
 import { revalidatePath } from "next/cache";
 
+import {
+  createUser,
+  deleteUser,
+  findUserByEmail,
+  renameUser,
+  requestPasswordReset,
+} from "@/lib/auth-store";
+import { deleteUserAccess } from "@/lib/access-store";
+import { deletePasswordResetsForUser } from "@/lib/password-reset";
 import {
   addChecklistItem,
   approveChecklistItem,
   assignStudentToFacilitator,
   markChecklistItemDone,
+  removeEnrollmentsForUser,
 } from "@/lib/project-jdc-store";
 import { requireCapability } from "@/lib/session";
+import type { DashboardRole } from "@/lib/types";
+
+function isManagedRole(role: string): role is Extract<DashboardRole, "facilitator" | "student"> {
+  return role === "facilitator" || role === "student";
+}
+
+export async function createProjectJdcPersonAction(formData: FormData) {
+  const { user: actor } = await requireCapability("projectJdc");
+  if (actor.role !== "admin") return;
+
+  const role = String(formData.get("role") ?? "");
+  const name = String(formData.get("name") ?? "").trim();
+  const email = String(formData.get("email") ?? "").trim().toLowerCase();
+  if (!isManagedRole(role) || !name || !email) return;
+
+  const existing = await findUserByEmail(email);
+  if (existing) return;
+
+  const created = await createUser({
+    name,
+    email,
+    password: randomBytes(18).toString("hex"),
+    role,
+    passwordSet: false,
+    profileComplete: true,
+    paymentVerified: true,
+  });
+  await requestPasswordReset(created.email);
+
+  revalidatePath("/dashboard/project-jdc");
+}
+
+export async function renameProjectJdcPersonAction(formData: FormData) {
+  const { user: actor } = await requireCapability("projectJdc");
+  if (actor.role !== "admin") return;
+
+  const userId = String(formData.get("userId") ?? "").trim();
+  const name = String(formData.get("name") ?? "").trim();
+  if (!userId || !name) return;
+
+  await renameUser(userId, name);
+  revalidatePath("/dashboard/project-jdc");
+}
+
+export async function deleteProjectJdcPersonAction(formData: FormData) {
+  const { user: actor } = await requireCapability("projectJdc");
+  if (actor.role !== "admin") return;
+
+  const userId = String(formData.get("userId") ?? "").trim();
+  if (!userId || userId === actor.id) return;
+
+  await removeEnrollmentsForUser(userId);
+  await deleteUserAccess(userId);
+  await deletePasswordResetsForUser(userId);
+  await deleteUser(userId);
+
+  revalidatePath("/dashboard/project-jdc");
+}
 
 export async function assignStudentAction(formData: FormData) {
   const { user } = await requireCapability("projectJdc");
