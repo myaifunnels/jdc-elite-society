@@ -9,7 +9,6 @@ import {
   deleteProjectJdcPersonAction,
   markChecklistItemDoneAction,
   renameProjectJdcPersonAction,
-  syncGhlStudentsAction,
 } from "@/app/dashboard/project-jdc/actions";
 import {
   dayNumberFor,
@@ -36,12 +35,12 @@ function PersonSection({
   title,
   role,
   people,
-  extraAction,
+  candidates,
 }: {
   title: string;
   role: "facilitator" | "student";
   people: Array<{ id: string; name: string; email: string }>;
-  extraAction?: React.ReactNode;
+  candidates: Array<{ id: string; name: string; email: string }>;
 }) {
   return (
     <div className="pjdc-card">
@@ -50,15 +49,12 @@ function PersonSection({
           <h2 className="pjdc-card-title">{title}</h2>
           <p className="pjdc-card-subtitle">Create, rename, or remove {title.toLowerCase()}.</p>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-          {extraAction}
-          <span className="pjdc-card-count">{people.length}</span>
-        </div>
+        <span className="pjdc-card-count">{people.length}</span>
       </div>
 
       <form action={createProjectJdcPersonAction} className="pjdc-toolbar" style={{ alignItems: "flex-start" }}>
         <input type="hidden" name="role" value={role} />
-        <ProjectJdcPersonSearch namePlaceholder={`New ${role} name`} />
+        <ProjectJdcPersonSearch namePlaceholder={`New ${role} name`} candidates={candidates} />
         <button type="submit" className="macos-btn macos-btn-primary" style={{ marginTop: "1.6rem" }}>
           Add {title.slice(0, -1).toLowerCase()}
         </button>
@@ -119,24 +115,16 @@ export default async function ProjectJdcPage() {
     const facilitators = users.filter((item) => item.role === "facilitator");
     const students = users.filter((item) => item.role === "student");
     const nameById = new Map(users.map((item) => [item.id, item.name]));
+    const googleUsers = users.filter((item) => item.googleId && item.role !== "admin");
+    const facilitatorCandidates = googleUsers.filter((item) => item.role !== "facilitator");
+    const studentCandidates = googleUsers.filter((item) => item.role !== "student");
 
     return (
       <DashboardShell title="Project JDC" description="Manage facilitators and students, and assign students to a facilitator.">
         <div className="pjdc-page">
           <div className="pjdc-grid">
-            <PersonSection title="Facilitators" role="facilitator" people={facilitators} />
-            <PersonSection
-              title="Students"
-              role="student"
-              people={students}
-              extraAction={
-                <form action={syncGhlStudentsAction}>
-                  <button type="submit" className="macos-btn macos-btn-secondary">
-                    Sync from GHL
-                  </button>
-                </form>
-              }
-            />
+            <PersonSection title="Facilitators" role="facilitator" people={facilitators} candidates={facilitatorCandidates} />
+            <PersonSection title="Students" role="student" people={students} candidates={studentCandidates} />
           </div>
 
           <div className="pjdc-card">

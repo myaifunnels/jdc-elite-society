@@ -9,11 +9,10 @@ import {
   findUserByEmail,
   renameUser,
   requestPasswordReset,
+  updateUserRole,
 } from "@/lib/auth-store";
 import { deleteUserAccess } from "@/lib/access-store";
-import { searchGhlContactsByTags } from "@/lib/ghl";
 import { deletePasswordResetsForUser } from "@/lib/password-reset";
-import { PROJECT_JDC_SYNC_TAG } from "@/lib/tags";
 import {
   addChecklistItem,
   approveChecklistItem,
@@ -38,7 +37,13 @@ export async function createProjectJdcPersonAction(formData: FormData) {
   if (!isManagedRole(role) || !name || !email) return;
 
   const existing = await findUserByEmail(email);
-  if (existing) return;
+  if (existing) {
+    if (existing.role !== "admin") {
+      await updateUserRole(existing.id, role);
+    }
+    revalidatePath("/dashboard/project-jdc");
+    return;
+  }
 
   const created = await createUser({
     name,
@@ -50,36 +55,6 @@ export async function createProjectJdcPersonAction(formData: FormData) {
     paymentVerified: true,
   });
   await requestPasswordReset(created.email);
-
-  revalidatePath("/dashboard/project-jdc");
-}
-
-export async function syncGhlStudentsAction() {
-  const { user: actor } = await requireCapability("projectJdc");
-  if (actor.role !== "admin") return;
-
-  const contacts = await searchGhlContactsByTags([PROJECT_JDC_SYNC_TAG]);
-
-  for (const contact of contacts) {
-    const email = (contact.email ?? "").trim().toLowerCase();
-    const name = (contact.name || `${contact.firstName ?? ""} ${contact.lastName ?? ""}`).trim();
-    if (!email || !name) continue;
-
-    const existing = await findUserByEmail(email);
-    if (existing) continue;
-
-    const created = await createUser({
-      name,
-      email,
-      phone: contact.phone ?? "",
-      password: randomBytes(18).toString("hex"),
-      role: "student",
-      passwordSet: false,
-      profileComplete: true,
-      paymentVerified: true,
-    });
-    await requestPasswordReset(created.email);
-  }
 
   revalidatePath("/dashboard/project-jdc");
 }
