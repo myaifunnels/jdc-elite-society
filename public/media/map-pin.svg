@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 96" fill="none">
+  <defs>
+    <radialGradient id="pinBody" cx="34%" cy="22%" r="78%">
+      <stop offset="0%" stop-color="#4da3ff"/>
+      <stop offset="38%" stop-color="#007bff"/>
+      <stop offset="72%" stop-color="#0055dd"/>
+      <stop offset="100%" stop-color="#0022aa"/>
+    </radialGradient>
+    <radialGradient id="pinRim" cx="38%" cy="30%" r="70%">
+      <stop offset="0%" stop-color="#9ecbff"/>
+      <stop offset="55%" stop-color="#007bff"/>
+      <stop offset="100%" stop-color="#001a80"/>
+    </radialGradient>
+  </defs>
+  <path
+    fill="url(#pinBody)"
+    fill-rule="evenodd"
+    d="M32 4C16.8 4 5 16.4 5 32.2 5 52.6 32 92 32 92s27-39.4 27-59.8C59 16.4 47.2 4 32 4zm0 14.2a14 14 0 1 1 0 28 14 14 0 0 1 0-28z"
+  />
+  <circle cx="32" cy="28.2" r="13.1" stroke="url(#pinRim)" stroke-width="2.4" opacity="0.9"/>
+  <circle cx="24.5" cy="19.5" r="3.2" fill="#fff" opacity="0.28"/>
+</svg>

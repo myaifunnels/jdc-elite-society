@@ -1,0 +1,78 @@
+import type { Metadata } from "next";
+import { Geist, Geist_Mono, Playfair_Display } from "next/font/google";
+import { SiteChatWidget } from "@/components/layout/site-chat-widget";
+import { ThemeProvider } from "@/components/theme/theme-provider";
+import { membershipTheme } from "@/lib/membership";
+import { getSessionUser } from "@/lib/session";
+import { siteUrl } from "@/lib/site";
+import "./globals.css";
+
+const geistSans = Geist({
+  variable: "--font-geist-sans",
+  subsets: ["latin"],
+});
+
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
+
+const playfair = Playfair_Display({
+  variable: "--font-display",
+  subsets: ["latin"],
+});
+
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  viewportFit: "cover" as const,
+  themeColor: "#04102a",
+  colorScheme: "dark",
+};
+
+export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
+  title: {
+    default: "Coach JDC | Coach Jayson Dela Cruz",
+    template: "%s | Coach JDC",
+  },
+  description:
+    "Coach Jayson Dela Cruz works with OFWs, employees, and first-time entrepreneurs who need a real plan — mindset, business, and the discipline to follow through.",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Coach JDC",
+  },
+  formatDetection: {
+    telephone: false,
+  },
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    type: "website",
+    url: "/",
+    siteName: "Coach JDC",
+  },
+};
+
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  const user = await getSessionUser();
+  const membership = membershipTheme(user?.memberships);
+
+  return (
+    <html
+      lang="en"
+      data-scroll-behavior="smooth"
+      data-membership={membership || undefined}
+      suppressHydrationWarning
+      className={`${geistSans.variable} ${geistMono.variable} ${playfair.variable} dark h-full antialiased`}
+    >
+      <body className="min-h-full flex flex-col">
+        <ThemeProvider>{children}</ThemeProvider>
+        <SiteChatWidget />
+      </body>
+    </html>
+  );
+}

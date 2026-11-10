@@ -1,0 +1,243 @@
+"use server";
+
+import { revalidatePath } from "next/cache";
+
+import {
+  isFacebookAuthReady,
+  isGhlReady,
+  isGoogleAuthReady,
+  isMapsReady,
+  isR2Ready,
+  isTextBeeReady,
+} from "@/lib/integrations";
+import { getResolvedIntegrationSettings, saveIntegrationSettings } from "@/lib/integrations-store";
+import { listEliteCheckoutOrders } from "@/lib/elite-checkout-store";
+import { repostReceiptNotesForPending } from "@/lib/ghl-mastermind-payments";
+import { migrateDataUrlFilesToR2 } from "@/lib/r2-migrate";
+import { requireCapability } from "@/lib/session";
+
+export type IntegrationFormState = {
+  error?: string;
+  success?: string;
+};
+
+export async function saveGoogleMapsIntegration(
+  _prevState: IntegrationFormState,
+  formData: FormData,
+): Promise<IntegrationFormState> {
+  await requireCapability("integrations");
+
+  const googleMapsEmbedKey = String(formData.get("googleMapsEmbedKey") ?? "").trim();
+  const resolved = await getResolvedIntegrationSettings();
+
+  if (!googleMapsEmbedKey && !isMapsReady(resolved)) {
+    return { error: "Paste a Google Maps Embed API key to save this integration." };
+  }
+
+  if (googleMapsEmbedKey) {
+    await saveIntegrationSettings({ googleMapsEmbedKey });
+  }
+  revalidatePath("/dashboard/integrations");
+  revalidatePath("/dashboard");
+  revalidatePath("/dashboard/contacts");
+  revalidatePath("/contact");
+
+  return { success: "Google Maps key saved." };
+}
+
+export async function saveGoogleAuthIntegration(
+  _prevState: IntegrationFormState,
+  formData: FormData,
+): Promise<IntegrationFormState> {
+  await requireCapability("integrations");
+
+  const incoming = {
+    googleClientId: String(formData.get("googleClientId") ?? "").trim(),
+    googleClientSecret: String(formData.get("googleClientSecret") ?? "").trim(),
+  };
+  const current = await getResolvedIntegrationSettings();
+  const preview = {
+    ...current,
+    googleClientId: incoming.googleClientId || current.googleClientId,
+    googleClientSecret: incoming.googleClientSecret || current.googleClientSecret,
+  };
+
+  if (!isGoogleAuthReady(preview)) {
+    return { error: "Paste both the Google OAuth Client ID and Client Secret." };
+  }
+
+  await saveIntegrationSettings(incoming);
+  revalidatePath("/dashboard/integrations");
+  revalidatePath("/login");
+  revalidatePath("/register");
+
+  return { success: "Google Sign-In credentials saved." };
+}
+
+export async function saveFacebookAuthIntegration(
+  _prevState: IntegrationFormState,
+  formData: FormData,
+): Promise<IntegrationFormState> {
+  await requireCapability("integrations");
+
+  const incoming = {
+    facebookAppId: String(formData.get("facebookAppId") ?? "").trim(),
+    facebookAppSecret: String(formData.get("facebookAppSecret") ?? "").trim(),
+  };
+  const current = await getResolvedIntegrationSettings();
+  const preview = {
+    ...current,
+    facebookAppId: incoming.facebookAppId || current.facebookAppId,
+    facebookAppSecret: incoming.facebookAppSecret || current.facebookAppSecret,
+  };
+
+  if (!isFacebookAuthReady(preview)) {
+    return { error: "Paste both the Facebook App ID and App Secret." };
+  }
+
+  await saveIntegrationSettings(incoming);
+  revalidatePath("/dashboard/integrations");
+  revalidatePath("/login");
+  revalidatePath("/register");
+
+  return { success: "Facebook Login credentials saved." };
+}
+
+export async function saveR2Integration(
+  _prevState: IntegrationFormState,
+  formData: FormData,
+): Promise<IntegrationFormState> {
+  await requireCapability("integrations");
+
+  const incoming = {
+    r2AccountId: String(formData.get("r2AccountId") ?? "").trim(),
+    r2AccessKeyId: String(formData.get("r2AccessKeyId") ?? "").trim(),
+    r2SecretAccessKey: String(formData.get("r2SecretAccessKey") ?? "").trim(),
+    r2Bucket: String(formData.get("r2Bucket") ?? "").trim(),
+    r2PublicUrl: String(formData.get("r2PublicUrl") ?? "").trim(),
+  };
+  const current = await getResolvedIntegrationSettings();
+  const preview = {
+    ...current,
+    r2AccountId: incoming.r2AccountId || current.r2AccountId,
+    r2AccessKeyId: incoming.r2AccessKeyId || current.r2AccessKeyId,
+    r2SecretAccessKey: incoming.r2SecretAccessKey || current.r2SecretAccessKey,
+    r2Bucket: incoming.r2Bucket || current.r2Bucket,
+    r2PublicUrl: incoming.r2PublicUrl || current.r2PublicUrl,
+  };
+
+  if (!isR2Ready(preview)) {
+    return { error: "Fill every Cloudflare R2 field the first time you connect this integration." };
+  }
+
+  await saveIntegrationSettings(incoming);
+  revalidatePath("/dashboard/integrations");
+  revalidatePath("/dashboard/settings");
+
+  return { success: "Cloudflare R2 credentials saved." };
+}
+
+export async function saveGhlIntegration(
+  _prevState: IntegrationFormState,
+  formData: FormData,
+): Promise<IntegrationFormState> {
+  await requireCapability("integrations");
+
+  const incoming = {
+    ghlApiKey: String(formData.get("ghlApiKey") ?? "").trim(),
+    ghlLocationId: String(formData.get("ghlLocationId") ?? "").trim(),
+  };
+  const current = await getResolvedIntegrationSettings();
+  const preview = {
+    ...current,
+    ghlApiKey: incoming.ghlApiKey || current.ghlApiKey,
+    ghlLocationId: incoming.ghlLocationId || current.ghlLocationId,
+  };
+
+  if (!isGhlReady(preview)) {
+    return { error: "Paste the AiFunnels Private Integration token and the JDC Elite Society location ID." };
+  }
+
+  await saveIntegrationSettings(incoming);
+  revalidatePath("/dashboard/integrations");
+
+  return { success: "AiFunnels JDC Elite Society subaccount saved." };
+}
+
+export async function saveTextBeeIntegration(
+  _prevState: IntegrationFormState,
+  formData: FormData,
+): Promise<IntegrationFormState> {
+  await requireCapability("integrations");
+
+  const incoming = {
+    textbeeApiKey: String(formData.get("textbeeApiKey") ?? "").trim(),
+    textbeeDeviceId: String(formData.get("textbeeDeviceId") ?? "").trim(),
+  };
+  const current = await getResolvedIntegrationSettings();
+  const preview = {
+    ...current,
+    textbeeApiKey: incoming.textbeeApiKey || current.textbeeApiKey,
+    textbeeDeviceId: incoming.textbeeDeviceId || current.textbeeDeviceId,
+  };
+
+  if (!isTextBeeReady(preview)) {
+    return { error: "Paste your TextBee API key and device ID." };
+  }
+
+  await saveIntegrationSettings(incoming);
+  revalidatePath("/dashboard/integrations");
+
+  return { success: "TextBee SMS gateway saved." };
+}
+
+export async function migrateFilesToR2Action(
+  _prevState: IntegrationFormState,
+  _formData: FormData,
+): Promise<IntegrationFormState> {
+  await requireCapability("integrations");
+
+  const summary = await migrateDataUrlFilesToR2();
+  const migrated = summary.profilePhotos + summary.receipts + summary.contactPhotos;
+
+  revalidatePath("/dashboard/integrations");
+  revalidatePath("/dashboard/contacts");
+
+  if (migrated === 0 && summary.errors.length === 0) {
+    return { success: "Nothing to migrate — every file already lives on Cloudflare R2." };
+  }
+
+  const parts = [
+    summary.profilePhotos ? `${summary.profilePhotos} profile photo${summary.profilePhotos === 1 ? "" : "s"}` : "",
+    summary.receipts ? `${summary.receipts} receipt${summary.receipts === 1 ? "" : "s"}` : "",
+    summary.contactPhotos ? `${summary.contactPhotos} contact photo${summary.contactPhotos === 1 ? "" : "s"}` : "",
+  ].filter(Boolean);
+
+  if (summary.errors.length > 0) {
+    return {
+      error: `Migrated ${parts.join(", ") || "nothing"}. ${summary.errors.length} failed: ${summary.errors.slice(0, 3).join("; ")}${summary.errors.length > 3 ? "…" : ""}`,
+    };
+  }
+
+  return { success: `Migrated ${parts.join(", ")} to Cloudflare R2.` };
+}
+
+export async function repostReceiptNotesAction(
+  _prevState: IntegrationFormState,
+  _formData: FormData,
+): Promise<IntegrationFormState> {
+  await requireCapability("integrations");
+
+  const orders = await listEliteCheckoutOrders();
+  const result = await repostReceiptNotesForPending(orders);
+
+  if (result.total === 0) {
+    return { success: "Nothing to repost — no pending orders with a receipt on file." };
+  }
+  if (result.errors.length > 0) {
+    return {
+      error: `Reposted ${result.posted}/${result.total}. ${result.errors.length} failed: ${result.errors.slice(0, 3).join("; ")}${result.errors.length > 3 ? "…" : ""}`,
+    };
+  }
+  return { success: `Reposted the corrected receipt link on ${result.posted} pending order${result.posted === 1 ? "" : "s"}.` };
+}

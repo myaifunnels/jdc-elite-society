@@ -1,0 +1,684 @@
+"use client";
+
+import { ArrowRight, Lock, Smartphone, UserRound } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { FormEvent, type ReactNode, useMemo, useRef, useState } from "react";
+
+import { mastermindOffer } from "@/data/mastermind-offer";
+import { ZoomLogo } from "@/components/dashboard/integration-logos";
+import { useWebinarPhase } from "@/components/webinars/webinar-countdown";
+import { WebinarRegisterModal } from "@/components/webinars/webinar-register-modal";
+import { WEBINAR_ZOOM_MEETING_ID, WEBINAR_ZOOM_PASSCODE } from "@/lib/webinars";
+
+const PHOTO_TYPES = "image/jpeg,image/png,image/webp,image/gif";
+const RECEIPT_TYPES = "image/jpeg,image/png,image/webp,application/pdf";
+const DRAFT_STORAGE_KEY = "webinar-register-draft";
+
+type RegisterDraft = { name: string; phone: string };
+
+function readDraft(): RegisterDraft | null {
+  try {
+    const raw = window.sessionStorage.getItem(DRAFT_STORAGE_KEY);
+    return raw ? (JSON.parse(raw) as RegisterDraft) : null;
+  } catch {
+    return null;
+  }
+}
+
+function writeDraft(draft: RegisterDraft) {
+  try {
+    window.sessionStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(draft));
+  } catch {
+    // Private/restricted browser contexts can throw on storage access; the visitor just
+    // retypes their details after the Google redirect instead of losing the form.
+  }
+}
+
+function ZoomMeetingDetails() {
+  return (
+    <p className="m-0 text-center text-sm text-white/60">
+      Meeting ID: <span className="text-base font-bold text-white/85">{WEBINAR_ZOOM_MEETING_ID}</span> &middot; Passcode:{" "}
+      <span className="text-base font-bold text-white/85">{WEBINAR_ZOOM_PASSCODE}</span>
+    </p>
+  );
+}
+
+function GoogleIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
+      <path
+        fill="#EA4335"
+        d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"
+      />
+      <path
+        fill="#4285F4"
+        d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.9-2.26 5.36-4.78 7.02l7.73 6c4.51-4.18 7.09-10.36 7.09-17.49z"
+      />
+      <path
+        fill="#FBBC05"
+        d="M10.53 28.59a14.5 14.5 0 0 1-.76-4.59c0-1.59.27-3.13.76-4.59l-7.98-6.19A23.94 23.94 0 0 0 0 24c0 3.86.92 7.51 2.56 10.78l7.97-6.19z"
+      />
+      <path
+        fill="#34A853"
+        d="M24 48c6.48 0 11.92-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.97 6.19C6.51 42.62 14.62 48 24 48z"
+      />
+      <path fill="none" d="M0 0h48v48H0z" />
+    </svg>
+  );
+}
+
+/** Same label + icon + input layout as the site's main sign-in/register form (see AuthField in
+ * src/components/auth/auth-panel.tsx), reused here so the webinar registration modal follows the
+ * exact same look — this component isn't exported from there, so it's kept in sync locally. */
+function WebinarAuthField({
+  label,
+  icon,
+  className,
+  action,
+  children,
+}: {
+  label: string;
+  icon?: ReactNode;
+  className?: string;
+  action?: ReactNode;
+  children: ReactNode;
+}) {
+  return (
+    <label className={className ? `auth-field ${className}` : "auth-field"}>
+      <span className="auth-field-copy">
+        <em>{label}</em>
+        <span className="auth-input-wrap">
+          {icon}
+          {children}
+        </span>
+      </span>
+      {action}
+    </label>
+  );
+}
+
+type RegisterResult =
+  | { ok: true; tier: "free" | "paid_overflow"; status?: string; needsPasswordSetup?: boolean }
+  | { ok: false; error: string; accountExists?: boolean; email?: string; skipsTempPassword?: boolean };
+type SignInResult =
+  | { ok: true; status: "registered"; tier: "free" | "paid_overflow"; needsPasswordSetup?: boolean }
+  | {
+      ok: true;
+      status: "already_registered";
+      tier: "free" | "paid_overflow";
+      registrantStatus: string;
+      needsPasswordSetup?: boolean;
+    }
+  | { ok: true; status: "needs_overflow_payment"; name: string; email: string; phone: string }
+  | { ok: false; error: string };
+
+type Outcome = "free_confirmed" | "overflow_pending" | "overflow_confirmed" | "rejected";
+
+function outcomeFor(tier: "free" | "paid_overflow", status?: string): Outcome {
+  if (status === "rejected") return "rejected";
+  if (tier === "free") return "free_confirmed";
+  return status === "confirmed" ? "overflow_confirmed" : "overflow_pending";
+}
+
+export function WebinarRegisterPanel({
+  webinarId,
+  scheduledAt,
+  serverNow,
+  hasReplay,
+  freeSeatsLeft,
+  overflowPrice,
+  joinUrl,
+  existingRegistration,
+  signedInUser,
+}: {
+  webinarId: string;
+  /** The webinar's scheduled start — with `serverNow`, drives the live / registration-closed
+   * states (registration closes WEBINAR_LIVE_WINDOW_MS after the start). */
+  scheduledAt: string;
+  /** The server's clock when this page rendered; used until the client clock takes over. */
+  serverNow: number;
+  /** Whether a replay is published — decides between "Watch replay" and "replay coming soon"
+   * once registration has closed. */
+  hasReplay: boolean;
+  freeSeatsLeft: number;
+  overflowPrice: number;
+  /** Where "Join via Zoom" should link once someone's seat is confirmed — the webinar's own
+   * zoomLink field. */
+  joinUrl?: string;
+  /** The signed-in visitor's existing registration for this webinar, if any — looked up
+   * server-side by session/email so a returning registrant never sees "Register" again. */
+  existingRegistration?: { tier: "free" | "paid_overflow"; status: string } | null;
+  /** The signed-in visitor's account details, if any — from the server session, e.g. right after
+   * "Continue with Google" resumes here. Skips the Register/Sign in tabs and shows a single
+   * pre-filled register form instead, since sign-in is already done. */
+  signedInUser?: { name: string; email: string; phone: string } | null;
+}) {
+  const router = useRouter();
+  const formRef = useRef<HTMLFormElement>(null);
+  const isOverflow = freeSeatsLeft <= 0;
+  const phase = useWebinarPhase(scheduledAt, serverNow);
+  const isLive = phase === "live";
+
+  // A signed-in session is authoritative; otherwise fall back to whatever draft was saved just
+  // before redirecting to Google (see "Continue with Google" below), read once via a lazy
+  // initializer rather than an effect + setState pair.
+  const initialDraft = useMemo(
+    () => (signedInUser || typeof window === "undefined" ? null : readDraft()),
+    [signedInUser],
+  );
+  // `?register=1` marks a return trip from the Google OAuth redirect (or a direct link) — open
+  // the modal immediately instead of making the visitor click "Reserve My Seat Now" again.
+  const [open, setOpen] = useState(
+    () => typeof window !== "undefined" && new URLSearchParams(window.location.search).get("register") === "1",
+  );
+  const [tab, setTab] = useState<"register" | "signin">("register");
+  const [pending, setPending] = useState(false);
+  const [error, setError] = useState("");
+  const [outcome, setOutcome] = useState<Outcome | null>(null);
+  const [photoName, setPhotoName] = useState("");
+  const [receiptName, setReceiptName] = useState("");
+
+  // Prefilled once a "sign in" attempt lands on a sold-out webinar — we already authenticated
+  // the visitor, we just can't finish registering them without a payment receipt, so we drop
+  // them into the normal overflow form with their account details pre-filled.
+  const [prefill, setPrefill] = useState<{ name: string; email: string; phone: string } | null>(null);
+
+  const [signinPending, setSigninPending] = useState(false);
+  const [signinError, setSigninError] = useState("");
+
+  // Set when the register form matches an email that already has an account — the API resets
+  // that account's password to the well-known temporary one (src/lib/auth-constants.ts) rather
+  // than silently attaching the registration, so this switches to the sign-in tab and tells the
+  // visitor how to get back in.
+  const [existingAccountEmail, setExistingAccountEmail] = useState("");
+  const [existingAccountSkipsTempPassword, setExistingAccountSkipsTempPassword] = useState(false);
+
+  function closeModal() {
+    setOpen(false);
+  }
+
+  function resetAndClose() {
+    setOutcome(null);
+    setError("");
+    setSigninError("");
+    setPrefill(null);
+    setExistingAccountEmail("");
+    setExistingAccountSkipsTempPassword(false);
+    setTab("register");
+    closeModal();
+  }
+
+  function goToDashboard() {
+    setOpen(false);
+    router.push("/dashboard/my-webinars");
+  }
+
+  function continueWithGoogle() {
+    const name = (formRef.current?.elements.namedItem("name") as HTMLInputElement | null)?.value ?? "";
+    const phone = (formRef.current?.elements.namedItem("phone") as HTMLInputElement | null)?.value ?? "";
+    writeDraft({ name, phone });
+    // Deliberately a hard navigation, not router.push: this hands off to an API route (Google's
+    // OAuth authorize URL), not a Next.js page.
+    // eslint-disable-next-line @next/next/no-location-assign-relative-destination
+    window.location.assign(`/api/auth/google?next=${encodeURIComponent("/webinars?register=1")}`);
+  }
+
+  async function onSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!formRef.current) return;
+    setError("");
+
+    if (isOverflow) {
+      const receipt = formRef.current.elements.namedItem("receipt") as HTMLInputElement | null;
+      if (!receipt?.files?.[0]) {
+        setError("Upload your payment receipt to reserve an overflow seat.");
+        return;
+      }
+    }
+
+    setPending(true);
+    const body = new FormData(formRef.current);
+    // A disabled input (the email field once signedInUser is set) is never included in
+    // FormData, so set it explicitly rather than trusting the form to carry it.
+    if (signedInUser) {
+      body.set("email", signedInUser.email);
+    }
+
+    try {
+      const response = await fetch(`/api/webinars/${webinarId}/register`, { method: "POST", body });
+      const payload = (await response.json().catch(() => null)) as RegisterResult | null;
+      if (!response.ok || !payload || !("ok" in payload) || !payload.ok) {
+        if (payload && "accountExists" in payload && payload.accountExists) {
+          setExistingAccountEmail(payload.email ?? "");
+          setExistingAccountSkipsTempPassword(Boolean(payload.skipsTempPassword));
+          setTab("signin");
+          setPending(false);
+          return;
+        }
+        setError((payload && "error" in payload && payload.error) || "We couldn't submit your registration. Try again.");
+        setPending(false);
+        return;
+      }
+      if (payload.needsPasswordSetup) {
+        setOpen(false);
+        router.push("/account/password");
+        return;
+      }
+      setOutcome(outcomeFor(payload.tier, payload.status));
+      router.refresh();
+    } catch {
+      setError("We couldn't submit your registration. Try again.");
+      setPending(false);
+    }
+  }
+
+  async function onSignIn(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setSigninError("");
+    setSigninPending(true);
+
+    const form = event.currentTarget;
+    const email = String(new FormData(form).get("email") ?? "");
+    const password = String(new FormData(form).get("password") ?? "");
+
+    try {
+      const response = await fetch(`/api/webinars/${webinarId}/signin-register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+      const payload = (await response.json().catch(() => null)) as SignInResult | null;
+      if (!payload || !payload.ok) {
+        setSigninError((payload && "error" in payload && payload.error) || "We couldn't sign you in. Try again.");
+        setSigninPending(false);
+        return;
+      }
+
+      if (payload.status === "needs_overflow_payment") {
+        setPrefill({ name: payload.name, email: payload.email, phone: payload.phone });
+        setTab("register");
+        setSigninPending(false);
+        router.refresh();
+        return;
+      }
+
+      if (payload.needsPasswordSetup) {
+        setOpen(false);
+        router.push("/account/password");
+        return;
+      }
+
+      if (payload.status === "already_registered") {
+        setOutcome(outcomeFor(payload.tier, payload.registrantStatus));
+      } else {
+        setOutcome(outcomeFor(payload.tier));
+      }
+      router.refresh();
+    } catch {
+      setSigninError("We couldn't sign you in. Try again.");
+      setSigninPending(false);
+    }
+  }
+
+  // The live window has passed — registration is closed for everyone (the register APIs enforce
+  // this too), including people who registered but never showed up.
+  if (phase === "closed") {
+    return (
+      <div className="flex w-full flex-col gap-3 sm:w-auto">
+        <div className="inline-flex w-fit items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2.5 text-sm font-extrabold text-white/90 backdrop-blur-xl">
+          Registration is closed &mdash; this webinar has ended.
+        </div>
+        {hasReplay ? (
+          <Link
+            href={`/webinars/${webinarId}/replay`}
+            className="button-primary pressable inline-flex min-h-[3.5rem] w-full items-center justify-center gap-2 px-10 text-base font-extrabold sm:w-auto sm:min-w-[20rem]"
+          >
+            Watch the replay
+          </Link>
+        ) : (
+          <p className="m-0 text-sm font-semibold text-white/70">The replay will be posted here soon.</p>
+        )}
+      </div>
+    );
+  }
+
+  if (existingRegistration?.status === "confirmed") {
+    return joinUrl ? (
+      <div className="flex w-full flex-col items-center gap-2 sm:w-auto">
+        <Link
+          href={joinUrl}
+          target="_blank"
+          rel="noreferrer"
+          className="button-primary pressable inline-flex min-h-[3.5rem] w-full items-center justify-center gap-2 px-10 text-base font-extrabold sm:w-auto sm:min-w-[20rem]"
+        >
+          <ZoomLogo size={20} />
+          {isLive ? "Join live now via Zoom" : "Join via Zoom"}
+        </Link>
+        <ZoomMeetingDetails />
+      </div>
+    ) : (
+      <div className="inline-flex items-center gap-2 rounded-full border border-emerald-300/30 bg-emerald-400/10 px-4 py-2.5 text-sm font-extrabold text-emerald-200">
+        <ZoomLogo size={20} />
+        You&rsquo;re registered — the Zoom link is on its way to your email.
+      </div>
+    );
+  }
+
+  if (existingRegistration?.status === "pending") {
+    return (
+      <div className="inline-flex items-center gap-2 rounded-full border border-amber-300/30 bg-amber-400/10 px-4 py-2.5 text-sm font-extrabold text-amber-200">
+        Payment received — pending verification.
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <button
+        type="button"
+        className="button-primary pressable inline-flex min-h-[3.5rem] w-full items-center justify-center gap-2 px-10 text-base font-extrabold sm:w-auto sm:min-w-[20rem]"
+        onClick={() => setOpen(true)}
+      >
+        {isOverflow
+          ? `Reserve overflow seat · ₱${overflowPrice}`
+          : isLive
+            ? "Register & join the live session"
+            : "Reserve My Seat Now"}
+      </button>
+
+      <WebinarRegisterModal
+        open={open}
+        onClose={resetAndClose}
+        title={
+          outcome
+            ? outcome === "rejected"
+              ? "About your registration"
+              : "Thank you!"
+            : signedInUser
+              ? "Reserve your seat"
+              : tab === "signin"
+                ? "Welcome back"
+                : "Join the webinar"
+        }
+      >
+        {outcome ? (
+          <div className="webinar-register-confirm">
+            {outcome === "free_confirmed" ? (
+              <p className="mt-1.5 text-sm text-white/70">
+                Your free seat is confirmed. Keep an eye on your email and phone for the join link.
+              </p>
+            ) : outcome === "overflow_confirmed" ? (
+              <p className="mt-1.5 text-sm text-white/70">
+                Your overflow seat is confirmed. Keep an eye on your email and phone for the join link.
+              </p>
+            ) : outcome === "overflow_pending" ? (
+              <p className="mt-1.5 text-sm text-white/70">
+                Payment received — pending verification. We&rsquo;ll confirm your overflow seat shortly after our
+                team reviews your receipt.
+              </p>
+            ) : (
+              <p className="mt-1.5 text-sm text-white/70">
+                Your overflow seat request wasn&rsquo;t approved. Contact support if you believe this is a mistake.
+              </p>
+            )}
+            <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+              {(outcome === "free_confirmed" || outcome === "overflow_confirmed") && joinUrl ? (
+                <Link
+                  href={joinUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="button-primary pressable inline-flex items-center justify-center gap-2"
+                >
+                  <ZoomLogo size={18} />
+                  Join via Zoom
+                </Link>
+              ) : (
+                <button type="button" className="button-primary pressable" onClick={goToDashboard}>
+                  Go to my dashboard
+                </button>
+              )}
+              <button type="button" className="button-secondary pressable" onClick={resetAndClose}>
+                Stay on this page
+              </button>
+            </div>
+            {(outcome === "free_confirmed" || outcome === "overflow_confirmed") && joinUrl ? (
+              <div className="mt-3">
+                <ZoomMeetingDetails />
+              </div>
+            ) : null}
+          </div>
+        ) : (
+          <>
+            {signedInUser ? (
+              <p className="mb-3 rounded-lg border border-emerald-300/30 bg-emerald-400/10 px-3 py-2 text-xs font-bold text-emerald-200">
+                Signed in as {signedInUser.email}
+              </p>
+            ) : (
+              <div className="macos-segment mx-auto mb-4" role="tablist" aria-label="Webinar registration">
+                <button type="button" role="tab" aria-selected={tab === "register"} onClick={() => setTab("register")} className={tab === "register" ? "is-active" : ""}>
+                  Register
+                </button>
+                <button type="button" role="tab" aria-selected={tab === "signin"} onClick={() => setTab("signin")} className={tab === "signin" ? "is-active" : ""}>
+                  Sign In
+                </button>
+              </div>
+            )}
+
+            {tab === "signin" && !signedInUser ? (
+              <p className="macos-lead mb-3">
+                {existingAccountEmail
+                  ? existingAccountSkipsTempPassword
+                    ? "That email already has an account. Sign in with your existing password to finish registering."
+                    : "That email already has an account. First-time access uses the temporary password JDCELITESOCIETY, then you'll set a new one."
+                  : "Sign in and we’ll reserve your seat for this webinar automatically."}
+              </p>
+            ) : (
+              <p className="macos-lead mb-3">
+                {signedInUser
+                  ? "Just confirm your phone number to lock in your seat."
+                  : isOverflow
+                    ? `Free seats are gone — reserve an overflow seat for ₱${overflowPrice}.`
+                    : "A few details and you're in."}
+              </p>
+            )}
+
+            {tab === "signin" && !signedInUser ? (
+              <form onSubmit={onSignIn} className="grid gap-3">
+                <button type="button" className="macos-btn macos-btn-google" onClick={continueWithGoogle}>
+                  <GoogleIcon />
+                  Continue with Google
+                </button>
+
+                <div className="auth-divider">
+                  <span>or continue with email</span>
+                </div>
+
+                <WebinarAuthField label="Email">
+                  <input
+                    id="webinar-signin-email"
+                    name="email"
+                    type="email"
+                    required
+                    defaultValue={existingAccountEmail}
+                    autoComplete="username"
+                    placeholder="name@mail.com"
+                  />
+                </WebinarAuthField>
+
+                <WebinarAuthField label="Password" icon={<Lock size={15} aria-hidden />}>
+                  <input
+                    id="webinar-signin-password"
+                    name="password"
+                    type="password"
+                    required
+                    autoComplete="current-password"
+                    placeholder="••••••••"
+                  />
+                </WebinarAuthField>
+
+                <Link href="/forgot-password" className="auth-forgot justify-self-end text-xs">
+                  Forgot password?
+                </Link>
+
+                {signinError ? <p className="auth-error">{signinError}</p> : null}
+
+                <button
+                  type="submit"
+                  disabled={signinPending}
+                  className="macos-btn macos-btn-primary auth-submit-btn mt-1 min-h-[3rem] w-full text-sm"
+                >
+                  <span>{signinPending ? "Signing in..." : "Sign In & Reserve My Seat"}</span>
+                  <ArrowRight size={17} aria-hidden />
+                </button>
+
+                <p className="auth-switch-copy">
+                  Don&rsquo;t have an account?{" "}
+                  <button type="button" className="auth-forgot" onClick={() => setTab("register")}>
+                    Register
+                  </button>
+                </p>
+              </form>
+            ) : (
+              <form ref={formRef} onSubmit={onSubmit} className="grid gap-3">
+                {prefill ? (
+                  <p className="mb-1 rounded-lg border border-emerald-300/30 bg-emerald-400/10 px-3 py-2 text-xs font-bold text-emerald-200">
+                    You&rsquo;re signed in. Finish reserving your overflow seat below.
+                  </p>
+                ) : null}
+
+                {!signedInUser && !prefill ? (
+                  <>
+                    <button type="button" className="macos-btn macos-btn-google" onClick={continueWithGoogle}>
+                      <GoogleIcon />
+                      Continue with Google
+                    </button>
+
+                    <div className="auth-divider">
+                      <span>or continue with email</span>
+                    </div>
+                  </>
+                ) : null}
+
+                <WebinarAuthField label="Full name" icon={<UserRound size={15} aria-hidden />}>
+                  <input
+                    id="webinar-reg-name"
+                    name="name"
+                    required
+                    autoComplete="name"
+                    defaultValue={signedInUser?.name ?? prefill?.name ?? initialDraft?.name ?? ""}
+                    placeholder="Juan Dela Cruz"
+                  />
+                </WebinarAuthField>
+
+                <WebinarAuthField label="Email">
+                  <input
+                    id="webinar-reg-email"
+                    name="email"
+                    type="email"
+                    required
+                    autoComplete="email"
+                    defaultValue={signedInUser?.email ?? prefill?.email ?? ""}
+                    disabled={Boolean(signedInUser)}
+                    placeholder="name@mail.com"
+                  />
+                </WebinarAuthField>
+
+                <WebinarAuthField label="Phone" icon={<Smartphone size={15} aria-hidden />}>
+                  <input
+                    id="webinar-reg-phone"
+                    name="phone"
+                    type="tel"
+                    required
+                    autoComplete="tel"
+                    defaultValue={signedInUser?.phone || prefill?.phone || initialDraft?.phone || ""}
+                    placeholder="09XXXXXXXXX"
+                  />
+                </WebinarAuthField>
+
+                <div className="grid gap-1.5">
+                  <label htmlFor="webinar-reg-photo" className="text-xs font-bold uppercase tracking-[0.06em] text-white/60">
+                    Photo (optional)
+                  </label>
+                  <label
+                    htmlFor="webinar-reg-photo"
+                    className="cursor-pointer truncate rounded-lg border border-dashed border-white/25 bg-black/20 px-3 py-2.5 text-sm text-white/60 hover:border-white/40"
+                  >
+                    {photoName || "Add a profile photo"}
+                  </label>
+                  <input
+                    id="webinar-reg-photo"
+                    name="photo"
+                    type="file"
+                    accept={PHOTO_TYPES}
+                    className="hidden"
+                    onChange={(event) => setPhotoName(event.target.files?.[0]?.name ?? "")}
+                  />
+                  <p className="m-0 text-[0.7rem] text-white/40">
+                    If you add a name and photo, they may appear publicly on this page as a registered attendee.
+                  </p>
+                </div>
+
+                {isOverflow ? (
+                  <div className="grid gap-1 rounded-lg border border-white/12 bg-black/25 p-3 text-xs text-white/70">
+                    <p className="m-0 font-bold uppercase tracking-[0.06em] text-white/50">Send &#8369;{overflowPrice} to</p>
+                    <p className="m-0">
+                      {mastermindOffer.payments.gcash.label} &middot; {mastermindOffer.payments.gcash.name} &middot;{" "}
+                      <strong className="text-white">{mastermindOffer.payments.gcash.number}</strong>
+                    </p>
+                  </div>
+                ) : null}
+
+                {isOverflow ? (
+                  <div className="grid gap-1.5">
+                    <label htmlFor="webinar-reg-receipt" className="text-xs font-bold uppercase tracking-[0.06em] text-white/60">
+                      Payment receipt <span className="text-amber-300">*</span>
+                    </label>
+                    <label
+                      htmlFor="webinar-reg-receipt"
+                      className="cursor-pointer truncate rounded-lg border border-dashed border-amber-300/40 bg-amber-400/5 px-3 py-2.5 text-sm text-amber-100/80 hover:border-amber-300/70"
+                    >
+                      {receiptName || "Upload your ₱" + overflowPrice + " payment receipt"}
+                    </label>
+                    <input
+                      id="webinar-reg-receipt"
+                      name="receipt"
+                      type="file"
+                      accept={RECEIPT_TYPES}
+                      required
+                      className="hidden"
+                      onChange={(event) => setReceiptName(event.target.files?.[0]?.name ?? "")}
+                    />
+                  </div>
+                ) : null}
+
+                {error ? <p className="auth-error">{error}</p> : null}
+
+                <button
+                  type="submit"
+                  disabled={pending}
+                  className="macos-btn macos-btn-primary auth-submit-btn mt-1 min-h-[3rem] w-full text-sm"
+                >
+                  <span>
+                    {pending
+                      ? "Submitting..."
+                      : isOverflow
+                        ? `Reserve overflow seat · ₱${overflowPrice}`
+                        : "Reserve My Seat Now"}
+                  </span>
+                  <ArrowRight size={17} aria-hidden />
+                </button>
+
+                {!signedInUser ? (
+                  <p className="auth-switch-copy">
+                    Already registering? <button type="button" className="auth-forgot" onClick={() => setTab("signin")}>Sign In</button>
+                  </p>
+                ) : null}
+              </form>
+            )}
+          </>
+        )}
+      </WebinarRegisterModal>
+    </>
+  );
+}

@@ -1,0 +1,42 @@
+"use server";
+
+import { revalidatePath } from "next/cache";
+
+import { isSafeAssetUrl, isTemporarySocialUrl, resolveLogoHref } from "@/lib/branding";
+import { saveBrandingSettings } from "@/lib/branding-store";
+import { requireCapability } from "@/lib/session";
+
+export type BrandingFormState = {
+  error?: string;
+  success?: string;
+};
+
+export async function saveLogoSettings(
+  _prevState: BrandingFormState,
+  formData: FormData,
+): Promise<BrandingFormState> {
+  await requireCapability("settings");
+
+  const logoUrl = String(formData.get("logoUrl") ?? "").trim();
+  const logoHref = resolveLogoHref(String(formData.get("logoHref") ?? "").trim() || "/", logoUrl);
+  const logoAlt = String(formData.get("logoAlt") ?? "").trim();
+
+  if (logoUrl && !isSafeAssetUrl(logoUrl)) {
+    return { error: "Use an https image URL or a path that starts with /." };
+  }
+
+  if (logoUrl && isTemporarySocialUrl(logoUrl)) {
+    return { error: "Facebook/Instagram image links expire and stop loading. Upload the logo to your own hosting and paste that URL." };
+  }
+
+  if (logoAlt.length > 120) {
+    return { error: "Keep the logo alt text under 120 characters." };
+  }
+
+  await saveBrandingSettings({ logoUrl, logoHref, logoAlt });
+  revalidatePath("/", "layout");
+  revalidatePath("/dashboard", "layout");
+  revalidatePath("/dashboard/settings");
+
+  return { success: logoUrl ? "Logo saved. The public mark links to the homepage." : "Logo removed. The text mark will be used instead." };
+}

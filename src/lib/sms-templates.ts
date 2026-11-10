@@ -1,0 +1,381 @@
+export type SmsTemplateKey =
+  | "mastermind_purchase_buyer"
+  | "mastermind_purchase_team"
+  | "coaching_offer_buyer"
+  | "coaching_offer_team"
+  | "payment_approved"
+  | "payment_rejected"
+  | "password_reset"
+  | "university_welcome"
+  | "support_ticket_member"
+  | "support_ticket_team"
+  | "support_reply_member"
+  | "support_reply_team"
+  | "support_status_member"
+  | "receipt_reupload_team"
+  | "webinar_registration_confirmed"
+  | "webinar_existing_account"
+  | "webinar_reminder_3d"
+  | "webinar_reminder_2d"
+  | "webinar_reminder_dayof"
+  | "webinar_reminder_start"
+  | "duplication_followup_5d"
+  | "duplication_followup_3d"
+  | "duplication_followup_2d"
+  | "duplication_followup_24h"
+  | "duplication_followup_3h"
+  | "duplication_followup_1h"
+  | "duplication_payment_verification"
+  | "duplication_payment_confirmed"
+  | "duplication_payment_rejected"
+  | "partnership_qualified"
+  | "partnership_not_qualified";
+
+export type SmsTemplateDefinition = {
+  key: SmsTemplateKey;
+  label: string;
+  description: string;
+  vars: string[];
+  defaultBody: string;
+};
+
+export type SmsTemplate = {
+  id: string;
+  key: SmsTemplateKey | null;
+  label: string;
+  description: string;
+  vars: string[];
+  body: string;
+  isCustom: boolean;
+  updatedAt: string;
+};
+
+export const SMS_TEMPLATE_GROUPS: Array<{ id: string; label: string; keys: SmsTemplateKey[] }> = [
+  { id: "auth", label: "Account", keys: ["password_reset", "university_welcome"] },
+  {
+    id: "elite",
+    label: "JDC Elite Society",
+    keys: [
+      "mastermind_purchase_buyer",
+      "mastermind_purchase_team",
+      "coaching_offer_buyer",
+      "coaching_offer_team",
+      "payment_approved",
+      "payment_rejected",
+      "receipt_reupload_team",
+    ],
+  },
+  {
+    id: "support",
+    label: "Support",
+    keys: ["support_ticket_member", "support_ticket_team", "support_reply_member", "support_reply_team", "support_status_member"],
+  },
+  {
+    id: "webinars",
+    label: "Webinars",
+    keys: [
+      "webinar_registration_confirmed",
+      "webinar_existing_account",
+      "webinar_reminder_3d",
+      "webinar_reminder_2d",
+      "webinar_reminder_dayof",
+      "webinar_reminder_start",
+    ],
+  },
+  {
+    id: "duplication",
+    label: "JDC Mastermind S2: Duplication",
+    keys: [
+      "duplication_followup_5d",
+      "duplication_followup_3d",
+      "duplication_followup_2d",
+      "duplication_followup_24h",
+      "duplication_followup_3h",
+      "duplication_followup_1h",
+      "duplication_payment_verification",
+      "duplication_payment_confirmed",
+      "duplication_payment_rejected",
+    ],
+  },
+  {
+    id: "partnership",
+    label: "JDC Partnership Program",
+    keys: ["partnership_qualified", "partnership_not_qualified"],
+  },
+];
+
+export const SMS_TEMPLATE_DEFINITIONS: SmsTemplateDefinition[] = [
+  {
+    key: "password_reset",
+    label: "Forgot password — reset code",
+    description: "Sent when someone requests a password reset. Use {{code}} — do not put long links in SMS.",
+    vars: ["name", "code"],
+    defaultBody:
+      "Hi {{name}},\n\nYour JDC Elite Society password reset code is {{code}}. It expires in 1 hour.\n\nIf you did not ask for this, ignore this text.\n\nBest Regards,\n-Team JDC Elite Society",
+  },
+  {
+    key: "university_welcome",
+    label: "University access open",
+    description: "Sent when University / Mastermind access is granted and a portal account is ready.",
+    vars: ["name"],
+    defaultBody:
+      "Hi {{name}},\n\nYour JDC Elite Society University is open. Mastermind Sessions 1 and 2 are in your dashboard.\n\nOpen your dashboard to sign in. If you have not set a password yet, use Forgot password.\n\nBest Regards,\n-Team JDC Elite Society",
+  },
+  {
+    key: "mastermind_purchase_buyer",
+    label: "JDC Mastermind — payment received (buyer)",
+    description: "Sent to the buyer the moment their Mastermind checkout is submitted.",
+    vars: ["name", "price"],
+    defaultBody:
+      "Hi {{name}},\n\nYour JDC Mastermind payment of {{price}} is received. Your access is unlocked right now — no waiting.\n\nOpen your dashboard to get started.\n\nBest Regards,\n-Team JDC Elite Society",
+  },
+  {
+    key: "mastermind_purchase_team",
+    label: "JDC Mastermind — payment received (team alert)",
+    description: "Sent to the team notify number when a new Mastermind payment comes in.",
+    vars: ["name", "price", "paymentMethod"],
+    defaultBody:
+      "New JDC Mastermind payment.\n\nName: {{name}}\nAmount: {{price}}\nMethod: {{paymentMethod}}\n\nVerify the receipt on the dashboard.\n\nBest Regards,\n-Team JDC Elite Society",
+  },
+  {
+    key: "coaching_offer_buyer",
+    label: "1-on-1 Coaching — payment received (buyer)",
+    description: "Sent to the buyer after they grab the post-checkout coaching offer.",
+    vars: ["name", "price", "hours"],
+    defaultBody:
+      "Hi {{name}},\n\nYour 1-on-1 Coaching payment of {{price}} for {{hours}} is received.\n\nWe'll message you soon to schedule your session.\n\nBest Regards,\n-Team JDC Elite Society",
+  },
+  {
+    key: "coaching_offer_team",
+    label: "1-on-1 Coaching — payment received (team alert)",
+    description: "Sent to the team notify number when a coaching add-on payment comes in.",
+    vars: ["name", "price", "format"],
+    defaultBody:
+      "New Coaching add-on.\n\nName: {{name}}\nFormat: {{format}}\nAmount: {{price}}\n\nVerify the receipt on the dashboard.\n\nBest Regards,\n-Team JDC Elite Society",
+  },
+  {
+    key: "payment_approved",
+    label: "Payment approved",
+    description: "Sent to the buyer when an admin approves their Mastermind payment.",
+    vars: ["name"],
+    defaultBody:
+      "Hi {{name}},\n\nGreat news — your JDC Mastermind payment is verified. Your access is fully active.\n\nOpen your dashboard to get started.\n\nBest Regards,\n-Team JDC Elite Society",
+  },
+  {
+    key: "payment_rejected",
+    label: "Payment rejected",
+    description: "Sent to the buyer when an admin rejects their Mastermind payment.",
+    vars: ["name"],
+    defaultBody:
+      "Hi {{name}},\n\nWe could not verify your receipt, so your University access is on hold for now.\n\nOpen Support on your dashboard to send a new receipt or message us.\n\nBest Regards,\n-Team JDC Elite Society",
+  },
+  {
+    key: "receipt_reupload_team",
+    label: "Receipt re-uploaded (team alert)",
+    description: "Sent to the team when a member uploads a new payment receipt from Support.",
+    vars: ["name", "email"],
+    defaultBody:
+      "A member re-uploaded a Mastermind receipt.\n\nName: {{name}}\nEmail: {{email}}\n\nReview it on Contacts → Payment Verification.\n\nBest Regards,\n-Team JDC Elite Society",
+  },
+  {
+    key: "support_ticket_member",
+    label: "Support ticket opened (member)",
+    description: "Confirms to the member that their support ticket was created.",
+    vars: ["name", "subject"],
+    defaultBody:
+      "Hi {{name}},\n\nWe received your support request: {{subject}}.\n\nOur team will reply in your dashboard Support inbox.\n\nBest Regards,\n-Team JDC Elite Society",
+  },
+  {
+    key: "support_ticket_team",
+    label: "Support ticket opened (team alert)",
+    description: "Sent to the team notify number when a customer opens a ticket.",
+    vars: ["name", "subject", "category"],
+    defaultBody:
+      "New support ticket.\n\nFrom: {{name}}\nCategory: {{category}}\nSubject: {{subject}}\n\nOpen Support on the dashboard to reply.\n\nBest Regards,\n-Team JDC Elite Society",
+  },
+  {
+    key: "support_reply_member",
+    label: "Support reply (member)",
+    description: "Sent to the member when an admin replies.",
+    vars: ["name", "subject", "preview"],
+    defaultBody:
+      "Hi {{name}},\n\nJDC Support replied on {{subject}}:\n{{preview}}\n\nOpen Support on your dashboard to continue the conversation.\n\nBest Regards,\n-Team JDC Elite Society",
+  },
+  {
+    key: "support_reply_team",
+    label: "Support reply (team alert)",
+    description: "Sent to the team when a member replies on an open ticket.",
+    vars: ["name", "subject", "preview"],
+    defaultBody:
+      "Member reply on support.\n\nFrom: {{name}}\nTicket: {{subject}}\n{{preview}}\n\nOpen Support on the dashboard.\n\nBest Regards,\n-Team JDC Elite Society",
+  },
+  {
+    key: "support_status_member",
+    label: "Support status update (member)",
+    description: "Sent when an admin changes ticket status (waiting, resolved, completed).",
+    vars: ["name", "subject", "status"],
+    defaultBody:
+      "Hi {{name}},\n\nYour support ticket {{subject}} is now {{status}}.\n\nOpen Support on your dashboard for details.\n\nBest Regards,\n-Team JDC Elite Society",
+  },
+  {
+    key: "webinar_registration_confirmed",
+    label: "Webinar registration confirmed",
+    description:
+      "Sent the moment someone registers for a webinar, whichever webinar it is. No links in SMS by design — the Zoom link goes out by email and lives on My Webinars.",
+    vars: ["name", "webinarTitle", "dateLabel", "timeLabel"],
+    defaultBody:
+      "Hi {{name}},\n\nYou're in! {{webinarTitle}} is on {{dateLabel}} at {{timeLabel}} (Manila time).\n\nCheck your email for the Zoom link, or open My Webinars on your dashboard.\n\nBest Regards,\n-Team JDC Elite Society",
+  },
+  {
+    key: "webinar_existing_account",
+    label: "Webinar registration — existing account found",
+    description:
+      "Sent the moment someone registers for a webinar using an email/phone that already has a JDC account. They must sign in to finish reserving their seat — this text tells them how, immediately, instead of leaving them to notice the in-page prompt.",
+    vars: ["name", "webinarTitle", "tempPassword"],
+    defaultBody:
+      "Hi {{name}},\n\nYou already have a JDC account, so we could not auto-register you for {{webinarTitle}} yet.\n\nSign in with this email and the temporary password {{tempPassword}}, then reserve your seat again to confirm it.\n\nBest Regards,\n-Team JDC Elite Society",
+  },
+  {
+    key: "webinar_reminder_3d",
+    label: "Webinar reminder — 3 days before",
+    description:
+      "Sent automatically 3 days before every webinar, to every confirmed registrant. No links in SMS by design.",
+    vars: ["name", "webinarTitle", "dateLabel", "timeLabel"],
+    defaultBody:
+      "Hi {{name}},\n\n{{webinarTitle}} is in 3 days — {{dateLabel}} at {{timeLabel}} (Manila time).\n\nCheck your email or My Webinars on your dashboard for the Zoom link.\n\nBest Regards,\n-Team JDC Elite Society",
+  },
+  {
+    key: "webinar_reminder_2d",
+    label: "Webinar reminder — 2 days before",
+    description:
+      "Sent automatically 2 days before every webinar, to every confirmed registrant. No links in SMS by design.",
+    vars: ["name", "webinarTitle", "dateLabel", "timeLabel"],
+    defaultBody:
+      "Hi {{name}},\n\n{{webinarTitle}} is in 2 days — {{dateLabel}} at {{timeLabel}} (Manila time).\n\nCheck your email or My Webinars on your dashboard for the Zoom link.\n\nBest Regards,\n-Team JDC Elite Society",
+  },
+  {
+    key: "webinar_reminder_dayof",
+    label: "Webinar reminder — day of the webinar",
+    description:
+      "Sent automatically the morning of every webinar, to every confirmed registrant. No links in SMS by design.",
+    vars: ["name", "webinarTitle", "dateLabel", "timeLabel"],
+    defaultBody:
+      "Hi {{name}},\n\nToday's the day! {{webinarTitle}} starts today at {{timeLabel}} (Manila time).\n\nCheck your email or My Webinars on your dashboard for the Zoom link.\n\nBest Regards,\n-Team JDC Elite Society",
+  },
+  {
+    key: "webinar_reminder_start",
+    label: "Webinar reminder — starting now",
+    description:
+      "Sent automatically at the exact start time of every webinar, to every confirmed registrant. No links in SMS by design.",
+    vars: ["name", "webinarTitle", "timeLabel"],
+    defaultBody:
+      "Hi {{name}},\n\n{{webinarTitle}} is starting now.\n\nCheck your email or My Webinars on your dashboard for the Zoom link.\n\nBest Regards,\n-Team JDC Elite Society",
+  },
+  {
+    key: "duplication_followup_5d",
+    label: "Duplication follow-up — 5 days before",
+    description:
+      "Sent 5 days before a JDC Mastermind: Duplication Season session to everyone enrolled. No links in SMS by design.",
+    vars: ["name", "sessionLabel", "dateLabel", "timeLabel"],
+    defaultBody:
+      "Hi {{name}},\n\n{{sessionLabel}} of JDC Mastermind: Duplication Season is in 5 days, {{dateLabel}} at {{timeLabel}} (Manila time).\n\nCheck your email or your dashboard for details.\n\nBest Regards,\n-Team JDC Elite Society",
+  },
+  {
+    key: "duplication_followup_3d",
+    label: "Duplication follow-up — 3 days before",
+    description:
+      "Sent 3 days before a JDC Mastermind: Duplication Season session to everyone enrolled. No links in SMS by design.",
+    vars: ["name", "sessionLabel", "dateLabel", "timeLabel"],
+    defaultBody:
+      "Hi {{name}},\n\n{{sessionLabel}} of JDC Mastermind: Duplication Season is in 3 days, {{dateLabel}} at {{timeLabel}} (Manila time).\n\nCheck your email or your dashboard for details.\n\nBest Regards,\n-Team JDC Elite Society",
+  },
+  {
+    key: "duplication_followup_2d",
+    label: "Duplication follow-up — 2 days before",
+    description:
+      "Sent 2 days before a JDC Mastermind: Duplication Season session to everyone enrolled. No links in SMS by design.",
+    vars: ["name", "sessionLabel", "dateLabel", "timeLabel"],
+    defaultBody:
+      "Hi {{name}},\n\n{{sessionLabel}} of JDC Mastermind: Duplication Season is in 2 days, {{dateLabel}} at {{timeLabel}} (Manila time).\n\nCheck your email or your dashboard for details.\n\nBest Regards,\n-Team JDC Elite Society",
+  },
+  {
+    key: "duplication_followup_24h",
+    label: "Duplication follow-up — 24 hours before",
+    description:
+      "Sent 24 hours before a JDC Mastermind: Duplication Season session to everyone enrolled. No links in SMS by design.",
+    vars: ["name", "sessionLabel", "dateLabel", "timeLabel"],
+    defaultBody:
+      "Hi {{name}},\n\n{{sessionLabel}} of JDC Mastermind: Duplication Season is tomorrow, {{dateLabel}} at {{timeLabel}} (Manila time).\n\nCheck your email or your dashboard for details.\n\nBest Regards,\n-Team JDC Elite Society",
+  },
+  {
+    key: "duplication_followup_3h",
+    label: "Duplication follow-up — 3 hours before",
+    description:
+      "Sent 3 hours before a JDC Mastermind: Duplication Season session to everyone enrolled. No links in SMS by design.",
+    vars: ["name", "sessionLabel", "timeLabel"],
+    defaultBody:
+      "Hi {{name}},\n\n{{sessionLabel}} of JDC Mastermind: Duplication Season starts in 3 hours, at {{timeLabel}} (Manila time).\n\nCheck your email or your dashboard for the session link.\n\nBest Regards,\n-Team JDC Elite Society",
+  },
+  {
+    key: "duplication_followup_1h",
+    label: "Duplication follow-up — 1 hour before",
+    description:
+      "Sent 1 hour before a JDC Mastermind: Duplication Season session to everyone enrolled. No links in SMS by design.",
+    vars: ["name", "sessionLabel", "timeLabel"],
+    defaultBody:
+      "Hi {{name}},\n\n{{sessionLabel}} of JDC Mastermind: Duplication Season starts in 1 hour, at {{timeLabel}} (Manila time).\n\nCheck your email or your dashboard for the session link. See you there!\n\nBest Regards,\n-Team JDC Elite Society",
+  },
+  {
+    key: "duplication_payment_verification",
+    label: "Duplication — payment received, verifying",
+    description:
+      "Sent the moment a JDC Mastermind: Duplication Season checkout is submitted, before an admin has verified the receipt.",
+    vars: ["name"],
+    defaultBody:
+      "Hi {{name}},\n\nGot your payment for JDC Mastermind: Duplication Season. I'm verifying it now, no action needed from you.\n\nYou'll get an email once your seat is confirmed.\n\nBest Regards,\n-Team JDC Elite Society",
+  },
+  {
+    key: "duplication_payment_confirmed",
+    label: "Duplication — payment confirmed",
+    description: "Sent to the buyer when an admin verifies their JDC Mastermind: Duplication Season payment.",
+    vars: ["name"],
+    defaultBody:
+      "Hi {{name}},\n\nYour payment for JDC Mastermind: Duplication Season is verified. Your seat is confirmed for October 2 and October 9.\n\nOpen your dashboard for details.\n\nBest Regards,\n-Team JDC Elite Society",
+  },
+  {
+    key: "duplication_payment_rejected",
+    label: "Duplication — payment rejected",
+    description: "Sent to the buyer when an admin rejects their JDC Mastermind: Duplication Season payment.",
+    vars: ["name"],
+    defaultBody:
+      "Hi {{name}},\n\nWe could not verify your payment for JDC Mastermind: Duplication Season.\n\nOpen Support on your dashboard to resend your receipt or message us.\n\nBest Regards,\n-Team JDC Elite Society",
+  },
+  {
+    key: "partnership_qualified",
+    label: "Partnership — qualified",
+    description: "Sent when a contact moves to the Qualified stage in the JDC Partnership Program pipeline.",
+    vars: ["name"],
+    defaultBody:
+      "Hi {{name}},\n\nWe've approved your application as an official JDC partner. Your partnership link is ready in your Dashboard > University > Partnership. You can sign in and start sharing it with people who may benefit from JDC Elite Society.\n\n-JDC Elite Society Team",
+  },
+  {
+    key: "partnership_not_qualified",
+    label: "Partnership — not qualified",
+    description: "Sent when a contact moves to the Not Qualified stage in the JDC Partnership Program pipeline.",
+    vars: ["name"],
+    defaultBody:
+      "Hi {{name}},\n\nThank you for applying to the JDC Partnership Program. Our partners must first be active JDC Elite Society members. Please check your email for the next steps. Once your membership is active, our team will review and approve your partnership access.\n\n-JDC Elite Society Team",
+  },
+];
+
+export function definitionFor(key: SmsTemplateKey) {
+  return SMS_TEMPLATE_DEFINITIONS.find((item) => item.key === key);
+}
+
+export function isSmsTemplateKey(value: string): value is SmsTemplateKey {
+  return SMS_TEMPLATE_DEFINITIONS.some((item) => item.key === value);
+}
+
+export function renderTemplate(body: string, vars: Record<string, string>) {
+  return body.replace(/\{\{\s*(\w+)\s*\}\}/g, (match, name) => (name in vars ? vars[name] : match));
+}

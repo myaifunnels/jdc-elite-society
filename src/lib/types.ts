@@ -1,0 +1,270 @@
+import { AffiliateProgramId } from "@/lib/affiliate";
+import { Membership } from "@/lib/membership";
+
+export type Program = {
+  slug: string;
+  title: string;
+  shortDescription: string;
+  audience: string;
+  transformation: string;
+  benefits: string[];
+  modules: string[];
+  faqs: { question: string; answer: string }[];
+  ctaLabel: string;
+  image: string;
+  imageAlt: string;
+};
+
+export type NavSubItem = {
+  href: string;
+  label: string;
+  comingSoon?: boolean;
+  children?: { href: string; label: string }[];
+};
+
+export type NavItem = {
+  href: string;
+  label: string;
+  children?: NavSubItem[];
+};
+
+export type SiteStat = {
+  label: string;
+  value: string;
+};
+
+export type DashboardRole = "admin" | "partner" | "member" | "contact" | "facilitator" | "student";
+export type AccountStatus = "pending" | "verified";
+
+export type AuthUser = {
+  id: string;
+  name: string;
+  email: string;
+  role: DashboardRole;
+  memberships: Membership[];
+  affiliateAccess: boolean;
+  affiliatePrograms: AffiliateProgramId[];
+  phone: string;
+  phoneCountry: string;
+  company: string;
+  profileComplete: boolean;
+  paymentVerified: boolean;
+  passwordSet: boolean;
+  active: boolean;
+  accountStatus: AccountStatus;
+  bestDescribesYou?: string;
+  dateOfBirth?: string;
+  address?: string;
+  facebookProfileUrl?: string;
+  facebookPhotoUrl?: string;
+  googleId?: string;
+  facebookId?: string;
+  createdAt: string;
+};
+
+export type AffiliateStatus = "invited" | "active" | "paused";
+export type PayoutMethodKind = "bank" | "gcash" | "maya" | "other";
+export type AffiliateSaleStatus = "pending" | "approved" | "void";
+export type AffiliatePayoutStatus = "pending" | "approved" | "paid";
+
+export type AffiliateProfile = {
+  userId: string;
+  code: string;
+  sponsorId: string;
+  status: AffiliateStatus;
+  commissionRate: number;
+  programs: AffiliateProgramId[];
+  activatedAt: string;
+};
+
+export type AffiliatePayoutMethod = {
+  userId: string;
+  method: PayoutMethodKind;
+  bankName: string;
+  accountName: string;
+  accountNumber: string;
+  updatedAt: string;
+};
+
+export type AffiliateSale = {
+  id: string;
+  affiliateUserId: string;
+  grossAmount: number;
+  commissionAmount: number;
+  source: string;
+  campaignSlug: string;
+  status: AffiliateSaleStatus;
+  soldAt: string;
+  periodStart: string;
+  periodEnd: string;
+  scheduledPayDate: string;
+  payoutId: string;
+  createdAt: string;
+  /** 1 = the referrer; 2 and 3 = upline override commissions. */
+  level: number;
+  /** For level 2 and 3 rows: the level-1 sale they were generated from. */
+  parentSaleId: string;
+};
+
+export type AffiliatePayout = {
+  id: string;
+  affiliateUserId: string;
+  amount: number;
+  status: AffiliatePayoutStatus;
+  periodStart: string;
+  periodEnd: string;
+  scheduledPayDate: string;
+  paidAt: string;
+  reference: string;
+  note: string;
+  createdAt: string;
+};
+
+export type AffiliateCampaign = {
+  id: string;
+  slug: string;
+  title: string;
+  description: string;
+  destinationPath: string;
+  requiredProgram: AffiliateProgramId | "";
+  active: boolean;
+  commissionType: "percent" | "fixed";
+  /** Level 1 pays the referrer; levels 2 and 3 pay their sponsor and the sponsor's sponsor. */
+  level1Rate: number;
+  level2Rate: number;
+  level3Rate: number;
+  cookieDays: number;
+};
+
+export type AffiliateMaterial = {
+  id: string;
+  title: string;
+  category: string;
+  fileUrl: string;
+  fileName: string;
+  sortOrder: number;
+  active: boolean;
+};
+
+export type AffiliateClick = {
+  id: string;
+  code: string;
+  campaignSlug: string;
+  path: string;
+  userAgent: string;
+  createdAt: string;
+};
+
+export type AffiliateAttribution = {
+  id: string;
+  kind: "inquiry" | "registration";
+  code: string;
+  campaignSlug: string;
+  email: string;
+  name: string;
+  userId: string;
+  createdAt: string;
+};
+
+export type AffiliateTreeNode = {
+  userId: string;
+  name: string;
+  email: string;
+  code: string;
+  status: AffiliateStatus;
+  activatedAt: string;
+  children: AffiliateTreeNode[];
+};
+
+export type ContactKind = "partner" | "contact";
+
+export type ContactStatus = "new" | "qualified" | "follow-up" | "won" | "active" | "ramping";
+
+export type ContactRecord = {
+  id: string;
+  kind: ContactKind;
+  name: string;
+  email: string;
+  phone: string;
+  dateOfBirth: string;
+  address: string;
+  city: string;
+  region?: string;
+  tags: string[];
+  bestDescribesYou: string;
+  programInterest: string;
+  status: ContactStatus;
+  source: string;
+  assignedPartner?: string;
+  photoUrl?: string;
+  lat?: number;
+  lng?: number;
+  ghlContactId?: string;
+  activeContacts?: number;
+  winRate?: string;
+  createdAt: string;
+  ghlSyncStatus?: "synced" | "failed" | "skipped" | "pending";
+  ghlSyncError?: string;
+};
+
+export type LeadRecord = ContactRecord;
+
+export type DashboardMetric = {
+  label: string;
+  value: string;
+  detail: string;
+};
+
+export type PartnerSummary = ContactRecord;
+
+export type PartnerMapPin = {
+  id: string;
+  name: string;
+  region: string;
+  address: string;
+  photoUrl?: string;
+  lat: number;
+  lng: number;
+};
+
+export type ContactMapPin = PartnerMapPin & {
+  kind: ContactKind;
+  tags: string[];
+};
+
+export type SupportTicketStatus = "open" | "waiting_for_response" | "resolved" | "completed";
+
+export type SupportTicketCategory = "general" | "payment" | "university" | "account" | "other";
+
+export type SupportTicket = {
+  id: string;
+  userId: string;
+  userName: string;
+  userEmail: string;
+  subject: string;
+  category: SupportTicketCategory;
+  status: SupportTicketStatus;
+  relatedOrderId: string;
+  assignedTo: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type SupportTicketMessage = {
+  id: string;
+  ticketId: string;
+  authorId: string;
+  authorName: string;
+  authorRole: DashboardRole | "system";
+  body: string;
+  attachmentUrl: string;
+  createdAt: string;
+};
+
+export type SupportTicketMetrics = {
+  open: number;
+  waitingForResponse: number;
+  resolved: number;
+  completed: number;
+  total: number;
+};

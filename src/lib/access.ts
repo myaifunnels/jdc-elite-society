@@ -1,0 +1,263 @@
+import { DashboardRole } from "@/lib/types";
+
+export type AccessRole = DashboardRole;
+
+export type Capability =
+  | "dashboard"
+  | "university"
+  | "profile"
+  | "inbox"
+  | "support"
+  | "support.admin"
+  | "contacts.view"
+  | "contacts.all"
+  | "contacts.tags"
+  | "registrations"
+  | "integrations"
+  | "automation"
+  | "webinars"
+  | "myWebinars"
+  | "settings"
+  | "access"
+  | "programs"
+  | "partnership"
+  | "partnership.admin"
+  | "projectJdc";
+
+export type AccessMap = Record<Capability, boolean>;
+export type AccessOverride = Partial<Record<Capability, boolean>>;
+
+export type AccessProfile = {
+  role: AccessRole;
+  defaults: AccessMap;
+  overrides: AccessOverride;
+  resolved: AccessMap;
+};
+
+export const CAPABILITIES: Array<{ id: Capability; label: string; detail: string }> = [
+  { id: "dashboard", label: "Dashboard home", detail: "See the signed-in workspace home." },
+  { id: "university", label: "University", detail: "Open the membership community embed." },
+  { id: "profile", label: "Account profile", detail: "Edit their own profile and membership card." },
+  { id: "inbox", label: "Inbox", detail: "See every email and text notification sent to their account." },
+  { id: "support", label: "Support", detail: "Open support tickets and message the team." },
+  { id: "support.admin", label: "Support admin", detail: "View and respond to all support tickets." },
+  { id: "contacts.view", label: "Contacts", detail: "Open the contacts workspace." },
+  { id: "contacts.all", label: "All contacts", detail: "See the full roster, not only assigned people." },
+  { id: "contacts.tags", label: "Edit tags", detail: "Add and remove AiFunnels-synced tags." },
+  { id: "registrations", label: "Registrants", detail: "Verify member sign-ups and payment on the Contacts registrants tab." },
+  { id: "integrations", label: "Integrations", detail: "AiFunnels, Maps, and R2 credentials." },
+  { id: "automation", label: "Automation", detail: "SMS templates and the from-number used for buyer/team texts." },
+  { id: "webinars", label: "Webinars", detail: "Manage the public webinar list, featured episode, and CTAs." },
+  { id: "myWebinars", label: "My webinars", detail: "See the webinars they've registered for and their status." },
+  { id: "settings", label: "Site settings", detail: "Branding and design system." },
+  { id: "access", label: "Access control", detail: "Change roles and permission defaults." },
+  { id: "programs", label: "Programs", detail: "See the programs they have availed." },
+  { id: "partnership", label: "Partnership", detail: "Affiliate link, tree, and payouts." },
+  { id: "partnership.admin", label: "Partnership admin", detail: "Grant affiliate access and review payouts." },
+  { id: "projectJdc", label: "Project JDC", detail: "Daily checklist: facilitators assign and check it, students complete it." },
+];
+
+export const ACCESS_ROLES: Array<{ id: AccessRole; label: string; detail: string }> = [
+  { id: "admin", label: "Admin", detail: "Full platform. Defaults on for every room." },
+  { id: "partner", label: "Partner", detail: "Assigned contacts, University, own account, and optional partnership." },
+  { id: "member", label: "Member", detail: "Verified membership: University and profile." },
+  { id: "contact", label: "Contact", detail: "Limited portal for CRM contacts: home, account, and University." },
+  { id: "facilitator", label: "Facilitator", detail: "Assigned students, Project JDC checklist, own account." },
+  { id: "student", label: "Student", detail: "Project JDC checklist, own account, and University." },
+];
+
+export const ROLE_DEFAULTS: Record<AccessRole, AccessMap> = {
+  admin: {
+    dashboard: true,
+    university: true,
+    profile: true,
+    inbox: true,
+    support: true,
+    "support.admin": true,
+    "contacts.view": true,
+    "contacts.all": true,
+    "contacts.tags": true,
+    registrations: true,
+    integrations: true,
+    automation: true,
+    webinars: true,
+    myWebinars: false,
+    settings: true,
+    access: true,
+    programs: true,
+    partnership: true,
+    "partnership.admin": true,
+    projectJdc: true,
+  },
+  partner: {
+    dashboard: true,
+    university: true,
+    profile: true,
+    inbox: true,
+    support: true,
+    "support.admin": false,
+    "contacts.view": true,
+    "contacts.all": false,
+    "contacts.tags": true,
+    registrations: false,
+    integrations: false,
+    automation: false,
+    webinars: false,
+    myWebinars: true,
+    settings: false,
+    access: false,
+    programs: true,
+    partnership: false,
+    "partnership.admin": false,
+    projectJdc: false,
+  },
+  member: {
+    dashboard: false,
+    university: true,
+    profile: true,
+    inbox: true,
+    support: true,
+    "support.admin": false,
+    "contacts.view": false,
+    "contacts.all": false,
+    "contacts.tags": false,
+    registrations: false,
+    integrations: false,
+    automation: false,
+    webinars: false,
+    myWebinars: true,
+    settings: false,
+    access: false,
+    programs: true,
+    partnership: false,
+    "partnership.admin": false,
+    projectJdc: false,
+  },
+  contact: {
+    dashboard: false,
+    university: true,
+    profile: true,
+    inbox: true,
+    support: true,
+    "support.admin": false,
+    "contacts.view": false,
+    "contacts.all": false,
+    "contacts.tags": false,
+    registrations: false,
+    integrations: false,
+    automation: false,
+    webinars: false,
+    myWebinars: true,
+    settings: false,
+    access: false,
+    programs: true,
+    partnership: false,
+    "partnership.admin": false,
+    projectJdc: false,
+  },
+  facilitator: {
+    dashboard: false,
+    university: false,
+    profile: true,
+    inbox: true,
+    support: true,
+    "support.admin": false,
+    "contacts.view": false,
+    "contacts.all": false,
+    "contacts.tags": false,
+    registrations: false,
+    integrations: false,
+    automation: false,
+    webinars: false,
+    myWebinars: false,
+    settings: false,
+    access: false,
+    programs: false,
+    partnership: false,
+    "partnership.admin": false,
+    projectJdc: true,
+  },
+  student: {
+    dashboard: false,
+    university: true,
+    profile: true,
+    inbox: true,
+    support: true,
+    "support.admin": false,
+    "contacts.view": false,
+    "contacts.all": false,
+    "contacts.tags": false,
+    registrations: false,
+    integrations: false,
+    automation: false,
+    webinars: false,
+    myWebinars: false,
+    settings: false,
+    access: false,
+    programs: false,
+    partnership: false,
+    "partnership.admin": false,
+    projectJdc: true,
+  },
+};
+
+export function emptyAccessMap(): AccessMap {
+  return { ...ROLE_DEFAULTS.contact, dashboard: true, university: false };
+}
+
+export function parseAccessRole(value: string | undefined | null): AccessRole {
+  if (
+    value === "admin" ||
+    value === "partner" ||
+    value === "member" ||
+    value === "contact" ||
+    value === "facilitator" ||
+    value === "student"
+  ) {
+    return value;
+  }
+  return "member";
+}
+
+export function mergeAccess(role: AccessRole, roleDefaults: AccessMap, overrides: AccessOverride): AccessProfile {
+  const defaults = { ...ROLE_DEFAULTS[role], ...roleDefaults };
+  const resolved = { ...defaults };
+  for (const item of CAPABILITIES) {
+    const override = overrides[item.id];
+    if (typeof override === "boolean") {
+      resolved[item.id] = override;
+    }
+  }
+  if (role === "admin") {
+    resolved.access = true;
+    resolved.dashboard = true;
+  }
+  if ((role === "member" || role === "contact") && overrides.university !== false) {
+    resolved.university = true;
+  }
+  resolved.profile = true;
+  return { role, defaults, overrides, resolved };
+}
+
+export function hasAccess(profile: AccessProfile, capability: Capability) {
+  return Boolean(profile.resolved[capability]);
+}
+
+export function overrideCount(overrides: AccessOverride) {
+  return CAPABILITIES.filter((item) => typeof overrides[item.id] === "boolean").length;
+}
+
+/**
+ * University is the priority landing spot on login. `hasWebinarRegistrations` only sends a
+ * webinar registrant to their "My webinars" list when University isn't open for them at all —
+ * otherwise University is exactly where we want members to land.
+ */
+export function dashboardHomeHref(access: AccessMap, hasWebinarRegistrations = false) {
+  if (access.dashboard) return "/dashboard";
+  if (access.university) return "/dashboard/university";
+  if (hasWebinarRegistrations && access.myWebinars) return "/dashboard/my-webinars";
+  if (access.projectJdc) return "/dashboard/project-jdc";
+  if (access.support) return "/dashboard/support";
+  if (access.profile) return "/dashboard/profile";
+  return "/dashboard";
+}

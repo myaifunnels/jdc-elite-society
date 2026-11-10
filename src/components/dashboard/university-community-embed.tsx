@@ -1,0 +1,41 @@
+import { GraduationCap } from "lucide-react";
+import Link from "next/link";
+
+import { UNIVERSITY_COMMUNITY_URL } from "@/data/university";
+
+export function UniversityCommunityEmbed({
+  unlocked,
+  verifyHref,
+}: {
+  unlocked: boolean;
+  verifyHref: string;
+}) {
+  return (
+    <section className={unlocked ? "university-community-window is-live" : "university-community-window"}>
+      <h2 className="sr-only">{unlocked ? "JDC Elite Society community" : "University locked"}</h2>
+      {unlocked ? (
+        <iframe
+          title="JDC Elite Society community"
+          src={UNIVERSITY_COMMUNITY_URL}
+          className="university-community-frame"
+          style={{ colorScheme: "dark" }}
+          allow="clipboard-read; clipboard-write; fullscreen; autoplay"
+          referrerPolicy="strict-origin-when-cross-origin"
+        />
+      ) : (
+        <div className="university-locked-state">
+          <div className="university-locked-icon" aria-hidden="true">
+            <GraduationCap size={28} strokeWidth={1.75} />
+          </div>
+          <h3 className="university-locked-title">University is locked</h3>
+          <p className="university-locked-copy">
+            Payment was not verified or was rejected. Access returns automatically once the team restores it.
+          </p>
+          <Link href={verifyHref} className="macos-btn macos-btn-primary university-locked-action">
+            Back to dashboard
+          </Link>
+        </div>
+      )}
+    </section>
+  );
+}

@@ -1,0 +1,85 @@
+import { cookies } from "next/headers";
+import { NextResponse } from "next/server";
+
+import { AFFILIATE_CAMPAIGN_COOKIE, AFFILIATE_COOKIE, normalizeAffiliateCode } from "@/lib/affiliate";
+import { getProfileByCode, recordAttribution } from "@/lib/affiliate-store";
+import { existingAccountLoginPath } from "@/lib/auth-constants";
+import { findUserByEmailOrPhone, issueTemporaryPassword } from "@/lib/auth-store";
+import { createLead } from "@/lib/crm-store";
+import { syncContactToGhl } from "@/lib/ghl";
+import { leadSchema } from "@/lib/validations";
+
+export async function POST(request: Request) {
+  const json = await request.json();
+  const parsed = leadSchema.safeParse(json);
+
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: parsed.error.flatten().fieldErrors },
+      { status: 400 },
+    );
+  }
+
+  const cookieStore = await cookies();
+  const existingUser = await findUserByEmailOrPhone(parsed.data.email, parsed.data.phone);
+  if (existingUser) {
+    if (existingUser.role !== "admin" && existingUser.role !== "partner") {
+      await issueTemporaryPassword(existingUser.id);
+    }
+    return NextResponse.json(
+      {
+        duplicate: true,
+        email: existingUser.email,
+        redirectTo: existingAccountLoginPath(existingUser.email),
+      },
+      { status: 409 },
+    );
+  }
+
+  const referralCode = normalizeAffiliateCode(cookieStore.get(AFFILIATE_COOKIE)?.value ?? "");
+  const campaignSlug = normalizeAffiliateCode(cookieStore.get(AFFILIATE_CAMPAIGN_COOKIE)?.value ?? "");
+  const affiliate = referralCode ? await getProfileByCode(referralCode) : null;
+
+  const audience = parsed.data.bestDescribesYou?.trim() || "Not specified";
+  const extraTags = affiliate
+    ? [`affiliate:${affiliate.code}`, campaignSlug ? `campaign:${campaignSlug}` : ""].filter(Boolean)
+    : [];
+  const lead = await createLead({
+    ...parsed.data,
+    bestDescribesYou: audience,
+    tags: Array.from(
+      new Set(
+        [
+          ...parsed.data.tags.split(",").map((tag) => tag.trim()),
+          audience !== "Not specified" ? audience : "",
+          ...extraTags,
+        ].filter(Boolean),
+      ),
+    ),
+    source: affiliate ? `Website inquiry · ${affiliate.code}` : "Website inquiry",
+  });
+
+  if (affiliate) {
+    await recordAttribution({
+      kind: "inquiry",
+      code: affiliate.code,
+      campaignSlug,
+      email: parsed.data.email,
+      name: parsed.data.name,
+    });
+  }
+
+  await syncContactToGhl({
+    name: parsed.data.name,
+    email: parsed.data.email,
+    phone: parsed.data.phone,
+    dateOfBirth: parsed.data.dateOfBirth,
+    address: parsed.data.address,
+    city: parsed.data.city,
+    bestDescribesYou: audience,
+    source: affiliate ? `Website inquiry · ${affiliate.code}` : "Website inquiry",
+    tags: [parsed.data.programInterest, "Inquiry", ...extraTags],
+  });
+
+  return NextResponse.json({ lead });
+}
