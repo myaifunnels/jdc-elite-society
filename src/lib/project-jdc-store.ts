@@ -1,10 +1,31 @@
 import { Pool } from "pg";
 
+export const PROJECT_JDC_STATUSES = ["active", "at_risk", "inactive", "completed"] as const;
+export type ProjectJdcStatus = (typeof PROJECT_JDC_STATUSES)[number];
+
+export const PROJECT_JDC_STATUS_LABELS: Record<ProjectJdcStatus, string> = {
+  active: "Active",
+  at_risk: "At Risk",
+  inactive: "Inactive",
+  completed: "Completed",
+};
+
+export function isProjectJdcStatus(value: string): value is ProjectJdcStatus {
+  return (PROJECT_JDC_STATUSES as readonly string[]).includes(value);
+}
+
+function toStatus(value: unknown): ProjectJdcStatus {
+  const text = String(value ?? "");
+  return isProjectJdcStatus(text) ? text : "active";
+}
+
 export type ProjectJdcEnrollment = {
   id: string;
   studentId: string;
   facilitatorId: string;
   startDate: string;
+  status: ProjectJdcStatus;
+  notes: string;
   createdAt: string;
 };
 
@@ -39,6 +60,7 @@ export type ProjectJdcWeeklyPlan = {
 const memoryEnrollments: ProjectJdcEnrollment[] = [];
 const memoryItems: ProjectJdcChecklistItem[] = [];
 const memoryWeeklyPlans: ProjectJdcWeeklyPlan[] = [];
+const memoryFacilitatorStatuses = new Map<string, ProjectJdcStatus>();
 
 let pool: Pool | null | undefined;
 let tableReady = false;
@@ -104,6 +126,21 @@ async function ensureTables(client: Pool) {
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
       updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
       UNIQUE (facilitator_id, week_start)
+    )
+  `);
+  await client.query(`
+    ALTER TABLE project_jdc_enrollments
+    ADD COLUMN IF NOT EXISTS status TEXT NOT NULL DEFAULT 'active'
+  `);
+  await client.query(`
+    ALTER TABLE project_jdc_enrollments
+    ADD COLUMN IF NOT EXISTS notes TEXT NOT NULL DEFAULT ''
+  `);
+  await client.query(`
+    CREATE TABLE IF NOT EXISTS project_jdc_facilitator_statuses (
+      facilitator_id TEXT PRIMARY KEY,
+      status TEXT NOT NULL DEFAULT 'active',
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )
   `);
   tableReady = true;
@@ -241,6 +278,8 @@ function mapEnrollmentRow(row: Record<string, unknown>): ProjectJdcEnrollment {
     studentId: String(row.student_id),
     facilitatorId: String(row.facilitator_id),
     startDate: new Date(String(row.start_date)).toISOString().slice(0, 10),
+    status: toStatus(row.status),
+    notes: String(row.notes ?? ""),
     createdAt: new Date(String(row.created_at)).toISOString(),
   };
 }
@@ -273,6 +312,8 @@ export async function assignStudentToFacilitator(input: {
     studentId: input.studentId,
     facilitatorId: input.facilitatorId,
     startDate: input.startDate,
+    status: existing >= 0 ? memoryEnrollments[existing].status : "active",
+    notes: existing >= 0 ? memoryEnrollments[existing].notes : "",
     createdAt: existing >= 0 ? memoryEnrollments[existing].createdAt : new Date().toISOString(),
   };
   if (existing >= 0) {
@@ -319,6 +360,101 @@ export async function getEnrollmentForStudent(studentId: string): Promise<Projec
   } catch (error) {
     console.error("Failed to load Project JDC enrollment", error);
     return memoryEnrollments.find((item) => item.studentId === studentId) ?? null;
+  }
+}
+
+export async function updateEnrollmentProgress(input: {
+  studentId: string;
+  status: ProjectJdcStatus;
+  notes: string;
+  facilitatorId?: string;
+}): Promise<void> {
+  const memoryIndex = memoryEnrollments.findIndex(
+    (item) => item.studentId === input.studentId && (!input.facilitatorId || item.facilitatorId === input.facilitatorId),
+  );
+  if (memoryIndex >= 0) {
+    memoryEnrollments[memoryIndex] = { ...memoryEnrollments[memoryIndex], status: input.status, notes: input.notes };
+  }
+
+  const client = getPool();
+  if (!client) return;
+
+  try {
+    await ensureTables(client);
+    // facilitatorId, when given, limits the update to that facilitator's own students.
+    await client.query(
+      `UPDATE project_jdc_enrollments
+       SET status = $2, notes = $3
+       WHERE student_id = $1 AND ($4::text IS NULL OR facilitator_id = $4)`,
+      [input.studentId, input.status, input.notes, input.facilitatorId ?? null],
+    );
+  } catch (error) {
+    console.error("Failed to update Project JDC enrollment progress", error);
+  }
+}
+
+export async function setFacilitatorStatus(facilitatorId: string, status: ProjectJdcStatus): Promise<void> {
+  memoryFacilitatorStatuses.set(facilitatorId, status);
+
+  const client = getPool();
+  if (!client) return;
+
+  try {
+    await ensureTables(client);
+    await client.query(
+      `INSERT INTO project_jdc_facilitator_statuses (facilitator_id, status)
+       VALUES ($1, $2)
+       ON CONFLICT (facilitator_id) DO UPDATE SET status = $2, updated_at = NOW()`,
+      [facilitatorId, status],
+    );
+  } catch (error) {
+    console.error("Failed to save Project JDC facilitator status", error);
+  }
+}
+
+export async function listFacilitatorStatuses(): Promise<Map<string, ProjectJdcStatus>> {
+  const client = getPool();
+  if (!client) return new Map(memoryFacilitatorStatuses);
+
+  try {
+    await ensureTables(client);
+    const result = await client.query("SELECT facilitator_id, status FROM project_jdc_facilitator_statuses");
+    return new Map(result.rows.map((row) => [String(row.facilitator_id), toStatus(row.status)]));
+  } catch (error) {
+    console.error("Failed to list Project JDC facilitator statuses", error);
+    return new Map(memoryFacilitatorStatuses);
+  }
+}
+
+/** Latest time each student marked a checklist item done, keyed by student id. */
+export async function listLastCheckIns(): Promise<Map<string, string>> {
+  const fromMemory = () => {
+    const map = new Map<string, string>();
+    for (const item of memoryItems) {
+      if (!item.studentDoneAt) continue;
+      const current = map.get(item.studentId);
+      if (!current || item.studentDoneAt > current) map.set(item.studentId, item.studentDoneAt);
+    }
+    return map;
+  };
+
+  const client = getPool();
+  if (!client) return fromMemory();
+
+  try {
+    await ensureTables(client);
+    const result = await client.query(
+      `SELECT student_id, MAX(student_done_at) AS last_check_in
+       FROM project_jdc_checklist_items
+       WHERE student_done_at IS NOT NULL
+       GROUP BY student_id`,
+    );
+    return new Map(
+      result.rows.map((row) => [String(row.student_id), new Date(String(row.last_check_in)).toISOString()]),
+    );
+  } catch (error) {
+    console.error("Failed to list Project JDC last check-ins", error);
+    return fromMemory();
   }
 }
 
@@ -479,6 +615,7 @@ export async function removeEnrollmentsForUser(userId: string): Promise<void> {
       "DELETE FROM project_jdc_enrollments WHERE student_id = $1 OR facilitator_id = $1",
       [userId],
     );
+    await client.query("DELETE FROM project_jdc_facilitator_statuses WHERE facilitator_id = $1", [userId]);
   } catch (error) {
     console.error("Failed to remove Project JDC enrollments for user", error);
   }

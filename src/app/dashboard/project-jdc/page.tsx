@@ -10,6 +10,8 @@ import {
   markChecklistItemDoneAction,
   renameProjectJdcPersonAction,
   saveWeeklyPlanAction,
+  setFacilitatorStatusAction,
+  updateStudentProgressAction,
 } from "@/app/dashboard/project-jdc/actions";
 import {
   countNewEnrollmentsInWeek,
@@ -19,17 +21,149 @@ import {
   listChecklistItemsForFacilitator,
   listChecklistItemsForStudent,
   listEnrollments,
-  listStudentIdsForFacilitator,
+  listFacilitatorStatuses,
+  listLastCheckIns,
   listWeeklyPlansForWeek,
+  PROJECT_JDC_STATUS_LABELS,
+  PROJECT_JDC_STATUSES,
   weekStartIso,
   WEEK_DAYS,
   type ProjectJdcChecklistItem,
+  type ProjectJdcEnrollment,
+  type ProjectJdcStatus,
   type WeekDay,
 } from "@/lib/project-jdc-store";
 import { requireCapability } from "@/lib/session";
+import type { AuthUser } from "@/lib/types";
 
 function todayIso() {
   return new Date().toISOString().slice(0, 10);
+}
+
+const PROGRAM_DAYS = 30;
+
+function formatCheckIn(iso: string | undefined) {
+  if (!iso) return "—";
+  return new Date(iso).toLocaleDateString("en-PH", { month: "short", day: "numeric", timeZone: "Asia/Manila" });
+}
+
+function programDayLabel(startDate: string, today: string) {
+  const day = dayNumberFor(startDate, today);
+  if (day < 1) return `Starts ${startDate}`;
+  if (day > PROGRAM_DAYS) return `Day ${PROGRAM_DAYS}+`;
+  return `Day ${day} of ${PROGRAM_DAYS}`;
+}
+
+function StatusSelect({ value }: { value: ProjectJdcStatus }) {
+  return (
+    <select name="status" defaultValue={value} className={`pjdc-status-select is-${value}`}>
+      {PROJECT_JDC_STATUSES.map((status) => (
+        <option key={status} value={status}>
+          {PROJECT_JDC_STATUS_LABELS[status]}
+        </option>
+      ))}
+    </select>
+  );
+}
+
+function RosterSummary({ enrollments }: { enrollments: ProjectJdcEnrollment[] }) {
+  return (
+    <div className="pjdc-stats">
+      <div className="pjdc-stat">
+        <span className="pjdc-stat-value">{enrollments.length}</span>
+        <span className="pjdc-stat-label">Total students</span>
+      </div>
+      {PROJECT_JDC_STATUSES.map((status) => (
+        <div className={`pjdc-stat is-${status}`} key={status}>
+          <span className="pjdc-stat-value">{enrollments.filter((item) => item.status === status).length}</span>
+          <span className="pjdc-stat-label">{PROJECT_JDC_STATUS_LABELS[status]}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function StudentRoster({
+  enrollments,
+  userById,
+  lastCheckIns,
+  showFacilitator,
+}: {
+  enrollments: ProjectJdcEnrollment[];
+  userById: Map<string, AuthUser>;
+  lastCheckIns: Map<string, string>;
+  showFacilitator: boolean;
+}) {
+  const today = todayIso();
+  const columnCount = showFacilitator ? 7 : 6;
+
+  return (
+    <div className="pjdc-card">
+      <div className="pjdc-card-header">
+        <div>
+          <h2 className="pjdc-card-title">Student roster &amp; progress</h2>
+          <p className="pjdc-card-subtitle">Status drives the row color. Last check-in updates when a student marks an item done.</p>
+        </div>
+        <span className="pjdc-card-count">{enrollments.length}</span>
+      </div>
+      <RosterSummary enrollments={enrollments} />
+      <div className="pjdc-table-wrap">
+        <table className="dashboard-table">
+          <thead>
+            <tr>
+              <th>Student</th>
+              {showFacilitator ? <th>Facilitator</th> : null}
+              <th>Contact</th>
+              <th>Start date</th>
+              <th>Current day</th>
+              <th>Last check-in</th>
+              <th>Status &amp; notes</th>
+            </tr>
+          </thead>
+          <tbody>
+            {enrollments.length === 0 ? (
+              <tr>
+                <td colSpan={columnCount}>
+                  <div className="pjdc-empty">No students assigned yet.</div>
+                </td>
+              </tr>
+            ) : (
+              enrollments.map((enrollment) => {
+                const student = userById.get(enrollment.studentId);
+                return (
+                  <tr key={enrollment.id} className={`pjdc-status-row is-${enrollment.status}`}>
+                    <td>{student?.name ?? enrollment.studentId}</td>
+                    {showFacilitator ? (
+                      <td>{userById.get(enrollment.facilitatorId)?.name ?? enrollment.facilitatorId}</td>
+                    ) : null}
+                    <td>
+                      <div className="pjdc-contact">
+                        {student?.phone ? <span>{student.phone}</span> : null}
+                        {student?.email && !student.email.endsWith("@ghl.invalid") ? <span>{student.email}</span> : null}
+                      </div>
+                    </td>
+                    <td>{enrollment.startDate}</td>
+                    <td>{programDayLabel(enrollment.startDate, today)}</td>
+                    <td>{formatCheckIn(lastCheckIns.get(enrollment.studentId))}</td>
+                    <td>
+                      <form action={updateStudentProgressAction} className="pjdc-row-form">
+                        <input type="hidden" name="studentId" value={enrollment.studentId} />
+                        <StatusSelect value={enrollment.status} />
+                        <input type="text" name="notes" defaultValue={enrollment.notes} placeholder="Notes" maxLength={500} />
+                        <button type="submit" className="macos-btn macos-btn-secondary">
+                          Save
+                        </button>
+                      </form>
+                    </td>
+                  </tr>
+                );
+              })
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
 }
 
 const DAY_LABELS: Record<WeekDay, string> = {
@@ -129,14 +263,16 @@ export default async function ProjectJdcPage() {
 
   if (user.role === "admin") {
     const thisWeekStart = weekStartIso(todayIso());
-    const [users, enrollments, weeklyPlans] = await Promise.all([
+    const [users, enrollments, weeklyPlans, facilitatorStatuses, lastCheckIns] = await Promise.all([
       listAllUsers(),
       listEnrollments(),
       listWeeklyPlansForWeek(thisWeekStart),
+      listFacilitatorStatuses(),
+      listLastCheckIns(),
     ]);
     const facilitators = users.filter((item) => item.role === "facilitator");
     const students = users.filter((item) => item.role === "student");
-    const nameById = new Map(users.map((item) => [item.id, item.name]));
+    const userById = new Map(users.map((item) => [item.id, item]));
     const googleUsers = users.filter((item) => item.googleId && item.role !== "admin");
     const facilitatorCandidates = googleUsers.filter((item) => item.role !== "facilitator");
     const studentCandidates = googleUsers.filter((item) => item.role !== "student");
@@ -146,6 +282,7 @@ export default async function ProjectJdcPage() {
         facilitator,
         plan: planByFacilitatorId.get(facilitator.id) ?? null,
         actual: await countNewEnrollmentsInWeek(facilitator.id, thisWeekStart),
+        status: facilitatorStatuses.get(facilitator.id) ?? ("active" as ProjectJdcStatus),
       })),
     );
 
@@ -195,36 +332,9 @@ export default async function ProjectJdcPage() {
                 Assign
               </button>
             </form>
-
-            <div className="pjdc-table-wrap">
-              <table className="dashboard-table">
-                <thead>
-                  <tr>
-                    <th>Student</th>
-                    <th>Facilitator</th>
-                    <th>Start date</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {enrollments.length === 0 ? (
-                    <tr>
-                      <td colSpan={3}>
-                        <div className="pjdc-empty">No students assigned yet.</div>
-                      </td>
-                    </tr>
-                  ) : (
-                    enrollments.map((enrollment) => (
-                      <tr key={enrollment.id}>
-                        <td>{nameById.get(enrollment.studentId) ?? enrollment.studentId}</td>
-                        <td>{nameById.get(enrollment.facilitatorId) ?? enrollment.facilitatorId}</td>
-                        <td>{enrollment.startDate}</td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
           </div>
+
+          <StudentRoster enrollments={enrollments} userById={userById} lastCheckIns={lastCheckIns} showFacilitator />
 
           <div className="pjdc-card">
             <div className="pjdc-card-header">
@@ -242,18 +352,19 @@ export default async function ProjectJdcPage() {
                     <th>Daily commitments</th>
                     <th>Target</th>
                     <th>Progress</th>
+                    <th>Status</th>
                   </tr>
                 </thead>
                 <tbody>
                   {weeklyProgress.length === 0 ? (
                     <tr>
-                      <td colSpan={4}>
+                      <td colSpan={5}>
                         <div className="pjdc-empty">No facilitators yet.</div>
                       </td>
                     </tr>
                   ) : (
-                    weeklyProgress.map(({ facilitator, plan, actual }) => (
-                      <tr key={facilitator.id}>
+                    weeklyProgress.map(({ facilitator, plan, actual, status }) => (
+                      <tr key={facilitator.id} className={`pjdc-status-row is-${status}`}>
                         <td>{facilitator.name}</td>
                         <td>
                           {plan ? (
@@ -276,6 +387,15 @@ export default async function ProjectJdcPage() {
                             <span className="pjdc-empty-inline">{actual} new this week</span>
                           )}
                         </td>
+                        <td>
+                          <form action={setFacilitatorStatusAction} className="pjdc-row-form">
+                            <input type="hidden" name="facilitatorId" value={facilitator.id} />
+                            <StatusSelect value={status} />
+                            <button type="submit" className="macos-btn macos-btn-secondary">
+                              Save
+                            </button>
+                          </form>
+                        </td>
                       </tr>
                     ))
                   )}
@@ -290,15 +410,19 @@ export default async function ProjectJdcPage() {
 
   if (user.role === "facilitator") {
     const thisWeekStart = weekStartIso(todayIso());
-    const [users, studentIds, items, myPlan, myActual] = await Promise.all([
+    const [users, enrollments, items, myPlan, myActual, lastCheckIns] = await Promise.all([
       listAllUsers(),
-      listStudentIdsForFacilitator(user.id),
+      listEnrollments(),
       listChecklistItemsForFacilitator(user.id),
       getWeeklyPlan(user.id, thisWeekStart),
       countNewEnrollmentsInWeek(user.id, thisWeekStart),
+      listLastCheckIns(),
     ]);
+    const myEnrollments = enrollments.filter((item) => item.facilitatorId === user.id);
+    const studentIds = myEnrollments.map((item) => item.studentId);
     const myStudents = users.filter((item) => studentIds.includes(item.id));
     const nameById = new Map(users.map((item) => [item.id, item.name]));
+    const userById = new Map(users.map((item) => [item.id, item]));
     const pendingApproval = items.filter((item) => item.studentDone && !item.facilitatorApproved);
 
     return (
@@ -339,6 +463,8 @@ export default async function ProjectJdcPage() {
               </div>
             </form>
           </div>
+
+          <StudentRoster enrollments={myEnrollments} userById={userById} lastCheckIns={lastCheckIns} showFacilitator={false} />
 
           <div className="pjdc-card">
             <div className="pjdc-card-header">

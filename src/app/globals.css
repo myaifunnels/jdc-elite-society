@@ -7833,6 +7833,41 @@ html[data-membership="jes"] {
 .pjdc-week-summary li strong { color: var(--foreground); font-weight: 600; }
 .pjdc-empty-inline { color: var(--muted); font-size: 0.82rem; }
 
+/* Status colors: Active=green, At Risk=amber, Inactive=red, Completed=cobalt */
+.pjdc-page .is-active { --pjdc-status: #30d158; }
+.pjdc-page .is-at_risk { --pjdc-status: #ff9f0a; }
+.pjdc-page .is-inactive { --pjdc-status: #ff453a; }
+.pjdc-page .is-completed { --pjdc-status: #2f6bff; }
+
+.pjdc-stats { display: grid; gap: 0.6rem; grid-template-columns: repeat(auto-fit, minmax(7.5rem, 1fr)); margin-bottom: 1rem; }
+.pjdc-stat {
+  display: grid;
+  gap: 0.15rem;
+  padding: 0.75rem 0.9rem;
+  border-radius: 0.9rem;
+  border: 1px solid color-mix(in srgb, var(--pjdc-status, var(--brand)) 35%, var(--line));
+  background: color-mix(in srgb, var(--pjdc-status, var(--brand)) 10%, transparent);
+}
+.pjdc-stat-value { font-size: 1.35rem; font-weight: 700; letter-spacing: -0.02em; color: var(--pjdc-status, var(--foreground)); }
+.pjdc-stat-label { font-size: 0.74rem; font-weight: 600; color: var(--muted); }
+
+.pjdc-table-wrap .dashboard-table tr.pjdc-status-row td { background: color-mix(in srgb, var(--pjdc-status) 9%, transparent); }
+.pjdc-table-wrap .dashboard-table tr.pjdc-status-row td:first-child { box-shadow: inset 3px 0 0 var(--pjdc-status); }
+.pjdc-table-wrap .dashboard-table tr.pjdc-status-row:hover td { background: color-mix(in srgb, var(--pjdc-status) 15%, transparent); }
+
+.pjdc-status-select {
+  min-height: 2.1rem;
+  padding: 0 0.6rem;
+  border-radius: 0.6rem;
+  border: 1px solid color-mix(in srgb, var(--pjdc-status) 55%, var(--line-strong));
+  background: color-mix(in srgb, var(--pjdc-status) 16%, var(--surface));
+  color: var(--foreground);
+  font-size: 0.82rem;
+  font-weight: 650;
+}
+.pjdc-contact { display: grid; gap: 0.1rem; font-size: 0.8rem; }
+.pjdc-contact span:last-child:not(:first-child) { color: var(--muted); }
+
 @media (prefers-reduced-motion: reduce) {
   .pjdc-field input, .pjdc-field select { transition: none; }
 }

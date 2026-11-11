@@ -17,8 +17,11 @@ import {
   addChecklistItem,
   approveChecklistItem,
   assignStudentToFacilitator,
+  isProjectJdcStatus,
   markChecklistItemDone,
   removeEnrollmentsForUser,
+  setFacilitatorStatus,
+  updateEnrollmentProgress,
   upsertWeeklyPlan,
   weekStartIso,
   WEEK_DAYS,
@@ -100,6 +103,36 @@ export async function assignStudentAction(formData: FormData) {
   if (!studentId || !facilitatorId || !startDate) return;
 
   await assignStudentToFacilitator({ studentId, facilitatorId, startDate });
+  revalidatePath("/dashboard/project-jdc");
+}
+
+export async function updateStudentProgressAction(formData: FormData) {
+  const { user } = await requireCapability("projectJdc");
+  if (user.role !== "facilitator" && user.role !== "admin") return;
+
+  const studentId = String(formData.get("studentId") ?? "").trim();
+  const status = String(formData.get("status") ?? "").trim();
+  const notes = String(formData.get("notes") ?? "").trim().slice(0, 500);
+  if (!studentId || !isProjectJdcStatus(status)) return;
+
+  await updateEnrollmentProgress({
+    studentId,
+    status,
+    notes,
+    facilitatorId: user.role === "facilitator" ? user.id : undefined,
+  });
+  revalidatePath("/dashboard/project-jdc");
+}
+
+export async function setFacilitatorStatusAction(formData: FormData) {
+  const { user } = await requireCapability("projectJdc");
+  if (user.role !== "admin") return;
+
+  const facilitatorId = String(formData.get("facilitatorId") ?? "").trim();
+  const status = String(formData.get("status") ?? "").trim();
+  if (!facilitatorId || !isProjectJdcStatus(status)) return;
+
+  await setFacilitatorStatus(facilitatorId, status);
   revalidatePath("/dashboard/project-jdc");
 }
 
