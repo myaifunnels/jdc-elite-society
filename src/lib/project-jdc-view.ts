@@ -1,4 +1,5 @@
 import { listAllUsers } from "@/lib/auth-store";
+import { countByPillar, type PillarStats } from "@/lib/project-jdc-pillars";
 import {
   addDaysIso,
   dayNumberFor,
@@ -36,6 +37,10 @@ export type PjdcStudent = PjdcPerson & {
   totalToday: number;
   tasksDone: number;
   streak: number;
+  /** Tasks past their deadline and still not done. */
+  overdue: number;
+  pillars: PillarStats;
+  isSample: boolean;
 };
 
 export type PjdcFacilitator = PjdcPerson & {
@@ -68,7 +73,12 @@ export type PjdcData = {
   students: PjdcStudent[];
   unassigned: PjdcPerson[];
   leaderboards: PjdcLeaderboards;
+  sampleCount: number;
 };
+
+export function isOverdue(item: ProjectJdcChecklistItem, today: string) {
+  return Boolean(item.dueDate && item.dueDate < today && !item.studentDone);
+}
 
 export const PROGRAM_DAYS = 30;
 
@@ -143,6 +153,9 @@ export async function loadProjectJdcData(): Promise<PjdcData> {
         totalToday: todayItems.length,
         tasksDone: done.length,
         streak: streakFor(new Set(done.map((item) => item.itemDate)), today),
+        overdue: mine.filter((item) => isOverdue(item, today)).length,
+        pillars: countByPillar(mine.filter((item) => item.itemDate <= today)),
+        isSample: enrollment.isSample,
       },
     ];
   });
@@ -217,5 +230,7 @@ export async function loadProjectJdcData(): Promise<PjdcData> {
     },
   };
 
-  return { today, weekStart, users, items, plans, facilitators, students, unassigned, leaderboards };
+  const sampleCount = enrollments.filter((enrollment) => enrollment.isSample).length;
+
+  return { today, weekStart, users, items, plans, facilitators, students, unassigned, leaderboards, sampleCount };
 }

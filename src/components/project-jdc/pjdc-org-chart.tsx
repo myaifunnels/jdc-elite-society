@@ -6,7 +6,7 @@ import { useMemo, useRef, useState } from "react";
 
 import { setFacilitatorStatusAction, updateStudentProgressAction } from "@/app/dashboard/project-jdc/actions";
 import { ActionForm, SubmitButton } from "@/components/project-jdc/pjdc-client";
-import { firstName, PjdcAvatar, ProgressBar, shortDate, StatusPill } from "@/components/project-jdc/pjdc-ui";
+import { firstName, PillarBoard, PjdcAvatar, ProgressBar, shortDate, StatusPill } from "@/components/project-jdc/pjdc-ui";
 import {
   PROJECT_JDC_STATUS_HINTS,
   PROJECT_JDC_STATUS_LABELS,
@@ -290,6 +290,7 @@ function StudentDetail({ student, editable }: { student: PjdcStudent; editable: 
         <PjdcAvatar name={student.name} photoUrl={student.photoUrl} status={student.status} size="xl" />
         <h2>{student.name}</h2>
         <StatusPill status={student.status} />
+        {student.isSample ? <span className="pjdc-sample-tag">Sample student</span> : null}
       </div>
       <dl className="pjdc-facts">
         <div>
@@ -309,6 +310,10 @@ function StudentDetail({ student, editable }: { student: PjdcStudent; editable: 
           <dd>{shortDate(student.lastCheckIn)}</dd>
         </div>
       </dl>
+      <div className="pjdc-field">
+        <span>5 areas of life</span>
+        <PillarBoard stats={student.pillars} compact />
+      </div>
       {editable ? (
         <>
           {student.phone || student.email ? (

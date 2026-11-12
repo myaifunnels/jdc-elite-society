@@ -35,6 +35,11 @@ export async function GET(request: Request) {
     }
   }
 
+  // Project JDC proof pictures are only for the program's students, facilitators and admins.
+  if (key.startsWith("proofs/") && user.role !== "admin" && user.role !== "facilitator" && user.role !== "student") {
+    return NextResponse.json({ error: "Not allowed." }, { status: 403 });
+  }
+
   const fallbackParam = new URL(request.url).searchParams.get("fallback");
   const fallback = fallbackParam && /^https?:\/\//i.test(fallbackParam) ? fallbackParam : null;
 

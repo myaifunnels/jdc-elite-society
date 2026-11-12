@@ -1,4 +1,4 @@
-const R2_KEY_PREFIX = /^(receipts|profiles|contacts)\//;
+const R2_KEY_PREFIX = /^(receipts|profiles|contacts|proofs)\//;
 
 function pathWithoutBucket(hostname: string, path: string) {
   if (hostname.endsWith(".r2.cloudflarestorage.com")) {

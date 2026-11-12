@@ -21,7 +21,15 @@ export type ProjectJdcEnrollment = {
   startDate: string;
   status: ProjectJdcStatus;
   notes: string;
+  isSample: boolean;
   createdAt: string;
+};
+
+/** What a student sends to show they really did a task. */
+export type ProjectJdcProof = {
+  note: string;
+  links: string[];
+  images: string[];
 };
 
 export type ProjectJdcChecklistItem = {
@@ -29,14 +37,28 @@ export type ProjectJdcChecklistItem = {
   studentId: string;
   facilitatorId: string;
   itemDate: string;
+  /** Last day to finish it, when the facilitator set a deadline. */
+  dueDate: string | null;
   label: string;
   category: string;
   studentDone: boolean;
   studentDoneAt: string | null;
   facilitatorApproved: boolean;
   approvedAt: string | null;
+  proof: ProjectJdcProof;
+  /** Set when the facilitator sends a task back ("Not yet"). */
+  reviewNote: string;
+  isSample: boolean;
   createdAt: string;
 };
+
+export function emptyProof(): ProjectJdcProof {
+  return { note: "", links: [], images: [] };
+}
+
+export function hasProof(proof: ProjectJdcProof) {
+  return Boolean(proof.note || proof.links.length || proof.images.length);
+}
 
 /** Form value meaning "every student of this facilitator". */
 export const ALL_STUDENTS = "all";
@@ -140,6 +162,17 @@ async function ensureTables(client: Pool) {
       status TEXT NOT NULL DEFAULT 'active',
       updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )
+  `);
+  await client.query(`
+    ALTER TABLE project_jdc_checklist_items
+    ADD COLUMN IF NOT EXISTS due_date DATE,
+    ADD COLUMN IF NOT EXISTS proof JSONB NOT NULL DEFAULT '{}'::jsonb,
+    ADD COLUMN IF NOT EXISTS review_note TEXT NOT NULL DEFAULT '',
+    ADD COLUMN IF NOT EXISTS is_sample BOOLEAN NOT NULL DEFAULT FALSE
+  `);
+  await client.query(`
+    ALTER TABLE project_jdc_enrollments
+    ADD COLUMN IF NOT EXISTS is_sample BOOLEAN NOT NULL DEFAULT FALSE
   `);
   tableReady = true;
 }
@@ -289,7 +322,21 @@ function mapEnrollmentRow(row: Record<string, unknown>): ProjectJdcEnrollment {
     startDate: new Date(String(row.start_date)).toISOString().slice(0, 10),
     status: toStatus(row.status),
     notes: String(row.notes ?? ""),
+    isSample: row.is_sample === true || row.is_sample === "t",
     createdAt: new Date(String(row.created_at)).toISOString(),
+  };
+}
+
+function toStringList(value: unknown, limit: number) {
+  return Array.isArray(value) ? value.filter((entry): entry is string => typeof entry === "string").slice(0, limit) : [];
+}
+
+function mapProof(value: unknown): ProjectJdcProof {
+  const raw = (value && typeof value === "object" ? value : {}) as Record<string, unknown>;
+  return {
+    note: typeof raw.note === "string" ? raw.note : "",
+    links: toStringList(raw.links, 5),
+    images: toStringList(raw.images, 5),
   };
 }
 
@@ -299,12 +346,16 @@ function mapItemRow(row: Record<string, unknown>): ProjectJdcChecklistItem {
     studentId: String(row.student_id),
     facilitatorId: String(row.facilitator_id),
     itemDate: new Date(String(row.item_date)).toISOString().slice(0, 10),
+    dueDate: row.due_date ? new Date(String(row.due_date)).toISOString().slice(0, 10) : null,
     label: String(row.label),
     category: String(row.category ?? "general"),
     studentDone: row.student_done === true || row.student_done === "t",
     studentDoneAt: row.student_done_at ? new Date(String(row.student_done_at)).toISOString() : null,
     facilitatorApproved: row.facilitator_approved === true || row.facilitator_approved === "t",
     approvedAt: row.approved_at ? new Date(String(row.approved_at)).toISOString() : null,
+    proof: mapProof(row.proof),
+    reviewNote: String(row.review_note ?? ""),
+    isSample: row.is_sample === true || row.is_sample === "t",
     createdAt: new Date(String(row.created_at)).toISOString(),
   };
 }
@@ -323,6 +374,7 @@ export async function assignStudentToFacilitator(input: {
     startDate: input.startDate,
     status: existing >= 0 ? memoryEnrollments[existing].status : "active",
     notes: existing >= 0 ? memoryEnrollments[existing].notes : "",
+    isSample: false,
     createdAt: existing >= 0 ? memoryEnrollments[existing].createdAt : new Date().toISOString(),
   };
   if (existing >= 0) {
@@ -337,7 +389,7 @@ export async function assignStudentToFacilitator(input: {
   const result = await client.query(
     `INSERT INTO project_jdc_enrollments (id, student_id, facilitator_id, start_date)
      VALUES ($1, $2, $3, $4)
-     ON CONFLICT (student_id) DO UPDATE SET facilitator_id = $3, start_date = $4
+     ON CONFLICT (student_id) DO UPDATE SET facilitator_id = $3, start_date = $4, is_sample = FALSE
      RETURNING *`,
     [enrollment.id, input.studentId, input.facilitatorId, input.startDate],
   );
@@ -476,6 +528,7 @@ export async function addChecklistItem(input: {
   studentId: string;
   facilitatorId: string;
   itemDate: string;
+  dueDate?: string | null;
   label: string;
   category: string;
 }): Promise<ProjectJdcChecklistItem> {
@@ -484,12 +537,16 @@ export async function addChecklistItem(input: {
     studentId: input.studentId,
     facilitatorId: input.facilitatorId,
     itemDate: input.itemDate,
+    dueDate: input.dueDate ?? null,
     label: input.label,
     category: input.category || "general",
     studentDone: false,
     studentDoneAt: null,
     facilitatorApproved: false,
     approvedAt: null,
+    proof: emptyProof(),
+    reviewNote: "",
+    isSample: false,
     createdAt: new Date().toISOString(),
   };
   memoryItems.unshift(item);
@@ -500,9 +557,9 @@ export async function addChecklistItem(input: {
   try {
     await ensureTables(client);
     await client.query(
-      `INSERT INTO project_jdc_checklist_items (id, student_id, facilitator_id, item_date, label, category)
-       VALUES ($1, $2, $3, $4, $5, $6)`,
-      [item.id, item.studentId, item.facilitatorId, item.itemDate, item.label, item.category],
+      `INSERT INTO project_jdc_checklist_items (id, student_id, facilitator_id, item_date, due_date, label, category)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+      [item.id, item.studentId, item.facilitatorId, item.itemDate, item.dueDate, item.label, item.category],
     );
   } catch (error) {
     console.error("Failed to add Project JDC checklist item", error);
@@ -597,13 +654,15 @@ export async function approveAllDoneForFacilitator(facilitatorId: string): Promi
   }
 }
 
-export async function markChecklistItemDone(itemId: string, studentId: string): Promise<void> {
+export async function markChecklistItemDone(itemId: string, studentId: string, proof: ProjectJdcProof): Promise<void> {
   const memoryIndex = memoryItems.findIndex((item) => item.id === itemId && item.studentId === studentId);
   if (memoryIndex >= 0) {
     memoryItems[memoryIndex] = {
       ...memoryItems[memoryIndex],
       studentDone: true,
       studentDoneAt: new Date().toISOString(),
+      proof,
+      reviewNote: "",
     };
   }
 
@@ -614,12 +673,42 @@ export async function markChecklistItemDone(itemId: string, studentId: string): 
     await ensureTables(client);
     await client.query(
       `UPDATE project_jdc_checklist_items
-       SET student_done = TRUE, student_done_at = NOW()
+       SET student_done = TRUE, student_done_at = NOW(), proof = $3, review_note = ''
        WHERE id = $1 AND student_id = $2`,
-      [itemId, studentId],
+      [itemId, studentId, JSON.stringify(proof)],
     );
   } catch (error) {
     console.error("Failed to mark Project JDC checklist item done", error);
+  }
+}
+
+/** "Not yet": the task goes back on the student's list with a note saying what's missing. */
+export async function sendBackChecklistItem(itemId: string, facilitatorId: string, note: string): Promise<void> {
+  const memoryIndex = memoryItems.findIndex((item) => item.id === itemId && item.facilitatorId === facilitatorId);
+  if (memoryIndex >= 0) {
+    memoryItems[memoryIndex] = {
+      ...memoryItems[memoryIndex],
+      studentDone: false,
+      studentDoneAt: null,
+      facilitatorApproved: false,
+      approvedAt: null,
+      reviewNote: note,
+    };
+  }
+
+  const client = getPool();
+  if (!client) return;
+
+  try {
+    await ensureTables(client);
+    await client.query(
+      `UPDATE project_jdc_checklist_items
+       SET student_done = FALSE, student_done_at = NULL, facilitator_approved = FALSE, approved_at = NULL, review_note = $3
+       WHERE id = $1 AND facilitator_id = $2`,
+      [itemId, facilitatorId, note],
+    );
+  } catch (error) {
+    console.error("Failed to send back Project JDC checklist item", error);
   }
 }
 
@@ -687,6 +776,76 @@ export async function removeEnrollmentsForUser(userId: string): Promise<void> {
   } catch (error) {
     console.error("Failed to remove Project JDC enrollments for user", error);
   }
+}
+
+/** Writes practice students and tasks in one go. Everything is flagged is_sample so it can be removed later. */
+export async function insertSampleData(
+  enrollments: ProjectJdcEnrollment[],
+  items: ProjectJdcChecklistItem[],
+): Promise<void> {
+  const client = getPool();
+  if (!client) {
+    const enrolled = new Set(memoryEnrollments.map((item) => item.studentId));
+    memoryEnrollments.push(...enrollments.filter((item) => !enrolled.has(item.studentId)));
+    memoryItems.unshift(...items);
+    return;
+  }
+
+  await ensureTables(client);
+  for (const enrollment of enrollments) {
+    // Never take over a real student who is already in the program.
+    await client.query(
+      `INSERT INTO project_jdc_enrollments (id, student_id, facilitator_id, start_date, status, notes, is_sample)
+       VALUES ($1, $2, $3, $4, $5, $6, TRUE)
+       ON CONFLICT (student_id) DO NOTHING`,
+      [enrollment.id, enrollment.studentId, enrollment.facilitatorId, enrollment.startDate, enrollment.status, enrollment.notes],
+    );
+  }
+
+  const columns = 13;
+  for (let start = 0; start < items.length; start += 400) {
+    const chunk = items.slice(start, start + 400);
+    const values: unknown[] = [];
+    const rows = chunk.map((item, index) => {
+      values.push(
+        item.id,
+        item.studentId,
+        item.facilitatorId,
+        item.itemDate,
+        item.dueDate,
+        item.label,
+        item.category,
+        item.studentDone,
+        item.studentDoneAt,
+        item.facilitatorApproved,
+        item.approvedAt,
+        JSON.stringify(item.proof),
+        item.reviewNote,
+      );
+      const base = index * columns;
+      return `(${Array.from({ length: columns }, (_, i) => `$${base + i + 1}`).join(", ")}, TRUE)`;
+    });
+    await client.query(
+      `INSERT INTO project_jdc_checklist_items
+       (id, student_id, facilitator_id, item_date, due_date, label, category, student_done, student_done_at,
+        facilitator_approved, approved_at, proof, review_note, is_sample)
+       VALUES ${rows.join(", ")}
+       ON CONFLICT (id) DO NOTHING`,
+      values,
+    );
+  }
+}
+
+export async function removeSampleData(): Promise<void> {
+  for (let i = memoryItems.length - 1; i >= 0; i -= 1) if (memoryItems[i].isSample) memoryItems.splice(i, 1);
+  for (let i = memoryEnrollments.length - 1; i >= 0; i -= 1) if (memoryEnrollments[i].isSample) memoryEnrollments.splice(i, 1);
+
+  const client = getPool();
+  if (!client) return;
+
+  await ensureTables(client);
+  await client.query("DELETE FROM project_jdc_checklist_items WHERE is_sample = TRUE");
+  await client.query("DELETE FROM project_jdc_enrollments WHERE is_sample = TRUE");
 }
 
 export function dayNumberFor(startDate: string, itemDate: string): number {

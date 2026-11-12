@@ -186,6 +186,32 @@ export async function storeRegistrantPhoto(file: File, webinarId: string) {
   return `data:${file.type};base64,${body.toString("base64")}`;
 }
 
+/** A screenshot or photo a Project JDC student sends as proof they did a task. */
+export async function storeProofImage(file: File, studentId: string) {
+  if (!allowedTypes.has(file.type)) {
+    throw new Error("Use a JPG, PNG, or WEBP picture.");
+  }
+
+  if (file.size > MAX_BYTES) {
+    throw new Error("Keep each picture under 5 MB.");
+  }
+
+  const body = Buffer.from(await file.arrayBuffer());
+  const settings = await getResolvedIntegrationSettings();
+  const safeStudentId = studentId.replace(/[^a-z0-9-]+/gi, "-").slice(0, 48);
+
+  if (isR2Ready(settings)) {
+    const key = `proofs/project-jdc/${safeStudentId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${extensionFor(file.type)}`;
+    return putR2Object(settings, key, body, file.type);
+  }
+
+  if (body.length > DATA_URL_MAX_BYTES) {
+    throw new Error("That picture is too big. Try a smaller screenshot.");
+  }
+
+  return `data:${file.type};base64,${body.toString("base64")}`;
+}
+
 export async function storeWebinarReceipt(file: File, email: string) {
   if (!file.size) {
     throw new Error("Upload your payment receipt.");

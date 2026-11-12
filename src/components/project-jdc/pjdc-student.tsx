@@ -1,53 +1,12 @@
-import {
-  CalendarCheck,
-  CircleCheck,
-  Clock,
-  Dumbbell,
-  Flame,
-  GraduationCap,
-  Heart,
-  ListChecks,
-  Megaphone,
-  PartyPopper,
-  Sun,
-} from "lucide-react";
+import { CalendarCheck, CircleCheck, Clock, Flame, ListChecks, MessageCircle, PartyPopper, Sun } from "lucide-react";
 
 import { markChecklistItemDoneAction } from "@/app/dashboard/project-jdc/actions";
-import { ActionForm, SubmitButton } from "@/components/project-jdc/pjdc-client";
-import { EmptyState, ProgressBar } from "@/components/project-jdc/pjdc-ui";
+import { ActionForm, ProofFields, SheetButton, SubmitButton } from "@/components/project-jdc/pjdc-client";
+import { categoryLabel, CategoryIcon, DueTag, EmptyState, PillarBoard, ProgressBar } from "@/components/project-jdc/pjdc-ui";
+import { countByPillar } from "@/lib/project-jdc-pillars";
 import { addDaysIso, type ProjectJdcChecklistItem } from "@/lib/project-jdc-store";
-import { PROGRAM_DAYS, type PjdcStudent } from "@/lib/project-jdc-view";
+import { isOverdue, PROGRAM_DAYS, type PjdcStudent } from "@/lib/project-jdc-view";
 import { cn } from "@/lib/utils";
-
-const CATEGORY_ICONS: Record<string, React.ComponentType<{ size?: number; "aria-hidden"?: boolean }>> = {
-  content: Megaphone,
-  fitness: Dumbbell,
-  learning: GraduationCap,
-  meditation: Heart,
-  planning: CalendarCheck,
-};
-
-const CATEGORY_LABELS: Record<string, string> = {
-  content: "Content",
-  fitness: "Fitness",
-  learning: "Learning",
-  meditation: "Prayer & rest",
-  planning: "Planning",
-  general: "Task",
-};
-
-export function CategoryIcon({ category }: { category: string }) {
-  const Icon = CATEGORY_ICONS[category] ?? ListChecks;
-  return (
-    <span className={cn("pjdc-cat", `is-${category in CATEGORY_ICONS ? category : "general"}`)} aria-hidden>
-      <Icon size={22} aria-hidden />
-    </span>
-  );
-}
-
-export function categoryLabel(category: string) {
-  return CATEGORY_LABELS[category] ?? CATEGORY_LABELS.general;
-}
 
 function TaskState({ item }: { item: ProjectJdcChecklistItem }) {
   if (item.facilitatorApproved) {
@@ -69,6 +28,46 @@ function TaskState({ item }: { item: ProjectJdcChecklistItem }) {
   return null;
 }
 
+function StudentTask({ item, today }: { item: ProjectJdcChecklistItem; today: string }) {
+  return (
+    <li className={cn("pjdc-task", item.studentDone && "is-done", isOverdue(item, today) && "is-late")}>
+      <CategoryIcon category={item.category} />
+      <span className="pjdc-task-text">
+        <strong>{item.label}</strong>
+        <em>
+          {categoryLabel(item.category)}
+          <DueTag dueDate={item.dueDate} today={today} done={item.studentDone} />
+        </em>
+      </span>
+      {item.reviewNote && !item.studentDone ? (
+        <p className="pjdc-review-note">
+          <MessageCircle aria-hidden size={16} />
+          <span>
+            <b>Your facilitator says:</b> {item.reviewNote}
+          </span>
+        </p>
+      ) : null}
+      {item.studentDone ? (
+        <TaskState item={item} />
+      ) : (
+        <SheetButton title="Show what you did" className="pjdc-btn is-primary is-big" label={item.reviewNote ? "Send again" : "I did it!"}>
+          <div className="pjdc-sheet-task">
+            <CategoryIcon category={item.category} />
+            <strong>{item.label}</strong>
+          </div>
+          <ActionForm action={markChecklistItemDoneAction} success="Great job! Your facilitator will check it." className="pjdc-form">
+            <input type="hidden" name="itemId" value={item.id} />
+            <ProofFields />
+            <SubmitButton className="pjdc-btn is-primary is-big is-wide" pendingLabel="Sending…">
+              Send to my facilitator
+            </SubmitButton>
+          </ActionForm>
+        </SheetButton>
+      )}
+    </li>
+  );
+}
+
 export function StudentToday({
   student,
   items,
@@ -79,8 +78,12 @@ export function StudentToday({
   today: string;
 }) {
   const todayItems = items.filter((item) => item.itemDate === today);
+  // Earlier tasks still open because they have a deadline or were sent back.
+  const carried = items
+    .filter((item) => item.itemDate < today && !item.studentDone && (item.dueDate || item.reviewNote))
+    .sort((a, b) => (a.dueDate ?? a.itemDate).localeCompare(b.dueDate ?? b.itemDate));
   const done = todayItems.filter((item) => item.studentDone).length;
-  const allDone = todayItems.length > 0 && done === todayItems.length;
+  const allDone = todayItems.length > 0 && done === todayItems.length && carried.length === 0;
 
   return (
     <div className="pjdc-layout">
@@ -99,6 +102,14 @@ export function StudentToday({
             ) : null}
           </section>
         ) : null}
+        {student ? (
+          <section className="pjdc-panel">
+            <div className="pjdc-panel-head">
+              <h2>Your 5 areas</h2>
+            </div>
+            <PillarBoard stats={student.pillars} compact />
+          </section>
+        ) : null}
       </div>
 
       <div className="pjdc-main">
@@ -107,6 +118,20 @@ export function StudentToday({
             <PartyPopper aria-hidden size={36} />
             <h2>You finished everything today!</h2>
             <p>Amazing work. Come back tomorrow for new tasks.</p>
+          </section>
+        ) : null}
+
+        {carried.length ? (
+          <section className="pjdc-panel is-attention">
+            <div className="pjdc-panel-head">
+              <h2>Still to finish</h2>
+              <span className="pjdc-count">{carried.length}</span>
+            </div>
+            <ul className="pjdc-tasks">
+              {carried.map((item) => (
+                <StudentTask key={item.id} item={item} today={today} />
+              ))}
+            </ul>
           </section>
         ) : null}
 
@@ -126,23 +151,7 @@ export function StudentToday({
           ) : (
             <ul className="pjdc-tasks">
               {todayItems.map((item) => (
-                <li key={item.id} className={cn("pjdc-task", item.studentDone && "is-done")}>
-                  <CategoryIcon category={item.category} />
-                  <span className="pjdc-task-text">
-                    <strong>{item.label}</strong>
-                    <em>{categoryLabel(item.category)}</em>
-                  </span>
-                  {item.studentDone ? (
-                    <TaskState item={item} />
-                  ) : (
-                    <ActionForm action={markChecklistItemDoneAction} success="Great job! Your facilitator will check it.">
-                      <input type="hidden" name="itemId" value={item.id} />
-                      <SubmitButton className="pjdc-btn is-primary is-big" pendingLabel="Saving…">
-                        I did it!
-                      </SubmitButton>
-                    </ActionForm>
-                  )}
-                </li>
+                <StudentTask key={item.id} item={item} today={today} />
               ))}
             </ul>
           )}
@@ -194,6 +203,7 @@ export function StudentJourney({
 
   const approved = items.filter((item) => item.facilitatorApproved).length;
   const recent = items.filter((item) => item.itemDate <= today).slice(0, 12);
+  const weekStats = countByPillar(items.filter((item) => item.itemDate <= today && item.itemDate > addDaysIso(today, -7)));
 
   return (
     <div className="pjdc-layout">
@@ -218,6 +228,13 @@ export function StudentJourney({
       </div>
 
       <div className="pjdc-main">
+        <section className="pjdc-panel">
+          <div className="pjdc-panel-head">
+            <h2>Your 5 areas this week</h2>
+          </div>
+          <PillarBoard stats={weekStats} />
+        </section>
+
         <section className="pjdc-panel">
           <div className="pjdc-panel-head">
             <h2>Your 30 days</h2>
@@ -265,7 +282,13 @@ export function StudentJourney({
                   <CategoryIcon category={item.category} />
                   <span className="pjdc-task-text">
                     <strong>{item.label}</strong>
-                    <em>{item.itemDate === today ? "Today" : new Date(`${item.itemDate}T00:00:00Z`).toLocaleDateString("en-PH", { month: "short", day: "numeric", timeZone: "UTC" })}</em>
+                    <em>
+                      {item.itemDate === today
+                        ? "Today"
+                        : new Date(`${item.itemDate}T00:00:00Z`).toLocaleDateString("en-PH", { month: "short", day: "numeric", timeZone: "UTC" })}
+                      {" · "}
+                      {categoryLabel(item.category)}
+                    </em>
                   </span>
                   {item.studentDone ? <TaskState item={item} /> : <span className="pjdc-task-state">Not done</span>}
                 </li>

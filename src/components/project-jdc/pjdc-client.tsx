@@ -1,9 +1,11 @@
 "use client";
 
-import { CircleAlert, CircleCheck, X } from "lucide-react";
+import { Camera, CircleAlert, CircleCheck, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useFormStatus } from "react-dom";
 
+import { PILLAR_ICONS } from "@/components/project-jdc/pjdc-ui";
+import { PILLAR_LABELS, PILLARS, TASK_IDEAS, type Pillar } from "@/lib/project-jdc-pillars";
 import { cn } from "@/lib/utils";
 
 type ToastTone = "success" | "error";
@@ -57,7 +59,8 @@ export function ActionForm({
   children,
   reset = false,
 }: {
-  action: (formData: FormData) => Promise<void>;
+  /** May return { error } with a plain message to show instead of the success toast. */
+  action: (formData: FormData) => Promise<void | { error: string }>;
   success: string;
   className?: string;
   children: React.ReactNode;
@@ -71,7 +74,11 @@ export function ActionForm({
       className={className}
       action={async (formData) => {
         try {
-          await action(formData);
+          const result = await action(formData);
+          if (result?.error) {
+            showToast(result.error, "error");
+            return;
+          }
           showToast(success);
           if (reset) formRef.current?.reset();
           formRef.current?.closest("dialog")?.close();
@@ -195,16 +202,10 @@ export function ConfirmButton({
   );
 }
 
-const TASK_IDEAS: Array<{ label: string; category: string }> = [
-  { label: "Post today's content on Facebook", category: "content" },
-  { label: "Make a short video", category: "content" },
-  { label: "Walk 10,000 steps", category: "fitness" },
-  { label: "Watch today's training", category: "learning" },
-  { label: "Pray or meditate for 10 minutes", category: "meditation" },
-  { label: "Plan tomorrow", category: "planning" },
-];
-
-/** Fields for giving a task, with one-tap ideas so nobody has to type much. */
+/**
+ * Fields for giving tasks: pick an area of life, tap ideas (or type your own, one per line),
+ * then choose the day and an optional deadline.
+ */
 export function TaskFields({
   students,
   defaultStudentId,
@@ -214,8 +215,17 @@ export function TaskFields({
   defaultStudentId?: string;
   today: string;
 }) {
-  const [label, setLabel] = useState("");
-  const [category, setCategory] = useState("general");
+  const [pillar, setPillar] = useState<Pillar>("physical");
+  const [text, setText] = useState("");
+  const [startDate, setStartDate] = useState(today);
+  const lines = text.split("\n").map((line) => line.trim()).filter(Boolean);
+
+  function toggleIdea(idea: string) {
+    setText((current) => {
+      const list = current.split("\n").map((line) => line.trim()).filter(Boolean);
+      return (list.includes(idea) ? list.filter((line) => line !== idea) : [...list, idea]).join("\n");
+    });
+  }
 
   return (
     <div className="pjdc-form">
@@ -225,7 +235,7 @@ export function TaskFields({
         <label className="pjdc-field">
           Who is it for?
           <select name="studentId" required defaultValue={students.length > 1 ? "all" : students[0]?.id}>
-            {students.length > 1 ? <option value="all">All my students</option> : null}
+            {students.length > 1 ? <option value="all">All my students ({students.length})</option> : null}
             {students.map((student) => (
               <option key={student.id} value={student.id}>
                 {student.name}
@@ -235,47 +245,150 @@ export function TaskFields({
         </label>
       )}
 
+      <fieldset className="pjdc-pillar-pick">
+        <legend>Which area of life?</legend>
+        {PILLARS.map((value) => {
+          const Icon = PILLAR_ICONS[value];
+          return (
+            <label key={value} className={`is-${value}`}>
+              <input type="radio" name="category" value={value} checked={pillar === value} onChange={() => setPillar(value)} />
+              <span>
+                <Icon aria-hidden size={20} />
+                {PILLAR_LABELS[value]}
+              </span>
+            </label>
+          );
+        })}
+      </fieldset>
+
       <div className="pjdc-field">
-        <span>Pick an idea</span>
+        <span>Tap ideas to add them</span>
         <div className="pjdc-chips">
-          {TASK_IDEAS.map((idea) => (
+          {TASK_IDEAS[pillar].map((idea) => (
             <button
-              key={idea.label}
+              key={idea}
               type="button"
-              className={cn("pjdc-chip", label === idea.label && "is-on")}
-              aria-pressed={label === idea.label}
-              onClick={() => {
-                setLabel(idea.label);
-                setCategory(idea.category);
-              }}
+              className={cn("pjdc-chip", lines.includes(idea) && "is-on")}
+              aria-pressed={lines.includes(idea)}
+              onClick={() => toggleIdea(idea)}
             >
-              {idea.label}
+              {idea}
             </button>
           ))}
         </div>
       </div>
 
       <label className="pjdc-field">
-        Or type your own
-        <input
-          type="text"
-          name="label"
+        <span>
+          Checklist (one task per line)
+          {lines.length > 1 ? <i className="pjdc-you">{lines.length} tasks</i> : null}
+        </span>
+        <textarea
+          name="labels"
           required
-          maxLength={200}
-          value={label}
-          placeholder="e.g. Share your story in a reel"
-          onChange={(event) => {
-            setLabel(event.target.value);
-            setCategory("general");
-          }}
+          rows={3}
+          maxLength={2000}
+          value={text}
+          placeholder={"e.g. Walk 10,000 steps\nDrink 8 glasses of water"}
+          onChange={(event) => setText(event.target.value)}
         />
       </label>
-      <input type="hidden" name="category" value={category} />
 
+      <div className="pjdc-two">
+        <label className="pjdc-field">
+          Starts on
+          <input type="date" name="itemDate" value={startDate} min={today} onChange={(event) => setStartDate(event.target.value)} required />
+        </label>
+        <label className="pjdc-field">
+          Deadline (optional)
+          <input type="date" name="dueDate" min={startDate} />
+        </label>
+      </div>
+    </div>
+  );
+}
+
+const MAX_PROOF_IMAGES = 3;
+
+/** Shrinks a photo or screenshot in the browser so it uploads fast on mobile data. */
+async function shrinkImage(file: File): Promise<File> {
+  if (!file.type.startsWith("image/") || file.type === "image/gif") return file;
+  try {
+    const bitmap = await createImageBitmap(file);
+    const scale = Math.min(1, 1400 / Math.max(bitmap.width, bitmap.height));
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.round(bitmap.width * scale);
+    canvas.height = Math.round(bitmap.height * scale);
+    canvas.getContext("2d")?.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+    bitmap.close();
+    const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/jpeg", 0.72));
+    if (!blob || blob.size >= file.size) return file;
+    return new File([blob], file.name.replace(/\.\w+$/, "") + ".jpg", { type: "image/jpeg" });
+  } catch {
+    return file;
+  }
+}
+
+/** Screenshot, link and a few words: what a student sends so the facilitator can check the task. */
+export function ProofFields() {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [previews, setPreviews] = useState<string[]>([]);
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => () => previews.forEach((url) => URL.revokeObjectURL(url)), [previews]);
+
+  async function onPick(event: React.ChangeEvent<HTMLInputElement>) {
+    const input = event.currentTarget;
+    const picked = Array.from(input.files ?? []).slice(0, MAX_PROOF_IMAGES);
+    if ((input.files?.length ?? 0) > MAX_PROOF_IMAGES) showToast(`Up to ${MAX_PROOF_IMAGES} pictures. We kept the first ${MAX_PROOF_IMAGES}.`, "error");
+    setBusy(true);
+    const shrunk = await Promise.all(picked.map(shrinkImage));
+    setBusy(false);
+    try {
+      const transfer = new DataTransfer();
+      shrunk.forEach((file) => transfer.items.add(file));
+      input.files = transfer.files;
+    } catch {
+      // Older browsers keep the original files; the server still checks the size.
+    }
+    setPreviews(shrunk.map((file) => URL.createObjectURL(file)));
+  }
+
+  function clearPictures() {
+    if (inputRef.current) inputRef.current.value = "";
+    setPreviews([]);
+  }
+
+  return (
+    <div className="pjdc-form">
+      <div className="pjdc-field">
+        <span>Screenshot or photo</span>
+        <label className="pjdc-upload">
+          <input ref={inputRef} type="file" name="proofImages" accept="image/png,image/jpeg,image/webp" multiple onChange={onPick} />
+          <Camera aria-hidden size={22} />
+          <span>{busy ? "Getting your pictures ready…" : previews.length ? "Change pictures" : "Add a screenshot or photo"}</span>
+        </label>
+        {previews.length ? (
+          <div className="pjdc-proof-images">
+            {previews.map((url) => (
+              // eslint-disable-next-line @next/next/no-img-element -- local preview of a picked file
+              <img key={url} src={url} alt="Picture you picked" />
+            ))}
+            <button type="button" className="pjdc-link pjdc-plain" onClick={clearPictures}>
+              Remove
+            </button>
+          </div>
+        ) : null}
+      </div>
       <label className="pjdc-field">
-        For which day?
-        <input type="date" name="itemDate" defaultValue={today} required />
+        Link (optional)
+        <input type="url" name="proofLink" inputMode="url" placeholder="Paste the link to your post or video" />
       </label>
+      <label className="pjdc-field">
+        What did you do?
+        <textarea name="proofNote" rows={2} maxLength={600} placeholder="e.g. Walked 10,200 steps with my sister" />
+      </label>
+      <p className="pjdc-muted pjdc-small">Add at least one: a picture, a link, or a few words.</p>
     </div>
   );
 }

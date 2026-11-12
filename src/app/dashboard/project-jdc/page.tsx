@@ -134,7 +134,9 @@ export default async function ProjectJdcPage({ searchParams }: { searchParams: P
           <AdminHome
             facilitators={data.facilitators}
             students={data.students}
+            items={data.items}
             unassignedCount={data.unassigned.length}
+            sampleCount={data.sampleCount}
             today={data.today}
           />
         ) : null}
@@ -179,7 +181,7 @@ export default async function ProjectJdcPage({ searchParams }: { searchParams: P
     const active = pickTab(requested, tabs);
     const subtitles: Record<string, string> = {
       home: me.students.length ? `You have ${me.students.length} student${me.students.length === 1 ? "" : "s"}.` : "Let's get started.",
-      check: "Say “Looks good” when a student finishes a task.",
+      check: "Look at their proof, then say “Looks good” or “Not yet”.",
       team: "Tap a student to see how they are doing.",
       leaders: "See who is leading this week.",
       week: "Plan your week and set your goal.",
@@ -187,7 +189,7 @@ export default async function ProjectJdcPage({ searchParams }: { searchParams: P
 
     return (
       <AppFrame name={user.name} photoUrl={user.facebookPhotoUrl} subtitle={subtitles[active]} tabs={tabs} active={active}>
-        {active === "home" ? <FacilitatorHome me={me} plan={plan} pending={pending} today={data.today} /> : null}
+        {active === "home" ? <FacilitatorHome me={me} items={myItems} plan={plan} pending={pending} today={data.today} /> : null}
         {active === "check" ? <FacilitatorCheck items={myItems} userById={userById} today={data.today} /> : null}
         {active === "team" ? (
           <div className="pjdc-stack">
@@ -219,6 +221,7 @@ export default async function ProjectJdcPage({ searchParams }: { searchParams: P
   };
 
   // Students only see names, photos and progress of their teammates, never contact details or notes.
+  // Their own tasks carry facilitator review notes, which is fine; other students' proof is never sent.
   const myTeam = data.facilitators
     .filter((facilitator) => facilitator.id === me?.facilitatorId)
     .map((facilitator) => ({

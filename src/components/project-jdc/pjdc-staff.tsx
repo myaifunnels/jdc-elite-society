@@ -1,6 +1,8 @@
 import {
+  CalendarClock,
   CircleCheck,
   ClipboardCheck,
+  Database,
   Link2,
   Plus,
   Target,
@@ -19,13 +21,28 @@ import {
   createProjectJdcPersonAction,
   deleteChecklistItemAction,
   deleteProjectJdcPersonAction,
+  loadSampleDataAction,
+  removeSampleDataAction,
   renameProjectJdcPersonAction,
   saveWeeklyPlanAction,
+  sendBackChecklistItemAction,
 } from "@/app/dashboard/project-jdc/actions";
 import { ProjectJdcPersonSearch } from "@/components/dashboard/project-jdc-person-search";
 import { ActionForm, ConfirmButton, SheetButton, SubmitButton, TaskFields } from "@/components/project-jdc/pjdc-client";
-import { CategoryIcon } from "@/components/project-jdc/pjdc-student";
-import { EmptyState, firstName, PjdcAvatar, ProgressBar, shortDate, StatusPill } from "@/components/project-jdc/pjdc-ui";
+import {
+  categoryLabel,
+  CategoryIcon,
+  DueTag,
+  EmptyState,
+  firstName,
+  PillarBoard,
+  PjdcAvatar,
+  ProgressBar,
+  ProofView,
+  shortDate,
+  StatusPill,
+} from "@/components/project-jdc/pjdc-ui";
+import { countByPillar } from "@/lib/project-jdc-pillars";
 import { PROJECT_JDC_STATUS_LABELS, PROJECT_JDC_STATUSES } from "@/lib/project-jdc-status";
 import { addDaysIso, WEEK_DAYS, type ProjectJdcChecklistItem, type ProjectJdcWeeklyPlan, type WeekDay } from "@/lib/project-jdc-store";
 import type { PjdcFacilitator, PjdcStudent } from "@/lib/project-jdc-view";
@@ -65,6 +82,9 @@ export function needsAttention(students: PjdcStudent[], today: string) {
     .filter((student) => student.status !== "completed" && student.status !== "inactive" && student.day >= 1)
     .flatMap((student) => {
       if (student.status === "at_risk") return [{ student, reason: "Marked as needing help" }];
+      if (student.overdue > 0) {
+        return [{ student, reason: `${student.overdue} task${student.overdue === 1 ? "" : "s"} past the deadline` }];
+      }
       const gap = daysSince(student.lastCheckIn, today);
       if (gap === null && student.day > 2) return [{ student, reason: "Hasn't done a task yet" }];
       if (gap !== null && gap >= 2) return [{ student, reason: `No tasks done in ${gap} days` }];
@@ -76,7 +96,7 @@ export function needsAttention(students: PjdcStudent[], today: string) {
 export function GiveTaskButton({
   students,
   today,
-  label = "Give a task",
+  label = "Give tasks",
   className = "pjdc-btn is-primary is-big is-wide",
 }: {
   students: Array<{ id: string; name: string }>;
@@ -87,7 +107,7 @@ export function GiveTaskButton({
   if (students.length === 0) return null;
   return (
     <SheetButton
-      title="Give a task"
+      title="Give tasks"
       className={className}
       label={
         <>
@@ -96,13 +116,74 @@ export function GiveTaskButton({
         </>
       }
     >
-      <ActionForm action={addChecklistItemAction} success="Task sent!" className="pjdc-form">
+      <ActionForm action={addChecklistItemAction} success="Tasks sent!" className="pjdc-form" reset>
         <TaskFields students={students} today={today} />
         <SubmitButton className="pjdc-btn is-primary is-big is-wide" pendingLabel="Sending…">
-          Send task
+          Send
         </SubmitButton>
       </ActionForm>
     </SheetButton>
+  );
+}
+
+type Deadline = { key: string; label: string; category: string; dueDate: string; total: number; done: number };
+
+/** Tasks with a deadline, grouped so "Finish your vision board" for 15 students is one row. */
+function upcomingDeadlines(items: ProjectJdcChecklistItem[], today: string): Deadline[] {
+  const groups = new Map<string, Deadline>();
+  for (const item of items) {
+    if (!item.dueDate || item.dueDate < addDaysIso(today, -7) || item.itemDate > today) continue;
+    const key = `${item.dueDate}|${item.label}`;
+    const group = groups.get(key) ?? { key, label: item.label, category: item.category, dueDate: item.dueDate, total: 0, done: 0 };
+    group.total += 1;
+    if (item.studentDone) group.done += 1;
+    groups.set(key, group);
+  }
+  return [...groups.values()]
+    .filter((group) => group.done < group.total || group.dueDate >= today)
+    .sort((a, b) => a.dueDate.localeCompare(b.dueDate))
+    .slice(0, 6);
+}
+
+function DeadlineList({ items, today }: { items: ProjectJdcChecklistItem[]; today: string }) {
+  const deadlines = upcomingDeadlines(items, today);
+  if (deadlines.length === 0) {
+    return <p className="pjdc-muted">No deadlines this week. Add one when you give tasks.</p>;
+  }
+  return (
+    <ul className="pjdc-deadlines">
+      {deadlines.map((deadline) => (
+        <li key={deadline.key}>
+          <CategoryIcon category={deadline.category} size={18} />
+          <span className="pjdc-task-text">
+            <strong>{deadline.label}</strong>
+            <em>
+              <DueTag dueDate={deadline.dueDate} today={today} done={deadline.done === deadline.total} />
+              {deadline.total > 1 ? ` · ${deadline.done} of ${deadline.total} done` : deadline.done ? " · Done" : " · Not done yet"}
+            </em>
+          </span>
+          {deadline.total > 1 ? <ProgressBar value={deadline.done} max={deadline.total} label={`${deadline.label} progress`} /> : null}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function lastWeek(items: ProjectJdcChecklistItem[], today: string) {
+  const from = addDaysIso(today, -6);
+  return items.filter((item) => item.itemDate >= from && item.itemDate <= today);
+}
+
+function StatStrip({ stats }: { stats: Array<{ label: string; value: number | string; tone?: string }> }) {
+  return (
+    <dl className="pjdc-stats">
+      {stats.map((stat) => (
+        <div key={stat.label} className={stat.tone ? `is-${stat.tone}` : undefined}>
+          <dt>{stat.label}</dt>
+          <dd>{stat.value}</dd>
+        </div>
+      ))}
+    </dl>
   );
 }
 
@@ -110,11 +191,13 @@ export function GiveTaskButton({
 
 export function FacilitatorHome({
   me,
+  items,
   plan,
   pending,
   today,
 }: {
   me: PjdcFacilitator;
+  items: ProjectJdcChecklistItem[];
   plan: ProjectJdcWeeklyPlan | null;
   pending: number;
   today: string;
@@ -123,10 +206,20 @@ export function FacilitatorHome({
   const attention = needsAttention(me.students, today);
   const finishedToday = me.students.filter((student) => student.totalToday > 0 && student.doneToday === student.totalToday).length;
   const withTasksToday = me.students.filter((student) => student.totalToday > 0).length;
+  const overdue = me.students.reduce((sum, student) => sum + student.overdue, 0);
+  const todayItems = items.filter((item) => item.itemDate === today);
 
   return (
     <div className="pjdc-layout">
       <div className="pjdc-main">
+        <StatStrip
+          stats={[
+            { label: "Students", value: me.students.length },
+            { label: "Done today", value: `${todayItems.filter((item) => item.studentDone).length}/${todayItems.length}` },
+            { label: "To check", value: pending, tone: pending ? "action" : undefined },
+            { label: "Past deadline", value: overdue, tone: overdue ? "risk" : undefined },
+          ]}
+        />
         <section className={cn("pjdc-panel pjdc-callout", pending > 0 ? "is-action" : "is-calm")}>
           {pending > 0 ? (
             <>
@@ -149,6 +242,14 @@ export function FacilitatorHome({
         </section>
 
         <GiveTaskButton students={me.students} today={today} />
+
+        <section className="pjdc-panel">
+          <div className="pjdc-panel-head">
+            <h2>5 areas of life</h2>
+            <span className="pjdc-muted pjdc-small">Your team, last 7 days</span>
+          </div>
+          <PillarBoard stats={countByPillar(lastWeek(items, today))} />
+        </section>
 
         <section className="pjdc-panel">
           <div className="pjdc-panel-head">
@@ -219,6 +320,16 @@ export function FacilitatorHome({
             <ProgressBar value={finishedToday} max={withTasksToday} label="Students finished today" />
           </section>
         ) : null}
+
+        <section className="pjdc-panel">
+          <div className="pjdc-panel-head">
+            <h2>
+              <CalendarClock aria-hidden size={18} className="pjdc-head-icon" />
+              Deadlines
+            </h2>
+          </div>
+          <DeadlineList items={items} today={today} />
+        </section>
       </div>
     </div>
   );
@@ -233,8 +344,11 @@ export function FacilitatorCheck({
   userById: Map<string, AuthUser>;
   today: string;
 }) {
-  const pending = items.filter((item) => item.studentDone && !item.facilitatorApproved);
+  const pending = items
+    .filter((item) => item.studentDone && !item.facilitatorApproved)
+    .sort((a, b) => (a.studentDoneAt ?? "").localeCompare(b.studentDoneAt ?? ""));
   const notDoneToday = items.filter((item) => item.itemDate === today && !item.studentDone);
+  const late = items.filter((item) => item.dueDate && item.dueDate < today && !item.studentDone);
 
   return (
     <div className="pjdc-layout">
@@ -266,16 +380,39 @@ export function FacilitatorCheck({
                     <li key={item.id} className="pjdc-check">
                       <PjdcAvatar name={name} photoUrl={student?.facebookPhotoUrl} />
                       <span className="pjdc-check-text">
-                        <strong>{firstName(name)}</strong>
+                        <strong>{name}</strong>
                         <span>{item.label}</span>
-                        <em>{friendlyDate(item.itemDate, today)}</em>
+                        <em>
+                          <CategoryIcon category={item.category} size={14} />
+                          {categoryLabel(item.category)} · {friendlyDate(item.itemDate, today)}
+                          {item.dueDate ? <DueTag dueDate={item.dueDate} today={today} done /> : null}
+                        </em>
                       </span>
-                      <ActionForm action={approveChecklistItemAction} success={`Checked! ${firstName(name)} will see it.`}>
-                        <input type="hidden" name="itemId" value={item.id} />
-                        <SubmitButton className="pjdc-btn is-good" pendingLabel="…">
-                          Looks good
-                        </SubmitButton>
-                      </ActionForm>
+                      <ProofView proof={item.proof} />
+                      <div className="pjdc-check-actions">
+                        <SheetButton title={`Not yet for ${firstName(name)}`} className="pjdc-btn is-quiet" label="Not yet">
+                          <p className="pjdc-muted">
+                            “{item.label}” goes back on {firstName(name)}&apos;s list with your note.
+                          </p>
+                          <ActionForm action={sendBackChecklistItemAction} success={`Sent back to ${firstName(name)}.`} className="pjdc-form">
+                            <input type="hidden" name="itemId" value={item.id} />
+                            <label className="pjdc-field">
+                              What should they add or fix?
+                              <textarea name="note" rows={2} maxLength={300} required defaultValue="Please add a screenshot so I can check." />
+                            </label>
+                            <SubmitButton className="pjdc-btn is-primary is-big is-wide" pendingLabel="Sending…">
+                              Send back
+                            </SubmitButton>
+                          </ActionForm>
+                        </SheetButton>
+                        <ActionForm action={approveChecklistItemAction} success={`Checked! ${firstName(name)} will see it.`}>
+                          <input type="hidden" name="itemId" value={item.id} />
+                          <SubmitButton className="pjdc-btn is-good" pendingLabel="…">
+                            <CircleCheck aria-hidden size={18} />
+                            Looks good
+                          </SubmitButton>
+                        </ActionForm>
+                      </div>
                     </li>
                   );
                 })}
@@ -286,6 +423,28 @@ export function FacilitatorCheck({
       </div>
 
       <div className="pjdc-side">
+        {late.length ? (
+          <section className="pjdc-panel is-attention">
+            <div className="pjdc-panel-head">
+              <h2>Past the deadline</h2>
+              <span className="pjdc-count">{late.length}</span>
+            </div>
+            <ul className="pjdc-tasks is-compact">
+              {late.slice(0, 8).map((item) => (
+                <li key={item.id} className="pjdc-task">
+                  <CategoryIcon category={item.category} />
+                  <span className="pjdc-task-text">
+                    <strong>{item.label}</strong>
+                    <em>{userById.get(item.studentId)?.name ?? "Student"}</em>
+                  </span>
+                  <DueTag dueDate={item.dueDate} today={today} />
+                </li>
+              ))}
+            </ul>
+            {late.length > 8 ? <p className="pjdc-muted pjdc-small">and {late.length - 8} more</p> : null}
+          </section>
+        ) : null}
+
         <section className="pjdc-panel">
           <div className="pjdc-panel-head">
             <h2>Still working on it today</h2>
@@ -295,7 +454,7 @@ export function FacilitatorCheck({
             <p className="pjdc-muted">No open tasks for today.</p>
           ) : (
             <ul className="pjdc-tasks is-compact">
-              {notDoneToday.map((item) => {
+              {notDoneToday.slice(0, 10).map((item) => {
                 const name = userById.get(item.studentId)?.name ?? "Student";
                 return (
                   <li key={item.id} className="pjdc-task">
@@ -319,6 +478,7 @@ export function FacilitatorCheck({
               })}
             </ul>
           )}
+          {notDoneToday.length > 10 ? <p className="pjdc-muted pjdc-small">and {notDoneToday.length - 10} more</p> : null}
         </section>
       </div>
     </div>
@@ -380,23 +540,94 @@ export function FacilitatorWeek({
 
 /* ---------- Admin ---------- */
 
+function SampleDataPanel({ sampleCount, facilitatorCount }: { sampleCount: number; facilitatorCount: number }) {
+  return (
+    <section className="pjdc-panel pjdc-sample">
+      <div className="pjdc-panel-head">
+        <h2>
+          <Database aria-hidden size={18} className="pjdc-head-icon" />
+          Sample data
+        </h2>
+        {sampleCount ? <span className="pjdc-count">{sampleCount}</span> : null}
+      </div>
+      {sampleCount ? (
+        <>
+          <p className="pjdc-muted">
+            {sampleCount} contacts are practice students with 2 weeks of tasks and proof. Real students are not affected.
+          </p>
+          <ActionForm action={removeSampleDataAction} success="Sample data removed.">
+            <ConfirmButton
+              className="pjdc-btn is-danger-quiet is-wide"
+              label={
+                <>
+                  <Trash2 aria-hidden size={18} />
+                  Remove sample data
+                </>
+              }
+              title="Remove all sample data?"
+              message="The practice students and their tasks will be deleted. The contacts themselves stay in your CRM."
+              confirmLabel="Yes, remove"
+            />
+          </ActionForm>
+        </>
+      ) : (
+        <>
+          <p className="pjdc-muted">
+            Give each facilitator 15 contacts as practice students, with 2 weeks of tasks in all 5 areas, proof and deadlines.
+          </p>
+          <ActionForm action={loadSampleDataAction} success="Sample students added!">
+            <SubmitButton className="pjdc-btn is-secondary is-wide" pendingLabel="Adding sample data…" disabled={facilitatorCount === 0}>
+              Load sample data
+            </SubmitButton>
+          </ActionForm>
+          {facilitatorCount === 0 ? <p className="pjdc-muted pjdc-small">Add a facilitator first.</p> : null}
+        </>
+      )}
+    </section>
+  );
+}
+
 export function AdminHome({
   facilitators,
   students,
+  items,
   unassignedCount,
+  sampleCount,
   today,
 }: {
   facilitators: PjdcFacilitator[];
   students: PjdcStudent[];
+  items: ProjectJdcChecklistItem[];
   unassignedCount: number;
+  sampleCount: number;
   today: string;
 }) {
   const total = students.length;
   const attention = needsAttention(students, today);
+  const pending = items.filter((item) => item.studentDone && !item.facilitatorApproved).length;
+  const overdue = students.reduce((sum, student) => sum + student.overdue, 0);
+  const todayItems = items.filter((item) => item.itemDate === today);
 
   return (
     <div className="pjdc-layout">
       <div className="pjdc-main">
+        <StatStrip
+          stats={[
+            { label: "Students", value: total },
+            { label: "Done today", value: `${todayItems.filter((item) => item.studentDone).length}/${todayItems.length}` },
+            { label: "Waiting for check", value: pending, tone: pending ? "action" : undefined },
+            { label: "Past deadline", value: overdue, tone: overdue ? "risk" : undefined },
+          ]}
+        />
+
+        <section className="pjdc-panel">
+          <div className="pjdc-panel-head">
+            <h2>5 areas of life</h2>
+            <span className="pjdc-muted pjdc-small">Everyone, last 7 days</span>
+          </div>
+          <PillarBoard stats={countByPillar(lastWeek(items, today))} />
+        </section>
+
         <section className="pjdc-panel">
           <div className="pjdc-panel-head">
             <h2>All students</h2>
@@ -490,6 +721,8 @@ export function AdminHome({
             </ul>
           )}
         </section>
+
+        <SampleDataPanel sampleCount={sampleCount} facilitatorCount={facilitators.length} />
       </div>
     </div>
   );
