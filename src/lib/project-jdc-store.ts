@@ -1,18 +1,13 @@
 import { Pool } from "pg";
 
-export const PROJECT_JDC_STATUSES = ["active", "at_risk", "inactive", "completed"] as const;
-export type ProjectJdcStatus = (typeof PROJECT_JDC_STATUSES)[number];
+import { isProjectJdcStatus, type ProjectJdcStatus } from "@/lib/project-jdc-status";
 
-export const PROJECT_JDC_STATUS_LABELS: Record<ProjectJdcStatus, string> = {
-  active: "Active",
-  at_risk: "At Risk",
-  inactive: "Inactive",
-  completed: "Completed",
-};
-
-export function isProjectJdcStatus(value: string): value is ProjectJdcStatus {
-  return (PROJECT_JDC_STATUSES as readonly string[]).includes(value);
-}
+export {
+  isProjectJdcStatus,
+  PROJECT_JDC_STATUS_LABELS,
+  PROJECT_JDC_STATUSES,
+  type ProjectJdcStatus,
+} from "@/lib/project-jdc-status";
 
 function toStatus(value: unknown): ProjectJdcStatus {
   const text = String(value ?? "");
@@ -43,7 +38,10 @@ export type ProjectJdcChecklistItem = {
   createdAt: string;
 };
 
-export const WEEK_DAYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"] as const;
+/** Form value meaning "every student of this facilitator". */
+export const ALL_STUDENTS = "all";
+
+export const WEEK_DAYS =["mon", "tue", "wed", "thu", "fri", "sat", "sun"] as const;
 export type WeekDay = (typeof WEEK_DAYS)[number];
 
 export type ProjectJdcWeeklyPlan = {
@@ -167,6 +165,17 @@ function mapWeeklyPlanRow(row: Record<string, unknown>): ProjectJdcWeeklyPlan {
     createdAt: new Date(String(row.created_at)).toISOString(),
     updatedAt: new Date(String(row.updated_at)).toISOString(),
   };
+}
+
+/** Today's date (YYYY-MM-DD) in the Philippines, where the program runs. */
+export function manilaTodayIso(): string {
+  return new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Manila" });
+}
+
+export function addDaysIso(dateIso: string, days: number): string {
+  const date = new Date(`${dateIso}T00:00:00Z`);
+  date.setUTCDate(date.getUTCDate() + days);
+  return date.toISOString().slice(0, 10);
 }
 
 export function weekStartIso(dateIso: string): string {
@@ -547,6 +556,47 @@ export async function listChecklistItemsForFacilitator(facilitatorId: string): P
   }
 }
 
+export async function listAllChecklistItems(): Promise<ProjectJdcChecklistItem[]> {
+  const client = getPool();
+  if (!client) return [...memoryItems].sort((a, b) => b.itemDate.localeCompare(a.itemDate));
+
+  try {
+    await ensureTables(client);
+    const result = await client.query(
+      "SELECT * FROM project_jdc_checklist_items ORDER BY item_date DESC, created_at ASC",
+    );
+    return result.rows.map(mapItemRow);
+  } catch (error) {
+    console.error("Failed to list all Project JDC checklist items", error);
+    return [...memoryItems].sort((a, b) => b.itemDate.localeCompare(a.itemDate));
+  }
+}
+
+export async function approveAllDoneForFacilitator(facilitatorId: string): Promise<void> {
+  const now = new Date().toISOString();
+  for (let i = 0; i < memoryItems.length; i += 1) {
+    const item = memoryItems[i];
+    if (item.facilitatorId === facilitatorId && item.studentDone && !item.facilitatorApproved) {
+      memoryItems[i] = { ...item, facilitatorApproved: true, approvedAt: now };
+    }
+  }
+
+  const client = getPool();
+  if (!client) return;
+
+  try {
+    await ensureTables(client);
+    await client.query(
+      `UPDATE project_jdc_checklist_items
+       SET facilitator_approved = TRUE, approved_at = NOW()
+       WHERE facilitator_id = $1 AND student_done = TRUE AND facilitator_approved = FALSE`,
+      [facilitatorId],
+    );
+  } catch (error) {
+    console.error("Failed to approve all Project JDC checklist items", error);
+  }
+}
+
 export async function markChecklistItemDone(itemId: string, studentId: string): Promise<void> {
   const memoryIndex = memoryItems.findIndex((item) => item.id === itemId && item.studentId === studentId);
   if (memoryIndex >= 0) {
@@ -570,6 +620,24 @@ export async function markChecklistItemDone(itemId: string, studentId: string): 
     );
   } catch (error) {
     console.error("Failed to mark Project JDC checklist item done", error);
+  }
+}
+
+export async function deleteChecklistItem(itemId: string, facilitatorId: string): Promise<void> {
+  const memoryIndex = memoryItems.findIndex((item) => item.id === itemId && item.facilitatorId === facilitatorId);
+  if (memoryIndex >= 0) memoryItems.splice(memoryIndex, 1);
+
+  const client = getPool();
+  if (!client) return;
+
+  try {
+    await ensureTables(client);
+    await client.query("DELETE FROM project_jdc_checklist_items WHERE id = $1 AND facilitator_id = $2", [
+      itemId,
+      facilitatorId,
+    ]);
+  } catch (error) {
+    console.error("Failed to delete Project JDC checklist item", error);
   }
 }
 

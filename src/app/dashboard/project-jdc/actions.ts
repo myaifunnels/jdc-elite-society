@@ -15,9 +15,14 @@ import { deleteUserAccess } from "@/lib/access-store";
 import { deletePasswordResetsForUser } from "@/lib/password-reset";
 import {
   addChecklistItem,
+  ALL_STUDENTS,
+  approveAllDoneForFacilitator,
   approveChecklistItem,
   assignStudentToFacilitator,
+  deleteChecklistItem,
   isProjectJdcStatus,
+  listStudentIdsForFacilitator,
+  manilaTodayIso,
   markChecklistItemDone,
   removeEnrollmentsForUser,
   setFacilitatorStatus,
@@ -141,12 +146,35 @@ export async function addChecklistItemAction(formData: FormData) {
   if (user.role !== "facilitator" && user.role !== "admin") return;
 
   const studentId = String(formData.get("studentId") ?? "").trim();
-  const itemDate = String(formData.get("itemDate") ?? "").trim();
-  const label = String(formData.get("label") ?? "").trim();
+  const itemDate = String(formData.get("itemDate") ?? "").trim() || manilaTodayIso();
+  const label = String(formData.get("label") ?? "").trim().slice(0, 200);
   const category = String(formData.get("category") ?? "general").trim();
-  if (!studentId || !itemDate || !label) return;
+  if (!studentId || !label) return;
 
-  await addChecklistItem({ studentId, facilitatorId: user.id, itemDate, label, category });
+  // "all" gives the same task to every student this facilitator coaches.
+  const studentIds = studentId === ALL_STUDENTS ? await listStudentIdsForFacilitator(user.id) : [studentId];
+  for (const id of studentIds) {
+    await addChecklistItem({ studentId: id, facilitatorId: user.id, itemDate, label, category });
+  }
+  revalidatePath("/dashboard/project-jdc");
+}
+
+export async function deleteChecklistItemAction(formData: FormData) {
+  const { user } = await requireCapability("projectJdc");
+  if (user.role !== "facilitator" && user.role !== "admin") return;
+
+  const itemId = String(formData.get("itemId") ?? "").trim();
+  if (!itemId) return;
+
+  await deleteChecklistItem(itemId, user.id);
+  revalidatePath("/dashboard/project-jdc");
+}
+
+export async function approveAllChecklistItemsAction() {
+  const { user } = await requireCapability("projectJdc");
+  if (user.role !== "facilitator" && user.role !== "admin") return;
+
+  await approveAllDoneForFacilitator(user.id);
   revalidatePath("/dashboard/project-jdc");
 }
 
@@ -175,7 +203,7 @@ export async function saveWeeklyPlanAction(formData: FormData) {
   if (user.role !== "facilitator") return;
 
   const weekStartInput = String(formData.get("weekStart") ?? "").trim();
-  const weekStart = weekStartIso(weekStartInput || new Date().toISOString().slice(0, 10));
+  const weekStart = weekStartIso(weekStartInput || manilaTodayIso());
   const targetCount = Math.max(0, Number(formData.get("targetCount") ?? 0) || 0);
   const targetLabel = String(formData.get("targetLabel") ?? "").trim();
 
