@@ -7765,7 +7765,11 @@ html[data-membership="jes"] {
   flex: 1 0 auto;
   flex-direction: column;
   min-height: 100%;
+  font-family: var(--font-inter), system-ui, -apple-system, "Segoe UI", sans-serif;
+  /* Inter's clearer letterforms: tailed l, serifed I, single-storey a. Easier for young readers. */
+  font-feature-settings: "cv05", "cv08", "cv11";
   font-size: 1rem;
+  line-height: 1.5;
   color: var(--foreground);
 }
 .pjdc-app ::selection { background: color-mix(in srgb, var(--brand) 45%, transparent); color: var(--foreground); }
@@ -7777,9 +7781,13 @@ html[data-membership="jes"] {
 .pjdc-top { display: flex; align-items: center; gap: 0.85rem; padding: 1.1rem 1rem 0.4rem; max-width: 46rem; width: 100%; margin: 0 auto; }
 .pjdc-top h1 { margin: 0; font-size: 1.35rem; font-weight: 750; letter-spacing: -0.02em; line-height: 1.2; text-wrap: balance; }
 .pjdc-top p { margin: 0.15rem 0 0; color: var(--muted); font-size: 0.95rem; }
+.pjdc-top .pjdc-date { display: none; margin: 0 0 0 auto; padding: 0.4rem 0.85rem; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); font-size: 0.88rem; font-weight: 600; white-space: nowrap; }
 
 .pjdc-screen { flex: 1; width: 100%; max-width: 46rem; margin: 0 auto; padding: 0.75rem 1rem 1.5rem; }
 .pjdc-stack { display: grid; gap: 1rem; }
+/* One column on phones (side first in the markup when it should lead), two columns on desktop. */
+.pjdc-layout, .pjdc-main:not(.pjdc-panel), .pjdc-side:not(.pjdc-panel) { display: grid; gap: 1rem; align-content: start; min-width: 0; }
+.pjdc-side:empty { display: none; }
 
 .pjdc-panel { padding: 1.1rem; border-radius: var(--pj-radius); border: 1px solid var(--line); background: var(--card); display: grid; gap: 0.85rem; }
 .pjdc-panel-head { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; }
@@ -8161,6 +8169,85 @@ a.pjdc-person:hover { background: color-mix(in srgb, var(--foreground) 6%, trans
   .pjdc-sheet-body::before { display: none; }
   .pjdc-sheet-head { margin-top: 0; }
   .pjdc-sticky-save { bottom: 6.25rem; }
+}
+
+@media (min-width: 768px) {
+  .pjdc-top .pjdc-date { display: block; }
+}
+
+/* Desktop: tabs move under the greeting, content gets room for two columns. */
+@media (min-width: 1024px) {
+  .pjdc-top { order: -2; max-width: 76rem; padding: 2rem 2rem 1rem; gap: 1rem; }
+  .pjdc-top h1 { font-size: 1.85rem; letter-spacing: -0.025em; }
+  .pjdc-top p { font-size: 1rem; }
+
+  .pjdc-tabbar {
+    order: -1; position: sticky; top: 0; bottom: auto; justify-self: auto; align-self: center;
+    display: flex; gap: 0.35rem; width: calc(min(76rem, 100%) - 4rem); margin: 0; padding: 0.6rem 0;
+    border: 0; border-bottom: 1px solid var(--line); border-radius: 0; box-shadow: none;
+    background: color-mix(in srgb, var(--background) 86%, transparent);
+  }
+  .pjdc-tab {
+    display: inline-flex; align-items: center; gap: 0.55rem; min-height: 2.6rem; padding: 0 1rem 0 0.8rem;
+    border-radius: 999px; font-size: 0.95rem; font-weight: 600; transition: background-color 160ms var(--ease-out), color 160ms var(--ease-out);
+  }
+  .pjdc-tab:hover:not(.is-active) { background: color-mix(in srgb, var(--foreground) 7%, transparent); }
+  .pjdc-tab.is-active { background: var(--brand); color: #fff; }
+  .pjdc-tab-icon, .pjdc-tab.is-active .pjdc-tab-icon { width: auto; height: auto; background: none; color: inherit; }
+  .pjdc-tab-icon svg { width: 18px; height: 18px; }
+  .pjdc-tab { position: relative; }
+  .pjdc-tab-icon { position: static; }
+  .pjdc-tab-icon b { top: -0.3rem; right: -0.35rem; box-shadow: 0 0 0 2px var(--background); }
+
+  .pjdc-screen { max-width: 76rem; padding: 1.75rem 2rem 3rem; }
+  .pjdc-panel { padding: 1.5rem; gap: 1rem; }
+  .pjdc-panel-head h2, .pjdc-panel > h2 { font-size: 1.15rem; }
+
+  .pjdc-layout { grid-template-columns: minmax(0, 1fr) 23rem; gap: 1.5rem; align-items: start; }
+  .pjdc-layout > .pjdc-main { grid-column: 1; grid-row: 1; }
+  .pjdc-layout > .pjdc-side { grid-column: 2; grid-row: 1; }
+  .pjdc-layout:has(> .pjdc-side:empty) { grid-template-columns: minmax(0, 1fr); }
+  .pjdc-layout.is-week > .pjdc-main { grid-row: 1 / span 2; }
+  .pjdc-layout.is-week > .pjdc-sticky-save { grid-column: 2; grid-row: 2; position: sticky; top: 5rem; bottom: auto; }
+
+  .pjdc-cards { grid-template-columns: repeat(auto-fill, minmax(22rem, 1fr)); gap: 1.5rem; align-items: start; }
+  .pjdc-people.is-two-col { grid-template-columns: 1fr 1fr; column-gap: 1.5rem; }
+  .pjdc-people.is-two-col li:nth-child(2) { border-top: 0; }
+  .pjdc-actions-row { grid-template-columns: repeat(2, max-content); }
+  .pjdc-btn.is-fit, .pjdc-main > .pjdc-btn.is-wide { width: auto; min-width: 14rem; justify-self: start; }
+  .pjdc-top h1 { font-weight: 700; }
+  .pjdc-callout h2 { font-size: 1.6rem; }
+  .pjdc-callout .pjdc-btn.is-wide { width: auto; min-width: 14rem; }
+
+  .pjdc-dayline h2 { font-size: 2.5rem; }
+  .pjdc-tally { grid-template-columns: 1fr; text-align: left; gap: 0; padding-block: 0.5rem; }
+  .pjdc-tally > div { grid-template-columns: 2.75rem 1fr; grid-template-rows: auto auto; justify-items: start; column-gap: 0.85rem; row-gap: 0; padding: 0.9rem 0; }
+  .pjdc-tally > div + div { border-top: 1px solid var(--line); }
+  .pjdc-tally svg { grid-row: 1 / span 2; align-self: center; width: 2.75rem; height: 2.75rem; padding: 0.65rem; border-radius: 12px; background: var(--brand-soft); }
+  .pjdc-tally strong { font-size: 1.75rem; line-height: 1.1; }
+  .pjdc-tally span { font-size: 0.9rem; }
+
+  .pjdc-task, .pjdc-check { padding: 0.9rem 1rem; transition: border-color 160ms var(--ease-out), background-color 160ms var(--ease-out); }
+  .pjdc-task:hover, .pjdc-check:hover { border-color: var(--line-strong); }
+  .pjdc-btn.is-primary:hover { box-shadow: 0 6px 18px color-mix(in srgb, var(--brand) 35%, transparent); }
+
+  .pjdc-leaders { gap: 1.25rem; }
+  .pjdc-leaders-tools { display: flex; justify-content: space-between; gap: 1rem; }
+  .pjdc-leaders-tools .pjdc-segmented { min-width: 19rem; }
+  .pjdc-leaders-caption { text-align: left; font-size: 1rem; }
+  .pjdc-leaders-body:has(.pjdc-ranks) { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 1.5rem; align-items: start; }
+  .pjdc-leaders-you { grid-column: 1 / -1; }
+  .pjdc-podium { padding: 2rem 1.5rem 0; border-radius: var(--pj-radius); border: 1px solid var(--line); background: var(--card); overflow: hidden; }
+  .pjdc-spot.is-1 .pjdc-spot-step { height: 7rem; }
+  .pjdc-spot.is-2 .pjdc-spot-step { height: 5.25rem; }
+  .pjdc-spot.is-3 .pjdc-spot-step { height: 4rem; }
+
+  .pjdc-org { gap: 1.25rem; }
+  .pjdc-org-tools { grid-template-columns: minmax(0, 26rem) 1fr; align-items: center; }
+  .pjdc-org-tools .pjdc-chips.is-scroll { flex-wrap: wrap; margin: 0; padding: 0; }
+  .pjdc-leaves { grid-template-columns: repeat(auto-fill, minmax(6.75rem, 1fr)); }
+
+  .pjdc-toast-region { bottom: 2rem; }
 }
 
 @media (prefers-reduced-motion: reduce) {

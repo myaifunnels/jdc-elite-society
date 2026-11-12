@@ -125,97 +125,101 @@ export function FacilitatorHome({
   const withTasksToday = me.students.filter((student) => student.totalToday > 0).length;
 
   return (
-    <div className="pjdc-stack">
-      <section className={cn("pjdc-panel pjdc-callout", pending > 0 ? "is-action" : "is-calm")}>
-        {pending > 0 ? (
-          <>
-            <ClipboardCheck aria-hidden size={30} />
-            <h2>
-              {pending} task{pending === 1 ? "" : "s"} to check
-            </h2>
-            <p>Your students finished these. Take a look!</p>
-            <Link href="/dashboard/project-jdc?tab=check" className="pjdc-btn is-primary is-big is-wide">
-              Check now
-            </Link>
-          </>
-        ) : (
-          <>
-            <CircleCheck aria-hidden size={30} />
-            <h2>All caught up!</h2>
-            <p>Nothing to check right now.</p>
-          </>
-        )}
-      </section>
+    <div className="pjdc-layout">
+      <div className="pjdc-main">
+        <section className={cn("pjdc-panel pjdc-callout", pending > 0 ? "is-action" : "is-calm")}>
+          {pending > 0 ? (
+            <>
+              <ClipboardCheck aria-hidden size={30} />
+              <h2>
+                {pending} task{pending === 1 ? "" : "s"} to check
+              </h2>
+              <p>Your students finished these. Take a look!</p>
+              <Link href="/dashboard/project-jdc?tab=check" className="pjdc-btn is-primary is-big is-wide">
+                Check now
+              </Link>
+            </>
+          ) : (
+            <>
+              <CircleCheck aria-hidden size={30} />
+              <h2>All caught up!</h2>
+              <p>Nothing to check right now.</p>
+            </>
+          )}
+        </section>
 
-      <GiveTaskButton students={me.students} today={today} />
+        <GiveTaskButton students={me.students} today={today} />
 
-      <section className="pjdc-panel">
-        <div className="pjdc-panel-head">
-          <h2>Your plan today</h2>
-          <Link href="/dashboard/project-jdc?tab=week" className="pjdc-link">
-            Edit
-          </Link>
-        </div>
-        {todayPlan ? (
-          <p className="pjdc-plan-today">{todayPlan}</p>
-        ) : (
-          <p className="pjdc-muted">
-            No plan for today yet. <Link href="/dashboard/project-jdc?tab=week">Set your week</Link>
-          </p>
-        )}
-        {me.target > 0 ? (
-          <div className="pjdc-goal">
-            <Target aria-hidden size={20} />
-            <span>
-              <strong>
-                {me.newThisWeek} of {me.target}
-              </strong>{" "}
-              {me.targetLabel || "goal"} this week
-            </span>
-            <ProgressBar value={me.newThisWeek} max={me.target} label="Weekly goal" />
-          </div>
-        ) : null}
-      </section>
-
-      {withTasksToday > 0 ? (
         <section className="pjdc-panel">
           <div className="pjdc-panel-head">
-            <h2>Team today</h2>
-            <span className="pjdc-count">
-              {finishedToday}/{withTasksToday}
-            </span>
+            <h2>Needs your help</h2>
           </div>
-          <p className="pjdc-muted">students finished all their tasks</p>
-          <ProgressBar value={finishedToday} max={withTasksToday} label="Students finished today" />
+          {attention.length === 0 ? (
+            <EmptyState icon={<Users size={28} />} title="Everyone is on track">
+              {me.students.length ? "Nice! No one needs extra help today." : "You don't have students yet. Your coach will add them."}
+            </EmptyState>
+          ) : (
+            <ul className="pjdc-people">
+              {attention.map(({ student, reason }) => (
+                <li key={student.id}>
+                  <Link href="/dashboard/project-jdc?tab=team" className="pjdc-person">
+                    <PjdcAvatar name={student.name} photoUrl={student.photoUrl} status={student.status} />
+                    <span>
+                      <strong>{student.name}</strong>
+                      <em>
+                        <TriangleAlert aria-hidden size={14} /> {reason}
+                      </em>
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
         </section>
-      ) : null}
+      </div>
 
-      <section className="pjdc-panel">
-        <div className="pjdc-panel-head">
-          <h2>Needs your help</h2>
-        </div>
-        {attention.length === 0 ? (
-          <EmptyState icon={<Users size={28} />} title="Everyone is on track">
-            {me.students.length ? "Nice! No one needs extra help today." : "You don't have students yet. Your coach will add them."}
-          </EmptyState>
-        ) : (
-          <ul className="pjdc-people">
-            {attention.map(({ student, reason }) => (
-              <li key={student.id}>
-                <Link href="/dashboard/project-jdc?tab=team" className="pjdc-person">
-                  <PjdcAvatar name={student.name} photoUrl={student.photoUrl} status={student.status} />
-                  <span>
-                    <strong>{student.name}</strong>
-                    <em>
-                      <TriangleAlert aria-hidden size={14} /> {reason}
-                    </em>
-                  </span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
+      <div className="pjdc-side">
+        <section className="pjdc-panel">
+          <div className="pjdc-panel-head">
+            <h2>Your plan today</h2>
+            <Link href="/dashboard/project-jdc?tab=week" className="pjdc-link">
+              Edit
+            </Link>
+          </div>
+          {todayPlan ? (
+            <p className="pjdc-plan-today">{todayPlan}</p>
+          ) : (
+            <p className="pjdc-muted">
+              No plan for today yet. <Link href="/dashboard/project-jdc?tab=week">Set your week</Link>
+            </p>
+          )}
+          {me.target > 0 ? (
+            <div className="pjdc-goal">
+              <Target aria-hidden size={20} />
+              <span>
+                <strong>
+                  {me.newThisWeek} of {me.target}
+                </strong>{" "}
+                {me.targetLabel || "goal"} this week
+              </span>
+              <ProgressBar value={me.newThisWeek} max={me.target} label="Weekly goal" />
+            </div>
+          ) : null}
+        </section>
+
+        {withTasksToday > 0 ? (
+          <section className="pjdc-panel">
+            <div className="pjdc-panel-head">
+              <h2>Team today</h2>
+              <span className="pjdc-count">
+                {finishedToday}/{withTasksToday}
+              </span>
+            </div>
+            <p className="pjdc-muted">students finished all their tasks</p>
+            <ProgressBar value={finishedToday} max={withTasksToday} label="Students finished today" />
+          </section>
+        ) : null}
+      </div>
     </div>
   );
 }
@@ -233,86 +237,90 @@ export function FacilitatorCheck({
   const notDoneToday = items.filter((item) => item.itemDate === today && !item.studentDone);
 
   return (
-    <div className="pjdc-stack">
-      <section className="pjdc-panel">
-        <div className="pjdc-panel-head">
-          <h2>Ready to check</h2>
-          {pending.length ? <span className="pjdc-count">{pending.length}</span> : null}
-        </div>
-        {pending.length === 0 ? (
-          <EmptyState icon={<CircleCheck size={28} />} title="All caught up!">
-            When a student finishes a task, it shows up here.
-          </EmptyState>
-        ) : (
-          <>
-            {pending.length > 1 ? (
-              <ActionForm action={approveAllChecklistItemsAction} success={`All ${pending.length} tasks checked!`}>
-                <SubmitButton className="pjdc-btn is-primary is-big is-wide" pendingLabel="Checking…">
-                  <CircleCheck aria-hidden size={20} />
-                  All look good ({pending.length})
-                </SubmitButton>
-              </ActionForm>
-            ) : null}
-            <ul className="pjdc-checks">
-              {pending.map((item) => {
-                const student = userById.get(item.studentId);
-                const name = student?.name ?? "Student";
+    <div className="pjdc-layout">
+      <div className="pjdc-main">
+        <section className="pjdc-panel">
+          <div className="pjdc-panel-head">
+            <h2>Ready to check</h2>
+            {pending.length ? <span className="pjdc-count">{pending.length}</span> : null}
+          </div>
+          {pending.length === 0 ? (
+            <EmptyState icon={<CircleCheck size={28} />} title="All caught up!">
+              When a student finishes a task, it shows up here.
+            </EmptyState>
+          ) : (
+            <>
+              {pending.length > 1 ? (
+                <ActionForm action={approveAllChecklistItemsAction} success={`All ${pending.length} tasks checked!`}>
+                  <SubmitButton className="pjdc-btn is-primary is-big is-wide" pendingLabel="Checking…">
+                    <CircleCheck aria-hidden size={20} />
+                    All look good ({pending.length})
+                  </SubmitButton>
+                </ActionForm>
+              ) : null}
+              <ul className="pjdc-checks">
+                {pending.map((item) => {
+                  const student = userById.get(item.studentId);
+                  const name = student?.name ?? "Student";
+                  return (
+                    <li key={item.id} className="pjdc-check">
+                      <PjdcAvatar name={name} photoUrl={student?.facebookPhotoUrl} />
+                      <span className="pjdc-check-text">
+                        <strong>{firstName(name)}</strong>
+                        <span>{item.label}</span>
+                        <em>{friendlyDate(item.itemDate, today)}</em>
+                      </span>
+                      <ActionForm action={approveChecklistItemAction} success={`Checked! ${firstName(name)} will see it.`}>
+                        <input type="hidden" name="itemId" value={item.id} />
+                        <SubmitButton className="pjdc-btn is-good" pendingLabel="…">
+                          Looks good
+                        </SubmitButton>
+                      </ActionForm>
+                    </li>
+                  );
+                })}
+              </ul>
+            </>
+          )}
+        </section>
+      </div>
+
+      <div className="pjdc-side">
+        <section className="pjdc-panel">
+          <div className="pjdc-panel-head">
+            <h2>Still working on it today</h2>
+            {notDoneToday.length ? <span className="pjdc-count">{notDoneToday.length}</span> : null}
+          </div>
+          {notDoneToday.length === 0 ? (
+            <p className="pjdc-muted">No open tasks for today.</p>
+          ) : (
+            <ul className="pjdc-tasks is-compact">
+              {notDoneToday.map((item) => {
+                const name = userById.get(item.studentId)?.name ?? "Student";
                 return (
-                  <li key={item.id} className="pjdc-check">
-                    <PjdcAvatar name={name} photoUrl={student?.facebookPhotoUrl} />
-                    <span className="pjdc-check-text">
-                      <strong>{firstName(name)}</strong>
-                      <span>{item.label}</span>
-                      <em>{friendlyDate(item.itemDate, today)}</em>
+                  <li key={item.id} className="pjdc-task">
+                    <CategoryIcon category={item.category} />
+                    <span className="pjdc-task-text">
+                      <strong>{item.label}</strong>
+                      <em>{name}</em>
                     </span>
-                    <ActionForm action={approveChecklistItemAction} success={`Checked! ${firstName(name)} will see it.`}>
+                    <ActionForm action={deleteChecklistItemAction} success="Task removed.">
                       <input type="hidden" name="itemId" value={item.id} />
-                      <SubmitButton className="pjdc-btn is-good" pendingLabel="…">
-                        Looks good
-                      </SubmitButton>
+                      <ConfirmButton
+                        className="pjdc-icon-btn"
+                        label={<Trash2 aria-label="Remove task" size={18} />}
+                        title="Remove this task?"
+                        message={`"${item.label}" will be taken off ${firstName(name)}'s list.`}
+                        confirmLabel="Yes, remove it"
+                      />
                     </ActionForm>
                   </li>
                 );
               })}
             </ul>
-          </>
-        )}
-      </section>
-
-      <section className="pjdc-panel">
-        <div className="pjdc-panel-head">
-          <h2>Still working on it today</h2>
-          {notDoneToday.length ? <span className="pjdc-count">{notDoneToday.length}</span> : null}
-        </div>
-        {notDoneToday.length === 0 ? (
-          <p className="pjdc-muted">No open tasks for today.</p>
-        ) : (
-          <ul className="pjdc-tasks is-compact">
-            {notDoneToday.map((item) => {
-              const name = userById.get(item.studentId)?.name ?? "Student";
-              return (
-                <li key={item.id} className="pjdc-task">
-                  <CategoryIcon category={item.category} />
-                  <span className="pjdc-task-text">
-                    <strong>{item.label}</strong>
-                    <em>{name}</em>
-                  </span>
-                  <ActionForm action={deleteChecklistItemAction} success="Task removed.">
-                    <input type="hidden" name="itemId" value={item.id} />
-                    <ConfirmButton
-                      className="pjdc-icon-btn"
-                      label={<Trash2 aria-label="Remove task" size={18} />}
-                      title="Remove this task?"
-                      message={`"${item.label}" will be taken off ${firstName(name)}'s list.`}
-                      confirmLabel="Yes, remove it"
-                    />
-                  </ActionForm>
-                </li>
-              );
-            })}
-          </ul>
-        )}
-      </section>
+          )}
+        </section>
+      </div>
     </div>
   );
 }
@@ -328,9 +336,9 @@ export function FacilitatorWeek({
 }) {
   const todayKey = todayWeekDay(today);
   return (
-    <ActionForm action={saveWeeklyPlanAction} success="Your week is saved!" className="pjdc-stack">
+    <ActionForm action={saveWeeklyPlanAction} success="Your week is saved!" className="pjdc-layout is-week">
       <input type="hidden" name="weekStart" value={weekStart} />
-      <section className="pjdc-panel">
+      <section className="pjdc-panel pjdc-side">
         <div className="pjdc-panel-head">
           <h2>Your goal this week</h2>
         </div>
@@ -346,7 +354,7 @@ export function FacilitatorWeek({
         </div>
       </section>
 
-      <section className="pjdc-panel">
+      <section className="pjdc-panel pjdc-main">
         <div className="pjdc-panel-head">
           <h2>What you will do each day</h2>
         </div>
@@ -387,98 +395,102 @@ export function AdminHome({
   const attention = needsAttention(students, today);
 
   return (
-    <div className="pjdc-stack">
-      <section className="pjdc-panel">
-        <div className="pjdc-panel-head">
-          <h2>All students</h2>
-          <span className="pjdc-count">{total}</span>
-        </div>
-        {total === 0 ? (
-          <p className="pjdc-muted">No students in the program yet.</p>
-        ) : (
-          <>
-            <div className="pjdc-split" aria-hidden>
-              {PROJECT_JDC_STATUSES.map((status) => {
-                const count = students.filter((student) => student.status === status).length;
-                return count ? <span key={status} className={`is-${status}`} style={{ flexGrow: count }} /> : null;
-              })}
-            </div>
-            <ul className="pjdc-split-legend">
-              {PROJECT_JDC_STATUSES.map((status) => (
-                <li key={status} className={`is-${status}`}>
-                  <strong>{students.filter((student) => student.status === status).length}</strong>
-                  {PROJECT_JDC_STATUS_LABELS[status]}
+    <div className="pjdc-layout">
+      <div className="pjdc-main">
+        <section className="pjdc-panel">
+          <div className="pjdc-panel-head">
+            <h2>All students</h2>
+            <span className="pjdc-count">{total}</span>
+          </div>
+          {total === 0 ? (
+            <p className="pjdc-muted">No students in the program yet.</p>
+          ) : (
+            <>
+              <div className="pjdc-split" aria-hidden>
+                {PROJECT_JDC_STATUSES.map((status) => {
+                  const count = students.filter((student) => student.status === status).length;
+                  return count ? <span key={status} className={`is-${status}`} style={{ flexGrow: count }} /> : null;
+                })}
+              </div>
+              <ul className="pjdc-split-legend">
+                {PROJECT_JDC_STATUSES.map((status) => (
+                  <li key={status} className={`is-${status}`}>
+                    <strong>{students.filter((student) => student.status === status).length}</strong>
+                    {PROJECT_JDC_STATUS_LABELS[status]}
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
+          {unassignedCount > 0 ? (
+            <Link href="/dashboard/project-jdc?tab=people" className="pjdc-notice">
+              <Link2 aria-hidden size={18} />
+              {unassignedCount} student{unassignedCount === 1 ? " is" : "s are"} waiting for a facilitator
+            </Link>
+          ) : null}
+        </section>
+
+        <section className="pjdc-panel">
+          <div className="pjdc-panel-head">
+            <h2>Needs help</h2>
+            <Link href="/dashboard/project-jdc?tab=team" className="pjdc-link">
+              Open team
+            </Link>
+          </div>
+          {attention.length === 0 ? (
+            <p className="pjdc-muted">Everyone is on track.</p>
+          ) : (
+            <ul className="pjdc-people">
+              {attention.map(({ student, reason }) => (
+                <li key={student.id} className="pjdc-person">
+                  <PjdcAvatar name={student.name} photoUrl={student.photoUrl} status={student.status} />
+                  <span>
+                    <strong>{student.name}</strong>
+                    <em>
+                      <TriangleAlert aria-hidden size={14} /> {reason}
+                    </em>
+                  </span>
                 </li>
               ))}
             </ul>
-          </>
-        )}
-        {unassignedCount > 0 ? (
-          <Link href="/dashboard/project-jdc?tab=people" className="pjdc-notice">
-            <Link2 aria-hidden size={18} />
-            {unassignedCount} student{unassignedCount === 1 ? " is" : "s are"} waiting for a facilitator
-          </Link>
-        ) : null}
-      </section>
+          )}
+        </section>
+      </div>
 
-      <section className="pjdc-panel">
-        <div className="pjdc-panel-head">
-          <h2>Facilitators this week</h2>
-          <Link href="/dashboard/project-jdc?tab=week" className="pjdc-link">
-            See plans
-          </Link>
-        </div>
-        {facilitators.length === 0 ? (
-          <p className="pjdc-muted">No facilitators yet.</p>
-        ) : (
-          <ul className="pjdc-people">
-            {facilitators.map((facilitator) => (
-              <li key={facilitator.id} className="pjdc-person">
-                <PjdcAvatar name={facilitator.name} photoUrl={facilitator.photoUrl} status={facilitator.status} />
-                <span>
-                  <strong>{facilitator.name}</strong>
-                  {facilitator.target > 0 ? (
-                    <>
-                      <ProgressBar value={facilitator.newThisWeek} max={facilitator.target} label={`${facilitator.name} weekly goal`} />
-                      <em>
-                        {facilitator.newThisWeek} of {facilitator.target} {facilitator.targetLabel}
-                      </em>
-                    </>
-                  ) : (
-                    <em>No goal set · {facilitator.students.length} students</em>
-                  )}
-                </span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
-
-      <section className="pjdc-panel">
-        <div className="pjdc-panel-head">
-          <h2>Needs help</h2>
-          <Link href="/dashboard/project-jdc?tab=team" className="pjdc-link">
-            Open team
-          </Link>
-        </div>
-        {attention.length === 0 ? (
-          <p className="pjdc-muted">Everyone is on track.</p>
-        ) : (
-          <ul className="pjdc-people">
-            {attention.map(({ student, reason }) => (
-              <li key={student.id} className="pjdc-person">
-                <PjdcAvatar name={student.name} photoUrl={student.photoUrl} status={student.status} />
-                <span>
-                  <strong>{student.name}</strong>
-                  <em>
-                    <TriangleAlert aria-hidden size={14} /> {reason}
-                  </em>
-                </span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
+      <div className="pjdc-side">
+        <section className="pjdc-panel">
+          <div className="pjdc-panel-head">
+            <h2>Facilitators this week</h2>
+            <Link href="/dashboard/project-jdc?tab=week" className="pjdc-link">
+              See plans
+            </Link>
+          </div>
+          {facilitators.length === 0 ? (
+            <p className="pjdc-muted">No facilitators yet.</p>
+          ) : (
+            <ul className="pjdc-people">
+              {facilitators.map((facilitator) => (
+                <li key={facilitator.id} className="pjdc-person">
+                  <PjdcAvatar name={facilitator.name} photoUrl={facilitator.photoUrl} status={facilitator.status} />
+                  <span>
+                    <strong>{facilitator.name}</strong>
+                    {facilitator.target > 0 ? (
+                      <>
+                        <ProgressBar value={facilitator.newThisWeek} max={facilitator.target} label={`${facilitator.name} weekly goal`} />
+                        <em>
+                          {facilitator.newThisWeek} of {facilitator.target} {facilitator.targetLabel}
+                        </em>
+                      </>
+                    ) : (
+                      <em>No goal set · {facilitator.students.length} students</em>
+                    )}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      </div>
     </div>
   );
 }
@@ -588,7 +600,7 @@ export function AdminPeople({
             Tap “Add a person” to start.
           </EmptyState>
         ) : (
-          <ul className="pjdc-people">
+          <ul className="pjdc-people is-two-col">
             {people.map((person) => {
               const coach = facilitatorOf.get(person.id);
               return (
@@ -662,7 +674,7 @@ export function AdminWeek({
   }
 
   return (
-    <div className="pjdc-stack">
+    <div className="pjdc-stack pjdc-cards">
       {facilitators.map((facilitator) => {
         const plan = plans.get(facilitator.id);
         const days = WEEK_DAYS.filter((day) => plan?.days[day]);

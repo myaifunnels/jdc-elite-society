@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Playfair_Display } from "next/font/google";
+import { Geist, Geist_Mono, Inter, Playfair_Display } from "next/font/google";
 import { SiteChatWidget } from "@/components/layout/site-chat-widget";
 import { ThemeProvider } from "@/components/theme/theme-provider";
 import { membershipTheme } from "@/lib/membership";
@@ -14,6 +14,11 @@ const geistSans = Geist({
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
+
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
 });
 
@@ -67,7 +72,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
       data-scroll-behavior="smooth"
       data-membership={membership || undefined}
       suppressHydrationWarning
-      className={`${geistSans.variable} ${geistMono.variable} ${playfair.variable} dark h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} ${playfair.variable} dark h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
         <ThemeProvider>{children}</ThemeProvider>

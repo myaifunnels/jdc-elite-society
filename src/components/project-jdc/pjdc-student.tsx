@@ -83,67 +83,71 @@ export function StudentToday({
   const allDone = todayItems.length > 0 && done === todayItems.length;
 
   return (
-    <div className="pjdc-stack">
-      {student && student.day >= 1 ? (
-        <section className="pjdc-panel pjdc-dayline">
-          <h2>
-            Day {Math.min(student.day, PROGRAM_DAYS)} <span>of {PROGRAM_DAYS}</span>
-          </h2>
-          <ProgressBar value={Math.min(student.day, PROGRAM_DAYS)} max={PROGRAM_DAYS} label="Program progress" />
-          {student.streak > 0 ? (
-            <p className="pjdc-streak">
-              <Flame aria-hidden size={18} />
-              {student.streak} day{student.streak === 1 ? "" : "s"} in a row. Don&apos;t break it!
-            </p>
-          ) : null}
-        </section>
-      ) : null}
+    <div className="pjdc-layout">
+      <div className="pjdc-side">
+        {student && student.day >= 1 ? (
+          <section className="pjdc-panel pjdc-dayline">
+            <h2>
+              Day {Math.min(student.day, PROGRAM_DAYS)} <span>of {PROGRAM_DAYS}</span>
+            </h2>
+            <ProgressBar value={Math.min(student.day, PROGRAM_DAYS)} max={PROGRAM_DAYS} label="Program progress" />
+            {student.streak > 0 ? (
+              <p className="pjdc-streak">
+                <Flame aria-hidden size={18} />
+                {student.streak} day{student.streak === 1 ? "" : "s"} in a row. Don&apos;t break it!
+              </p>
+            ) : null}
+          </section>
+        ) : null}
+      </div>
 
-      {allDone ? (
-        <section className="pjdc-panel pjdc-celebrate">
-          <PartyPopper aria-hidden size={36} />
-          <h2>You finished everything today!</h2>
-          <p>Amazing work. Come back tomorrow for new tasks.</p>
-        </section>
-      ) : null}
+      <div className="pjdc-main">
+        {allDone ? (
+          <section className="pjdc-panel pjdc-celebrate">
+            <PartyPopper aria-hidden size={36} />
+            <h2>You finished everything today!</h2>
+            <p>Amazing work. Come back tomorrow for new tasks.</p>
+          </section>
+        ) : null}
 
-      <section className="pjdc-panel">
-        <div className="pjdc-panel-head">
-          <h2>Your tasks today</h2>
-          {todayItems.length ? (
-            <span className="pjdc-count">
-              {done}/{todayItems.length}
-            </span>
-          ) : null}
-        </div>
-        {todayItems.length === 0 ? (
-          <EmptyState icon={<Sun size={28} />} title="No tasks yet today">
-            Your facilitator will add them soon. Check back later!
-          </EmptyState>
-        ) : (
-          <ul className="pjdc-tasks">
-            {todayItems.map((item) => (
-              <li key={item.id} className={cn("pjdc-task", item.studentDone && "is-done")}>
-                <CategoryIcon category={item.category} />
-                <span className="pjdc-task-text">
-                  <strong>{item.label}</strong>
-                  <em>{categoryLabel(item.category)}</em>
-                </span>
-                {item.studentDone ? (
-                  <TaskState item={item} />
-                ) : (
-                  <ActionForm action={markChecklistItemDoneAction} success="Great job! Your facilitator will check it.">
-                    <input type="hidden" name="itemId" value={item.id} />
-                    <SubmitButton className="pjdc-btn is-primary is-big" pendingLabel="Saving…">
-                      I did it!
-                    </SubmitButton>
-                  </ActionForm>
-                )}
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
+        <section className="pjdc-panel">
+          <div className="pjdc-panel-head">
+            <h2>Your tasks today</h2>
+            {todayItems.length ? (
+              <span className="pjdc-count">
+                {done}/{todayItems.length}
+              </span>
+            ) : null}
+          </div>
+          {todayItems.length === 0 ? (
+            <EmptyState icon={<Sun size={28} />} title="No tasks yet today">
+              Your facilitator will add them soon. Check back later!
+            </EmptyState>
+          ) : (
+            <ul className="pjdc-tasks">
+              {todayItems.map((item) => (
+                <li key={item.id} className={cn("pjdc-task", item.studentDone && "is-done")}>
+                  <CategoryIcon category={item.category} />
+                  <span className="pjdc-task-text">
+                    <strong>{item.label}</strong>
+                    <em>{categoryLabel(item.category)}</em>
+                  </span>
+                  {item.studentDone ? (
+                    <TaskState item={item} />
+                  ) : (
+                    <ActionForm action={markChecklistItemDoneAction} success="Great job! Your facilitator will check it.">
+                      <input type="hidden" name="itemId" value={item.id} />
+                      <SubmitButton className="pjdc-btn is-primary is-big" pendingLabel="Saving…">
+                        I did it!
+                      </SubmitButton>
+                    </ActionForm>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      </div>
     </div>
   );
 }
@@ -192,80 +196,84 @@ export function StudentJourney({
   const recent = items.filter((item) => item.itemDate <= today).slice(0, 12);
 
   return (
-    <div className="pjdc-stack">
-      <section className="pjdc-panel">
-        <div className="pjdc-panel-head">
-          <h2>Your 30 days</h2>
-        </div>
-        <ol className="pjdc-journey" aria-label="Your 30 days">
-          {days.map((day) => (
-            <li
-              key={day.number}
-              className={cn("pjdc-day", `is-${day.state}`, day.isToday && "is-now")}
-              aria-label={`Day ${day.number}: ${
-                {
-                  future: "coming up",
-                  today: "today",
-                  all: "all done",
-                  some: "some done",
-                  missed: "missed",
-                  rest: "no tasks",
-                }[day.state]
-              }`}
-            >
-              {day.state === "all" ? <CircleCheck aria-hidden size={16} /> : day.number}
-            </li>
-          ))}
-        </ol>
-        <ul className="pjdc-legend" aria-hidden>
-          <li className="is-all">All done</li>
-          <li className="is-some">Some done</li>
-          <li className="is-missed">Missed</li>
-          <li className="is-future">Coming up</li>
-        </ul>
-      </section>
+    <div className="pjdc-layout">
+      <div className="pjdc-side">
+        <section className="pjdc-panel pjdc-tally">
+          <div>
+            <Flame aria-hidden size={22} />
+            <strong>{student.streak}</strong>
+            <span>days in a row</span>
+          </div>
+          <div>
+            <ListChecks aria-hidden size={22} />
+            <strong>{student.tasksDone}</strong>
+            <span>tasks done</span>
+          </div>
+          <div>
+            <CircleCheck aria-hidden size={22} />
+            <strong>{approved}</strong>
+            <span>checked by facilitator</span>
+          </div>
+        </section>
+      </div>
 
-      <section className="pjdc-panel pjdc-tally">
-        <div>
-          <Flame aria-hidden size={22} />
-          <strong>{student.streak}</strong>
-          <span>days in a row</span>
-        </div>
-        <div>
-          <ListChecks aria-hidden size={22} />
-          <strong>{student.tasksDone}</strong>
-          <span>tasks done</span>
-        </div>
-        <div>
-          <CircleCheck aria-hidden size={22} />
-          <strong>{approved}</strong>
-          <span>checked by facilitator</span>
-        </div>
-      </section>
-
-      <section className="pjdc-panel">
-        <div className="pjdc-panel-head">
-          <h2>What you did</h2>
-        </div>
-        {recent.length === 0 ? (
-          <EmptyState icon={<ListChecks size={28} />} title="Nothing yet">
-            Your finished tasks will show up here.
-          </EmptyState>
-        ) : (
-          <ul className="pjdc-tasks is-compact">
-            {recent.map((item) => (
-              <li key={item.id} className={cn("pjdc-task", item.studentDone && "is-done")}>
-                <CategoryIcon category={item.category} />
-                <span className="pjdc-task-text">
-                  <strong>{item.label}</strong>
-                  <em>{item.itemDate === today ? "Today" : new Date(`${item.itemDate}T00:00:00Z`).toLocaleDateString("en-PH", { month: "short", day: "numeric", timeZone: "UTC" })}</em>
-                </span>
-                {item.studentDone ? <TaskState item={item} /> : <span className="pjdc-task-state">Not done</span>}
+      <div className="pjdc-main">
+        <section className="pjdc-panel">
+          <div className="pjdc-panel-head">
+            <h2>Your 30 days</h2>
+          </div>
+          <ol className="pjdc-journey" aria-label="Your 30 days">
+            {days.map((day) => (
+              <li
+                key={day.number}
+                className={cn("pjdc-day", `is-${day.state}`, day.isToday && "is-now")}
+                aria-label={`Day ${day.number}: ${
+                  {
+                    future: "coming up",
+                    today: "today",
+                    all: "all done",
+                    some: "some done",
+                    missed: "missed",
+                    rest: "no tasks",
+                  }[day.state]
+                }`}
+              >
+                {day.state === "all" ? <CircleCheck aria-hidden size={16} /> : day.number}
               </li>
             ))}
+          </ol>
+          <ul className="pjdc-legend" aria-hidden>
+            <li className="is-all">All done</li>
+            <li className="is-some">Some done</li>
+            <li className="is-missed">Missed</li>
+            <li className="is-future">Coming up</li>
           </ul>
-        )}
-      </section>
+        </section>
+
+        <section className="pjdc-panel">
+          <div className="pjdc-panel-head">
+            <h2>What you did</h2>
+          </div>
+          {recent.length === 0 ? (
+            <EmptyState icon={<ListChecks size={28} />} title="Nothing yet">
+              Your finished tasks will show up here.
+            </EmptyState>
+          ) : (
+            <ul className="pjdc-tasks is-compact">
+              {recent.map((item) => (
+                <li key={item.id} className={cn("pjdc-task", item.studentDone && "is-done")}>
+                  <CategoryIcon category={item.category} />
+                  <span className="pjdc-task-text">
+                    <strong>{item.label}</strong>
+                    <em>{item.itemDate === today ? "Today" : new Date(`${item.itemDate}T00:00:00Z`).toLocaleDateString("en-PH", { month: "short", day: "numeric", timeZone: "UTC" })}</em>
+                  </span>
+                  {item.studentDone ? <TaskState item={item} /> : <span className="pjdc-task-state">Not done</span>}
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      </div>
     </div>
   );
 }

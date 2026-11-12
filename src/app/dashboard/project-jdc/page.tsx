@@ -67,6 +67,9 @@ function AppFrame({
           </h1>
           <p>{subtitle}</p>
         </div>
+        <p className="pjdc-date">
+          {new Intl.DateTimeFormat("en-PH", { weekday: "long", month: "long", day: "numeric", timeZone: "Asia/Manila" }).format(new Date())}
+        </p>
       </header>
 
       <div className="pjdc-screen">{children}</div>
@@ -188,7 +191,7 @@ export default async function ProjectJdcPage({ searchParams }: { searchParams: P
         {active === "check" ? <FacilitatorCheck items={myItems} userById={userById} today={data.today} /> : null}
         {active === "team" ? (
           <div className="pjdc-stack">
-            <GiveTaskButton students={me.students} today={data.today} />
+            <GiveTaskButton students={me.students} today={data.today} className="pjdc-btn is-primary is-big is-wide is-fit" />
             <PjdcOrgChart facilitators={[me]} canEditStudent="own" viewerId={user.id} />
           </div>
         ) : null}
