@@ -93,10 +93,10 @@ h3 {
   color: var(--heading);
 }
 
-/* Serif display treatment for the public marketing site only — dashboard and
-   the /elite Mastermind page (which sets its own headline fonts) opt out. */
-body:not(:has(.dashboard-content)):not(:has(.dashboard-toolbar)):not(:has(.university-fill)):not(:has(.elite-offer)) h1,
-body:not(:has(.dashboard-content)):not(:has(.dashboard-toolbar)):not(:has(.university-fill)):not(:has(.elite-offer)) h2 {
+/* Serif display treatment for the public marketing site only — dashboard,
+   Project JDC (all Inter) and the /elite Mastermind page (which sets its own headline fonts) opt out. */
+body:not(:has(.dashboard-content)):not(:has(.dashboard-toolbar)):not(:has(.university-fill)):not(:has(.elite-offer)):not(:has(.pjdc-app)) h1,
+body:not(:has(.dashboard-content)):not(:has(.dashboard-toolbar)):not(:has(.university-fill)):not(:has(.elite-offer)):not(:has(.pjdc-app)) h2 {
   font-family: var(--font-display), Georgia, serif;
   letter-spacing: -0.02em;
 }
@@ -7772,6 +7772,8 @@ html[data-membership="jes"] {
   line-height: 1.5;
   color: var(--foreground);
 }
+/* Everything inside Project JDC (headings, buttons, form fields, popups) stays in Inter. */
+.pjdc-app *, .pjdc-app *::before, .pjdc-app *::after { font-family: inherit; }
 .pjdc-app ::selection { background: color-mix(in srgb, var(--brand) 45%, transparent); color: var(--foreground); }
 .pjdc-app .is-active { --pj-status: var(--pj-active); }
 .pjdc-app .is-at_risk { --pj-status: var(--pj-risk); }
