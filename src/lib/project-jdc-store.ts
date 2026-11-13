@@ -81,6 +81,7 @@ const memoryEnrollments: ProjectJdcEnrollment[] = [];
 const memoryItems: ProjectJdcChecklistItem[] = [];
 const memoryWeeklyPlans: ProjectJdcWeeklyPlan[] = [];
 const memoryFacilitatorStatuses = new Map<string, ProjectJdcStatus>();
+const memoryMentors = new Set<string>();
 
 let pool: Pool | null | undefined;
 let tableReady = false;
@@ -173,6 +174,12 @@ async function ensureTables(client: Pool) {
   await client.query(`
     ALTER TABLE project_jdc_enrollments
     ADD COLUMN IF NOT EXISTS is_sample BOOLEAN NOT NULL DEFAULT FALSE
+  `);
+  await client.query(`
+    CREATE TABLE IF NOT EXISTS project_jdc_mentors (
+      user_id TEXT PRIMARY KEY,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
   `);
   tableReady = true;
 }
@@ -683,8 +690,8 @@ export async function markChecklistItemDone(itemId: string, studentId: string, p
 }
 
 /** "Not yet": the task goes back on the student's list with a note saying what's missing. */
-export async function sendBackChecklistItem(itemId: string, facilitatorId: string, note: string): Promise<void> {
-  const memoryIndex = memoryItems.findIndex((item) => item.id === itemId && item.facilitatorId === facilitatorId);
+export async function sendBackChecklistItem(itemId: string, facilitatorId: string | null, note: string): Promise<void> {
+  const memoryIndex = memoryItems.findIndex((item) => item.id === itemId && (facilitatorId === null || item.facilitatorId === facilitatorId));
   if (memoryIndex >= 0) {
     memoryItems[memoryIndex] = {
       ...memoryItems[memoryIndex],
@@ -704,7 +711,7 @@ export async function sendBackChecklistItem(itemId: string, facilitatorId: strin
     await client.query(
       `UPDATE project_jdc_checklist_items
        SET student_done = FALSE, student_done_at = NULL, facilitator_approved = FALSE, approved_at = NULL, review_note = $3
-       WHERE id = $1 AND facilitator_id = $2`,
+       WHERE id = $1 AND ($2::text IS NULL OR facilitator_id = $2)`,
       [itemId, facilitatorId, note],
     );
   } catch (error) {
@@ -712,8 +719,8 @@ export async function sendBackChecklistItem(itemId: string, facilitatorId: strin
   }
 }
 
-export async function deleteChecklistItem(itemId: string, facilitatorId: string): Promise<void> {
-  const memoryIndex = memoryItems.findIndex((item) => item.id === itemId && item.facilitatorId === facilitatorId);
+export async function deleteChecklistItem(itemId: string, facilitatorId: string | null): Promise<void> {
+  const memoryIndex = memoryItems.findIndex((item) => item.id === itemId && (facilitatorId === null || item.facilitatorId === facilitatorId));
   if (memoryIndex >= 0) memoryItems.splice(memoryIndex, 1);
 
   const client = getPool();
@@ -721,7 +728,7 @@ export async function deleteChecklistItem(itemId: string, facilitatorId: string)
 
   try {
     await ensureTables(client);
-    await client.query("DELETE FROM project_jdc_checklist_items WHERE id = $1 AND facilitator_id = $2", [
+    await client.query("DELETE FROM project_jdc_checklist_items WHERE id = $1 AND ($2::text IS NULL OR facilitator_id = $2)", [
       itemId,
       facilitatorId,
     ]);
@@ -730,8 +737,8 @@ export async function deleteChecklistItem(itemId: string, facilitatorId: string)
   }
 }
 
-export async function approveChecklistItem(itemId: string, facilitatorId: string): Promise<void> {
-  const memoryIndex = memoryItems.findIndex((item) => item.id === itemId && item.facilitatorId === facilitatorId);
+export async function approveChecklistItem(itemId: string, facilitatorId: string | null): Promise<void> {
+  const memoryIndex = memoryItems.findIndex((item) => item.id === itemId && (facilitatorId === null || item.facilitatorId === facilitatorId));
   if (memoryIndex >= 0) {
     memoryItems[memoryIndex] = {
       ...memoryItems[memoryIndex],
@@ -748,7 +755,7 @@ export async function approveChecklistItem(itemId: string, facilitatorId: string
     await client.query(
       `UPDATE project_jdc_checklist_items
        SET facilitator_approved = TRUE, approved_at = NOW()
-       WHERE id = $1 AND facilitator_id = $2`,
+       WHERE id = $1 AND ($2::text IS NULL OR facilitator_id = $2)`,
       [itemId, facilitatorId],
     );
   } catch (error) {
@@ -776,6 +783,42 @@ export async function removeEnrollmentsForUser(userId: string): Promise<void> {
   } catch (error) {
     console.error("Failed to remove Project JDC enrollments for user", error);
   }
+}
+
+/**
+ * Mentors oversee every facilitator and have admin powers inside Project JDC.
+ * Rows starting with "__" are markers (e.g. a default mentor was already applied), not people.
+ */
+export async function listMentorRows(): Promise<string[]> {
+  const client = getPool();
+  if (!client) return [...memoryMentors];
+
+  try {
+    await ensureTables(client);
+    const result = await client.query("SELECT user_id FROM project_jdc_mentors ORDER BY created_at ASC");
+    return result.rows.map((row) => String(row.user_id));
+  } catch (error) {
+    console.error("Failed to list Project JDC mentors", error);
+    return [...memoryMentors];
+  }
+}
+
+export async function addMentorRow(userId: string): Promise<void> {
+  memoryMentors.add(userId);
+  const client = getPool();
+  if (!client) return;
+
+  await ensureTables(client);
+  await client.query("INSERT INTO project_jdc_mentors (user_id) VALUES ($1) ON CONFLICT (user_id) DO NOTHING", [userId]);
+}
+
+export async function removeMentorRow(userId: string): Promise<void> {
+  memoryMentors.delete(userId);
+  const client = getPool();
+  if (!client) return;
+
+  await ensureTables(client);
+  await client.query("DELETE FROM project_jdc_mentors WHERE user_id = $1", [userId]);
 }
 
 /** Writes practice students and tasks in one go. Everything is flagged is_sample so it can be removed later. */

@@ -3,6 +3,8 @@ import {
   CircleCheck,
   ClipboardCheck,
   Database,
+  Eye,
+  ShieldCheck,
   Link2,
   Plus,
   Target,
@@ -15,6 +17,7 @@ import Link from "next/link";
 
 import {
   addChecklistItemAction,
+  addMentorAction,
   approveAllChecklistItemsAction,
   approveChecklistItemAction,
   assignStudentAction,
@@ -22,10 +25,12 @@ import {
   deleteChecklistItemAction,
   deleteProjectJdcPersonAction,
   loadSampleDataAction,
+  removeMentorAction,
   removeSampleDataAction,
   renameProjectJdcPersonAction,
   saveWeeklyPlanAction,
   sendBackChecklistItemAction,
+  viewAsAction,
 } from "@/app/dashboard/project-jdc/actions";
 import { ProjectJdcPersonSearch } from "@/components/dashboard/project-jdc-person-search";
 import { ActionForm, ConfirmButton, SheetButton, SubmitButton, TaskFields } from "@/components/project-jdc/pjdc-client";
@@ -732,11 +737,18 @@ export function AdminPeople({
   users,
   students,
   today,
+  mentorIds,
+  viewerId,
 }: {
   users: AuthUser[];
   students: PjdcStudent[];
   today: string;
+  mentorIds: string[];
+  viewerId: string;
 }) {
+  const mentorSet = new Set(mentorIds);
+  const mentors = users.filter((user) => mentorSet.has(user.id));
+  const mentorCandidates = users.filter((user) => user.role !== "admin" && !mentorSet.has(user.id) && user.active !== false);
   const facilitators = users.filter((user) => user.role === "facilitator");
   const studentUsers = users.filter((user) => user.role === "student");
   const googleUsers = users
@@ -849,6 +861,14 @@ export function AdminPeople({
                           : "Student · no facilitator yet"}
                     </em>
                   </span>
+                  {person.id !== viewerId && (person.role === "facilitator" || coach) ? (
+                    <form action={viewAsAction}>
+                      <input type="hidden" name="targetId" value={person.id} />
+                      <button type="submit" className="pjdc-btn is-quiet" aria-label={`View as ${person.name}`}>
+                        <Eye aria-hidden size={16} /> View
+                      </button>
+                    </form>
+                  ) : null}
                   <SheetButton title={`Edit ${firstName(person.name)}`} className="pjdc-btn is-quiet" label="Edit">
                     <div className="pjdc-profile">
                       <PjdcAvatar name={person.name} photoUrl={person.facebookPhotoUrl} size="xl" />
@@ -883,6 +903,53 @@ export function AdminPeople({
             })}
           </ul>
         )}
+      </section>
+
+      <section className="pjdc-panel">
+        <div className="pjdc-panel-head">
+          <h2>Mentors</h2>
+          <span className="pjdc-count">{mentors.length}</span>
+        </div>
+        <p className="pjdc-muted">Mentors can see and manage everyone, and open any facilitator's or student's dashboard.</p>
+        {mentors.length ? (
+          <ul className="pjdc-people is-two-col">
+            {mentors.map((mentor) => (
+              <li key={mentor.id} className="pjdc-person">
+                <PjdcAvatar name={mentor.name} photoUrl={mentor.facebookPhotoUrl} />
+                <span>
+                  <strong>{mentor.name}</strong>
+                  <em>Mentor</em>
+                </span>
+                {mentor.id !== viewerId ? (
+                  <ActionForm action={removeMentorAction} success={`${firstName(mentor.name)} is no longer a mentor.`}>
+                    <input type="hidden" name="userId" value={mentor.id} />
+                    <SubmitButton className="pjdc-btn is-quiet">Remove</SubmitButton>
+                  </ActionForm>
+                ) : null}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="pjdc-muted">No mentors yet.</p>
+        )}
+        <ActionForm action={addMentorAction} success="Mentor added." className="pjdc-form" reset>
+          <label className="pjdc-field">
+            Make someone a mentor
+            <select name="userId" required defaultValue="">
+              <option value="" disabled>
+                Choose a person
+              </option>
+              {mentorCandidates.map((person) => (
+                <option key={person.id} value={person.id}>
+                  {person.name}
+                </option>
+              ))}
+            </select>
+          </label>
+          <SubmitButton className="pjdc-btn is-primary is-big is-wide">
+            <ShieldCheck aria-hidden size={18} /> Add mentor
+          </SubmitButton>
+        </ActionForm>
       </section>
     </div>
   );

@@ -9,7 +9,10 @@ import {
   Users,
   type LucideIcon,
 } from "lucide-react";
+import { Eye } from "lucide-react";
 import Link from "next/link";
+
+import { stopViewAsAction } from "@/app/dashboard/project-jdc/actions";
 
 import { PjdcToaster } from "@/components/project-jdc/pjdc-client";
 import { PjdcLeaderboard } from "@/components/project-jdc/pjdc-leaderboard";
@@ -26,7 +29,7 @@ import {
 import { StudentJourney, StudentToday } from "@/components/project-jdc/pjdc-student";
 import { firstName, PjdcAvatar } from "@/components/project-jdc/pjdc-ui";
 import { loadProjectJdcData, type PjdcFacilitator } from "@/lib/project-jdc-view";
-import { requireCapability } from "@/lib/session";
+import { loadMentorIds, readViewAs, requireProjectJdc } from "@/lib/project-jdc-access";
 import { cn } from "@/lib/utils";
 
 const BASE = "/dashboard/project-jdc";
@@ -48,6 +51,7 @@ function AppFrame({
   subtitle,
   tabs,
   active,
+  banner,
   children,
 }: {
   name: string;
@@ -55,10 +59,20 @@ function AppFrame({
   subtitle: string;
   tabs: Tab[];
   active: string;
+  banner?: string;
   children: React.ReactNode;
 }) {
   return (
     <main id="dashboard-main" tabIndex={-1} className="pjdc-app outline-none">
+      {banner ? (
+        <form action={stopViewAsAction} className="pjdc-viewas">
+          <Eye aria-hidden size={18} />
+          <span>{banner}</span>
+          <button type="submit" className="pjdc-btn is-quiet">
+            Back to my view
+          </button>
+        </form>
+      ) : null}
       <header className="pjdc-top">
         <PjdcAvatar name={name} photoUrl={photoUrl} size="md" />
         <div>
@@ -104,14 +118,18 @@ function pickTab(requested: string | undefined, tabs: Tab[]) {
 }
 
 export default async function ProjectJdcPage({ searchParams }: { searchParams: Promise<{ tab?: string }> }) {
-  const [{ user }, { tab: requested }, data] = await Promise.all([
-    requireCapability("projectJdc"),
-    searchParams,
-    loadProjectJdcData(),
-  ]);
+  const [viewer, { tab: requested }, data] = await Promise.all([requireProjectJdc(), searchParams, loadProjectJdcData()]);
   const userById = new Map(data.users.map((item) => [item.id, item]));
+  const mentorIds = [...(await loadMentorIds(data.users))];
 
-  if (user.role === "admin") {
+  // Staff (admins and mentors) can open anyone's dashboard to see what they see.
+  const viewAsId = viewer.isStaff ? await readViewAs(viewer.user.id) : null;
+  const viewing = viewAsId ? (userById.get(viewAsId) ?? null) : null;
+  const user = viewing ?? viewer.user;
+  const banner = viewing ? `Viewing as ${viewing.name}` : undefined;
+  const staffView = viewer.isStaff && !viewing;
+
+  if (staffView) {
     const tabs: Tab[] = [
       { key: "home", label: "Home", icon: House },
       { key: "people", label: "People", icon: Users },
@@ -129,7 +147,7 @@ export default async function ProjectJdcPage({ searchParams }: { searchParams: P
     };
 
     return (
-      <AppFrame name={user.name} photoUrl={user.facebookPhotoUrl} subtitle={subtitles[active]} tabs={tabs} active={active}>
+      <AppFrame name={user.name} photoUrl={user.facebookPhotoUrl} subtitle={subtitles[active]} tabs={tabs} active={active} banner={banner}>
         {active === "home" ? (
           <AdminHome
             facilitators={data.facilitators}
@@ -140,7 +158,7 @@ export default async function ProjectJdcPage({ searchParams }: { searchParams: P
             today={data.today}
           />
         ) : null}
-        {active === "people" ? <AdminPeople users={data.users} students={data.students} today={data.today} /> : null}
+        {active === "people" ? <AdminPeople users={data.users} students={data.students} today={data.today} mentorIds={mentorIds} viewerId={user.id} /> : null}
         {active === "team" ? (
           <PjdcOrgChart
             facilitators={data.facilitators}
@@ -188,7 +206,7 @@ export default async function ProjectJdcPage({ searchParams }: { searchParams: P
     };
 
     return (
-      <AppFrame name={user.name} photoUrl={user.facebookPhotoUrl} subtitle={subtitles[active]} tabs={tabs} active={active}>
+      <AppFrame name={user.name} photoUrl={user.facebookPhotoUrl} subtitle={subtitles[active]} tabs={tabs} active={active} banner={banner}>
         {active === "home" ? <FacilitatorHome me={me} items={myItems} plan={plan} pending={pending} today={data.today} /> : null}
         {active === "check" ? <FacilitatorCheck items={myItems} userById={userById} today={data.today} /> : null}
         {active === "team" ? (
@@ -230,7 +248,7 @@ export default async function ProjectJdcPage({ searchParams }: { searchParams: P
     }));
 
   return (
-    <AppFrame name={user.name} photoUrl={user.facebookPhotoUrl} subtitle={subtitles[active]} tabs={tabs} active={active}>
+    <AppFrame name={user.name} photoUrl={user.facebookPhotoUrl} subtitle={subtitles[active]} tabs={tabs} active={active} banner={banner}>
       {active === "today" ? <StudentToday student={me} items={myItems} today={data.today} /> : null}
       {active === "journey" ? <StudentJourney student={me} items={myItems} today={data.today} /> : null}
       {active === "team" ? <PjdcOrgChart facilitators={myTeam} canEditStudent="none" viewerId={user.id} /> : null}
