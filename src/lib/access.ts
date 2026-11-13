@@ -62,7 +62,7 @@ export const ACCESS_ROLES: Array<{ id: AccessRole; label: string; detail: string
   { id: "partner", label: "Partner", detail: "Assigned contacts, University, own account, and optional partnership." },
   { id: "member", label: "Member", detail: "Verified membership: University and profile." },
   { id: "contact", label: "Contact", detail: "Limited portal for CRM contacts: home, account, and University." },
-  { id: "facilitator", label: "Facilitator", detail: "Assigned students, Project JDC checklist, own account." },
+  { id: "facilitator", label: "Facilitator", detail: "Assigned students, Project JDC checklist, University, own account." },
   { id: "student", label: "Student", detail: "Project JDC checklist, own account, and University." },
 ];
 
@@ -157,7 +157,7 @@ export const ROLE_DEFAULTS: Record<AccessRole, AccessMap> = {
   },
   facilitator: {
     dashboard: false,
-    university: false,
+    university: true,
     profile: true,
     inbox: true,
     support: true,
@@ -232,7 +232,7 @@ export function mergeAccess(role: AccessRole, roleDefaults: AccessMap, overrides
     resolved.access = true;
     resolved.dashboard = true;
   }
-  if ((role === "member" || role === "contact") && overrides.university !== false) {
+  if (overrides.university !== false) {
     resolved.university = true;
   }
   resolved.profile = true;
