@@ -1,12 +1,12 @@
 "use client";
 
-import { ChevronDown, Flame, Search, X } from "lucide-react";
-import Image from "next/image";
+import { Search, X } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
 
 import { setFacilitatorStatusAction, updateStudentProgressAction } from "@/app/dashboard/project-jdc/actions";
 import { ActionForm, SubmitButton } from "@/components/project-jdc/pjdc-client";
-import { firstName, PillarBoard, PjdcAvatar, ProgressBar, shortDate, StatusPill } from "@/components/project-jdc/pjdc-ui";
+import { PjdcGenealogy } from "@/components/project-jdc/pjdc-genealogy";
+import { firstName, PillarBoard, PjdcAvatar, shortDate, StatusPill } from "@/components/project-jdc/pjdc-ui";
 import {
   PROJECT_JDC_STATUS_HINTS,
   PROJECT_JDC_STATUS_LABELS,
@@ -61,9 +61,6 @@ export function PjdcOrgChart({
 }) {
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<Filter>("all");
-  const [open, setOpen] = useState<Set<string>>(
-    () => new Set(facilitators.length <= 3 ? facilitators.map((item) => item.id) : []),
-  );
   const [selected, setSelected] = useState<Selected | null>(null);
   const dialogRef = useRef<HTMLDialogElement>(null);
 
@@ -92,15 +89,6 @@ export function PjdcOrgChart({
   function openDetail(next: Selected) {
     setSelected(next);
     dialogRef.current?.showModal();
-  }
-
-  function toggle(id: string) {
-    setOpen((current) => {
-      const next = new Set(current);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
   }
 
   const studentEditable = (student: PjdcStudent) =>
@@ -140,119 +128,19 @@ export function PjdcOrgChart({
         </div>
       </div>
 
-      <div className="pjdc-tree">
-        <div className="pjdc-root">
-          <span className="pjdc-root-logo">
-            <Image src="/brand/jdc-elite-society-logo-stacked.webp" alt="" width={56} height={56} />
-          </span>
-          <span>
-            <strong>JDC Elite Society</strong>
-            <em>
-              {facilitators.length} facilitator{facilitators.length === 1 ? "" : "s"} · {allStudents.length} student
-              {allStudents.length === 1 ? "" : "s"}
-            </em>
-          </span>
-        </div>
-
-        {branches.length === 0 ? (
-          <p className="pjdc-tree-none">No one matches that. Try another name or tap “Everyone”.</p>
-        ) : (
-          <ol className="pjdc-branches">
-            {branches.map(({ facilitator, students }) => {
-              const expanded = narrowing || open.has(facilitator.id);
-              const panelId = `pjdc-branch-${facilitator.id}`;
-              return (
-                <li key={facilitator.id} className={cn("pjdc-branch", expanded && "is-open")}>
-                  <div className="pjdc-node">
-                    <button
-                      type="button"
-                      className="pjdc-node-main"
-                      onClick={() => openDetail({ kind: "facilitator", facilitator })}
-                    >
-                      <PjdcAvatar name={facilitator.name} photoUrl={facilitator.photoUrl} status={facilitator.status} size="lg" />
-                      <span className="pjdc-node-text">
-                        <strong>
-                          {facilitator.name}
-                          {facilitator.id === viewerId ? <i className="pjdc-you">You</i> : null}
-                        </strong>
-                        <em>
-                          Facilitator · {facilitator.students.length} student{facilitator.students.length === 1 ? "" : "s"}
-                        </em>
-                        {facilitator.target > 0 ? (
-                          <span className="pjdc-node-goal">
-                            <ProgressBar value={facilitator.newThisWeek} max={facilitator.target} label="Weekly goal" />
-                            <small>
-                              {facilitator.newThisWeek}/{facilitator.target} this week
-                            </small>
-                          </span>
-                        ) : null}
-                      </span>
-                    </button>
-                    <button
-                      type="button"
-                      className="pjdc-node-toggle"
-                      aria-expanded={expanded}
-                      aria-controls={panelId}
-                      aria-label={expanded ? `Hide ${firstName(facilitator.name)}'s students` : `Show ${firstName(facilitator.name)}'s students`}
-                      onClick={() => toggle(facilitator.id)}
-                      disabled={narrowing}
-                    >
-                      <span className="pjdc-avatar-stack" aria-hidden>
-                        {facilitator.students.slice(0, 3).map((student) => (
-                          <PjdcAvatar key={student.id} name={student.name} photoUrl={student.photoUrl} size="sm" />
-                        ))}
-                      </span>
-                      <ChevronDown aria-hidden size={20} />
-                    </button>
-                  </div>
-
-                  {expanded ? (
-                    <div id={panelId} className="pjdc-leaves">
-                      {students.length === 0 ? (
-                        <p className="pjdc-tree-none">No students here yet.</p>
-                      ) : (
-                        students.map((student) => (
-                          <button
-                            key={student.id}
-                            type="button"
-                            className={cn("pjdc-leaf", student.id === viewerId && "is-you")}
-                            onClick={() => openDetail({ kind: "student", student })}
-                          >
-                            <PjdcAvatar name={student.name} photoUrl={student.photoUrl} status={student.status} size="lg" />
-                            <strong>{student.id === viewerId ? "You" : firstName(student.name)}</strong>
-                            <em>{dayText(student.day)}</em>
-                            {student.streak > 1 ? (
-                              <span className="pjdc-leaf-streak">
-                                <Flame aria-hidden size={13} />
-                                {student.streak}
-                              </span>
-                            ) : null}
-                          </button>
-                        ))
-                      )}
-                    </div>
-                  ) : null}
-                </li>
-              );
-            })}
-          </ol>
-        )}
-
-        {unassigned.length > 0 && !narrowing ? (
-          <div className="pjdc-unassigned">
-            <p>Waiting for a facilitator</p>
-            <div className="pjdc-leaves">
-              {unassigned.map((person) => (
-                <div key={person.id} className="pjdc-leaf is-static">
-                  <PjdcAvatar name={person.name} photoUrl={person.photoUrl} size="lg" />
-                  <strong>{firstName(person.name)}</strong>
-                  <em>Not assigned</em>
-                </div>
-              ))}
-            </div>
-          </div>
-        ) : null}
-      </div>
+      {branches.length === 0 && needle !== "" ? (
+        <p className="pjdc-tree-none">No one matches that. Try another name or tap “Everyone”.</p>
+      ) : (
+        <PjdcGenealogy
+          branches={branches}
+          unassigned={narrowing ? [] : unassigned}
+          totals={{ facilitators: facilitators.length, students: allStudents.length }}
+          viewerId={viewerId}
+          forceOpen={narrowing}
+          onSelectStudent={(student) => openDetail({ kind: "student", student })}
+          onSelectFacilitator={(facilitator) => openDetail({ kind: "facilitator", facilitator })}
+        />
+      )}
 
       <dialog
         ref={dialogRef}
