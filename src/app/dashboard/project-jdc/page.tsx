@@ -15,6 +15,7 @@ import Link from "next/link";
 import { stopViewAsAction } from "@/app/dashboard/project-jdc/actions";
 
 import { PjdcToaster } from "@/components/project-jdc/pjdc-client";
+import { PjdcLive } from "@/components/project-jdc/pjdc-live";
 import { PjdcLeaderboard } from "@/components/project-jdc/pjdc-leaderboard";
 import { PjdcOrgChart } from "@/components/project-jdc/pjdc-org-chart";
 import {
@@ -84,6 +85,7 @@ function AppFrame({
         <p className="pjdc-date">
           {new Intl.DateTimeFormat("en-PH", { weekday: "long", month: "long", day: "numeric", timeZone: "Asia/Manila" }).format(new Date())}
         </p>
+        <PjdcLive />
       </header>
 
       <div className="pjdc-screen">{children}</div>
