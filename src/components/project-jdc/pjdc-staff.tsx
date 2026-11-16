@@ -37,15 +37,20 @@ import { ActionForm, ConfirmButton, SheetButton, SubmitButton, TaskFields } from
 import {
   categoryLabel,
   CategoryIcon,
+  DonutRing,
   DueTag,
   EmptyState,
   firstName,
+  MilestoneTrack,
+  MiniBars,
   PillarBoard,
   PjdcAvatar,
   ProgressBar,
   ProofView,
   shortDate,
+  Sparkline,
   StatusPill,
+  WeekLineChart,
 } from "@/components/project-jdc/pjdc-ui";
 import { countByPillar } from "@/lib/project-jdc-pillars";
 import { PROJECT_JDC_STATUS_LABELS, PROJECT_JDC_STATUSES } from "@/lib/project-jdc-status";
@@ -609,13 +614,93 @@ export function AdminHome({
 }) {
   const total = students.length;
   const attention = needsAttention(students, today);
-  const pending = items.filter((item) => item.studentDone && !item.facilitatorApproved).length;
+  const pendingItems = items.filter((item) => item.studentDone && !item.facilitatorApproved);
+  const pending = pendingItems.length;
   const overdue = students.reduce((sum, student) => sum + student.overdue, 0);
   const todayItems = items.filter((item) => item.itemDate === today);
+
+  const last7 = Array.from({ length: 7 }, (_, index) => addDaysIso(today, index - 6));
+  const dayLabels = last7.map((iso) => new Date(`${iso}T00:00:00Z`).toLocaleDateString("en-PH", { weekday: "short", timeZone: "UTC" }).slice(0, 2));
+  const dailyJoins = last7.map((iso) => students.filter((student) => student.startDate === iso).length);
+  const dailyCompletionPct = last7.map((iso) => {
+    const dayItems = items.filter((item) => item.itemDate === iso);
+    return dayItems.length ? Math.round((dayItems.filter((item) => item.studentDone).length / dayItems.length) * 100) : 0;
+  });
+  const todayPct = todayItems.length ? Math.round((todayItems.filter((item) => item.studentDone).length / todayItems.length) * 100) : 0;
+  const activeStudents = students.filter((student) => student.status === "active");
+  const avgDay = activeStudents.length ? activeStudents.reduce((sum, student) => sum + Math.min(student.day, 30), 0) / activeStudents.length : 0;
 
   return (
     <div className="pjdc-layout">
       <div className="pjdc-main">
+        <div className="pjdc-hero-grid">
+          <div className="pjdc-hero-card">
+            <div className="pjdc-hero-card-head">
+              <span>Students</span>
+            </div>
+            <strong className="pjdc-hero-number">{total}</strong>
+            <Sparkline values={dailyJoins} />
+          </div>
+          <div className="pjdc-hero-card">
+            <div className="pjdc-hero-card-head">
+              <span>New this week</span>
+            </div>
+            <strong className="pjdc-hero-number">{facilitators.reduce((sum, facilitator) => sum + facilitator.newThisWeek, 0)}</strong>
+            <MiniBars values={dailyJoins} tone="good" />
+          </div>
+          <div className="pjdc-hero-card is-ring">
+            <div className="pjdc-hero-card-head">
+              <span>Done today</span>
+            </div>
+            <DonutRing pct={todayPct} />
+          </div>
+        </div>
+
+        <div className="pjdc-hero-row">
+          <section className="pjdc-panel pjdc-milestone-card">
+            <div className="pjdc-panel-head">
+              <h2>Program milestones</h2>
+              <span className="pjdc-muted pjdc-small">Average day across active students</span>
+            </div>
+            <p className="pjdc-milestone-pct">Day {Math.round(avgDay)} of 30</p>
+            <MilestoneTrack
+              pct={(avgDay / 30) * 100}
+              markers={[
+                { label: "Day 1", at: 0 },
+                { label: "Day 8", at: (8 / 30) * 100 },
+                { label: "Day 15", at: (15 / 30) * 100 },
+                { label: "Day 22", at: (22 / 30) * 100 },
+                { label: "Day 30", at: 100 },
+              ]}
+            />
+          </section>
+
+          <section className="pjdc-panel pjdc-linechart-card">
+            <div className="pjdc-panel-head">
+              <h2>Completion this week</h2>
+              <span className="pjdc-muted pjdc-small">% of tasks done, by day</span>
+            </div>
+            <WeekLineChart values={dailyCompletionPct} labels={dayLabels} />
+
+            {pending > 0 ? (
+              <div className="pjdc-floating-card">
+                <div className="pjdc-panel-head">
+                  <h3>Waiting for check</h3>
+                  <span className="pjdc-count">{pending}</span>
+                </div>
+                <ul className="pjdc-floating-list">
+                  {pendingItems.slice(0, 2).map((item) => (
+                    <li key={item.id}>
+                      <CircleCheck aria-hidden size={16} />
+                      <span>{item.label}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
+          </section>
+        </div>
+
         <StatStrip
           stats={[
             { label: "Students", value: total },
