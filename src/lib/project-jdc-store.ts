@@ -392,15 +392,20 @@ export async function assignStudentToFacilitator(input: {
 
   if (!client) return enrollment;
 
-  await ensureTables(client);
-  const result = await client.query(
-    `INSERT INTO project_jdc_enrollments (id, student_id, facilitator_id, start_date)
-     VALUES ($1, $2, $3, $4)
-     ON CONFLICT (student_id) DO UPDATE SET facilitator_id = $3, start_date = $4, is_sample = FALSE
-     RETURNING *`,
-    [enrollment.id, input.studentId, input.facilitatorId, input.startDate],
-  );
-  return mapEnrollmentRow(result.rows[0]);
+  try {
+    await ensureTables(client);
+    const result = await client.query(
+      `INSERT INTO project_jdc_enrollments (id, student_id, facilitator_id, start_date)
+       VALUES ($1, $2, $3, $4)
+       ON CONFLICT (student_id) DO UPDATE SET facilitator_id = $3, start_date = $4, is_sample = FALSE
+       RETURNING *`,
+      [enrollment.id, input.studentId, input.facilitatorId, input.startDate],
+    );
+    return mapEnrollmentRow(result.rows[0]);
+  } catch (error) {
+    console.error("Failed to assign Project JDC student to facilitator", error);
+    return enrollment;
+  }
 }
 
 export async function listEnrollments(): Promise<ProjectJdcEnrollment[]> {

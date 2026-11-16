@@ -100,6 +100,9 @@ export async function renameProjectJdcPersonAction(formData: FormData) {
   const userId = String(formData.get("userId") ?? "").trim();
   const name = String(formData.get("name") ?? "").trim();
   if (!userId || !name) return;
+  // Only facilitators and students can be renamed from here, never another admin.
+  const target = await getPublicUserById(userId);
+  if (!target || !isManagedRole(target.role)) return;
 
   await renameUser(userId, name);
   revalidatePath(BASE);
