@@ -334,6 +334,7 @@ export function ProofFields() {
   const inputRef = useRef<HTMLInputElement>(null);
   const [previews, setPreviews] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
+  const pickToken = useRef(0);
 
   useEffect(() => () => previews.forEach((url) => URL.revokeObjectURL(url)), [previews]);
 
@@ -341,8 +342,11 @@ export function ProofFields() {
     const input = event.currentTarget;
     const picked = Array.from(input.files ?? []).slice(0, MAX_PROOF_IMAGES);
     if ((input.files?.length ?? 0) > MAX_PROOF_IMAGES) showToast(`Up to ${MAX_PROOF_IMAGES} pictures. We kept the first ${MAX_PROOF_IMAGES}.`, "error");
+    const token = ++pickToken.current;
     setBusy(true);
     const shrunk = await Promise.all(picked.map(shrinkImage));
+    // A newer selection started and finished while this one was shrinking; let it win.
+    if (token !== pickToken.current) return;
     setBusy(false);
     try {
       const transfer = new DataTransfer();

@@ -192,9 +192,6 @@ export async function addChecklistItemAction(formData: FormData) {
 
   const studentId = String(formData.get("studentId") ?? "").trim();
   const dateInput = String(formData.get("itemDate") ?? "").trim();
-  const itemDate = ISO_DATE.test(dateInput) ? dateInput : manilaTodayIso();
-  const dueInput = String(formData.get("dueDate") ?? "").trim();
-  const dueDate = ISO_DATE.test(dueInput) && dueInput >= itemDate ? dueInput : null;
   const category = String(formData.get("category") ?? "").trim();
   // A checklist: one task per line.
   const labels = String(formData.get("labels") ?? formData.get("label") ?? "")
@@ -203,8 +200,13 @@ export async function addChecklistItemAction(formData: FormData) {
     .filter(Boolean)
     .slice(0, 10);
   if (!studentId) return { error: "Choose who the task is for." };
+  if (!ISO_DATE.test(dateInput)) return { error: "Pick a valid date." };
   if (!pillarOf(category)) return { error: "Pick one of the 5 areas of life." };
   if (labels.length === 0) return { error: "Write at least one task." };
+
+  const itemDate = dateInput;
+  const dueInput = String(formData.get("dueDate") ?? "").trim();
+  const dueDate = ISO_DATE.test(dueInput) && dueInput >= itemDate ? dueInput : null;
 
   // "all" gives the same tasks to every student this facilitator coaches.
   const mine = await listStudentIdsForFacilitator(facilitatorId);

@@ -561,10 +561,12 @@ export async function addChecklistItem(input: {
     isSample: false,
     createdAt: new Date().toISOString(),
   };
-  memoryItems.unshift(item);
 
   const client = getPool();
-  if (!client) return item;
+  if (!client) {
+    memoryItems.unshift(item);
+    return item;
+  }
 
   try {
     await ensureTables(client);
@@ -694,9 +696,17 @@ export async function markChecklistItemDone(itemId: string, studentId: string, p
   }
 }
 
+/**
+ * Index of a checklist item in the memory fallback, scoped to one facilitator's own items
+ * unless facilitatorId is null (staff bypass the scoping and may touch any item).
+ */
+function findItemIndexForFacilitator(itemId: string, facilitatorId: string | null): number {
+  return memoryItems.findIndex((item) => item.id === itemId && (facilitatorId === null || item.facilitatorId === facilitatorId));
+}
+
 /** "Not yet": the task goes back on the student's list with a note saying what's missing. */
 export async function sendBackChecklistItem(itemId: string, facilitatorId: string | null, note: string): Promise<void> {
-  const memoryIndex = memoryItems.findIndex((item) => item.id === itemId && (facilitatorId === null || item.facilitatorId === facilitatorId));
+  const memoryIndex = findItemIndexForFacilitator(itemId, facilitatorId);
   if (memoryIndex >= 0) {
     memoryItems[memoryIndex] = {
       ...memoryItems[memoryIndex],
@@ -725,7 +735,7 @@ export async function sendBackChecklistItem(itemId: string, facilitatorId: strin
 }
 
 export async function deleteChecklistItem(itemId: string, facilitatorId: string | null): Promise<void> {
-  const memoryIndex = memoryItems.findIndex((item) => item.id === itemId && (facilitatorId === null || item.facilitatorId === facilitatorId));
+  const memoryIndex = findItemIndexForFacilitator(itemId, facilitatorId);
   if (memoryIndex >= 0) memoryItems.splice(memoryIndex, 1);
 
   const client = getPool();
@@ -743,7 +753,7 @@ export async function deleteChecklistItem(itemId: string, facilitatorId: string 
 }
 
 export async function approveChecklistItem(itemId: string, facilitatorId: string | null): Promise<void> {
-  const memoryIndex = memoryItems.findIndex((item) => item.id === itemId && (facilitatorId === null || item.facilitatorId === facilitatorId));
+  const memoryIndex = findItemIndexForFacilitator(itemId, facilitatorId);
   if (memoryIndex >= 0) {
     memoryItems[memoryIndex] = {
       ...memoryItems[memoryIndex],
@@ -768,10 +778,16 @@ export async function approveChecklistItem(itemId: string, facilitatorId: string
   }
 }
 
+/** Removes every Project JDC row touching this user: enrollments, checklist items, and weekly plans. */
 export async function removeEnrollmentsForUser(userId: string): Promise<void> {
   for (let i = memoryEnrollments.length - 1; i >= 0; i -= 1) {
     if (memoryEnrollments[i].studentId === userId || memoryEnrollments[i].facilitatorId === userId) {
       memoryEnrollments.splice(i, 1);
+    }
+  }
+  for (let i = memoryItems.length - 1; i >= 0; i -= 1) {
+    if (memoryItems[i].studentId === userId || memoryItems[i].facilitatorId === userId) {
+      memoryItems.splice(i, 1);
     }
   }
 
@@ -784,6 +800,11 @@ export async function removeEnrollmentsForUser(userId: string): Promise<void> {
       "DELETE FROM project_jdc_enrollments WHERE student_id = $1 OR facilitator_id = $1",
       [userId],
     );
+    await client.query(
+      "DELETE FROM project_jdc_checklist_items WHERE student_id = $1 OR facilitator_id = $1",
+      [userId],
+    );
+    await client.query("DELETE FROM project_jdc_weekly_plans WHERE facilitator_id = $1", [userId]);
     await client.query("DELETE FROM project_jdc_facilitator_statuses WHERE facilitator_id = $1", [userId]);
   } catch (error) {
     console.error("Failed to remove Project JDC enrollments for user", error);
