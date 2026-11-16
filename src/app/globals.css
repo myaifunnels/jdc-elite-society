@@ -8494,75 +8494,7 @@ a.pjdc-person:hover { background: color-mix(in srgb, var(--foreground) 6%, trans
 @keyframes pjdc-live-pulse { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--pj-active) 55%, transparent); } 70%, 100% { box-shadow: 0 0 0 7px transparent; } }
 @keyframes pjdc-spin { to { transform: rotate(360deg); } }
 
-/* ---------- Dashboard hero: stat cards, charts, milestones ---------- */
-.pjdc-hero-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr)); gap: 0.85rem; }
-.pjdc-hero-card {
-  padding: 1.1rem;
-  border-radius: var(--pj-radius);
-  border: 1px solid var(--line);
-  background: linear-gradient(160deg, color-mix(in srgb, var(--brand) 14%, var(--card)), var(--card));
-  display: grid;
-  gap: 0.5rem;
-  overflow: hidden;
-}
-.pjdc-hero-card.is-ring { align-items: center; justify-items: center; text-align: center; }
-.pjdc-hero-card-head span { font-size: 0.8rem; color: var(--muted); font-weight: 600; letter-spacing: -0.01em; }
-.pjdc-hero-number { font-size: 1.9rem; font-weight: 800; letter-spacing: -0.02em; }
-
-.pjdc-spark, .pjdc-minibars { width: 100%; height: 36px; overflow: visible; }
-.pjdc-spark path, .pjdc-spark circle { stroke: var(--brand); fill: var(--brand); }
-.pjdc-spark.is-good path, .pjdc-spark.is-good circle { stroke: var(--pj-active); fill: var(--pj-active); }
-.pjdc-minibars rect { fill: var(--brand); }
-.pjdc-minibars.is-good rect { fill: var(--pj-active); }
-
-.pjdc-donut-track { stroke: var(--pj-hairline); }
-.pjdc-donut-value { stroke: var(--brand); transition: stroke-dashoffset 900ms var(--pj-spring); }
-.pjdc-donut-text { fill: var(--foreground); font-size: 1rem; font-weight: 800; }
-
-.pjdc-hero-row { display: grid; grid-template-columns: minmax(14rem, 1fr) minmax(18rem, 1.6fr); gap: 0.85rem; align-items: stretch; }
-.pjdc-milestone-card, .pjdc-linechart-card { position: relative; }
-.pjdc-milestone-pct { margin: 0; font-size: 1.3rem; font-weight: 800; letter-spacing: -0.01em; }
-
-.pjdc-milestones { display: grid; gap: 0.6rem; margin-top: 0.25rem; }
-.pjdc-milestones-track { position: relative; height: 0.5rem; border-radius: 999px; background: var(--pj-hairline); }
-.pjdc-milestones-fill { position: absolute; inset: 0; width: 0; border-radius: 999px; background: linear-gradient(90deg, var(--brand), var(--pj-active)); transition: width 900ms var(--pj-spring); }
-.pjdc-milestones-dot { position: absolute; top: 50%; width: 0.65rem; height: 0.65rem; border-radius: 999px; background: var(--surface-elevated); border: 2px solid var(--pj-hairline); transform: translate(-50%, -50%); }
-.pjdc-milestones-dot.is-reached { background: var(--brand); border-color: var(--brand); }
-.pjdc-milestones-labels { position: relative; height: 1rem; }
-.pjdc-milestones-labels span { position: absolute; transform: translateX(-50%); font-size: 0.68rem; color: var(--muted); white-space: nowrap; }
-.pjdc-milestones-labels span.is-reached { color: var(--foreground); font-weight: 600; }
-
-.pjdc-linechart { width: 100%; height: auto; margin-top: 0.25rem; }
-.pjdc-linechart-fill { fill: color-mix(in srgb, var(--brand) 22%, transparent); }
-.pjdc-linechart-line { stroke: var(--brand); }
-.pjdc-linechart-dot { fill: var(--brand); }
-.pjdc-linechart-label { fill: var(--muted); font-size: 9px; }
-
-.pjdc-floating-card {
-  position: absolute;
-  right: 0.75rem;
-  bottom: -1.1rem;
-  width: min(14rem, 60%);
-  padding: 0.85rem;
-  border-radius: calc(var(--pj-radius) - 2px);
-  border: 1px solid var(--line-strong);
-  background: var(--surface-elevated);
-  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45);
-  display: grid;
-  gap: 0.5rem;
-}
-.pjdc-floating-card h3 { margin: 0; font-size: 0.85rem; font-weight: 700; }
-.pjdc-floating-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.4rem; }
-.pjdc-floating-list li { display: flex; align-items: center; gap: 0.4rem; font-size: 0.78rem; color: var(--muted); }
-.pjdc-floating-list svg { color: var(--pj-active); flex-shrink: 0; }
-
-@media (max-width: 860px) {
-  .pjdc-hero-row { grid-template-columns: 1fr; }
-  .pjdc-floating-card { position: static; width: auto; margin-top: 0.5rem; box-shadow: none; }
-}
-
 @media (prefers-reduced-motion: reduce) {
   .pjdc-screen > *, .pjdc-live-dot, .pjdc-live svg { animation: none !important; }
   .pjdc-panel, .pjdc-btn, .pjdc-chip, .pjdc-tab, .pjdc-tab-icon, .pjdc-cat { transition: none !important; transform: none !important; }
-  .pjdc-donut-value, .pjdc-milestones-fill { transition: none !important; }
 }

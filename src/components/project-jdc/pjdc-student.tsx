@@ -2,7 +2,7 @@ import { CalendarCheck, CircleCheck, Clock, Flame, ListChecks, MessageCircle, Pa
 
 import { markChecklistItemDoneAction } from "@/app/dashboard/project-jdc/actions";
 import { ActionForm, ProofFields, SheetButton, SubmitButton } from "@/components/project-jdc/pjdc-client";
-import { categoryLabel, CategoryIcon, DonutRing, DueTag, EmptyState, PillarBoard, Sparkline } from "@/components/project-jdc/pjdc-ui";
+import { categoryLabel, CategoryIcon, DueTag, EmptyState, PillarBoard, ProgressBar } from "@/components/project-jdc/pjdc-ui";
 import { countByPillar } from "@/lib/project-jdc-pillars";
 import { addDaysIso, type ProjectJdcChecklistItem } from "@/lib/project-jdc-store";
 import { isOverdue, PROGRAM_DAYS, type PjdcStudent } from "@/lib/project-jdc-view";
@@ -85,16 +85,23 @@ export function StudentToday({
   const done = todayItems.filter((item) => item.studentDone).length;
   const allDone = todayItems.length > 0 && done === todayItems.length && carried.length === 0;
 
-  const last7 = Array.from({ length: 7 }, (_, index) => addDaysIso(today, index - 6));
-  const dailyCompletionPct = last7.map((iso) => {
-    const dayItems = items.filter((item) => item.itemDate === iso);
-    return dayItems.length ? Math.round((dayItems.filter((item) => item.studentDone).length / dayItems.length) * 100) : 0;
-  });
-  const todayPct = todayItems.length ? Math.round((done / todayItems.length) * 100) : 0;
-
   return (
     <div className="pjdc-layout">
       <div className="pjdc-side">
+        {student && student.day >= 1 ? (
+          <section className="pjdc-panel pjdc-dayline">
+            <h2>
+              Day {Math.min(student.day, PROGRAM_DAYS)} <span>of {PROGRAM_DAYS}</span>
+            </h2>
+            <ProgressBar value={Math.min(student.day, PROGRAM_DAYS)} max={PROGRAM_DAYS} label="Program progress" />
+            {student.streak > 0 ? (
+              <p className="pjdc-streak">
+                <Flame aria-hidden size={18} />
+                {student.streak} day{student.streak === 1 ? "" : "s"} in a row. Don&apos;t break it!
+              </p>
+            ) : null}
+          </section>
+        ) : null}
         {student ? (
           <section className="pjdc-panel">
             <div className="pjdc-panel-head">
@@ -106,36 +113,6 @@ export function StudentToday({
       </div>
 
       <div className="pjdc-main">
-        {student && student.day >= 1 ? (
-          <div className="pjdc-hero-grid">
-            <div className="pjdc-hero-card is-ring">
-              <div className="pjdc-hero-card-head">
-                <span>
-                  Day {Math.min(student.day, PROGRAM_DAYS)} of {PROGRAM_DAYS}
-                </span>
-              </div>
-              <DonutRing pct={(Math.min(student.day, PROGRAM_DAYS) / PROGRAM_DAYS) * 100} />
-            </div>
-            <div className="pjdc-hero-card is-ring">
-              <div className="pjdc-hero-card-head">
-                <span>
-                  Today: {done}/{todayItems.length}
-                </span>
-              </div>
-              <DonutRing pct={todayPct} />
-            </div>
-            <div className="pjdc-hero-card">
-              <div className="pjdc-hero-card-head">
-                <span>Streak</span>
-              </div>
-              <strong className="pjdc-hero-number">
-                <Flame aria-hidden size={22} style={{ verticalAlign: "-0.2em" }} /> {student.streak}
-              </strong>
-              <Sparkline values={dailyCompletionPct} tone="good" />
-            </div>
-          </div>
-        ) : null}
-
         {allDone ? (
           <section className="pjdc-panel pjdc-celebrate">
             <PartyPopper aria-hidden size={36} />
