@@ -118,6 +118,17 @@ export async function deleteProjectJdcPersonAction(formData: FormData) {
   const target = await getPublicUserById(userId);
   if (!target || !isManagedRole(target.role)) return;
 
+  // Removing a facilitator used to cascade-delete every one of their students'
+  // enrollments (losing their start date / day-count). Require reassigning them first.
+  if (target.role === "facilitator") {
+    const studentIds = await listStudentIdsForFacilitator(userId);
+    if (studentIds.length > 0) {
+      return {
+        error: `Reassign ${studentIds.length === 1 ? "this student" : `these ${studentIds.length} students`} to another facilitator before removing ${target.name}.`,
+      };
+    }
+  }
+
   await removeEnrollmentsForUser(userId);
   await removeMentorRow(userId);
   await deleteUserAccess(userId);
