@@ -861,43 +861,45 @@ export function AdminPeople({
                           : "Student · no facilitator yet"}
                     </em>
                   </span>
-                  {person.id !== viewerId && (person.role === "facilitator" || coach) ? (
-                    <form action={viewAsAction}>
-                      <input type="hidden" name="targetId" value={person.id} />
-                      <button type="submit" className="pjdc-btn is-quiet" aria-label={`View as ${person.name}`}>
-                        <Eye aria-hidden size={16} /> View
-                      </button>
-                    </form>
-                  ) : null}
-                  <SheetButton title={`Edit ${firstName(person.name)}`} className="pjdc-btn is-quiet" label="Edit">
-                    <div className="pjdc-profile">
-                      <PjdcAvatar name={person.name} photoUrl={person.facebookPhotoUrl} size="xl" />
-                      <p className="pjdc-muted">{person.email.endsWith("@ghl.invalid") ? "No email" : person.email}</p>
-                    </div>
-                    <ActionForm action={renameProjectJdcPersonAction} success="Name saved." className="pjdc-form">
-                      <input type="hidden" name="userId" value={person.id} />
-                      <label className="pjdc-field">
-                        Name
-                        <input type="text" name="name" defaultValue={person.name} required />
-                      </label>
-                      <SubmitButton className="pjdc-btn is-primary is-big is-wide">Save name</SubmitButton>
-                    </ActionForm>
-                    <ActionForm action={deleteProjectJdcPersonAction} success={`${firstName(person.name)} was removed.`} className="pjdc-form">
-                      <input type="hidden" name="userId" value={person.id} />
-                      <ConfirmButton
-                        className="pjdc-btn is-danger-quiet is-wide"
-                        label={
-                          <>
-                            <Trash2 aria-hidden size={18} />
-                            Remove {firstName(person.name)}
-                          </>
-                        }
-                        title={`Remove ${person.name}?`}
-                        message="Their account and Project JDC progress will be deleted. This can't be undone."
-                        confirmLabel="Yes, remove"
-                      />
-                    </ActionForm>
-                  </SheetButton>
+                  <div className="pjdc-person-actions">
+                    {person.id !== viewerId && (person.role === "facilitator" || coach) ? (
+                      <form action={viewAsAction}>
+                        <input type="hidden" name="targetId" value={person.id} />
+                        <button type="submit" className="pjdc-btn is-quiet" aria-label={`View as ${person.name}`}>
+                          <Eye aria-hidden size={16} /> View
+                        </button>
+                      </form>
+                    ) : null}
+                    <SheetButton title={`Edit ${firstName(person.name)}`} className="pjdc-btn is-quiet" label="Edit">
+                      <div className="pjdc-profile">
+                        <PjdcAvatar name={person.name} photoUrl={person.facebookPhotoUrl} size="xl" />
+                        <p className="pjdc-muted">{person.email.endsWith("@ghl.invalid") ? "No email" : person.email}</p>
+                      </div>
+                      <ActionForm action={renameProjectJdcPersonAction} success="Name saved." className="pjdc-form">
+                        <input type="hidden" name="userId" value={person.id} />
+                        <label className="pjdc-field">
+                          Name
+                          <input type="text" name="name" defaultValue={person.name} required />
+                        </label>
+                        <SubmitButton className="pjdc-btn is-primary is-big is-wide">Save name</SubmitButton>
+                      </ActionForm>
+                      <ActionForm action={deleteProjectJdcPersonAction} success={`${firstName(person.name)} was removed.`} className="pjdc-form">
+                        <input type="hidden" name="userId" value={person.id} />
+                        <ConfirmButton
+                          className="pjdc-btn is-danger-quiet is-wide"
+                          label={
+                            <>
+                              <Trash2 aria-hidden size={18} />
+                              Remove {firstName(person.name)}
+                            </>
+                          }
+                          title={`Remove ${person.name}?`}
+                          message="Their account and Project JDC progress will be deleted. This can't be undone."
+                          confirmLabel="Yes, remove"
+                        />
+                      </ActionForm>
+                    </SheetButton>
+                  </div>
                 </li>
               );
             })}
