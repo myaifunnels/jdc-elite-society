@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Standalone Remotion poster project with its own dependencies.
+    "tools/**",
   ]),
 ]);
 
