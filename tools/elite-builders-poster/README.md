@@ -15,7 +15,8 @@ One star = 1 direct (a partner the builder referred).
    `npm run studio` opens a live preview for tuning.
 
 The line-up shows everyone who had joined by the poster's day, newest first, and never anyone from a later day.
-If a face in the line-up looks too big or small, tune that builder's `face` (`zoom`, `y`) in `roster.ts`.
+Line-up faces are drawn at one shared scale (FACE_W, EYE_Y in `Poster.tsx`) from each cutout's `face` marker in `roster.ts`
+(face centre x, eye line y, face width — fractions of the cutout width). If one face looks off, fix its marker, not the scale.
 Builders without a `photo` show their initials until a cutout is added.
 
 ## Design rules

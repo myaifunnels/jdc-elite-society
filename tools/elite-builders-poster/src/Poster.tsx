@@ -24,6 +24,9 @@ const FOOTER_H = 62;
 const LEFT_W = 430;
 const GAP = 26;
 const PAD = 34;
+// Line-up framing: face width as a share of tile width, eye line as a share of the photo area height.
+const FACE_W = 0.24;
+const EYE_Y = 0.3;
 
 const Stars = ({ n, size }: { n: number; size: number }) => (
   <div style={{ display: "flex", gap: size * 0.18, justifyContent: "center" }}>
@@ -90,10 +93,13 @@ const Initials = ({ b, size }: { b: Builder; size: number }) => (
 );
 
 const Tile = ({ b, date, w, h }: { b: Builder; date: string; w: number; h: number }) => {
-  const photoH = h * 0.6;
+  const photoH = h * 0.66;
   const s = w / 180; // type scale relative to a 180px tile
-  const face = b.face ?? { zoom: 1.3, y: 0 };
-  const imgW = w * face.zoom;
+  // Same scale for everyone: the face fills FACE_W of the tile width, eyes sit at EYE_Y of the photo area.
+  const face = b.face ?? { cx: 0.5, eye: 0.25, fw: 0.22 };
+  const imgW = (FACE_W * w) / face.fw;
+  const imgLeft = (w - 4) / 2 - face.cx * imgW;
+  const imgTop = EYE_Y * photoH - face.eye * imgW;
   return (
     <div
       style={{
@@ -113,7 +119,7 @@ const Tile = ({ b, date, w, h }: { b: Builder; date: string; w: number; h: numbe
           {b.photo ? (
             <Img
               src={staticFile(b.photo)}
-              style={{ position: "absolute", width: imgW, left: (w - 4 - imgW) / 2, top: 10 * s - face.y * s }}
+              style={{ position: "absolute", width: imgW, left: imgLeft, top: imgTop }}
             />
           ) : (
             <Initials b={b} size={52 * s} />
