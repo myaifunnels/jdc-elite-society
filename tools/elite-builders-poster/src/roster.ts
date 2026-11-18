@@ -33,7 +33,7 @@ export const ROSTER: Builder[] = [
     id: "amira",
     first: "Amira",
     last: "Estayani",
-    directs: ["2026-11-10", "2026-11-17"],
+    directs: ["2026-11-10", "2026-11-17", "2026-11-17"],
     photo: "builders/amira.png",
     face: { cx: 0.5, eye: 0.32, chin: 0.425 },
     hero: { height: 1, x: 0, y: 0 },
