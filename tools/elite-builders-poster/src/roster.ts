@@ -7,7 +7,8 @@
  *
  * `photo` is a background-removed cutout in public/builders/ (make it with python rembg).
  * `face` marks where the face is in the cutout so every line-up tile shows the same head-and-shoulders
- * scale: cx = face centre x, eye = eye line y, fw = face width — all as fractions of the cutout's WIDTH.
+ * scale and height: cx = face centre x, eye = eye line y, chin = chin y — all as fractions of the cutout's WIDTH.
+ * Measure them on the cutout (eye-to-chin is the scale, so all heads come out the same size).
  * Leave `photo` out and the tile shows the builder's initials until a photo is added.
  */
 export type Builder = {
@@ -19,29 +20,29 @@ export type Builder = {
   /** Date shown on their line-up tile, when it differs from their first direct. */
   since?: string;
   photo?: string;
-  face?: { cx: number; eye: number; fw: number };
+  face?: { cx: number; eye: number; chin: number };
   /** Framing for the big builder-of-the-day cutout: scale of poster column height, x/y nudge. */
   hero?: { height: number; x: number; y: number };
 };
 
 export const ROSTER: Builder[] = [
-  { id: "mark", first: "Mark", last: "Pigar", directs: ["2026-11-07"], photo: "builders/mark.png", face: { cx: 0.31, eye: 0.31, fw: 0.275 } },
-  { id: "lucky", first: "Lucky", last: "Caigoy", directs: ["2026-11-09", "2026-11-09"], photo: "builders/lucky.png", face: { cx: 0.51, eye: 0.31, fw: 0.375 } },
-  { id: "roy", first: "Roy", last: "Remulta", directs: ["2026-11-09"], photo: "builders/roy.png", face: { cx: 0.39, eye: 0.2, fw: 0.32 } },
+  { id: "mark", first: "Mark", last: "Pigar", directs: ["2026-11-07"], photo: "builders/mark.png", face: { cx: 0.41, eye: 0.225, chin: 0.375 } },
+  { id: "lucky", first: "Lucky", last: "Caigoy", directs: ["2026-11-09", "2026-11-09"], photo: "builders/lucky.png", face: { cx: 0.49, eye: 0.15, chin: 0.275 } },
+  { id: "roy", first: "Roy", last: "Remulta", directs: ["2026-11-09"], photo: "builders/roy.png", face: { cx: 0.425, eye: 0.25, chin: 0.46 } },
   {
     id: "amira",
     first: "Amira",
     last: "Estayani",
     directs: ["2026-11-10", "2026-11-17"],
     photo: "builders/amira.png",
-    face: { cx: 0.43, eye: 0.32, fw: 0.2 },
+    face: { cx: 0.5, eye: 0.32, chin: 0.425 },
     hero: { height: 1, x: 0, y: 0 },
   },
-  { id: "rad", first: "Rad", last: "Reyes", directs: ["2026-11-11", "2026-11-11", "2026-11-11"], photo: "builders/rad.png", face: { cx: 0.49, eye: 0.27, fw: 0.33 } },
-  { id: "lenie", first: "Lenie", last: "Del Rosario", directs: ["2026-11-11"], photo: "builders/lenie.png", face: { cx: 0.43, eye: 0.5, fw: 0.38 } },
-  { id: "thoby", first: "Thoby", last: "Magtibay", directs: ["2026-11-13"], photo: "builders/thoby.png", face: { cx: 0.54, eye: 0.07, fw: 0.22 } },
-  { id: "bernadette", first: "Bernadette", last: "Haguring", directs: ["2026-11-14"], photo: "builders/bernadette.png", face: { cx: 0.49, eye: 0.18, fw: 0.25 } },
-  { id: "malvin", first: "Malvin", last: "Pontecilla", directs: ["2026-11-14"], photo: "builders/malvin.png", face: { cx: 0.41, eye: 0.19, fw: 0.25 } },
+  { id: "rad", first: "Rad", last: "Reyes", directs: ["2026-11-11", "2026-11-11", "2026-11-11"], photo: "builders/rad.png", face: { cx: 0.51, eye: 0.325, chin: 0.532 } },
+  { id: "lenie", first: "Lenie", last: "Del Rosario", directs: ["2026-11-11"], photo: "builders/lenie.png", face: { cx: 0.49, eye: 0.56, chin: 0.836 } },
+  { id: "thoby", first: "Thoby", last: "Magtibay", directs: ["2026-11-13"], photo: "builders/thoby.png", face: { cx: 0.55, eye: 0.2, chin: 0.353 } },
+  { id: "bernadette", first: "Bernadette", last: "Haguring", directs: ["2026-11-14"], photo: "builders/bernadette.png", face: { cx: 0.45, eye: 0.19, chin: 0.325 } },
+  { id: "malvin", first: "Malvin", last: "Pontecilla", directs: ["2026-11-14"], photo: "builders/malvin.png", face: { cx: 0.44, eye: 0.225, chin: 0.357 } },
 ];
 
 /** One poster per builder-of-the-day. Add a line here, then `npm run render`. */
