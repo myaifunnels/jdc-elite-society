@@ -1,4 +1,7 @@
 /**
+ * Dates come from GHL Affiliate Manager: each direct is the "Created At" of the builder's lead/customer
+ * in the JDC ELITE SOCIETY PROMOTION (Customers tab). November posters count November leads only.
+ *
  * Elite Builders roster. One star = 1 direct (a partner they referred into JDC Elite Society).
  *
  * Each "direct" entry is the day a builder got a direct. A builder's star count on a poster is the
@@ -27,28 +30,29 @@ export type Builder = {
 
 export const ROSTER: Builder[] = [
   { id: "mark", first: "Mark", last: "Pigar", directs: ["2026-11-07"], photo: "builders/mark.png", face: { cx: 0.41, eye: 0.225, chin: 0.375 } },
-  { id: "lucky", first: "Lucky", last: "Caigoy", directs: ["2026-11-09", "2026-11-09"], photo: "builders/lucky.png", face: { cx: 0.49, eye: 0.15, chin: 0.275 } },
-  { id: "roy", first: "Roy", last: "Remulta", directs: ["2026-11-09"], photo: "builders/roy.png", face: { cx: 0.425, eye: 0.25, chin: 0.46 } },
+  { id: "lucky", first: "Lucky", last: "Caigoy", directs: ["2026-11-09"], photo: "builders/lucky.png", face: { cx: 0.49, eye: 0.15, chin: 0.275 } },
+  { id: "roy", first: "Roy", last: "Remulta", directs: ["2026-11-09", "2026-11-13", "2026-11-14"], photo: "builders/roy.png", face: { cx: 0.425, eye: 0.25, chin: 0.46 } },
   {
     id: "amira",
     first: "Amira",
     last: "Estayani",
-    directs: ["2026-11-10", "2026-11-17", "2026-11-17", "2026-11-23"],
+    directs: ["2026-11-10", "2026-11-14", "2026-11-17"],
     photo: "builders/amira.png",
     face: { cx: 0.5, eye: 0.32, chin: 0.425 },
     hero: { height: 1, x: 0, y: 0 },
   },
-  { id: "rad", first: "Rad", last: "Reyes", directs: ["2026-11-11", "2026-11-11", "2026-11-11", "2026-11-23"], photo: "builders/rad.png", face: { cx: 0.51, eye: 0.325, chin: 0.532 } },
+  { id: "rad", first: "Rad", last: "Reyes", directs: ["2026-11-10", "2026-11-10", "2026-11-20"], photo: "builders/rad.png", face: { cx: 0.51, eye: 0.325, chin: 0.532 } },
   { id: "lenie", first: "Lenie", last: "Del Rosario", directs: ["2026-11-11"], photo: "builders/lenie.png", face: { cx: 0.49, eye: 0.56, chin: 0.836 } },
   { id: "thoby", first: "Thoby", last: "Magtibay", directs: ["2026-11-13"], photo: "builders/thoby.png", face: { cx: 0.55, eye: 0.2, chin: 0.353 } },
-  { id: "bernadette", first: "Bernadette", last: "Haguring", directs: ["2026-11-14"], photo: "builders/bernadette.png", face: { cx: 0.45, eye: 0.19, chin: 0.325 } },
-  { id: "malvin", first: "Malvin", last: "Pontecilla", directs: ["2026-11-14"], photo: "builders/malvin.png", face: { cx: 0.44, eye: 0.225, chin: 0.357 } },
+  { id: "bernadette", first: "Bernadette", last: "Haguring", directs: ["2026-11-16"], photo: "builders/bernadette.png", face: { cx: 0.45, eye: 0.19, chin: 0.325 } },
+  // No JDC Elite Society direct in GHL as of Nov 23 (he is Mark's direct), so he is left out of the line-up until one is recorded.
+  { id: "malvin", first: "Malvin", last: "Pontecilla", directs: [], photo: "builders/malvin.png", face: { cx: 0.44, eye: 0.225, chin: 0.357 } },
   // No photo yet: shows initials in the line-up; no solo card until her picture arrives.
-  { id: "eva", first: "Eva", last: "Prieto", directs: ["2026-11-23"] },
+  { id: "eva", first: "Eva", last: "Prieto", directs: ["2026-11-21"] },
 ];
 
 export const starsOn = (b: Builder, date: string) => b.directs.filter((d) => d <= date).length;
-export const joinedBy = (b: Builder, date: string) => b.directs[0] <= date;
+export const joinedBy = (b: Builder, date: string) => b.directs.length > 0 && b.directs[0] <= date;
 
 const MONTHS = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
 const MONTHS_LONG = ["JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE", "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"];
@@ -67,7 +71,5 @@ const since = (id: string, date: string) => {
 export const POSTERS: PosterSpec[] = [
   { id: "2026-11-17-amira", date: "2026-11-17", builder: "amira" },
   // Nov 23 set: one card per builder with a photo, all showing today's line-up and stars.
-  { id: "2026-11-23-amira", date: "2026-11-23", builder: "amira" },
-  { id: "2026-11-23-rad", date: "2026-11-23", builder: "rad" },
-  ...["mark", "lucky", "roy", "lenie", "thoby", "bernadette", "malvin"].map((id) => since(id, "2026-11-23")),
+  ...["amira", "rad", "mark", "lucky", "roy", "lenie", "thoby", "bernadette"].map((id) => since(id, "2026-11-23")),
 ];
