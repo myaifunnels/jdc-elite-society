@@ -2,20 +2,20 @@ import { AbsoluteFill, Img, staticFile } from "remotion";
 import { Builder, ROSTER, joinedBy, monthName, shortDate, starsOn } from "./roster";
 
 // Brand (JDC cobalt / chrome, dark mode)
-const BRAND = "#2962ff";
-const DEEP = "#0d36d9";
-const INK = "#010309";
-const GOLD = "linear-gradient(180deg, #fff0b0 0%, #f6c845 45%, #b8860b 100%)";
+export const BRAND = "#2962ff";
+export const DEEP = "#0d36d9";
+export const INK = "#010309";
+export const GOLD = "linear-gradient(180deg, #fff0b0 0%, #f6c845 45%, #b8860b 100%)";
 const GOLD_SOLID = "#f6c845";
 
-const fontFaces = `
+export const fontFaces = `
 @font-face { font-family: 'Display'; src: url('${staticFile("fonts/anton-latin-400-normal.woff2")}') format('woff2'); }
 @font-face { font-family: 'Label'; font-weight: 400; src: url('${staticFile("fonts/barlow-condensed-latin-400-normal.woff2")}') format('woff2'); }
 @font-face { font-family: 'Label'; font-weight: 600; src: url('${staticFile("fonts/barlow-condensed-latin-600-normal.woff2")}') format('woff2'); }
 @font-face { font-family: 'Label'; font-weight: 700; src: url('${staticFile("fonts/barlow-condensed-latin-700-normal.woff2")}') format('woff2'); }
 `;
-const DISPLAY = "'Display', Impact, 'Arial Narrow Bold', sans-serif";
-const LABEL = "'Label', 'Segoe UI', sans-serif";
+export const DISPLAY = "'Display', Impact, 'Arial Narrow Bold', sans-serif";
+export const LABEL = "'Label', 'Segoe UI', sans-serif";
 
 const W = 1080;
 const H = 1350;
@@ -28,7 +28,7 @@ const PAD = 34;
 const HEAD = 0.16;
 const EYE_Y = 0.3;
 
-const Stars = ({ n, size }: { n: number; size: number }) => (
+export const Stars = ({ n, size }: { n: number; size: number }) => (
   <div style={{ display: "flex", gap: size * 0.18, justifyContent: "center" }}>
     {Array.from({ length: n }).map((_, i) => (
       <svg key={i} width={size} height={size} viewBox="0 0 24 24" style={{ filter: "drop-shadow(0 1px 2px rgba(0,0,0,.6))" }}>
@@ -45,11 +45,11 @@ const Stars = ({ n, size }: { n: number; size: number }) => (
   </div>
 );
 
-const GoldText = ({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) => (
+export const GoldText = ({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) => (
   <span style={{ background: GOLD, WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent", ...style }}>{children}</span>
 );
 
-const Grain = ({ opacity }: { opacity: number }) => (
+export const Grain = ({ opacity }: { opacity: number }) => (
   <svg width="100%" height="100%" style={{ position: "absolute", inset: 0, opacity, mixBlendMode: "overlay", pointerEvents: "none" }}>
     <filter id="grain">
       <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch" />
@@ -60,7 +60,7 @@ const Grain = ({ opacity }: { opacity: number }) => (
 );
 
 /** Line-up grid: picks the column count that gives the biggest tiles that still fit. */
-function layoutGrid(count: number, w: number, h: number, gap: number) {
+export function layoutGrid(count: number, w: number, h: number, gap: number) {
   const slots = count + 1; // always leave at least one open "your name" slot
   let best = { cols: 1, rows: slots, tw: 0, th: 0 };
   for (let cols = 2; cols <= 8; cols++) {
@@ -92,7 +92,7 @@ const Initials = ({ b, size }: { b: Builder; size: number }) => (
   </div>
 );
 
-const Tile = ({ b, date, w, h }: { b: Builder; date: string; w: number; h: number }) => {
+export const Tile = ({ b, date, w, h, stars }: { b: Builder; date: string; w: number; h: number; stars?: number }) => {
   const photoH = h * 0.66;
   const s = w / 180; // type scale relative to a 180px tile
   // Same scale and height for everyone: eye-to-chin spans HEAD of the tile width, the face is
@@ -151,14 +151,14 @@ const Tile = ({ b, date, w, h }: { b: Builder; date: string; w: number; h: numbe
             {b.last.toUpperCase()}
           </div>
           <div style={{ width: 46 * s, height: 1.5 * s, margin: `${6 * s}px auto`, background: GOLD }} />
-          <Stars n={starsOn(b, date)} size={15 * s} />
+          <Stars n={stars ?? starsOn(b, date)} size={15 * s} />
         </div>
       </div>
     </div>
   );
 };
 
-const OpenSlot = ({ w, h }: { w: number; h: number }) => {
+export const OpenSlot = ({ w, h }: { w: number; h: number }) => {
   const s = w / 180;
   return (
     <div

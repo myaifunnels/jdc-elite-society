@@ -32,3 +32,9 @@ Open "+ YOUR NAME COULD BE HERE" slots fill the last row; totals block below. Ef
 
 Post title, then a caps headline with emoji, congratulate by FULL name, a short line on referring partners, the "⭐ = 1 direct" line,
 CTA "Refer a partner today with your referral link.", and exactly 3 hashtags: #JDCEliteSociety #EliteBuilders #ReferAPartner
+
+## Month posters
+
+`MONTH_POSTERS` in `src/roster.ts` renders "<Month> Elite Builders of the Month" (everyone with a direct that month) and `TOP_POSTERS`
+renders the month's Top 5 (#1 hero, #2-#5 tiles). Both count that month's directs only; ranking is in `monthRanking`
+(most directs, ties to whoever reached that count first). `npm run render -- 2026-11-month` / `2026-11-top5`.

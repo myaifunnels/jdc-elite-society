@@ -73,3 +73,21 @@ export const POSTERS: PosterSpec[] = [
   // Nov 23 set: one card per builder with a photo, all showing today's line-up and stars.
   ...["amira", "rad", "mark", "lucky", "roy", "lenie", "thoby", "bernadette"].map((id) => since(id, "2026-11-23")),
 ];
+
+/**
+ * Builders with a direct in `month` ("2026-11"), counting that month's directs only (earlier months ignored).
+ * Most directs first; ties go to whoever reached that count first (earliest date of their last direct in the month),
+ * then to the earlier first direct.
+ */
+export const monthRanking = (month: string) =>
+  ROSTER.map((b) => {
+    const d = b.directs.filter((x) => x.startsWith(month));
+    return { b, n: d.length, first: d[0], reached: d[d.length - 1] };
+  })
+    .filter((x) => x.n > 0)
+    .sort((x, y) => y.n - x.n || x.reached.localeCompare(y.reached) || x.first.localeCompare(y.first));
+
+/** Month recap posters: every builder with a direct that month; stars = that month's directs. */
+export const MONTH_POSTERS = [{ id: "2026-11-month", month: "2026-11" }];
+/** Top-5-of-the-month posters (same ranking, first five). */
+export const TOP_POSTERS = [{ id: "2026-11-top5", month: "2026-11" }];
