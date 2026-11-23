@@ -33,22 +33,19 @@ export const ROSTER: Builder[] = [
     id: "amira",
     first: "Amira",
     last: "Estayani",
-    directs: ["2026-11-10", "2026-11-17", "2026-11-17"],
+    directs: ["2026-11-10", "2026-11-17", "2026-11-17", "2026-11-23"],
     photo: "builders/amira.png",
     face: { cx: 0.5, eye: 0.32, chin: 0.425 },
     hero: { height: 1, x: 0, y: 0 },
   },
-  { id: "rad", first: "Rad", last: "Reyes", directs: ["2026-11-11", "2026-11-11", "2026-11-11"], photo: "builders/rad.png", face: { cx: 0.51, eye: 0.325, chin: 0.532 } },
+  { id: "rad", first: "Rad", last: "Reyes", directs: ["2026-11-11", "2026-11-11", "2026-11-11", "2026-11-23"], photo: "builders/rad.png", face: { cx: 0.51, eye: 0.325, chin: 0.532 } },
   { id: "lenie", first: "Lenie", last: "Del Rosario", directs: ["2026-11-11"], photo: "builders/lenie.png", face: { cx: 0.49, eye: 0.56, chin: 0.836 } },
   { id: "thoby", first: "Thoby", last: "Magtibay", directs: ["2026-11-13"], photo: "builders/thoby.png", face: { cx: 0.55, eye: 0.2, chin: 0.353 } },
   { id: "bernadette", first: "Bernadette", last: "Haguring", directs: ["2026-11-14"], photo: "builders/bernadette.png", face: { cx: 0.45, eye: 0.19, chin: 0.325 } },
   { id: "malvin", first: "Malvin", last: "Pontecilla", directs: ["2026-11-14"], photo: "builders/malvin.png", face: { cx: 0.44, eye: 0.225, chin: 0.357 } },
+  // No photo yet: shows initials in the line-up; no solo card until her picture arrives.
+  { id: "eva", first: "Eva", last: "Prieto", directs: ["2026-11-23"] },
 ];
-
-/** One poster per builder-of-the-day. Add a line here, then `npm run render`. */
-export type PosterSpec = { id: string; date: string; builder: string };
-
-export const POSTERS: PosterSpec[] = [{ id: "2026-11-17-amira", date: "2026-11-17", builder: "amira" }];
 
 export const starsOn = (b: Builder, date: string) => b.directs.filter((d) => d <= date).length;
 export const joinedBy = (b: Builder, date: string) => b.directs[0] <= date;
@@ -57,3 +54,20 @@ const MONTHS = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "
 const MONTHS_LONG = ["JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE", "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"];
 export const shortDate = (iso: string) => `${MONTHS[Number(iso.slice(5, 7)) - 1]} ${Number(iso.slice(8, 10))}`;
 export const monthName = (iso: string) => MONTHS_LONG[Number(iso.slice(5, 7)) - 1];
+
+/** One poster per builder-of-the-day. Add a line here, then `npm run render`. */
+/** `chip` replaces the default "TODAY · NOV xx" label above the name (e.g. for a builder with no new direct that day). */
+export type PosterSpec = { id: string; date: string; builder: string; chip?: string };
+
+const since = (id: string, date: string) => {
+  const b = ROSTER.find((x) => x.id === id)!;
+  return { id: `${date}-${id}`, date, builder: id, chip: `ELITE SINCE · ${shortDate(b.since ?? b.directs[0])}` };
+};
+
+export const POSTERS: PosterSpec[] = [
+  { id: "2026-11-17-amira", date: "2026-11-17", builder: "amira" },
+  // Nov 23 set: one card per builder with a photo, all showing today's line-up and stars.
+  { id: "2026-11-23-amira", date: "2026-11-23", builder: "amira" },
+  { id: "2026-11-23-rad", date: "2026-11-23", builder: "rad" },
+  ...["mark", "lucky", "roy", "lenie", "thoby", "bernadette", "malvin"].map((id) => since(id, "2026-11-23")),
+];

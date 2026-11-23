@@ -145,7 +145,7 @@ const Tile = ({ b, date, w, h }: { b: Builder; date: string; w: number; h: numbe
         >
           {shortDate(b.since ?? b.directs[0])}
         </div>
-        <div style={{ position: "absolute", left: 0, right: 0, top: photoH - 8 * s, textAlign: "center", color: "#fff" }}>
+        <div style={{ position: "absolute", left: 0, right: 0, top: Math.min(photoH - 8 * s, h - 4 - 92 * s), textAlign: "center", color: "#fff" }}>
           <div style={{ fontFamily: DISPLAY, fontSize: 34 * s, lineHeight: 1, letterSpacing: 0.5 }}>{b.first.toUpperCase()}</div>
           <div style={{ fontFamily: LABEL, fontWeight: 700, fontSize: 13 * s, letterSpacing: 2 * s, color: "#dfe6ff", marginTop: 3 * s }}>
             {b.last.toUpperCase()}
@@ -186,7 +186,7 @@ const OpenSlot = ({ w, h }: { w: number; h: number }) => {
   );
 };
 
-export const Poster = ({ date, builder }: { date: string; builder: string }) => {
+export const Poster = ({ date, builder, chip }: { date: string; builder: string; chip?: string }) => {
   const star = ROSTER.find((b) => b.id === builder);
   if (!star) throw new Error(`Unknown builder ${builder}`);
   const everyone = ROSTER.filter((b) => joinedBy(b, date));
@@ -283,9 +283,9 @@ export const Poster = ({ date, builder }: { date: string; builder: string }) => 
               marginBottom: 14,
             }}
           >
-            TODAY · {shortDate(date)}
+            {chip ?? `TODAY · ${shortDate(date)}`}
           </div>
-          <div style={{ fontFamily: DISPLAY, fontSize: 112, lineHeight: 0.92, letterSpacing: 1, textShadow: "0 4px 18px rgba(0,0,0,.7)" }}>
+          <div style={{ fontFamily: DISPLAY, fontSize: Math.min(112, Math.floor((LEFT_W - 40) / (0.48 * star.first.length))), lineHeight: 0.92, letterSpacing: 1, textShadow: "0 4px 18px rgba(0,0,0,.7)" }}>
             {star.first.toUpperCase()}
           </div>
           <div style={{ fontFamily: LABEL, fontWeight: 700, fontSize: 30, letterSpacing: 8, color: "#e6ecff", marginTop: 8 }}>{star.last.toUpperCase()}</div>
