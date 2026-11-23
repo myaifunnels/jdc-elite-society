@@ -49,10 +49,10 @@ export const ROSTER: Builder[] = [
   { id: "malvin", first: "Malvin", last: "Pontecilla", directs: [], photo: "builders/malvin.png", face: { cx: 0.44, eye: 0.225, chin: 0.357 } },
   // No photo yet: shows initials in the line-up; no solo card until her picture arrives.
   { id: "eva", first: "Eva", last: "Prieto", directs: ["2026-11-21"] },
-  // First direct Gorgonio Reambillo Jr. (payment recorded Nov 23). No photo yet: initials only, no solo card.
-  { id: "grace", first: "Grace", last: "Guatlo", directs: ["2026-11-22"] },
-  // First direct Rodulfo Escobido (Nov 23; owner said to treat it as approved). No photo yet.
-  { id: "michelle", first: "Michelle", last: "Escobido", directs: ["2026-11-23"] },
+  // First direct Gorgonio Reambillo Jr. (payment recorded Nov 23).
+  { id: "grace", first: "Grace", last: "Guatlo", directs: ["2026-11-22"], photo: "builders/grace.png", face: { cx: 0.49, eye: 0.27, chin: 0.445 } },
+  // First direct Rodulfo Escobido (Nov 23; owner said to treat it as approved).
+  { id: "michelle", first: "Michelle", last: "Escobido", directs: ["2026-11-23"], photo: "builders/michelle.png", face: { cx: 0.51, eye: 0.175, chin: 0.295 } },
 ];
 
 export const starsOn = (b: Builder, date: string) => b.directs.filter((d) => d <= date).length;
