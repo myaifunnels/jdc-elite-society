@@ -1,6 +1,6 @@
 import { AbsoluteFill, Img, staticFile } from "remotion";
 import { monthName, monthRanking } from "./roster";
-import { BRAND, DEEP, DISPLAY, GOLD, GoldText, Grain, INK, LABEL, Stars, Tile, fontFaces } from "./Poster";
+import { BRAND, DEEP, DISPLAY, GOLD, GoldText, Grain, INK, LABEL, OpenSlot, Stars, Tile, fontFaces } from "./Poster";
 
 const W = 1080;
 const H = 1350;
@@ -32,7 +32,12 @@ const RankBadge = ({ rank, size }: { rank: number; size: number }) => (
 /** Top 5 builders of a month: #1 in a big hero panel, #2-#5 below. Counts that month's directs only. */
 export const TopPoster = ({ month }: { month: string }) => {
   const top = monthRanking(month).slice(0, 5);
-  const [first, ...rest] = top;
+  const ranks = top.map((x) => 1 + top.filter((y) => y.n > x.n).length);
+  const leaders = top.filter((_, i) => ranks[i] === 1);
+  const tied = leaders.length > 1;
+  const first = top[0];
+  const rest = tied ? top.slice(leaders.length) : top.slice(1);
+  const restRank = (i: number) => (tied ? leaders.length + i + 1 : i + 2);
   const mon = monthName(`${month}-01`);
 
   const heroTop = HEADER_H + 6;
@@ -72,8 +77,39 @@ export const TopPoster = ({ month }: { month: string }) => {
         </div>
       </div>
 
+      {/* #1 shared by a tie */}
+      {tied && (
+        <div style={{ position: "absolute", left: PAD, top: heroTop, width: W - PAD * 2, height: heroH, borderRadius: 18, overflow: "hidden", padding: 2, background: "linear-gradient(160deg, #fff0b0, #b8860b 40%, #5a4108 60%, #f6c845)" }}>
+          <div style={{ position: "relative", width: "100%", height: "100%", borderRadius: 16, overflow: "hidden", background: "linear-gradient(180deg, #0a1640 0%, #040817 60%, #000 100%)" }}>
+            <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse 70% 50% at 50% 0%, rgba(41,98,255,.45), transparent 70%)" }} />
+            <Grain opacity={0.2} />
+            <div style={{ position: "absolute", top: 18, left: 0, right: 0, display: "flex", alignItems: "center", justifyContent: "center", gap: 18, color: "#fff" }}>
+              <div style={{ fontFamily: DISPLAY, fontSize: 84, lineHeight: 1 }}>
+                <GoldText>#1</GoldText>
+              </div>
+              <div
+                style={{ padding: "5px 16px", background: BRAND, fontFamily: LABEL, fontWeight: 700, fontSize: 24, letterSpacing: 4, transform: "skewX(-10deg)", borderRadius: 4 }}
+              >
+                TIED · {first.n} DIRECTS EACH
+              </div>
+            </div>
+            {(() => {
+              const g = 18;
+              const tw = Math.min(300, (W - PAD * 2 - 4 - 40 - g * (leaders.length - 1)) / leaders.length);
+              const th = heroH - 4 - 128;
+              const left0 = (W - PAD * 2 - 4 - (tw * leaders.length + g * (leaders.length - 1))) / 2;
+              return leaders.map((x, i) => (
+                <div key={x.b.id} style={{ position: "absolute", left: left0 + i * (tw + g), top: 112, width: tw, height: th }}>
+                  <Tile b={{ ...x.b, since: x.first }} date={x.reached} w={tw} h={th} stars={x.n} />
+                </div>
+              ));
+            })()}
+          </div>
+        </div>
+      )}
+
       {/* #1 hero */}
-      <div style={{ position: "absolute", left: PAD, top: heroTop, width: W - PAD * 2, height: heroH, borderRadius: 18, overflow: "hidden", padding: 2, background: "linear-gradient(160deg, #fff0b0, #b8860b 40%, #5a4108 60%, #f6c845)" }}>
+      {!tied && <div style={{ position: "absolute", left: PAD, top: heroTop, width: W - PAD * 2, height: heroH, borderRadius: 18, overflow: "hidden", padding: 2, background: "linear-gradient(160deg, #fff0b0, #b8860b 40%, #5a4108 60%, #f6c845)" }}>
         <div style={{ position: "relative", width: "100%", height: "100%", borderRadius: 16, overflow: "hidden" }}>
           <div
             style={{
@@ -134,13 +170,21 @@ export const TopPoster = ({ month }: { month: string }) => {
         </div>
       </div>
 
-      {/* #2-#5 */}
+      }
+
+      {/* the rest */}
       {rest.map((x, i) => (
         <div key={x.b.id} style={{ position: "absolute", left: PAD + i * (tileW + gap), top: rowTop, width: tileW, height: tileH }}>
           <Tile b={{ ...x.b, since: x.first }} date={x.reached} w={tileW} h={tileH} stars={x.n} />
           <div style={{ position: "absolute", right: -8, top: -12 }}>
-            <RankBadge rank={i + 2} size={54} />
+            <RankBadge rank={restRank(i)} size={54} />
           </div>
+        </div>
+      ))}
+
+      {Array.from({ length: Math.max(0, 4 - rest.length) }).map((_, i) => (
+        <div key={`open-${i}`} style={{ position: "absolute", left: PAD + (rest.length + i) * (tileW + gap), top: rowTop, width: tileW, height: tileH }}>
+          <OpenSlot w={tileW} h={tileH} />
         </div>
       ))}
 
