@@ -109,8 +109,8 @@ export type RecapSpec = { id: string; months: string[]; exclude?: string[]; titl
 export const MONTH_POSTERS: RecapSpec[] = [
   { id: "2026-10-month", months: ["2026-10"] },
   { id: "2026-11-month", months: ["2026-11"] },
-  // All time = since the ₱2,000 Elite launch in October (owner, Nov 23). October-only 1-direct builders left off (owner).
-  { id: "all-time", months: ["2026-10", "2026-11"], exclude: ["jedh", "francis", "daniel"], title: "ALL TIME", tag: "SINCE OCTOBER", range: "2026" },
+  // All time = since the ₱2,000 Elite launch in October (owner, Nov 23). Includes the October builders (owner, Nov 23).
+  { id: "all-time", months: ["2026-10", "2026-11"], title: "ALL TIME", tag: "SINCE OCTOBER", range: "2026" },
 ];
 /** Top-5-of-the-month posters (same ranking, first five). */
 export const TOP_POSTERS = [{ id: "2026-11-top5", month: "2026-11" }];
