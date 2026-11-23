@@ -76,6 +76,9 @@ export const POSTERS: PosterSpec[] = [
   { id: "2026-11-17-amira", date: "2026-11-17", builder: "amira" },
   // Nov 23 set: one card per builder with a photo, all showing today's line-up and stars.
   ...["amira", "rad", "mark", "lucky", "roy", "lenie", "thoby", "bernadette"].map((id) => since(id, "2026-11-23")),
+  // New builders, Nov 23: Michelle's first direct is today; Grace's was Nov 22.
+  { id: "2026-11-23-michelle", date: "2026-11-23", builder: "michelle" },
+  since("grace", "2026-11-23"),
 ];
 
 /**
