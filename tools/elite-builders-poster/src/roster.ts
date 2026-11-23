@@ -52,11 +52,11 @@ export const ROSTER: Builder[] = [
   // First direct Gorgonio Reambillo Jr. (payment recorded Nov 23).
   { id: "grace", first: "Grace", last: "Guatlo", directs: ["2026-11-22"], photo: "builders/grace.png", face: { cx: 0.517, eye: 0.274, chin: 0.422 } },
   // First direct Rodulfo Escobido (Nov 23; owner said to treat it as approved).
-  // October-only builders (order dates; payments were logged Nov 3). No photos yet, so they show initials.
+  // October-only builders (order dates; payments were logged Nov 3). Photos from the owner, Nov 23.
   // Rodel Almeda (Oct 16) left off at the owner's request (Nov 23).
-  { id: "jedh", first: "Jedh", last: "Marcus Mamangon", directs: ["2026-10-10"] },
-  { id: "francis", first: "Francis", last: "Joel Ishikawa Agor", directs: ["2026-10-16"] },
-  { id: "daniel", first: "Daniel", last: "Malicdem", directs: ["2026-10-19"] },
+  { id: "jedh", first: "Jedh", last: "Marcus Mamangon", directs: ["2026-10-10"], photo: "builders/jedh.png", face: { cx: 0.55, eye: 0.12, chin: 0.27 } },
+  { id: "francis", first: "Francis", last: "Joel Ishikawa Agor", directs: ["2026-10-16"], photo: "builders/francis.png", face: { cx: 0.415, eye: 0.279, chin: 0.471 } },
+  { id: "daniel", first: "Daniel", last: "Malicdem", directs: ["2026-10-19"], photo: "builders/daniel.png", face: { cx: 0.481, eye: 0.237, chin: 0.448 } },
   { id: "michelle", first: "Michelle", last: "Escobido", directs: ["2026-11-23"], photo: "builders/michelle.png", face: { cx: 0.518, eye: 0.163, chin: 0.270 } },
 ];
 
@@ -107,10 +107,31 @@ export const monthRanking = (month: string) => rankingFor([month]);
  */
 export type RecapSpec = { id: string; months: string[]; exclude?: string[]; title?: string; tag?: string; range?: string };
 export const MONTH_POSTERS: RecapSpec[] = [
-  { id: "2026-10-month", months: ["2026-10"] },
   { id: "2026-11-month", months: ["2026-11"] },
   // All time = since the ₱2,000 Elite launch in October (owner, Nov 23). Includes the October builders (owner, Nov 23).
   { id: "all-time", months: ["2026-10", "2026-11"], title: "ALL TIME", tag: "SINCE OCTOBER", range: "2026" },
 ];
 /** Top-5-of-the-month posters (same ranking, first five). */
 export const TOP_POSTERS = [{ id: "2026-11-top5", month: "2026-11" }];
+
+/**
+ * Panel posters (owner's "October Leaderboard" layout): one tall photo panel per builder, name plate below.
+ * `photo` is a full photo in public/ (background kept); `fx`/`fy` = the face point as fractions of the photo,
+ * `ar` = photo width/height, `zoom` = photo height as a multiple of the panel height. A transparent cutout gets the blue backdrop.
+ */
+export type PanelBuilder = { first: string; last: string; photo: string; ar: number; fx: number; fy: number; zoom: number };
+export type PanelSpec = { id: string; title: string; tag: string; year: string; builders: PanelBuilder[] };
+export const PANEL_POSTERS: PanelSpec[] = [
+  {
+    id: "2026-10-month",
+    title: "OCTOBER",
+    tag: "ELITES OF THE MONTH",
+    year: "2026",
+    builders: [
+      { first: "Daniel", last: "Malicdem", photo: "builders/photos/daniel.jpg", ar: 1, fx: 0.46, fy: 0.33, zoom: 1.15 },
+      { first: "Francis", last: "Agor", photo: "builders/photos/francis.jpg", ar: 1, fx: 0.48, fy: 0.25, zoom: 1.1 },
+      { first: "Jedh", last: "Mamangon", photo: "builders/photos/jedh.jpg", ar: 1, fx: 0.44, fy: 0.26, zoom: 2.0 },
+      { first: "Lucky", last: "Caigoy", photo: "builders/lucky.png", ar: 0.9175, fx: 0.494, fy: 0.16, zoom: 1.25 },
+    ],
+  },
+];
