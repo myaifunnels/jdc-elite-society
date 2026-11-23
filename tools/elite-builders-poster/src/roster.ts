@@ -1,6 +1,6 @@
 /**
  * Dates come from GHL Affiliate Manager: each direct is the "Created At" of the builder's lead/customer
- * in the JDC ELITE SOCIETY PROMOTION (Customers tab). November posters count November leads only.
+ * in the JDC ELITE SOCIETY PROMOTION (Customers tab). Stars = all their leads so far.
  *
  * Elite Builders roster. One star = 1 direct (a partner they referred into JDC Elite Society).
  *
@@ -30,7 +30,7 @@ export type Builder = {
 
 export const ROSTER: Builder[] = [
   { id: "mark", first: "Mark", last: "Pigar", directs: ["2026-11-07"], photo: "builders/mark.png", face: { cx: 0.41, eye: 0.225, chin: 0.375 } },
-  { id: "lucky", first: "Lucky", last: "Caigoy", directs: ["2026-11-09"], photo: "builders/lucky.png", face: { cx: 0.49, eye: 0.15, chin: 0.275 } },
+  { id: "lucky", first: "Lucky", last: "Caigoy", directs: ["2026-10-30", "2026-11-09"], photo: "builders/lucky.png", face: { cx: 0.49, eye: 0.15, chin: 0.275 } },
   { id: "roy", first: "Roy", last: "Remulta", directs: ["2026-11-09", "2026-11-13", "2026-11-14"], photo: "builders/roy.png", face: { cx: 0.425, eye: 0.25, chin: 0.46 } },
   {
     id: "amira",
