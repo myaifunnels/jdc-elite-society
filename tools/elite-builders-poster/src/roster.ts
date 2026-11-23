@@ -29,30 +29,30 @@ export type Builder = {
 };
 
 export const ROSTER: Builder[] = [
-  { id: "mark", first: "Mark", last: "Pigar", directs: ["2026-11-07"], photo: "builders/mark.png", face: { cx: 0.41, eye: 0.225, chin: 0.375 } },
-  { id: "lucky", first: "Lucky", last: "Caigoy", directs: ["2026-10-30", "2026-11-09"], photo: "builders/lucky.png", face: { cx: 0.49, eye: 0.15, chin: 0.275 } },
-  { id: "roy", first: "Roy", last: "Remulta", directs: ["2026-11-09", "2026-11-13", "2026-11-14"], photo: "builders/roy.png", face: { cx: 0.425, eye: 0.25, chin: 0.46 } },
+  { id: "mark", first: "Mark", last: "Pigar", directs: ["2026-11-07"], photo: "builders/mark.png", face: { cx: 0.536, eye: 0.221, chin: 0.384 } },
+  { id: "lucky", first: "Lucky", last: "Caigoy", directs: ["2026-10-30", "2026-11-09"], photo: "builders/lucky.png", face: { cx: 0.494, eye: 0.150, chin: 0.262 } },
+  { id: "roy", first: "Roy", last: "Remulta", directs: ["2026-11-09", "2026-11-13", "2026-11-14"], photo: "builders/roy.png", face: { cx: 0.438, eye: 0.245, chin: 0.433 } },
   {
     id: "amira",
     first: "Amira",
     last: "Estayani",
     directs: ["2026-11-10", "2026-11-14", "2026-11-17"],
     photo: "builders/amira.png",
-    face: { cx: 0.5, eye: 0.32, chin: 0.425 },
+    face: { cx: 0.527, eye: 0.311, chin: 0.457 },
     hero: { height: 1, x: 0, y: 0 },
   },
-  { id: "rad", first: "Rad", last: "Reyes", directs: ["2026-11-10", "2026-11-10", "2026-11-20"], photo: "builders/rad.png", face: { cx: 0.51, eye: 0.325, chin: 0.532 } },
-  { id: "lenie", first: "Lenie", last: "Del Rosario", directs: ["2026-11-11"], photo: "builders/lenie.png", face: { cx: 0.49, eye: 0.56, chin: 0.836 } },
-  { id: "thoby", first: "Thoby", last: "Magtibay", directs: ["2026-11-13"], photo: "builders/thoby.png", face: { cx: 0.55, eye: 0.2, chin: 0.353 } },
-  { id: "bernadette", first: "Bernadette", last: "Haguring", directs: ["2026-11-16"], photo: "builders/bernadette.png", face: { cx: 0.45, eye: 0.19, chin: 0.325 } },
+  { id: "rad", first: "Rad", last: "Reyes", directs: ["2026-11-10", "2026-11-10", "2026-11-20"], photo: "builders/rad.png", face: { cx: 0.51, eye: 0.325, chin: 0.58 } },
+  { id: "lenie", first: "Lenie", last: "Del Rosario", directs: ["2026-11-11"], photo: "builders/lenie.png", face: { cx: 0.476, eye: 0.545, chin: 0.821 } },
+  { id: "thoby", first: "Thoby", last: "Magtibay", directs: ["2026-11-13"], photo: "builders/thoby.png", face: { cx: 0.548, eye: 0.192, chin: 0.340 } },
+  { id: "bernadette", first: "Bernadette", last: "Haguring", directs: ["2026-11-16"], photo: "builders/bernadette.png", face: { cx: 0.473, eye: 0.222, chin: 0.374 } },
   // No JDC Elite Society direct in GHL as of Nov 23 (he is Mark's direct), so he is left out of the line-up until one is recorded.
-  { id: "malvin", first: "Malvin", last: "Pontecilla", directs: [], photo: "builders/malvin.png", face: { cx: 0.44, eye: 0.225, chin: 0.357 } },
+  { id: "malvin", first: "Malvin", last: "Pontecilla", directs: [], photo: "builders/malvin.png", face: { cx: 0.423, eye: 0.226, chin: 0.372 } },
   // No photo yet: shows initials in the line-up; no solo card until her picture arrives.
   { id: "eva", first: "Eva", last: "Prieto", directs: ["2026-11-21"] },
   // First direct Gorgonio Reambillo Jr. (payment recorded Nov 23).
-  { id: "grace", first: "Grace", last: "Guatlo", directs: ["2026-11-22"], photo: "builders/grace.png", face: { cx: 0.49, eye: 0.27, chin: 0.445 } },
+  { id: "grace", first: "Grace", last: "Guatlo", directs: ["2026-11-22"], photo: "builders/grace.png", face: { cx: 0.517, eye: 0.274, chin: 0.422 } },
   // First direct Rodulfo Escobido (Nov 23; owner said to treat it as approved).
-  { id: "michelle", first: "Michelle", last: "Escobido", directs: ["2026-11-23"], photo: "builders/michelle.png", face: { cx: 0.51, eye: 0.175, chin: 0.295 } },
+  { id: "michelle", first: "Michelle", last: "Escobido", directs: ["2026-11-23"], photo: "builders/michelle.png", face: { cx: 0.518, eye: 0.163, chin: 0.270 } },
 ];
 
 export const starsOn = (b: Builder, date: string) => b.directs.filter((d) => d <= date).length;

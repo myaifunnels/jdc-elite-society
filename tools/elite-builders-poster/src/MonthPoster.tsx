@@ -17,7 +17,8 @@ export const MonthPoster = ({ month }: { month: string }) => {
   const builders = monthRanking(month);
   const best = builders[0].n;
   const leaders = builders.filter((x) => x.n === best);
-  const rest = builders.filter((x) => x.n !== best);
+  // line-up below the leaders: newest first (latest first direct of the month at the top-left)
+  const rest = builders.filter((x) => x.n !== best).sort((a, b) => b.first.localeCompare(a.first));
   const total = builders.reduce((n, x) => n + x.n, 0);
   const mon = monthName(`${month}-01`);
 
