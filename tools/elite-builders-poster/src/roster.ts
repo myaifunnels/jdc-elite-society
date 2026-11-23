@@ -46,7 +46,7 @@ export const ROSTER: Builder[] = [
   { id: "thoby", first: "Thoby", last: "Magtibay", directs: ["2026-11-13"], photo: "builders/thoby.png", face: { cx: 0.548, eye: 0.192, chin: 0.340 } },
   { id: "bernadette", first: "Bernadette", last: "Haguring", directs: ["2026-11-16"], photo: "builders/bernadette.png", face: { cx: 0.473, eye: 0.222, chin: 0.374 } },
   // No JDC Elite Society direct in GHL as of Nov 23 (he is Mark's direct), so he is left out of the line-up until one is recorded.
-  { id: "malvin", first: "Malvin", last: "Pontecilla", directs: [], photo: "builders/malvin.png", face: { cx: 0.423, eye: 0.226, chin: 0.372 } },
+  { id: "malvin", first: "Malvin", last: "Pontecilla", directs: ["2026-11-14"], photo: "builders/malvin.png", face: { cx: 0.423, eye: 0.226, chin: 0.372 } },
   // No photo yet: shows initials in the line-up; no solo card until her picture arrives.
   { id: "eva", first: "Eva", last: "Prieto", directs: ["2026-11-21"] },
   // First direct Gorgonio Reambillo Jr. (payment recorded Nov 23).
