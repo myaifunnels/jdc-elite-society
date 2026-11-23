@@ -49,6 +49,8 @@ export const ROSTER: Builder[] = [
   { id: "malvin", first: "Malvin", last: "Pontecilla", directs: [], photo: "builders/malvin.png", face: { cx: 0.44, eye: 0.225, chin: 0.357 } },
   // No photo yet: shows initials in the line-up; no solo card until her picture arrives.
   { id: "eva", first: "Eva", last: "Prieto", directs: ["2026-11-21"] },
+  // First direct Gorgonio Reambillo Jr. (payment recorded Nov 23). No photo yet: initials only, no solo card.
+  { id: "grace", first: "Grace", last: "Guatlo", directs: ["2026-11-22"] },
 ];
 
 export const starsOn = (b: Builder, date: string) => b.directs.filter((d) => d <= date).length;
