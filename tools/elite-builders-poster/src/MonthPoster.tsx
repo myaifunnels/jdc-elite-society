@@ -1,5 +1,5 @@
 import { AbsoluteFill, Img, staticFile } from "remotion";
-import { monthName, monthRanking } from "./roster";
+import { RecapSpec, monthName, rankingFor } from "./roster";
 import { BRAND, DISPLAY, GOLD, GoldText, Grain, INK, LABEL, OpenSlot, Stars, Tile, fontFaces, layoutGrid } from "./Poster";
 
 const W = 1080;
@@ -13,17 +13,18 @@ const TOP_H = 470;
  * Month recap: the builders with the most directs that month share a highlighted panel at the top,
  * everyone else follows below in ranking order. Counts that month's directs only.
  */
-export const MonthPoster = ({ month }: { month: string }) => {
-  const builders = monthRanking(month);
+export const MonthPoster = ({ spec }: { spec: RecapSpec }) => {
+  const builders = rankingFor(spec.months, spec.exclude);
   const best = builders[0].n;
-  const leaders = builders.filter((x) => x.n === best);
-  // line-up below the leaders: newest first (latest first direct of the month at the top-left)
-  const rest = builders.filter((x) => x.n !== best).sort((a, b) => b.first.localeCompare(a.first));
+  // when everyone ties there is no leaders panel, just the line-up
+  const leaders = builders.every((x) => x.n === best) ? [] : builders.filter((x) => x.n === best);
+  // line-up below the leaders: most stars first, then newest first (latest first direct at the top-left)
+  const rest = builders.filter((x) => !leaders.includes(x)).sort((a, b) => b.n - a.n || b.first.localeCompare(a.first));
   const total = builders.reduce((n, x) => n + x.n, 0);
-  const mon = monthName(`${month}-01`);
+  const mon = spec.title ?? monthName(`${spec.months[0]}-01`);
 
   const topY = HEADER_H + 4;
-  const restY = topY + TOP_H + 22;
+  const restY = leaders.length ? topY + TOP_H + 22 : topY + 8;
   const headH = 40;
   const gridH = H - FOOTER_H - 14 - restY - headH - 8;
   const gridW = W - PAD * 2;
@@ -53,16 +54,16 @@ export const MonthPoster = ({ month }: { month: string }) => {
           {mon}
         </div>
         <div style={{ fontFamily: LABEL, fontWeight: 700, fontSize: 38, letterSpacing: 9, color: "#fff", marginTop: 6 }}>
-          ELITE BUILDERS <GoldText>OF THE MONTH</GoldText>
+          ELITE BUILDERS <GoldText>{spec.tag ?? "OF THE MONTH"}</GoldText>
         </div>
         <div style={{ fontFamily: LABEL, fontWeight: 600, fontSize: 20, letterSpacing: 5, color: "#9db4ff", marginTop: 8, display: "flex", alignItems: "center", gap: 10 }}>
-          {month.slice(0, 4)} · {builders.length} BUILDERS · {total} DIRECTS ·
+          {spec.range ?? spec.months[0].slice(0, 4)} · {builders.length} BUILDERS · {total} DIRECTS ·
           <Stars n={1} size={18} />= 1 DIRECT
         </div>
       </div>
 
       {/* leaders */}
-      <div style={{ position: "absolute", left: PAD, top: topY, width: gridW, height: TOP_H, borderRadius: 18, overflow: "hidden", padding: 2, background: "linear-gradient(160deg, #fff0b0, #b8860b 40%, #5a4108 60%, #f6c845)" }}>
+      {leaders.length > 0 && <div style={{ position: "absolute", left: PAD, top: topY, width: gridW, height: TOP_H, borderRadius: 18, overflow: "hidden", padding: 2, background: "linear-gradient(160deg, #fff0b0, #b8860b 40%, #5a4108 60%, #f6c845)" }}>
         <div style={{ position: "relative", width: "100%", height: "100%", borderRadius: 16, overflow: "hidden", background: "linear-gradient(180deg, #0a1640 0%, #040817 60%, #000 100%)" }}>
           <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse 70% 50% at 50% 0%, rgba(41,98,255,.45), transparent 70%)" }} />
           <Grain opacity={0.2} />
@@ -78,7 +79,7 @@ export const MonthPoster = ({ month }: { month: string }) => {
             </div>
           ))}
         </div>
-      </div>
+      </div>}
 
       {/* everyone else */}
       <div style={{ position: "absolute", left: PAD, top: restY, width: gridW }}>

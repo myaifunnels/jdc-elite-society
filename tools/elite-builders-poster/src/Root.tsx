@@ -10,10 +10,10 @@ export const Root = () => (
       <Still key={p.id} id={p.id} component={Poster} width={1080} height={1350} defaultProps={{ date: p.date, builder: p.builder, chip: p.chip }} />
     ))}
     {MONTH_POSTERS.map((m) => (
-      <Still key={m.id} id={m.id} component={MonthPoster} width={1080} height={1350} defaultProps={{ month: m.month }} />
+      <Still key={m.id} id={m.id} component={MonthPoster} width={1080} height={1350} defaultProps={{ spec: m }} />
     ))}
     {TOP_POSTERS.map((m) => (
-      <Still key={m.id} id={m.id} component={TopPoster} width={1080} height={1350} defaultProps={{ month: m.month }} />
+      <Still key={m.id} id={m.id} component={TopPoster} width={1080} height={1350} defaultProps={{ spec: m }} />
     ))}
   </>
 );

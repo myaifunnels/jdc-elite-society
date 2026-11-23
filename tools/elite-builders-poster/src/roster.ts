@@ -52,6 +52,11 @@ export const ROSTER: Builder[] = [
   // First direct Gorgonio Reambillo Jr. (payment recorded Nov 23).
   { id: "grace", first: "Grace", last: "Guatlo", directs: ["2026-11-22"], photo: "builders/grace.png", face: { cx: 0.517, eye: 0.274, chin: 0.422 } },
   // First direct Rodulfo Escobido (Nov 23; owner said to treat it as approved).
+  // October-only builders (order dates; payments were logged Nov 3). No photos yet, so they show initials.
+  // Rodel Almeda (Oct 16) left off at the owner's request (Nov 23).
+  { id: "jedh", first: "Jedh", last: "Marcus Mamangon", directs: ["2026-10-10"] },
+  { id: "francis", first: "Francis", last: "Joel Ishikawa Agor", directs: ["2026-10-16"] },
+  { id: "daniel", first: "Daniel", last: "Malicdem", directs: ["2026-10-19"] },
   { id: "michelle", first: "Michelle", last: "Escobido", directs: ["2026-11-23"], photo: "builders/michelle.png", face: { cx: 0.518, eye: 0.163, chin: 0.270 } },
 ];
 
@@ -82,19 +87,30 @@ export const POSTERS: PosterSpec[] = [
 ];
 
 /**
- * Builders with a direct in `month` ("2026-11"), counting that month's directs only (earlier months ignored).
- * Most directs first; ties go to whoever reached that count first (earliest date of their last direct in the month),
- * then to the earlier first direct.
+ * Builders with a direct in any of `months` ("2026-11"), counting only those months' directs.
+ * Most directs first; ties go to whoever reached that count first (earliest date of their last direct),
+ * then to the earlier first direct. `exclude` drops builder ids.
  */
-export const monthRanking = (month: string) =>
-  ROSTER.map((b) => {
-    const d = b.directs.filter((x) => x.startsWith(month));
-    return { b, n: d.length, first: d[0], reached: d[d.length - 1] };
-  })
+export const rankingFor = (months: string[], exclude: string[] = []) =>
+  ROSTER.filter((b) => !exclude.includes(b.id))
+    .map((b) => {
+      const d = b.directs.filter((x) => months.some((m) => x.startsWith(m)));
+      return { b, n: d.length, first: d[0], reached: d[d.length - 1] };
+    })
     .filter((x) => x.n > 0)
     .sort((x, y) => y.n - x.n || x.reached.localeCompare(y.reached) || x.first.localeCompare(y.first));
+export const monthRanking = (month: string) => rankingFor([month]);
 
-/** Month recap posters: every builder with a direct that month; stars = that month's directs. */
-export const MONTH_POSTERS = [{ id: "2026-11-month", month: "2026-11" }];
+/**
+ * Recap posters: every builder with a direct in `months`; stars = those months' directs.
+ * `title`/`tag`/`range` override the header ("NOVEMBER" / "OF THE MONTH" / "2026").
+ */
+export type RecapSpec = { id: string; months: string[]; exclude?: string[]; title?: string; tag?: string; range?: string };
+export const MONTH_POSTERS: RecapSpec[] = [
+  { id: "2026-10-month", months: ["2026-10"] },
+  { id: "2026-11-month", months: ["2026-11"] },
+  // All time = since the ₱2,000 Elite launch in October (owner, Nov 23). October-only 1-direct builders left off (owner).
+  { id: "all-time", months: ["2026-10", "2026-11"], exclude: ["jedh", "francis", "daniel"], title: "ALL TIME", tag: "SINCE OCTOBER", range: "2026" },
+];
 /** Top-5-of-the-month posters (same ranking, first five). */
 export const TOP_POSTERS = [{ id: "2026-11-top5", month: "2026-11" }];
