@@ -117,9 +117,10 @@ export const TOP_POSTERS = [{ id: "2026-11-top5", month: "2026-11" }];
 /**
  * Panel posters (owner's "October Leaderboard" layout): one tall photo panel per builder, name plate below.
  * `photo` is a full photo in public/ (background kept); `fx`/`fy` = the face point as fractions of the photo,
- * `ar` = photo width/height, `zoom` = photo height as a multiple of the panel height. A transparent cutout gets the blue backdrop.
+ * `ar` = photo width/height, `fy`/`fc` = eye line and chin as fractions of the photo height.
+ * Every photo is scaled so eye-to-chin is the same size, so all heads match. A transparent cutout gets the blue backdrop.
  */
-export type PanelBuilder = { first: string; last: string; photo: string; ar: number; fx: number; fy: number; zoom: number };
+export type PanelBuilder = { first: string; last: string; photo: string; ar: number; fx: number; fy: number; fc: number };
 export type PanelSpec = { id: string; title: string; tag: string; year: string; builders: PanelBuilder[] };
 export const PANEL_POSTERS: PanelSpec[] = [
   {
@@ -128,10 +129,10 @@ export const PANEL_POSTERS: PanelSpec[] = [
     tag: "ELITES OF THE MONTH",
     year: "2026",
     builders: [
-      { first: "Daniel", last: "Malicdem", photo: "builders/photos/daniel.jpg", ar: 1, fx: 0.46, fy: 0.33, zoom: 1.15 },
-      { first: "Francis", last: "Agor", photo: "builders/photos/francis.jpg", ar: 1, fx: 0.48, fy: 0.25, zoom: 1.1 },
-      { first: "Jedh", last: "Mamangon", photo: "builders/photos/jedh.jpg", ar: 1, fx: 0.44, fy: 0.26, zoom: 2.0 },
-      { first: "Lucky", last: "Caigoy", photo: "builders/lucky.png", ar: 0.9175, fx: 0.494, fy: 0.16, zoom: 1.25 },
+      { first: "Daniel", last: "Malicdem", photo: "builders/photos/daniel.jpg", ar: 1, fx: 0.476, fy: 0.336, fc: 0.411 },
+      { first: "Francis", last: "Agor", photo: "builders/photos/francis.jpg", ar: 1, fx: 0.483, fy: 0.255, fc: 0.416 },
+      { first: "Jedh", last: "Mamangon", photo: "builders/photos/jedh.jpg", ar: 1, fx: 0.445, fy: 0.256, fc: 0.298 },
+      { first: "Lucky", last: "Caigoy", photo: "builders/lucky.png", ar: 0.9175, fx: 0.496, fy: 0.138, fc: 0.238 },
     ],
   },
 ];

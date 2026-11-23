@@ -9,6 +9,8 @@ const BOX_Y = 440;
 const BOX_W = W - BOX_X * 2;
 const PHOTO_H = 640;
 const PLATE_H = 150;
+/** eye-to-chin height in px: the same for every panel so all heads are the same scale */
+const HEAD = 104;
 const SILVER = "linear-gradient(180deg, #ffffff 0%, #dfe6f5 45%, #8f9bb8 100%)";
 
 const silverText: React.CSSProperties = {
@@ -61,7 +63,7 @@ export const PanelPoster = ({ spec }: { spec: PanelSpec }) => {
       {/* panels */}
       <div style={{ position: "absolute", left: BOX_X, top: BOX_Y + 16, width: BOX_W, height: PHOTO_H + PLATE_H, borderRadius: 18, overflow: "hidden", background: "#050c22", boxShadow: "0 20px 60px rgba(0,0,0,.6), 0 0 0 1px rgba(90,140,255,.25)" }}>
         {spec.builders.map((b, i) => {
-          const ih = PHOTO_H * b.zoom;
+          const ih = HEAD / (b.fc - b.fy);
           return (
             <div key={b.first} style={{ position: "absolute", left: i * pw, top: 0, width: pw, height: PHOTO_H, overflow: "hidden", background: `linear-gradient(180deg, #1b3f9e 0%, #0a1d55 55%, #050c22 100%)` }}>
               {/* the face point sits at the panel's horizontal centre, 26% down */}
