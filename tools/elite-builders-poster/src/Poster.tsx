@@ -189,7 +189,10 @@ export const OpenSlot = ({ w, h }: { w: number; h: number }) => {
 export const Poster = ({ date, builder, chip }: { date: string; builder: string; chip?: string }) => {
   const star = ROSTER.find((b) => b.id === builder);
   if (!star) throw new Error(`Unknown builder ${builder}`);
-  const everyone = ROSTER.filter((b) => joinedBy(b, date));
+  // The card is a month card ("NOVEMBER"), so only builders with a direct in that month so far.
+  // October-only builders (on the October and all-time posters) stay off it.
+  const month = date.slice(0, 7);
+  const everyone = ROSTER.filter((b) => joinedBy(b, date) && b.directs.some((d) => d.startsWith(month) && d <= date));
   const lineup = everyone.filter((b) => b.id !== builder);
   // newest first: stable sort by join date descending, later roster entries first on ties
   lineup.sort((a, b) => {
