@@ -59,7 +59,7 @@ export const ROSTER: Builder[] = [
   { id: "daniel", first: "Daniel", last: "Malicdem", directs: ["2026-10-19"], photo: "builders/daniel.png", face: { cx: 0.481, eye: 0.237, chin: 0.448 } },
   { id: "michelle", first: "Michelle", last: "Escobido", directs: ["2026-11-23"], photo: "builders/michelle.png", face: { cx: 0.518, eye: 0.163, chin: 0.270 } },
   // First direct Alfred Capuyan (Nov 24). Payment still in verification; owner said to treat it as approved for the card (Nov 24).
-  { id: "randy", first: "Randy", last: "Dolorito", directs: ["2026-11-24"], photo: "builders/randy.png", face: { cx: 0.442, eye: 0.269, chin: 0.467 } },
+  { id: "randy", first: "Randy", last: "Dolorito", directs: ["2026-11-24"], photo: "builders/randy.png", face: { cx: 0.36, eye: 0.261, chin: 0.489 } },
 ];
 
 export const starsOn = (b: Builder, date: string) => b.directs.filter((d) => d <= date).length;
