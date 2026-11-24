@@ -87,6 +87,7 @@ export const POSTERS: PosterSpec[] = [
   { id: "2026-11-23-michelle", date: "2026-11-23", builder: "michelle" },
   since("grace", "2026-11-23"),
   since("randy", "2026-11-24"),
+  since("roy", "2026-11-24"),
 ];
 
 /**
