@@ -254,18 +254,21 @@ export const Poster = ({ date, builder, chip }: { date: string; builder: string;
         <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse 90% 80% at 50% 45%, transparent 55%, rgba(0,0,0,.75) 100%)" }} />
         <Grain opacity={0.22} />
         {star.photo ? (
-          <Img
-            src={staticFile(star.photo)}
-            style={{
-              position: "absolute",
-              height: bodyH * 0.74 * hero.height,
-              left: "50%",
-              top: 40 + hero.y,
-              transform: `translateX(calc(-50% + ${hero.x}px))`,
-              // studio light: warm key, cool rim — never a blue glow on the person
-              filter: "drop-shadow(-3px 0 6px rgba(150,190,255,.35)) drop-shadow(4px 0 10px rgba(255,214,170,.18)) contrast(1.04)",
-            }}
-          />
+          // studio light: warm key, cool rim — never a blue glow on the person.
+          // The light sits on a wrapper so a fade mask on the cutout never clips its glow.
+          <div style={{ position: "absolute", inset: 0, filter: "drop-shadow(-3px 0 6px rgba(150,190,255,.35)) drop-shadow(4px 0 10px rgba(255,214,170,.18)) contrast(1.04)" }}>
+            <Img
+              src={staticFile(star.photo)}
+              style={{
+                position: "absolute",
+                height: bodyH * 0.74 * hero.height,
+                left: "50%",
+                top: 40 + hero.y,
+                transform: `translateX(calc(-50% + ${hero.x}px))`,
+                ...(hero.fade ? { maskImage: "linear-gradient(180deg, #000 78%, transparent 100%)", WebkitMaskImage: "linear-gradient(180deg, #000 78%, transparent 100%)" } : {}),
+              }}
+            />
+          </div>
         ) : (
           <Initials b={star} size={140} />
         )}
