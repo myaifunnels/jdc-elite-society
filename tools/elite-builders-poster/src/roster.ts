@@ -59,7 +59,7 @@ export const ROSTER: Builder[] = [
   { id: "daniel", first: "Daniel", last: "Malicdem", directs: ["2026-10-19"], photo: "builders/daniel.png", face: { cx: 0.481, eye: 0.237, chin: 0.448 } },
   { id: "michelle", first: "Michelle", last: "Escobido", directs: ["2026-11-23"], photo: "builders/michelle.png", face: { cx: 0.518, eye: 0.163, chin: 0.270 } },
   // First direct Alfred Capuyan (Nov 24). Payment still in verification; owner said to treat it as approved for the card (Nov 24).
-  { id: "randy", first: "Randy", last: "Dolorito", directs: ["2026-11-24"], photo: "builders/randy.png", face: { cx: 0.573, eye: 0.223, chin: 0.39 } },
+  { id: "randy", first: "Randy", last: "Dolorito", directs: ["2026-11-24"], photo: "builders/randy.png", face: { cx: 0.442, eye: 0.269, chin: 0.467 } },
 ];
 
 export const starsOn = (b: Builder, date: string) => b.directs.filter((d) => d <= date).length;
@@ -86,7 +86,7 @@ export const POSTERS: PosterSpec[] = [
   // New builders, Nov 23: Michelle's first direct is today; Grace's was Nov 22.
   { id: "2026-11-23-michelle", date: "2026-11-23", builder: "michelle" },
   since("grace", "2026-11-23"),
-  { id: "2026-11-24-randy", date: "2026-11-24", builder: "randy" },
+  since("randy", "2026-11-24"),
 ];
 
 /**
