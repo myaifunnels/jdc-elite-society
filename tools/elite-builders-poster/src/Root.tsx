@@ -8,7 +8,7 @@ import { TopPoster } from "./TopPoster";
 export const Root = () => (
   <>
     {POSTERS.map((p) => (
-      <Still key={p.id} id={p.id} component={Poster} width={1080} height={1350} defaultProps={{ date: p.date, builder: p.builder, chip: p.chip }} />
+      <Still key={p.id} id={p.id} component={Poster} width={1080} height={1350} defaultProps={{ date: p.date, builder: p.builder, chip: p.chip, spotlight: p.spotlight }} />
     ))}
     {MONTH_POSTERS.map((m) => (
       <Still key={m.id} id={m.id} component={MonthPoster} width={1080} height={1350} defaultProps={{ spec: m }} />

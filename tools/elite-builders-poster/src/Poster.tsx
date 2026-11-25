@@ -186,7 +186,7 @@ export const OpenSlot = ({ w, h }: { w: number; h: number }) => {
   );
 };
 
-export const Poster = ({ date, builder, chip }: { date: string; builder: string; chip?: string }) => {
+export const Poster = ({ date, builder, chip, spotlight }: { date: string; builder: string; chip?: string; spotlight?: boolean }) => {
   const star = ROSTER.find((b) => b.id === builder);
   if (!star) throw new Error(`Unknown builder ${builder}`);
   // The card is a month card ("NOVEMBER"), so only builders with a direct in that month so far.
@@ -253,6 +253,57 @@ export const Poster = ({ date, builder, chip }: { date: string; builder: string;
         />
         <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse 90% 80% at 50% 45%, transparent 55%, rgba(0,0,0,.75) 100%)" }} />
         <Grain opacity={0.22} />
+        {spotlight && (
+          <>
+            {/* soft light from above, falling behind the builder */}
+            <div
+              style={{
+                position: "absolute",
+                inset: 0,
+                background: `conic-gradient(from 166deg at 50% -6%, transparent 0deg, rgba(120,160,255,.13) 8deg, transparent 16deg, rgba(120,160,255,.09) 24deg, transparent 30deg)`,
+                filter: "blur(6px)",
+              }}
+            />
+            {/* cobalt halo behind head and shoulders */}
+            <div
+              style={{
+                position: "absolute",
+                left: "50%",
+                top: bodyH * 0.06,
+                width: LEFT_W * 1.15,
+                height: LEFT_W * 1.15,
+                transform: "translateX(-50%)",
+                borderRadius: "50%",
+                background: `radial-gradient(circle, rgba(64,120,255,.55) 0%, rgba(41,98,255,.28) 32%, rgba(13,54,217,.10) 55%, transparent 70%)`,
+              }}
+            />
+            {/* thin gold ring behind the head */}
+            <div
+              style={{
+                position: "absolute",
+                left: "50%",
+                top: bodyH * 0.05,
+                width: LEFT_W * 0.78,
+                height: LEFT_W * 0.78,
+                transform: "translateX(-50%)",
+                borderRadius: "50%",
+                border: "2px solid rgba(246,200,69,.45)",
+                boxShadow: "0 0 24px rgba(246,200,69,.25), inset 0 0 24px rgba(246,200,69,.12)",
+              }}
+            />
+            {/* warm floor glow at the waist line */}
+            <div
+              style={{
+                position: "absolute",
+                left: 0,
+                right: 0,
+                top: bodyH * 0.5,
+                height: bodyH * 0.3,
+                background: "radial-gradient(ellipse 60% 50% at 50% 50%, rgba(246,200,69,.10), transparent 70%)",
+              }}
+            />
+          </>
+        )}
         {star.photo ? (
           <Img
             src={staticFile(star.photo)}

@@ -59,7 +59,7 @@ export const ROSTER: Builder[] = [
   { id: "daniel", first: "Daniel", last: "Malicdem", directs: ["2026-10-19"], photo: "builders/daniel.png", face: { cx: 0.481, eye: 0.237, chin: 0.448 } },
   { id: "michelle", first: "Michelle", last: "Escobido", directs: ["2026-11-23"], photo: "builders/michelle.png", face: { cx: 0.518, eye: 0.163, chin: 0.270 } },
   // First direct Alfred Capuyan (Nov 24). Payment still in verification; owner said to treat it as approved for the card (Nov 24).
-  { id: "randy", first: "Randy", last: "Dolorito", directs: ["2026-11-24"], photo: "builders/randy.png", face: { cx: 0.36, eye: 0.261, chin: 0.489 } },
+  { id: "randy", first: "Randy", last: "Dolorito", directs: ["2026-11-24"], photo: "builders/randy.png", face: { cx: 0.442, eye: 0.269, chin: 0.467 } },
 ];
 
 export const starsOn = (b: Builder, date: string) => b.directs.filter((d) => d <= date).length;
@@ -72,7 +72,8 @@ export const monthName = (iso: string) => MONTHS_LONG[Number(iso.slice(5, 7)) - 
 
 /** One poster per builder-of-the-day. Add a line here, then `npm run render`. */
 /** `chip` replaces the default "TODAY · NOV xx" label above the name (e.g. for a builder with no new direct that day). */
-export type PosterSpec = { id: string; date: string; builder: string; chip?: string };
+/** `spotlight` adds a soft light backdrop behind the builder of the day (owner, Nov 25). */
+export type PosterSpec = { id: string; date: string; builder: string; chip?: string; spotlight?: boolean };
 
 const since = (id: string, date: string) => {
   const b = ROSTER.find((x) => x.id === id)!;
@@ -86,7 +87,7 @@ export const POSTERS: PosterSpec[] = [
   // New builders, Nov 23: Michelle's first direct is today; Grace's was Nov 22.
   { id: "2026-11-23-michelle", date: "2026-11-23", builder: "michelle" },
   since("grace", "2026-11-23"),
-  since("randy", "2026-11-24"),
+  { ...since("randy", "2026-11-24"), spotlight: true },
 ];
 
 /**
