@@ -24,14 +24,14 @@ export type Builder = {
   since?: string;
   photo?: string;
   face?: { cx: number; eye: number; chin: number };
-  /** Framing for the big builder-of-the-day cutout: scale of poster column height, x/y nudge. */
-  hero?: { height: number; x: number; y: number };
+  /** Framing for the big builder-of-the-day cutout: scale of poster column height, x/y nudge; fade softens a cutout that ends at the waist. */
+  hero?: { height: number; x: number; y: number; fade?: boolean };
 };
 
 export const ROSTER: Builder[] = [
   { id: "mark", first: "Mark", last: "Pigar", directs: ["2026-11-07"], photo: "builders/mark.png", face: { cx: 0.536, eye: 0.221, chin: 0.384 } },
   { id: "lucky", first: "Lucky", last: "Caigoy", directs: ["2026-10-30", "2026-11-09"], photo: "builders/lucky.png", face: { cx: 0.494, eye: 0.150, chin: 0.262 } },
-  { id: "roy", first: "Roy", last: "Remulta", directs: ["2026-11-09", "2026-11-13", "2026-11-14"], photo: "builders/roy.png", face: { cx: 0.438, eye: 0.245, chin: 0.433 } },
+  { id: "roy", first: "Roy", last: "Remulta", directs: ["2026-11-09", "2026-11-13", "2026-11-14"], photo: "builders/roy.png", face: { cx: 0.438, eye: 0.245, chin: 0.433 }, hero: { height: 0.82, x: 0, y: 60, fade: true } },
   {
     id: "amira",
     first: "Amira",
@@ -88,6 +88,7 @@ export const POSTERS: PosterSpec[] = [
   { id: "2026-11-23-michelle", date: "2026-11-23", builder: "michelle" },
   since("grace", "2026-11-23"),
   { ...since("randy", "2026-11-24"), spotlight: true },
+  since("roy", "2026-11-24"),
 ];
 
 /**
