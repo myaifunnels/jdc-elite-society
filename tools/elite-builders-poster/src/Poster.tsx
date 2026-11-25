@@ -277,20 +277,6 @@ export const Poster = ({ date, builder, chip, spotlight }: { date: string; build
                 background: `radial-gradient(circle, rgba(64,120,255,.55) 0%, rgba(41,98,255,.28) 32%, rgba(13,54,217,.10) 55%, transparent 70%)`,
               }}
             />
-            {/* thin gold ring behind the head */}
-            <div
-              style={{
-                position: "absolute",
-                left: "50%",
-                top: bodyH * 0.05,
-                width: LEFT_W * 0.78,
-                height: LEFT_W * 0.78,
-                transform: "translateX(-50%)",
-                borderRadius: "50%",
-                border: "2px solid rgba(246,200,69,.45)",
-                boxShadow: "0 0 24px rgba(246,200,69,.25), inset 0 0 24px rgba(246,200,69,.12)",
-              }}
-            />
             {/* warm floor glow at the waist line */}
             <div
               style={{
